@@ -1,0 +1,1708 @@
+Software Model Checking with Horn Clauses
+
+Beamed by Daan Leijen's Madoko
+
+
+Nikolaj Bjørner
+
+In collaboration with Arie Gurfinkel, Ken McMillan, Andrey Rybalchenko
+VTSA Summer School, 2014
+nbjorner@microsoft.com
+
+Contents
+
+
+Horn Clauses
+
+Methods for solving Horn Clauses:
+
+
+Bottom-up Datalog in 
+
+Fold/Unfold
+
+Magic
+
+Infinite Descent
+
+Predicate Abstraction
+
+Interpolants
+
+IC3 (with interpolants)
+
+Yogi as Horn clause solving
+
+
+Why Horn Clauses?
+
+Reduce Program Analysis to Constraint Solving
+
+
+
+
+Program Semantics Hoare Logic [ 20 , 24 , 29 , 37 ]
+
+Existential Fixedpoint Logic [ 13 ]
+
+Constrained Horn Clauses
+
+Proof rules [ 26 ]
+
+
+
+
+Note : Specialized algorithms are used to solve Horn clauses.
+
+
+
+Top down: start with query (bad state) (SLD resolution)
+
+
+Bottom up: start with facts (initial states)
+
+
+
+Horn Clauses
+
+
+
+Constrained Horn Clause:
+
+
+
+
+Logical interpretation 
+
+
+
+
+- predicate symbols
+
+- formulas over assertion language .
+
+- quantifier-free (integer) linear arithmetic, 
+
+
+
+Abbreviations:
+
+
+.
+
+.
+
+
+
+Horn+ Clauses
+
+
+
+Universal Horn Clauses [ 10 ] :
+
+
+
+
+uses universal quantifier in body .
+
+
+
+
+
+Existential Horn Clauses [ 6 ] :
+
+
+
+
+uses existential quantifier in head .
+
+
+
+Horn SAT and UNSAT
+
+
+UNSAT SAT
+
+
+Produce a Produce an explicit model, or
+
+resolution proof proof that there is no resolution proof
+
+
+Focus of CLP Aim of our efforts
+
+
+
+
+
+Claim : relative completeness:
+
+
+There is no third case, modulo completeness of assertion language.
+
+Claim : UNSAT is r.e. when SAT for is r.e. 
+
+
+e.g., if assertion is wrong, there is a finite counter-example.
+
+Claim : SAT is generally not r.e. 
+
+
+Bounds for finite domains given by Datalog query complexity 
+
+Note : relative completeness does not hold for Horn+ clauses.
+
+
+Transitions Horn Clauses
+
+
+- program variables 
+
+- initial states
+
+- transition relation
+
+- safe states
+
+
+Transitions Horn Clauses
+
+
+Programs Horn Clauses
+
+
+- program variables 
+
+- initial states of main procedure
+
+- intra-procedural transition relation
+
+- safe states
+
+- parameter passing relation
+
+- return value passing
+
+
+Programs Horn Clauses
+
+
+Programs Horn Clauses
+
+
+Alternative lenses:
+
+
+Define Hoare Logic, extract Horn clauses.
+
+
+Boogie does this as a side-effect
+
+Define continuation passing style semantics of program
+
+
+Success and Failure continuation.
+
+Failure contionation feeds into assertions.
+
+Success continuation feeds into the next statement.
+
+
+Programs Horn Clauses
+
+
+Programs Horn Clauses
+
+
+What about procedure calls?
+
+Programs Horn Clauses
+
+
+
+Claim : Other translations exist. 
+
+Research question : which one is most suitable?
+
+
+Dealing with Loose Semantics
+
+
+Is this program safe ?
+
+l0 : if ( unknown ( x ) > 0 ) goto : error
+
+Horn clauses (attempt 1) 
+
+l0 ( x ) <- true .
+error <- l0 ( x ) , unknown ( x ) > 0 .
+
+Possible interpretation:
+
+unknown ( x ) := 0 ;
+l0 := true ;
+error := false ;
+
+This is probably not what we want.
+
+
+Dealing with Loose Semantics
+
+Proper semantics obtained by quantifying over all loose models.
+
+
+
+which is equivalent to:
+
+
+Dealing with Loose Semantics and Abduction
+
+More generally, proper semantics is for:
+
+
+
+When there is a canonical interpretation for background 
+theory (arithmetic without division), proper semantics coincides
+with satisfiability modulo theories , e.g,:
+
+
+Compare to constraint handling rules in logic programming.
+
+Contents
+
+
+Methods for solving Horn Clauses:
+
+
+Bottom-up Datalog in 
+
+Fold/Unfold
+
+Magic
+
+Infinite Descent
+
+Predicate Abstraction
+
+Interpolants
+
+IC3 (with interpolants)
+
+Yogi as Horn clause solving
+
+
+Bottom-up Datalog in .
+
+
+
+
+
+
+Add row to .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bottom-up Datalog in
+
+
+Clauses instructions using relational algebra.
+
+
+join 
+
+project 
+
+rename 
+
+select , 
+
+filter 
+
+For efficiency allow combined operations
+
+
+join-project
+
+select-project
+
+Implementation depends on table representation.
+
+
+Network Optimized Datalog NoD
+
+
+
+Option 1: use BDDs to represent tables.
+
+
+
+
+Option 2: build tables from ternary bit-vectors.
+
+
+
+
+Table is a union of differences of cubes 
+
+
+
+
+Same as 01100, 01111, 00011, 00000
+
+
+
+
+Option 3,4,..: Use hash tables, B-trees, bit-maps
+
+
+Work in some pointer-analysis applications, but not for header spaces
+
+
+
+Network Optimized Datalog
+
+
+Network Optimized Datalog
+
+
+Network Optimized Datalog
+
+
+Contents
+
+
+Methods for solving Horn Clauses:
+
+
+Bottom-up Datalog in 
+
+Fold/Unfold 
+
+Magic
+
+Infinite Descent
+
+Predicate Abstraction
+
+Interpolants
+
+IC3 (with interpolants)
+
+Yogi as Horn clause solving
+
+
+Fold-Unfold
+
+
+
+Fold-Unfold
+
+
+Fold-Unfold
+
+
+Fold-Unfold
+
+Unfold
+
+
+
+Fold
+
+
+
+Fold-Unfold
+
+New Definition
+
+
+
+Rewriting , such as rewriting equalites
+
+
+Fold-Unfold Analysis
+
+
+Fold-unfold used in context of Prolog or CLP.
+
+
+Highly expressive assertion language.
+
+
+When does Fold-Unfold terminate if is derivable?
+
+
+When is fold-unfold a decision procedure?
+
+
+Boolean Horn clauses (finite domains).
+
+Horn clauses for simple push-down systems?
+
+
+Fold-Unfold References
+
+
+[ 15 , 43 , 44 ] Classics 
+
+[ 39 ] Unfold/Fold for Verification
+
+MAPS system, [ 28 ] 
+
+[ 25 ] Fold/unfold + magic + polyhedra + interpolants
+
+
+Contents
+
+
+Methods for solving Horn Clauses:
+
+
+Bottom-up Datalog in 
+
+Fold/Unfold
+
+Magic 
+
+Infinite Descent
+
+Predicate Abstraction
+
+Interpolants
+
+IC3 (with interpolants)
+
+Yogi as Horn clause solving
+
+
+Magic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Magic Example
+
+
+
+Magic Example
+
+
+Magic Example
+
+
+Magic Example
+
+
+
+What is the Magic?
+
+
+Introduced in Datalog to emulate top-down using bottom-up evalution.
+
+Supplies constraints from calling context.
+
+
+Contents
+
+
+Methods for solving Horn Clauses:
+
+
+Bottom-up Datalog in 
+
+Fold/Unfold
+
+Magic
+
+Infinite Descent 
+
+Predicate Abstraction
+
+Interpolants
+
+IC3 (with interpolants)
+
+Yogi as Horn clause solving
+
+
+Infinite Descent Example
+
+
+
+
+
+
+
+
+
+
+
+
+[1,3, tautology]
+
+
+[2,3]
+
+
+[simplify 5, subsumed 3]
+
+
+Infinite Descent
+
+
+
+Goal: 
+
+
+A conjunction of predicates and constraints
+
+
+
+
+
+Subsumption:
+
+
+Goal subsumes if there is , such that
+
+.
+
+Thus, 
+
+
+Every solution to contains a solution to . 
+
+
+
+Infinite Descent
+
+
+Tabling in Datalog/Prolog: memoize answers [ 42 ] .
+
+Tabling + memoize and generalize queries [ 12 , 32 , 41 ] .
+
+
+saturation by super-position [ 22 ] .
+
+What relationships can be made between Infinite Descent and Fold/Unfold proofs?
+
+
+Contents
+
+
+Methods for solving Horn Clauses:
+
+
+Bottom-up Datalog in 
+
+Fold/Unfold
+
+Magic
+
+Infinite Descent
+
+Predicate Abstraction 
+
+Interpolants
+
+IC3 (with interpolants)
+
+Yogi as Horn clause solving
+
+
+Predicate Abstraction: Houdini [ 23 ]
+
+
+For each predicate 
+
+
+Create set of candidate solutions 
+
+
+
+
+Check each clause 
+
+
+:
+
+if 
+
+
+then remove from .
+
+Fail if is empty.
+
+Succeed if fixedpoint where each clause checks.
+
+
+Predicate Abstraction: Cartesian Templates [ 26 ]
+
+
+For each predicate 
+
+
+Create set of candidate properties and states.
+
+
+
+
+
+
+For each clause 
+
+
+
+
+Fail if query, for “ ” is not valid for some .
+
+Succeed if fixedpoint reached while maintaining infeasible query.
+
+
+Contents
+
+
+Methods for solving Horn Clauses:
+
+
+Bottom-up Datalog in 
+
+Fold/Unfold
+
+Magic
+
+Infinite Descent
+
+Predicate Abstraction
+
+Interpolants 
+
+IC3 (with interpolants)
+
+Yogi as Horn clause solving
+
+
+Interpolants [ 26 , 38 , 40 ]
+
+Contents
+
+
+Methods for solving Horn Clauses:
+
+
+Bottom-up Datalog in 
+
+Fold/Unfold
+
+Magic
+
+Infinite Descent
+
+Predicate Abstraction
+
+Interpolants
+
+IC3 (with interpolants) 
+
+Yogi as Horn clause solving
+
+
+IC3
+
+
+
+are state variables.
+
+
+is a monome (a conjunction of literals).
+
+
+is a clause (a disjunction of literals).
+
+
+
+
+Convention: is a monome over variables , is a renaming of the same monome to variables .
+
+
+IC3 recap
+
+
+- a transition system.
+
+- good states.
+
+- forward predicate transformer.
+
+
+Given reachable states , produce “states can be reached by including another step”.
+
+From Transition System: 
+
+From Horn Clauses: , where
+
+
+
+IC3 recap
+
+
+properties of states reachable within steps. 
+
+are sets of clauses.
+
+Initially .
+
+a queue of counter-example trace properties. Initially .
+
+a level indication. Initially .
+
+
+Expanding Traces
+
+repeat until ∞
+
+
+
+Candidate If for some , , then add to .
+
+
+
+Unfold If , then set .
+
+
+
+Termination
+
+repeat until ∞
+
+
+
+Unreachable For , if , return Unreachable .
+
+
+Reachable If , return Reachable .
+
+
+
+Search
+
+repeat until ∞
+
+
+Decide Add to if
+
+
+
+,
+
+
+is consistent, and
+
+
+
+
+Backtracking
+
+repeat until ∞
+
+
+
+Conflict Let : given a candidate model and clause , such that
+
+
+
+,
+
+
+,
+
+then conjoin to , for .
+
+
+
+
+
+Leaf If , and is unsatisfiable,
+then add to .
+
+
+
+Inductive Generalization
+
+repeat until ∞
+
+
+Induction For , a clause , ,
+if , then conjoin to , for each .
+
+
+IC3 beyond SAT
+
+Decide - Generalized form
+
+Decide Add to if ,
+.
+
+
+
+[ 14 , 21 ] Model from propositional SAT check for gives (near prime implicant) . 
+
+[ 30 ] Model from SMT check for arithmetical produces numerical assignment .
+
+[ 17 , 33 ] Partial quantifier elimination.
+
+[ 36 ] where are quantifier-free. Use model for to compute without expanding full disjunction.
+
+[ 19 , 31 ] Keep vocabulary of literals fixed (= predicate abstraction). 
+
+
+Loos-Weispfenning QE
+
+
+in NNF
+
+set of atoms in 
+
+set of atoms in 
+
+set of atoms in 
+
+there are no other occurrences of in 
+
+
+
+
+
+Note: 
+
+Pick disjunction corresponding to satisfied equality or inequality.
+
+
+Decide - Generalized form
+
+Pssst: I am replacing by greek letters.
+
+
+
+
+Decide Add to , if
+
+
+
+,
+
+
+is consistent,
+
+
+, and
+
+
+
+
+Interpolating Conflict
+
+Conflict Let : given a candidate model
+and clause , such that
+,
+if , then conjoin to ,
+for .
+
+
+Note: .
+
+By monotonicity: . 
+
+Interpolation as special case:
+
+
+Overkill for SAT (use unsat core), but for SMT may supply candidate predicates.
+
+For conjunction of inequalities , interpolation is “simple” .
+
+
+Farkas+T Lemmas
+
+
+is conjunction of inequalities 
+
+is quantifier-fee formula
+
+is unsat
+
+Let be a conflict that contains literals from : 
+
+Let be Farkas coefficients
+
+So 
+
+So 
+
+Return instead of 
+
+
+Interpolating Conflict
+
+Conflict Let : given a candidate
+model and a formula , such
+that , , then conjoin to ,
+for .
+
+Branching
+
+DAG Branching
+
+Recall predicate transformer for McCarthy91:
+
+
+
+
+Decide now spawns two children.
+
+
+
+Decide 
+If and
+there are consistent 
+such that and
+,
+then add , 
+to .
+
+Searching a DAG
+
+We also have to take DAG unfolding into acount.
+
+Base Mark if or if there is a consistent 
+such that and .
+
+Close Mark if all children are marked.
+
+Reachable If is marked, return Reachable .
+
+Searching a DAG
+
+
+Model from propositional SAT check for 
+gives us . 
+
+Idea: Model from SMT check for arithmetical 
+produces numerical assignments.
+
+Effect: models explored in branches are far from prime lemmas become too weak.
+
+
+Search with Under-approximations [ 36 ]
+
+
+Instead of tracking progress using marking use under approximations .
+
+Maintain of under approximations .
+
+Recall that are over approximations .
+
+Satisfying 
+
+
+.
+
+
+
+Search with Under-approximations
+
+Decide and Conflict pushing a goal over 
+
+
+
+If , then goal cannot be reached.
+
+If , then goal can be reached.
+
+Otherwise case split on .
+
+
+Search with Under-approximations
+
+Reachable If is satisfiable, then return Reachable .
+
+Decide For for , add to if:
+
+- .
+
+- .
+
+-
+
+- is disjoint from for every .
+
+Decide For for , add to if:
+
+- .
+
+- .
+
+-
+
+- is disjoint from for every .
+
+Close For for , if is satisfiable, but is unsatsifiable,
+then update , where . 
+
+Recursion-free Horn Clauses
+
+
+Interpolation in standard form is a special case of Horn Clause solving.
+
+(1) 
+
+
+IC3 (sans Inductive Generalization) produces as side-effect solutions that are interpolants.
+
+Interpolants are quaint , almost beautiful [ 2 , 4 , 16 ] .
+
+
+Contents
+
+
+Methods for solving Horn Clauses:
+
+
+Bottom-up Datalog in 
+
+Fold/Unfold
+
+Magic
+
+Infinite Descent
+
+Predicate Abstraction
+
+Interpolants
+
+IC3 (with interpolants)
+
+Yogi as Horn clause solving 
+
+
+Yogi as Horn clause solving
+
+
+
+f ( y ) {
+int x , lock = 0 ;
+do {
+lock = 1 ;
+y = x ;
+if ( * ) {
+lock = 0 ;
+y = y + 1 ;
+}
+}
+while ( x != y ) ;
+if ( lock != 1 )
+error ( ) ;
+}
+
+Yogi Saturation
+
+Maintain the following data-structures:
+
+
+Abstract Control Flow Graph a set of propositional Horn clauses.
+
+Region Abstraction abstractions for program locations.
+
+
+Yogi Saturation
+
+Initially: 
+
+
+Region Abstraction Transition Abstraction
+
+
+
+
+
+
+
+
+
+
+Yogi Saturation
+
+The abstraction is unsatisfiable.
+A core selects clauses corresponding to the literals:
+.
+We check if the symbolic execution of the path is feasible.
+It is not:
+
+
+Extract a condition on to cut the path.
+
+
+Yogi Saturation
+
+The new abstraction is:
+
+
+Region Abstraction Transition Abstraction
+
+
+
+
+
+
+
+
+
+
+
+Yogi Saturation
+
+The system remains unsatisfiable with core
+
+
+Notice that the core is smaller, it uses the invariant associated with and does not symbolically execute .
+
+The transition is refined in a similar way.
+
+Yogi Saturation
+
+
+Region Abstraction Transition Abstraction
+
+
+
+
+
+
+
+
+
+
+
+
+
+Yogi Saturation
+
+The state invariants are used by the symbolic simulator. 
+They are added to the path condition during simulation.
+
+The system remains unsatisfiable with core
+
+
+Yogi Saturation
+
+Split : 
+
+
+Region Abstraction Transition Abstraction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Yogi Saturation
+
+The transition to is still feasible.
+Simulation produces the core:
+
+
+So we can conclude that .
+The resulting abstraction is satisfiable.
+
+Yogi Saturation
+
+
+Region Abstraction Transition Abstraction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Yogi Saturation
+
+The abstraction that is reachable from is also a satisfying interpretation
+for the original set of Horn clauses. That is, the following interpretation satisfies the
+Horn clauses:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Yogi
+
+
+Our presentation choses to use a propositional abstraction of the control flow graph
+
+
+Alternative: simulate reachability check based on the original set of Horn clauses for the system.
+
+
+Yogi - procedures
+
+
+Procedure call summarized as .
+
+iff there is a computation of that terminates with .
+
+E.g, is the least fixed-point of the predicate transformer associated with the procedure .
+For predicates (pre-condition) and (post-condition), define:
+
+
+
+Yogi - procedures (SMASH)
+
+The abstractions corresponds to procedure summaries.
+The following properties are used to prune search:
+
+
+Symbolic execution re-uses must summaries to avoid exploring procedures. summaries are used to establish inductive properties.
+
+Example POPL2010 .
+
+
+void main ( int i , j ) {
+0 : int x ;
+1 : if ( i > 2 && j > 2 ) {
+2 : x = foo ( i , j ) ;
+3 : if ( x < 0 )
+4 : assert ( false ) ;
+}
+}
+
+int g ( int j ) {
+20 : if ( j > 0 )
+21 : return j ;
+22 : else
+23 : return - j ;
+}
+
+int foo ( int i , j ) {
+10 : int r , y ;
+11 : y = bar ( i ) ;
+12 : if ( y > 10 )
+13 : r = g ( j ) ;
+14 : else
+15 : r = y ;
+16 : return r ;
+}
+
+Example POPL2010 .
+
+
+Assume
+,
+,
+.
+
+Initial query: 
+.
+
+Learn for :
+.
+
+Learn for :
+.
+
+
+
+
+must summary is used to fast forward for a feasible path to where a 
+summary gets inferred to rule out the query.
+
+Horn formulation:
+
+
+Example POPL2010 .
+
+Initial region abstraction:
+
+
+It checks:
+
+
+and 
+unfolds (the first branch of) :
+
+.
+
+must summary for bar establishes that some unfolding is consistent with 
+the current constraints. Analysis can therefore proceed to check if some value that is 
+consistent with the must summary is also consistent with the remaining constraints.
+
+Neither unfolding of g is feasible and it gives rise to the updated
+region abstraction for first g and then foo :
+
+
+
+Yogi Summary
+
+The SMASH algorithm is about exploiting a particular 
+symbolic execution to simplify weakest pre-conditions. 
+Yogi uses weakest pre-conditions to refine the propositional abstraction.
+
+Corral is a newer symbolic Software Model checking system by Akash Lal, Shaz Qadeer.
+It uses incremental inlining of procedure calls and relies on Houdini to establish inductiveness.
+
+Research Progress and Challenges
+
+
+[ 18 ] Quantitative queries
+
+[ 10 ] Quantified invariants for arrays
+
+[ 6 ] Game of Horn: Existentials and well-orderings
+
+[ 11 ] Higher-order recursion schema solving as IC3 + Horn + Data-types
+
+Relations to acceleration, fold-unfold, saturation/infinite descent
+
+Bit-vectors, arrays [ 3 ] , strings [ 1 ] , non-linear arithmetic, EPR [ 9 ] , Algebraic data-types, …
+
+
+Bibliography
+
+
+[ 8 , 26 ] Proof Rules for Program Verification and Horn Clauses.
+
+[ 33 ] IC3 for timed automata
+
+[ 17 ] IC3 with partial quantifier elimination
+
+[ 30 ] IC3 with interpolating conflicts and Horn Clauses
+
+[ 34 ] IC3 for Petri nets
+
+[ 40 ] Interpolation for Horn Clauses
+
+[ 35 ] Z + abstraction
+
+
+Bibliography
+
+
+[ 5 ] Z pre-processing and benchmaks
+
+[ 36 ] IC3 + under-approximations for Horn Clause solving 
+
+[ 27 ] Z + abstraction for bit-vectors 
+
+[ 38 ] Lazy annotation revisited
+
+[ 19 ] IC3 + implicit predicate abstraction 
+
+[ 31 ] IC3 + predicate abstraction for EPR
+
+[ 7 ] IC3 + Polyhedral abstraction
+
+[ 25 ] Fold/unfold + magic + polyhedra + interpolants
+
+
+Madoko
+
+
+Madoko is a A Fast Scholarly Markdown Processor ,
+
+intuitive and powerful integration of markdown and LaTeX,
+
+browser and Azure based - no installation,
+
+immediate preview,
+
+real-time collaborative editing,
+
+is written in Koka ,
+
+is by Daan Leijen, Microsoft Research,
+
+Madoko is funct-ing slick! 
+
+
+References
+
+
+
+
+
+[ 1 ] Parosh Aziz Abdulla, Mohamed Faouzi Atig, Yu-Fang Chen, Luk á s Holik, Ahmed
+Rezine, Philipp R ü mmer, and Jari Stenman.
+String constraints for verification.
+In CAV , pages 150 – 166, 2014. 🔎
+
+[ 2 ] Aws Albarghouthi and Kenneth L. McMillan.
+Beautiful interpolants.
+In CAV , pages 313 – 329, 2013. 🔎
+
+[ 3 ] Francesco Alberti, Roberto Bruttomesso, Silvio Ghilardi, Silvio Ranise, and
+Natasha Sharygina.
+Safari: Smt-based abstraction for arrays with interpolants.
+In CAV , pages 679 – 685, 2012. 🔎
+
+[ 4 ] Sam Bayless, Celina Val, Thomas Ball, Holger Hoos, and Alan Hu.
+Efficient Modular SAT Solving for IC3.
+In FMCAD , 2013. 🔎
+
+[ 5 ] Josh Berdine, Nikolaj Bj ø rner, Samin Ishtiaq, Jael E. Kriener, and
+Christoph M. Wintersteiger.
+Resourceful reachability as horn-la.
+In LPAR , pages 137 – 146, 2013. 🔎
+
+[ 6 ] Tewodros A. Beyene, Swarat Chaudhuri, Corneliu Popeea, and Andrey Rybalchenko.
+A constraint-based approach to solving games on infinite graphs.
+In POPL , pages 221 – 234, 2014. 🔎
+
+[ 7 ] Nikolaj Bj ø rner and Arie Gurfinkel.
+Property Directed Polyhedral Abstraction.
+In VMCAI , 2015. 🔎
+
+[ 8 ] Nikolaj Bj ø rner, Kenneth L. McMillan, and Andrey Rybalchenko.
+Program verification as satisfiability modulo theories.
+In SMT , pages 3 – 11, 2012. 🔎
+
+[ 9 ] Nikolaj Bj ø rner, Arie Gurfinkel, Konstantin Korovin, and Ori Lahav.
+Instantiations, Zippers and EPR Interpolation.
+In Short paper at LPAR 19 , 2013a. 🔎
+
+[ 10 ] Nikolaj Bj ø rner, Kenneth L. McMillan, and Andrey Rybalchenko.
+On solving universally quantified horn clauses.
+In SAS , pages 105 – 125, 2013b. 🔎
+
+[ 11 ] Nikolaj Bj ø rner, Kenneth L. McMillan, and Andrey Rybalchenko.
+Higher-order program verification as satisfiability modulo theories
+with algebraic data-types.
+CoRR , abs/1306.5264, 2013c. 🔎
+
+[ 12 ] Bruno Blanchet.
+Using Horn clauses for analyzing security protocols.
+In V é ronique Cortier and Steve Kremer, editors, Formal
+Models and Techniques for Analyzing Security Protocols , volume 5 of
+Cryptology and Information Security Series , pages 86 – 111. IOS Press,
+March 2011.
+ISBN 978-1-60750-713-0. 🔎
+
+[ 13 ] A. Blass and Y. Gurevich.
+Existential fixed-point logic.
+In Computation Theory and Logic , pages 20 – 36, 1987. 🔎
+
+[ 14 ] Aaron R. Bradley.
+SAT-Based Model Checking without Unrolling.
+In VMCAI , pages 70 – 87, 2011. 🔎
+
+[ 15 ] R. M. Burstalland and J. Darlington.
+A transformation system for developing recursive programs.
+JACM , 24, 1977. 🔎
+
+[ 16 ] Hana Chockler, Alexander Ivrii, and Arie Matsliah.
+Computing interpolants without proofs.
+In Armin Biere, Amir Nahir, and Tanja Vos, editors, Hardware
+and Software: Verification and Testing , volume 7857 of Lecture Notes
+in Computer Science , pages 72 – 85. Springer Berlin Heidelberg, 2013. 🔎
+
+[ 17 ] Alessandro Cimatti and Alberto Griggio.
+Software Model Checking via IC3.
+In CAV , pages 277 – 293, 2012. 🔎
+
+[ 18 ] Alessandro Cimatti, Alberto Griggio, Sergio Mover, and Stefano Tonetta.
+Parameter synthesis with ic3.
+In FMCAD , pages 165 – 168, 2013. 🔎
+
+[ 19 ] Alessandro Cimatti, Alberto Griggio, Sergio Mover, and Stefano Tonetta.
+IC3 Modulo Theories via Implicit Predicate Abstraction.
+In TACAS , pages 46 – 61, 2014. 🔎
+
+[ 20 ] Stephen A. Cook.
+Soundness and completeness of an axiom system for program verif.
+SIAM J. Comput. , 7 (1): 70 – 90, 1978. 🔎
+
+[ 21 ] Niklas E é n, Alan Mishchenko, and Robert K. Brayton.
+Efficient implementation of property directed reachability.
+In FMCAD , pages 125 – 134, 2011. 🔎
+
+[ 22 ] Arnaud Fietzke and Christoph Weidenbach.
+Superposition as a decision procedure for timed automata.
+Mathematics in Computer Science , 6 (4): 
+409 – 425, 2012.
+doi: 10.1007/s11786-012-0134-5 .
+URL http://dx.doi.org/10.1007/s11786-012-0134-5 . 🔎
+
+[ 23 ] Cormac Flanagan and K. Rustan M. Leino.
+Houdini, an annotation assistant for esc/java.
+In Jos é Nuno Oliveira and Pamela Zave, editors, FME
+2001: Formal Methods for Increasing Software Productivity, International
+Symposium of Formal Methods Europe, Berlin, Germany, March 12-16, 2001,
+Proceedings , volume 2021 of Lecture Notes in Computer Science , pages
+500 – 517. Springer, 2001.
+ISBN 3-540-41791-5.
+doi: 10.1007/3-540-45251-6_29 .
+URL http://dx.doi.org/10.1007/3-540-45251-6_29 . 🔎
+
+[ 24 ] R.W. Floyd.
+Assigning meaning to programs.
+In Proceedings Symposium on Applied Mathematics , volume 19,
+pages 19 – 32. American Math. Soc., 1967. 🔎
+
+[ 25 ] John P. Gallagher and Bishoksan Kafle.
+Analysis and transformation tools for constrained horn clause
+verification.
+CoRR , abs/1405.3883, 2014.
+URL http://arxiv.org/abs/1405.3883 . 🔎
+
+[ 26 ] Sergey Grebenshchikov, Nuno P. Lopes, Corneliu Popeea, and Andrey Rybalchenko.
+Synthesizing software verifiers from proof rules.
+In PLDI , 2012. 🔎
+
+[ 27 ] Arie Gurfinkel, Anton Belov, and Joao Marques-Silva.
+Synthesizing safe bit-precise invariants.
+In TACAS , pages 93 – 108, 2014. 🔎
+
+[ 28 ] Manuel V. Hermenegildo, Francisco Bueno, Manuel Carro, Pedro Lopez-Garcia,
+Edison Mera, Jos é F. Morales, and Germ á n Puebla.
+An overview of ciao and its design philosophy.
+TPLP , 12 (1-2): 219 – 252, 2012.
+doi: 10.1017/S1471068411000457 .
+URL http://dx.doi.org/10.1017/S1471068411000457 . 🔎
+
+[ 29 ] C. A. R. Hoare.
+An axiomatic basis for computer programming.
+Commun. ACM , 12 (10): 576 – 580, 1969. 🔎
+
+[ 30 ] Krystof Hoder and Nikolaj Bj ø rner.
+Generalized Property Directed Reachability.
+In SAT , pages 157 – 171, 2012. 🔎
+
+[ 31 ] Shachar Itzhaky, Nikolaj Bj ø rner, Thomas W. Reps, Mooly Sagiv, and Aditya V.
+Thakur.
+Property-directed shape analysis.
+In CAV , pages 35 – 51, 2014. 🔎
+
+[ 32 ] Joxan Jaffar, Andrew E. Santosa, and Razvan Voicu.
+An interpolation method for CLP traversal.
+In Ian P. Gent, editor, Principles and Practice of Constraint
+Programming - CP 2009, 15th International Conference, CP 2009, Lisbon,
+Portugal, September 20-24, 2009, Proceedings , volume 5732 of Lecture
+Notes in Computer Science , pages 454 – 469. Springer, 2009.
+ISBN 978-3-642-04243-0.
+doi: 10.1007/978-3-642-04244-7_37 .
+URL http://dx.doi.org/10.1007/978-3-642-04244-7_37 . 🔎
+
+[ 33 ] Roland Kindermann, Tommi A. Junttila, and Ilkka Niemel ä .
+SMT-Based Induction Methods for Timed Systems.
+In FORMATS , pages 171 – 187, 2012. 🔎
+
+[ 34 ] Johannes Kloos, Rupak Majumdar, Filip Niksic, and Ruzica Piskac.
+Incremental, inductive coverability.
+In CAV , pages 158 – 173, 2013. 🔎
+
+[ 35 ] Anvesh Komuravelli, Arie Gurfinkel, Sagar Chaki, and Edmund M. Clarke.
+Automatic Abstraction in SMT-Based Unbounded Software Model
+Checking.
+In CAV , pages 846 – 862, 2013. 🔎
+
+[ 36 ] Anvesh Komuravelli, Arie Gurfinkel, and Sagar Chaki.
+Smt-based model checking for recursive programs.
+In CAV , pages 17 – 34, 2014. 🔎
+
+[ 37 ] John McCarthy.
+Towards a mathematical science of computation.
+In IFIP Congress , pages 21 – 28, 1962. 🔎
+
+[ 38 ] Kenneth L. McMillan.
+Lazy annotation revisited.
+In CAV , pages 243 – 259, 2014. 🔎
+
+[ 39 ] A. Pettorossi and M. Proietti.
+Synthesis and transformation of logic programs using unfold/fold
+proofs.
+Technical Report 457, Universit á di Roma Tor Vergata, 1997. 🔎
+
+[ 40 ] Philipp R ü mmer, Hossein Hojjat, and Viktor Kuncak.
+Disjunctive interpolants for horn-clause verification.
+In CAV , pages 347 – 363, 2013. 🔎
+
+[ 41 ] Sorin Stratulat.
+A unified view of induction reasoning for first-order logic.
+In Andrei Voronkov, editor, Turing-100 - The Alan Turing
+Centenary, Manchester, UK, June 22-25, 2012 , volume 10 of EPiC
+Series , pages 326 – 352. EasyChair, 2012.
+URL http://www.easychair.org/publications/?page=1987117224 . 🔎
+
+[ 42 ] Terrance Swift and David Scott Warren.
+XSB: extending prolog with tabled logic programming.
+TPLP , 12 (1-2): 157 – 187, 2012.
+doi: 10.1017/S1471068411000500 .
+URL http://dx.doi.org/10.1017/S1471068411000500 . 🔎
+
+[ 43 ] H. Tamaki and T. Sato.
+Unfold/fold transformation of logic programs.
+In Proceedings of the Second International Conference on Logic
+Programming , 1984. 🔎
+
+[ 44 ] V. F. Turchin.
+The concept of a supercompiler.
+ACM TOPLAS , 8 (3), 1986. 🔎
+
+
+Imprint - Dataprotection

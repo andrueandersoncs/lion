@@ -1,0 +1,91 @@
+[
+  "begin",
+  ["relation", "balances", ["value"]],
+  ["relation", "amounts", ["value"]],
+  [
+    "fact",
+    ["balances", 0],
+    ["balances", 1],
+    ["balances", 2],
+    ["balances", 3],
+    ["balances", 4],
+    ["balances", 5],
+    ["balances", 6]
+  ],
+  ["fact", ["amounts", 1], ["amounts", 2], ["amounts", 3]],
+  [
+    "define",
+    "deposit",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": ["number/add", ["object/get", "state", "balance"], "amount"]
+      }
+    ]
+  ],
+  [
+    "define",
+    "withdraw",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": [
+          "number/subtract",
+          ["object/get", "state", "balance"],
+          "amount"
+        ]
+      }
+    ]
+  ],
+  ["relation", "state", ["state"]],
+  [
+    "rule",
+    ["state", { "status": "open", "balance": "?b" }],
+    ["balances", "?b"]
+  ],
+  ["relation", "step", ["from", "command", "to"]],
+  [
+    "rule",
+    ["step", "?s", { "deposit": "?a" }, ["deposit", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"]
+  ],
+  [
+    "rule",
+    ["step", "?s", { "withdraw": "?a" }, ["withdraw", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"],
+    ["number/greaterThanOrEqualTo", ["object/get", "?s", "balance"], "?a"]
+  ],
+  ["relation", "reach", ["state"]],
+  ["fact", ["reach", { "status": "open", "balance": 0 }]],
+  ["rule", ["reach", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  ["relation", "edge", ["from", "to"]],
+  ["rule", ["edge", "?s", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  [
+    "define",
+    "bad",
+    [
+      "find",
+      "?s",
+      [
+        "and",
+        ["reach", "?s"],
+        ["number/lessThan", ["object/get", "?s", "balance"], 0]
+      ]
+    ]
+  ],
+  {
+    "states reached": ["array/length", ["find", "?s", ["reach", "?s"]]],
+    "states that break the invariant": "bad",
+    "states reached outside the scope, not followed further": [
+      "find",
+      "?t",
+      ["and", ["reach", "?t"], ["not", ["state", "?t"]]]
+    ]
+  }
+]

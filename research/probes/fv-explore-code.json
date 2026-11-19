@@ -1,0 +1,229 @@
+[
+  "begin",
+  [
+    "define",
+    "commands",
+    [
+      "quote",
+      [
+        { "deposit": 2 },
+        { "withdraw": 1 },
+        { "withdraw": 3 },
+        { "close": true }
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careful",
+    [
+      "lambda",
+      ["s", "c"],
+      [
+        "cond",
+        [["string/equals?", ["object/get", "s", "status"], "closed"], "s"],
+        [
+          ["object/get", "c", "deposit"],
+          {
+            "status": "open",
+            "balance": [
+              "number/add",
+              ["object/get", "s", "balance"],
+              ["object/get", "c", "deposit"]
+            ]
+          }
+        ],
+        [
+          ["object/get", "c", "withdraw"],
+          [
+            "cond",
+            [
+              [
+                "number/lessThan",
+                ["object/get", "s", "balance"],
+                ["object/get", "c", "withdraw"]
+              ],
+              "s"
+            ],
+            [
+              "else",
+              {
+                "status": "open",
+                "balance": [
+                  "number/subtract",
+                  ["object/get", "s", "balance"],
+                  ["object/get", "c", "withdraw"]
+                ]
+              }
+            ]
+          ]
+        ],
+        [
+          "else",
+          { "status": "closed", "balance": ["object/get", "s", "balance"] }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careless",
+    [
+      "lambda",
+      ["s", "c"],
+      [
+        "cond",
+        [["string/equals?", ["object/get", "s", "status"], "closed"], "s"],
+        [
+          ["object/get", "c", "deposit"],
+          {
+            "status": "open",
+            "balance": [
+              "number/add",
+              ["object/get", "s", "balance"],
+              ["object/get", "c", "deposit"]
+            ]
+          }
+        ],
+        [
+          ["object/get", "c", "withdraw"],
+          {
+            "status": "open",
+            "balance": [
+              "number/subtract",
+              ["object/get", "s", "balance"],
+              ["object/get", "c", "withdraw"]
+            ]
+          }
+        ],
+        [
+          "else",
+          { "status": "closed", "balance": ["object/get", "s", "balance"] }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "neverOverdrawn",
+    [
+      "lambda",
+      ["s"],
+      [
+        "boolean/or",
+        ["string/equals?", ["object/get", "s", "status"], "closed"],
+        ["number/greaterThanOrEqualTo", ["object/get", "s", "balance"], 0]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "explore",
+    [
+      "lambda",
+      ["step", "ok", "level", "depth", "seen"],
+      [
+        "cond",
+        [
+          ["number/equals?", "depth", 0],
+          { "sequences checked": "seen", "breaks": null }
+        ],
+        [
+          "else",
+          [
+            "begin",
+            [
+              "define",
+              "next",
+              [
+                "array/flat-map",
+                "level",
+                [
+                  "lambda",
+                  ["p"],
+                  [
+                    "array/map",
+                    "commands",
+                    [
+                      "lambda",
+                      ["c"],
+                      {
+                        "state": ["step", ["object/get", "p", "state"], "c"],
+                        "trace": [
+                          "array/concat",
+                          ["object/get", "p", "trace"],
+                          ["array/make", "c"]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "define",
+              "broken",
+              [
+                "find",
+                "?p",
+                [
+                  "and",
+                  ["in", "?p", "next"],
+                  ["boolean/not", ["ok", ["object/get", "?p", "state"]]]
+                ]
+              ]
+            ],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["array/length", "broken"], 0],
+                {
+                  "sequences checked": [
+                    "number/add",
+                    "seen",
+                    ["array/length", "next"]
+                  ],
+                  "breaks": ["array/head", "broken"]
+                }
+              ],
+              [
+                "else",
+                [
+                  "explore",
+                  "step",
+                  "ok",
+                  "next",
+                  ["number/subtract", "depth", 1],
+                  ["number/add", "seen", ["array/length", "next"]]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "start",
+    ["array/make", { "state": { "status": "open", "balance": 0 }, "trace": [] }]
+  ],
+  {
+    "careful withdrawal, every sequence of up to 6 commands": [
+      "explore",
+      "careful",
+      "neverOverdrawn",
+      "start",
+      6,
+      0
+    ],
+    "careless withdrawal": [
+      "explore",
+      "careless",
+      "neverOverdrawn",
+      "start",
+      6,
+      0
+    ]
+  }
+]

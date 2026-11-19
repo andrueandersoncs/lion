@@ -1,0 +1,905 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "goodwin-tweet-2026"
+   ],
+   [
+    "quote",
+    "https://x.com/samgoodwin89/status/2123295778345202158"
+   ],
+   [
+    "quote",
+    "Just merged Alchemy's \"formal verification\" feature built on the Z3 sat solver"
+   ],
+   [
+    "quote",
+    "Alchemy"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119010200
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "https://github.com/alchemy-run/alchemy/pull/3260"
+   ],
+   [
+    "quote",
+    "feat(domain): Verify proves and searches a model's rules"
+   ],
+   [
+    "quote",
+    "Alchemy"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119052603
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "alchemy-domain-testing"
+   ],
+   [
+    "quote",
+    "https://github.com/alchemy-run/alchemy/blob/e4adb720c6648882aa9b80fbc3707dddd628fbf8/packages/domain/skills/alchemy-domain/references/testing.md"
+   ],
+   [
+    "quote",
+    "alchemy-domain skill: Testing"
+   ],
+   [
+    "quote",
+    "Alchemy"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119052603
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "alchemy-prove-source"
+   ],
+   [
+    "quote",
+    "https://github.com/alchemy-run/alchemy/tree/e4adb720c6648882aa9b80fbc3707dddd628fbf8/packages/domain/src/Prove/internal"
+   ],
+   [
+    "quote",
+    "Alchemy's prover: Induction.ts and Smt.ts"
+   ],
+   [
+    "quote",
+    "Alchemy"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119052603
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x1"
+   ],
+   [
+    "quote",
+    "goodwin-tweet-2026"
+   ],
+   [
+    "quote",
+    "Specify \"invariants\" as predicate functions across your domain model and Alchemy can now \"prove\" it is correct."
+   ],
+   [
+    "quote",
+    {
+     "covers": "invariants",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x2"
+   ],
+   [
+    "quote",
+    "goodwin-tweet-2026"
+   ],
+   [
+    "quote",
+    "Just merged Alchemy's \"formal verification\" feature built on the Z3 sat solver."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "smt solving",
+     "in": "Alchemy"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x3"
+   ],
+   [
+    "quote",
+    "goodwin-tweet-2026"
+   ],
+   [
+    "quote",
+    "A mix of proof checking and simulation gives you a high baseline of confidence in correctness without tests."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of every sequence of changes up to a bound",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x4"
+   ],
+   [
+    "quote",
+    "goodwin-tweet-2026"
+   ],
+   [
+    "quote",
+    "When a rule breaks, you get the shortest sequence that breaks it, written as a test for your Agent to includes in your test suites."
+   ],
+   [
+    "quote",
+    {
+     "covers": "the shortest sequence of changes that breaks a rule",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x5"
+   ],
+   [
+    "quote",
+    "goodwin-tweet-2026"
+   ],
+   [
+    "quote",
+    "When a rule breaks, you get the shortest sequence that breaks it, written as a test for your Agent to includes in your test suites."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a counterexample written as a test to rerun",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x6"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "Proved: for every state and every input, after any number of commands"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x7"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "`Prove` reads `decide`, `evolve` and the rules as logic and asks Z3 whether any state and input break one."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "inductive invariant checking",
+     "in": "Alchemy"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x8"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "`Prove` reads `decide`, `evolve` and the rules as logic and asks Z3 whether any state and input break one."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that a goal has no answer for any value",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x9"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "`Explore` runs every sequence of a few commands through the Apis, with solver-picked values."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "bounded model checking",
+     "in": "Alchemy"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x10"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "`Explore` runs every sequence of a few commands through the Apis, with solver-picked values."
+   ],
+   [
+    "quote",
+    {
+     "covers": "values that satisfy constraints over unbound variables",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x11"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "After every short sequence, 200 seeded random walks of up to 12 commands reach rules that take longer to break."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "property-based testing",
+     "in": "Alchemy"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x12"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "A relation too weak to prove itself drops to Checked and says which states the proof needs ruled out"
+   ],
+   [
+    "quote",
+    {
+     "covers": "states that break an induction step but may be unreachable",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x13"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "If none can, say so in another relation or an invariant, and this one is proved."
+   ],
+   [
+    "quote",
+    {
+     "covers": "invariants found automatically",
+     "by": "alchemy verify",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x14"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "The solver stops after a fixed amount of work and starts from fixed seeds, so a result repeats on every machine."
+   ],
+   [
+    "quote",
+    {
+     "covers": "results that repeat on every machine",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x15"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "A model's rules are searched and sampled, not proved."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs about states of unbounded size",
+     "by": "bounded model checking",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x16"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "Handlers are read as they are usually written: loops, `+=`, rest patterns, `Option`, `bigint`, optional fields, `Math.floor` of a division, and `effect/Array`, `effect/Record` and `effect/Struct` helpers."
+   ],
+   [
+    "quote",
+    {
+     "covers": "running a program's own code on symbolic values",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x17"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "Bank.EveryTransferEnds  holds at the end of the 6,158 sequences that ran their course"
+   ],
+   [
+    "quote",
+    {
+     "covers": "rules about what must eventually happen",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x18"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "AClosedAccountStaysClosed: ({ before, after }) =>"
+   ],
+   [
+    "quote",
+    {
+     "covers": "rules about a change, comparing before and after",
+     "by": "alchemy verify",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x19"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "AClosedAccountStaysClosed: ({ before, after }) =>"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "two-state invariants",
+     "in": "Alchemy"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x20"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "A loop over a list from the state or a command is tried with up to two items more than its schema asks for, so its rule is checked, not proved:"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "small scope hypothesis",
+     "in": "Alchemy"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x21"
+   ],
+   [
+    "quote",
+    "alchemy-domain-testing"
+   ],
+   [
+    "quote",
+    "`Proved` holds for every state and input. `Checked` holds in the sequences run (2 commands deep by default, each event delivered twice, each saga step run twice, reactions reordered, schedules late, every answer an external system's schema allows)."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "inductive invariant checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x22"
+   ],
+   [
+    "quote",
+    "alchemy-domain-testing"
+   ],
+   [
+    "quote",
+    "`Sampled` is 200 seeded random walks of up to 12 commands, for rules that take longer to break."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs about states of unbounded size",
+     "by": "property-based testing",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x23"
+   ],
+   [
+    "quote",
+    "alchemy-domain-testing"
+   ],
+   [
+    "quote",
+    "A rule that is true but not proved needs a second invariant that rules out the state the prover started from."
+   ],
+   [
+    "quote",
+    {
+     "covers": "states that break an induction step but may be unreachable",
+     "by": "inductive invariant checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x24"
+   ],
+   [
+    "quote",
+    "alchemy-domain-testing"
+   ],
+   [
+    "quote",
+    "They run under Node (vitest), not Bun; the solver and parser come with `@alchemy.run/domain`."
+   ],
+   [
+    "quote",
+    {
+     "needs": "node rather than bun",
+     "by": "smt solving in webassembly"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x25"
+   ],
+   [
+    "quote",
+    "alchemy-domain-testing"
+   ],
+   [
+    "quote",
+    "Arithmetic JavaScript rounds is reported as not read."
+   ],
+   [
+    "quote",
+    {
+     "needs": "whole numbers or exact arithmetic",
+     "by": "alchemy verify"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x26"
+   ],
+   [
+    "quote",
+    "alchemy-prove-source"
+   ],
+   [
+    "quote",
+    "Take each command from any state that satisfies every invariant, along"
+   ],
+   [
+    "quote",
+    {
+     "defines": "inductive invariant checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x27"
+   ],
+   [
+    "quote",
+    "alchemy-prove-source"
+   ],
+   [
+    "quote",
+    "* Z3, compiled to WebAssembly. One instance serves every query, each in a"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "smt solving in webassembly",
+     "in": "Alchemy"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x28"
+   ],
+   [
+    "quote",
+    "alchemy-prove-source"
+   ],
+   [
+    "quote",
+    "The same question gets the same answer on every machine: the solver stops"
+   ],
+   [
+    "quote",
+    {
+     "covers": "results that repeat on every machine",
+     "by": "smt solving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x29"
+   ],
+   [
+    "quote",
+    "alchemy-prove-source"
+   ],
+   [
+    "quote",
+    "catch: failed(\"z3-solver did not start (it runs under Node, not Bun)\"),"
+   ],
+   [
+    "quote",
+    {
+     "needs": "node rather than bun",
+     "by": "smt solving in webassembly"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x30"
+   ],
+   [
+    "quote",
+    "alchemy-prove-source"
+   ],
+   [
+    "quote",
+    "Z3's `eval_smtlib2_string` hands the text to another thread and"
+   ],
+   [
+    "quote",
+    {
+     "needs": "threads in the javascript host",
+     "by": "smt solving in webassembly"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-x31"
+   ],
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "Not read: a loop whose number of turns depends on an input, a property read by a key that comes from an input, a record whose keys the schema leaves open, and code that changes a value it was given."
+   ],
+   [
+    "quote",
+    {
+     "needs": "code the prover can read as logic",
+     "by": "alchemy verify"
+    }
+   ]
+  ],
+  [
+   "lead",
+   [
+    "quote",
+    "fv-alchemy"
+   ],
+   [
+    "quote",
+    "Find what Alchemy's Verify proves, what it only searches, and how it gets there"
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "pursues",
+   [
+    "quote",
+    "fv-alchemy"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "inductive invariant checking",
+     "in": "Alchemy"
+    }
+   ]
+  ],
+  [
+   "pursues",
+   [
+    "quote",
+    "fv-alchemy"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "alchemy verify"
+    }
+   ]
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "goodwin-tweet-2026"
+   ],
+   [
+    "quote",
+    "fv-alchemy"
+   ],
+   28
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "alchemy-pr-3260"
+   ],
+   [
+    "quote",
+    "fv-alchemy"
+   ],
+   29
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "alchemy-domain-testing"
+   ],
+   [
+    "quote",
+    "fv-alchemy"
+   ],
+   30
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "alchemy-prove-source"
+   ],
+   [
+    "quote",
+    "fv-alchemy"
+   ],
+   31
+  ]
+ ],
+ "recorded"
+]

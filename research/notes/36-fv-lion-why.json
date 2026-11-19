@@ -1,0 +1,43 @@
+{
+  "sources": [
+    {
+      "id": "lion-explain-results",
+      "url": "packages/site-runtime/content/how-to/explain-results.html",
+      "title": "Lion how-to: explain results",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": null,
+      "for": ["fv-lion-today"]
+    }
+  ],
+  "claims": [
+    {
+      "id": "fv-l15",
+      "source": "lion-explain-results",
+      "quote": "Every check, evaluated as it stands, is true, so anyone can work the arithmetic again",
+      "says": {
+        "lion": "a proof a small checker can recheck",
+        "has": true
+      }
+    },
+    {
+      "id": "fv-l16",
+      "source": "lion-probes-fv",
+      "quote": "failed: Expected number at [0]",
+      "says": {
+        "lion": "running a program's own code on symbolic values",
+        "has": false
+      }
+    },
+    {
+      "id": "fv-a80",
+      "source": "bjorner-programming-z3",
+      "quote": "The formula fml is valid. It is true for all values of integers x , y , z , array A ,",
+      "says": {
+        "covers": "a way to compare what two predicates accept",
+        "by": "smt solving",
+        "is": true
+      }
+    }
+  ]
+}

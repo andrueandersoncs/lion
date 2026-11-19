@@ -1,0 +1,33 @@
+[
+  "begin",
+  ["relation", "account", ["id", "status", "balance"], { "key": "id" }],
+  [
+    "invariant",
+    [
+      "and",
+      ["account", "?id", "open", "?balance"],
+      ["number/lessThan", "?balance", 0]
+    ],
+    { "assert": "none" }
+  ],
+  ["fact", ["account", "a", "open", 2]],
+  {
+    "would withdrawing 3 overdraw a?": [
+      "assuming",
+      ["fact", ["account", "a", "open", -1]],
+      [
+        "find",
+        "?id",
+        [
+          "and",
+          ["account", "?id", "open", "?balance"],
+          ["number/lessThan", "?balance", 0]
+        ]
+      ]
+    ],
+    "is a still as it was?": [
+      "query",
+      ["account", "?id", "?status", "?balance"]
+    ]
+  }
+]

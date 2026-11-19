@@ -1,0 +1,935 @@
+{
+  "title": "Formal verification for Lion",
+  "names": {
+    "solver": "Solve for the values a question leaves open",
+    "formula-terms": "Formulas as values, with a solver function (Formulog's way)",
+    "command-proofs": "Prove that every command keeps the invariants",
+    "bounded-search": "Search every sequence of commands up to a bound",
+    "rule-model-checking": "Check a model with rules over every reachable state",
+    "transition-rules": "Rules comparing the database before and after a change",
+    "eventually-rules": "Rules about what must eventually happen",
+    "proof-certificates": "A certificate for every proof, rechecked by a small checker",
+    "invariant-inference": "Find the invariants a proof needs",
+    "hand-proofs": "Check proofs people write, as Lean does",
+    "schema-inclusion": "Decide when one schema includes another"
+  },
+  "define": {
+    "run": "formal-verification",
+    "title": [
+      "lambda",
+      ["c"],
+      ["array/head", ["find", "?t", ["candidate", "c", "?t"]]]
+    ],
+    "ours": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        ["find", "?c", ["weighed_in", "?c", "formal-verification"]]
+      ]
+    ],
+    "withVerdict": [
+      "lambda",
+      ["v"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["verdict", "?c", "v"],
+            ["weighed_in", "?c", "formal-verification"]
+          ]
+        ]
+      ]
+    ],
+    "listOf": [
+      "lambda",
+      ["items"],
+      ["words/listed", ["aggregate/unique", "items"]]
+    ],
+    "case": [
+      "lambda",
+      ["c"],
+      [
+        "string/concat",
+        [
+          "cond",
+          [
+            ["verdict", "c", "worth adopting"],
+            [
+              "string/concat",
+              "Worth adopting. It would give Lion what it lacks: ",
+              ["listOf", ["find", "?f", ["adds", "c", "?f", "?_"]]],
+              ". ",
+              [
+                "cond",
+                [
+                  ["already", "c", "?_"],
+                  [
+                    "string/concat",
+                    "Lion already has part of it: ",
+                    ["listOf", ["find", "?f", ["already", "c", "?f"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["met", "c", "?_"],
+                  [
+                    "string/concat",
+                    "What it builds on is there: ",
+                    ["listOf", ["find", "?x", ["met", "c", "?x"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["precedent", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "Systems that already do it: ",
+                    ["listOf", ["find", "?s", ["precedent", "c", "?_", "?s"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ]
+            ]
+          ],
+          [
+            ["verdict", "c", "worth adopting in part"],
+            [
+              "string/concat",
+              "Worth adopting once its ground is there. It would give Lion ",
+              ["listOf", ["find", "?f", ["adds", "c", "?f", "?_"]]],
+              ", but it needs ",
+              ["listOf", ["find", "?x", ["moot", "c", "?x"]]],
+              ", which Lion does not have yet. ",
+              [
+                "cond",
+                [
+                  ["after", "?_", "c"],
+                  [
+                    "string/concat",
+                    "Build first: ",
+                    [
+                      "listOf",
+                      [
+                        "array/map",
+                        ["find", "?d", ["after", "?d", "c"]],
+                        "label"
+                      ]
+                    ],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["precedent", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "Systems that already do it: ",
+                    ["listOf", ["find", "?s", ["precedent", "c", "?_", "?s"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ]
+            ]
+          ],
+          [
+            ["verdict", "c", "Lion does this already"],
+            [
+              "string/concat",
+              "Lion does this already: ",
+              ["listOf", ["find", "?f", ["already", "c", "?f"]]],
+              ". "
+            ]
+          ],
+          [
+            ["verdict", "c", "conflicts with what Lion guarantees"],
+            [
+              "string/concat",
+              "Does not fit Lion: it gives up ",
+              ["listOf", ["find", "?g", ["blocks", "c", "?g", "?_"]]],
+              ", which Lion guarantees. "
+            ]
+          ],
+          [
+            ["verdict", "c", "has nothing in Lion to work on"],
+            [
+              "string/concat",
+              "Not now: it needs ",
+              ["listOf", ["find", "?x", ["moot", "c", "?x"]]],
+              ", and Lion does not have that. ",
+              [
+                "cond",
+                [
+                  ["after", "?_", "c"],
+                  [
+                    "string/concat",
+                    "That comes with ",
+                    [
+                      "listOf",
+                      [
+                        "array/map",
+                        ["find", "?d", ["after", "?d", "c"]],
+                        "label"
+                      ]
+                    ],
+                    ". "
+                  ]
+                ],
+                [
+                  ["unfounded", "c", "?_"],
+                  "No idea weighed here would give it. "
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["already", "c", "?_"],
+                  [
+                    "string/concat",
+                    "Lion has part of what it offers already: ",
+                    ["listOf", ["find", "?f", ["already", "c", "?f"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ]
+            ]
+          ],
+          ["else", "Not judged yet: the model has too little evidence. "]
+        ],
+        [
+          "cond",
+          [
+            ["fv_caveat", "c", "?_", "?_"],
+            [
+              "string/concat",
+              "Take care: some sources say its techniques do not give ",
+              ["listOf", ["find", "?f", ["fv_caveat", "c", "?f", "?_"]]],
+              ". "
+            ]
+          ],
+          ["else", ""]
+        ]
+      ]
+    ],
+    "evidenceOf": [
+      "lambda",
+      ["c"],
+      [
+        "query",
+        [
+          "and",
+          ["or", ["offers", "c", "?feature"], ["on", "c", "?feature"]],
+          [
+            "or",
+            [
+              "and",
+              [
+                "answer",
+                {
+                  "lion has": "?feature"
+                },
+                "?_",
+                "?statement"
+              ]
+            ],
+            [
+              "and",
+              ["uses", "c", "?technique"],
+              [
+                "answer",
+                {
+                  "covers": "?feature",
+                  "by": "?technique"
+                },
+                "?_",
+                "?statement"
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "alchemySays": [
+      "lambda",
+      ["f"],
+      [
+        "array/head",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            [
+              "claim",
+              "?c",
+              "?_",
+              "?_",
+              {
+                "covers": "f",
+                "by": "alchemy verify",
+                "is": true
+              }
+            ]
+          ]
+        ]
+      ]
+    ],
+    "label": [
+      "lambda",
+      ["c"],
+      [
+        "object/get",
+        {
+          "solver": ["quote", "Solve for the values a question leaves open"],
+          "formula-terms": [
+            "quote",
+            "Formulas as values, with a solver function (Formulog's way)"
+          ],
+          "command-proofs": [
+            "quote",
+            "Prove that every command keeps the invariants"
+          ],
+          "bounded-search": [
+            "quote",
+            "Search every sequence of commands up to a bound"
+          ],
+          "rule-model-checking": [
+            "quote",
+            "Check a model with rules over every reachable state"
+          ],
+          "transition-rules": [
+            "quote",
+            "Rules comparing the database before and after a change"
+          ],
+          "eventually-rules": [
+            "quote",
+            "Rules about what must eventually happen"
+          ],
+          "proof-certificates": [
+            "quote",
+            "A certificate for every proof, rechecked by a small checker"
+          ],
+          "invariant-inference": ["quote", "Find the invariants a proof needs"],
+          "hand-proofs": ["quote", "Check proofs people write, as Lean does"],
+          "schema-inclusion": [
+            "quote",
+            "Decide when one schema includes another"
+          ]
+        },
+        "c"
+      ]
+    ]
+  },
+  "summary": [
+    "string/concat",
+    "Of what Alchemy's verify gives, Lion has ",
+    ["words/listed", ["find", "?f", ["alchemy_match", "?f"]]],
+    ", and lacks ",
+    ["words/listed", ["find", "?f", ["alchemy_gap", "?f"]]],
+    ". ",
+    [
+      "cond",
+      [
+        ["fv_rank", "?c", 1],
+        [
+          "string/concat",
+          "First to add: ",
+          ["label", ["array/head", ["find", "?c", ["fv_rank", "?c", 1]]]],
+          ". ",
+          [
+            "words/count",
+            [
+              "aggregate/countUnique",
+              [
+                "find",
+                "?c",
+                ["and", ["after", "?d", "?c"], ["fv_rank", "?d", 1]]
+              ]
+            ],
+            "idea builds",
+            "ideas build"
+          ],
+          " on it: ",
+          [
+            "words/listed",
+            [
+              "array/map",
+              [
+                "find",
+                "?c",
+                ["and", ["after", "?d", "?c"], ["fv_rank", "?d", 1]]
+              ],
+              "label"
+            ]
+          ],
+          "."
+        ]
+      ],
+      ["else", "No idea is ready to adopt whole."]
+    ]
+  ],
+  "views": [
+    {
+      "name": "The answer",
+      "blocks": [
+        {
+          "type": "figures",
+          "items": [
+            {
+              "label": "Ideas weighed",
+              "value": ["words/number", ["array/length", ["ours"]]]
+            },
+            {
+              "label": "Worth adopting now",
+              "value": [
+                "words/number",
+                [
+                  "aggregate/countUnique",
+                  ["find", "?c", ["fv_rank", "?c", "?_"]]
+                ]
+              ],
+              "note": [
+                "string/concat",
+                [
+                  "words/number",
+                  [
+                    "aggregate/countUnique",
+                    ["find", "?c", ["build_level", "?c", 2]]
+                  ]
+                ],
+                " more once the first is built"
+              ]
+            },
+            {
+              "label": "Lion does already",
+              "value": [
+                "words/number",
+                ["array/length", ["withVerdict", "Lion does this already"]]
+              ]
+            },
+            {
+              "label": "Sources quoted",
+              "value": [
+                "words/number",
+                [
+                  "aggregate/countUnique",
+                  [
+                    "find",
+                    "?s",
+                    [
+                      "and",
+                      ["claim", "?c", "?s", "?_", "?_"],
+                      ["string/startsWith", "?c", "fv-"]
+                    ]
+                  ]
+                ]
+              ],
+              "note": [
+                "string/concat",
+                [
+                  "words/count",
+                  [
+                    "aggregate/count",
+                    [
+                      "find",
+                      "?c",
+                      [
+                        "and",
+                        ["claim", "?c", "?_", "?_", "?_"],
+                        ["string/startsWith", "?c", "fv-"]
+                      ]
+                    ]
+                  ],
+                  "statement",
+                  "statements"
+                ],
+                " in their own words"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What should Lion add so a model can be proved correct, and in what order?",
+          "answer": [
+            "string/concat",
+            [
+              "string/join",
+              [
+                "array/map",
+                ["find", ["array/make", "?n", "?c"], ["fv_rank", "?c", "?n"]],
+                [
+                  "lambda",
+                  ["pair"],
+                  [
+                    "string/concat",
+                    ["number/toString", ["array/head", "pair"]],
+                    ". ",
+                    ["label", ["array/head", ["array/tail", "pair"]]],
+                    ". ",
+                    ["case", ["array/head", ["array/tail", "pair"]]]
+                  ]
+                ]
+              ],
+              " "
+            ],
+            [
+              "cond",
+              [
+                ["build_level", "?_", 2],
+                [
+                  "string/concat",
+                  " Once the first is built: ",
+                  [
+                    "string/join",
+                    [
+                      "array/map",
+                      ["find", "?c", ["build_level", "?c", 2]],
+                      [
+                        "lambda",
+                        ["c"],
+                        ["string/concat", ["label", "c"], ". ", ["case", "c"]]
+                      ]
+                    ],
+                    " "
+                  ]
+                ]
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                ["subsumed_by", "?_", "?_"],
+                [
+                  "string/concat",
+                  " Left aside because another idea gives all it gives and more: ",
+                  [
+                    "words/listed",
+                    [
+                      "array/map",
+                      ["find", "?c", ["subsumed_by", "?c", "?_"]],
+                      "title"
+                    ]
+                  ],
+                  "."
+                ]
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", "formal-verification"],
+              ["adds", "?idea", "?gives", "?technique"]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What does Alchemy's formal verification do?",
+          "answer": [
+            "string/concat",
+            "It gives: ",
+            [
+              "words/listed",
+              [
+                "find",
+                "?f",
+                [
+                  "stated",
+                  {
+                    "covers": "?f",
+                    "by": "alchemy verify"
+                  },
+                  true
+                ]
+              ]
+            ],
+            ". ",
+            "It does not: ",
+            [
+              "words/listed",
+              [
+                "find",
+                "?f",
+                [
+                  "stated",
+                  {
+                    "covers": "?f",
+                    "by": "alchemy verify"
+                  },
+                  false
+                ]
+              ]
+            ],
+            ". ",
+            "Its techniques: ",
+            [
+              "words/listed",
+              [
+                "find",
+                "?t",
+                [
+                  "stated",
+                  {
+                    "adopted": "?t",
+                    "in": "Alchemy"
+                  },
+                  true
+                ]
+              ]
+            ],
+            "."
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["claim", "?statement", "?source", "?_", "?_"],
+              ["source", "?source", "?_", "?_", "Alchemy", "?_", "?_"]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "How much of it can Lion do today?",
+          "answer": [
+            "string/concat",
+            "Lion has ",
+            ["words/listed", ["find", "?f", ["alchemy_match", "?f"]]],
+            ". ",
+            "It lacks ",
+            ["words/listed", ["find", "?f", ["alchemy_gap", "?f"]]],
+            ". ",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "counted": "sequences of up to 6 commands a Lion program checked"
+                  },
+                  "?n"
+                ],
+                [
+                  "string/concat",
+                  "A plain Lion program checked ",
+                  [
+                    "words/number",
+                    [
+                      "array/head",
+                      [
+                        "find",
+                        "?n",
+                        [
+                          "stated",
+                          {
+                            "counted": "sequences of up to 6 commands a Lion program checked"
+                          },
+                          "?n"
+                        ]
+                      ]
+                    ]
+                  ],
+                  " sequences of up to six commands on a bank account",
+                  [
+                    "cond",
+                    [
+                      [
+                        "stated",
+                        {
+                          "lion has": "the shortest sequence of changes that breaks a rule"
+                        },
+                        true
+                      ],
+                      ", and the same search gives the shortest sequence that breaks a rule when the withdrawal forgets its check."
+                    ],
+                    ["else", "."]
+                  ]
+                ]
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "claim",
+                "?statement",
+                "lion-probes-fv",
+                "?_",
+                [
+                  "schema/open",
+                  {
+                    "lion": "?feature",
+                    "has": "?has"
+                  }
+                ]
+              ]
+            ]
+          ]
+        },
+        {
+          "type": "lookup",
+          "title": "Each idea: what it gives, what it needs, and where Lion stands",
+          "choose": {
+            "idea": {
+              "label": "Idea",
+              "options": ["ours"]
+            }
+          },
+          "example": {
+            "idea": "solver"
+          },
+          "answer": ["lambda", ["idea"], ["case", "idea"]],
+          "query": ["lambda", ["idea"], ["evidenceOf", "idea"]]
+        }
+      ]
+    },
+    {
+      "name": "Alchemy beside Lion",
+      "blocks": [
+        {
+          "type": "comparison",
+          "title": "What Alchemy gives, and whether Lion has it",
+          "query": [
+            "query",
+            [
+              "and",
+              [
+                "stated",
+                {
+                  "covers": "?feature",
+                  "by": "alchemy verify"
+                },
+                "?alchemy"
+              ],
+              [
+                "or",
+                [
+                  "and",
+                  [
+                    "stated",
+                    {
+                      "lion has": "?feature"
+                    },
+                    true
+                  ],
+                  ["=", "?lion", "has it"]
+                ],
+                [
+                  "and",
+                  [
+                    "stated",
+                    {
+                      "lion has": "?feature"
+                    },
+                    false
+                  ],
+                  ["=", "?lion", "lacks it"]
+                ],
+                [
+                  "and",
+                  [
+                    "not",
+                    [
+                      "stated",
+                      {
+                        "lion has": "?feature"
+                      },
+                      "?_"
+                    ]
+                  ],
+                  ["=", "?lion", "not checked"]
+                ]
+              ],
+              ["=", "?column", "Lion"]
+            ]
+          ],
+          "rows": "feature",
+          "columns": "column",
+          "cell": "lion"
+        },
+        {
+          "type": "table",
+          "title": "Which idea closes each gap",
+          "query": [
+            "query",
+            [
+              "and",
+              ["alchemy_closes", "?feature", "?idea"],
+              ["not", ["subsumed_by", "?idea", "?_"]]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Engines and limits",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "What does a solver need, and what can go wrong with one?",
+          "answer": [
+            "string/concat",
+            "The ideas that rest on a solver need ",
+            ["listOf", ["find", "?x", ["fv_needs", "solver", "?x", "?_"]]],
+            ". ",
+            [
+              "cond",
+              [
+                ["fv_caveat", "solver", "?_", "?_"],
+                [
+                  "string/concat",
+                  "Some sources say solvers do not by themselves give ",
+                  [
+                    "listOf",
+                    ["find", "?f", ["fv_caveat", "solver", "?f", "?_"]]
+                  ],
+                  "."
+                ]
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["fv_needs", "solver", "?condition", "?technique"],
+              [
+                "answer",
+                {
+                  "needs": "?condition",
+                  "by": "?technique"
+                },
+                "?_",
+                "?statement"
+              ]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Can Z3 run where Lion runs?",
+          "answer": [
+            "string/concat",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": "evaluates entirely in memory",
+                    "by": "smt solving in webassembly"
+                  },
+                  true
+                ],
+                "Z3 compiled to WebAssembly runs in memory, as Lion requires. "
+              ],
+              ["else", "The sources do not say whether Z3 runs in memory. "]
+            ],
+            "It needs ",
+            [
+              "listOf",
+              [
+                "find",
+                "?x",
+                [
+                  "stated",
+                  {
+                    "needs": "?x",
+                    "by": "smt solving in webassembly"
+                  },
+                  true
+                ]
+              ]
+            ],
+            "."
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "or",
+                [
+                  "answer",
+                  {
+                    "needs": "?condition",
+                    "by": "smt solving in webassembly"
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  [
+                    "schema/open",
+                    {
+                      "by": "smt solving in webassembly"
+                    }
+                  ],
+                  "?_",
+                  "?statement"
+                ]
+              ]
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Where sources disagree",
+          "query": [
+            "query",
+            [
+              "and",
+              ["disputed", "?question", "?values"],
+              ["answer", "?question", "?_", "?claim"],
+              ["string/startsWith", "?claim", "fv-"]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "How solid is it",
+      "blocks": [
+        {
+          "type": "trust"
+        }
+      ]
+    },
+    {
+      "name": "Sources",
+      "blocks": [
+        {
+          "type": "sources"
+        }
+      ]
+    }
+  ]
+}

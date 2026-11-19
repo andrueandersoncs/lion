@@ -1,0 +1,482 @@
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Abstract.
+1 Introduction
+2 Preliminaries
+2.1 Basics and Notations
+2.2 Overview of IC3
+3 Predicting Lemmas
+3.1 Intuition
+3.2 How to Refine Cubes
+3.3 The Algorithm
+4 Evaluation
+4.1 Experimental Setup
+4.2 Experimental Results
+4.3 Analysis
+5 Related Work
+6 Conclusion and Future Work
+Acknowledgements
+References
+License: CC BY 4.0
+arXiv:2411.12749v1 [cs.SE] 04 Nov 2024
+Predicting Lemmas in Generalization of IC3
+Conference: 61st ACM/IEEE Design Automation Conference; June 23–27, 2024; San Francisco, CA, USA 61st ACM/IEEE Design Automation Conference (DAC ’24), June 23–27, 2024, San Francisco, CA, USA DOI: 10.1145/3649329.3655970 ISBN: 979-8-4007-0601-1/24/06
+Yuheng Su
+Affiliation: University of Chinese Academy of Sciences , Institute of Software, Chinese Academy of Sciences , China
+email: gipsyh.icu@gmail.com
+,
+Qiusong Yang
+Note: Qiusong Yang is the corresponding author.
+Affiliation: Institute of Software, Chinese Academy of Sciences , China
+email: qiusong@iscas.ac.cn
+and
+Yiwei Ci
+Affiliation: Institute of Software, Chinese Academy of Sciences , China
+email: yiwei@iscas.ac.cn
+© acmlicensed
+Abstract.
+The IC3 algorithm, also known as PDR, has made a significant impact in the field of safety model checking in recent years due to its high efficiency, scalability, and completeness. The most crucial component of IC3 is inductive generalization, which involves dropping variables one by one and is often the most time-consuming step. In this paper, we propose a novel approach to predict a possible minimal lemma before dropping variables by utilizing the counterexample to propagation (CTP). By leveraging this approach, we can avoid dropping variables if predict successfully. The comprehensive evaluation demonstrates a commendable success rate in lemma prediction and a significant performance improvement achieved by our proposed method.
+1. Introduction
+As hardware designs continue to scale and grow increasingly complex, the occurrence of errors in circuits becomes more prevalent, and the cost of such errors is substantial. To ensure the correctness of circuits, formal verification techniques such as symbolic model checking have been widely adopted by the industry. Symbolic model checking enables the proof of properties in hardware circuits or the identification of errors that violate these properties. IC3 ( Bradley, 2011 ) (also known as PDR ( Een et al., 2011 ) ) is a highly influential SAT-based algorithm used in hardware model checking, serving as a primary engine for many state-of-the-art model checkers. In comparison to other symbolic algorithms, IC3 stands out for its completeness compared to BMC and scalability compared to IMC and BDD approaches.
+To verify a safety property, IC3 endeavors to compute an inductive invariant. This invariant is derived from a series of frames denoted as F 0 , ⋯ , F k F_{0},\cdots,F_{k} , where each F i F_{i} represents an over-approximation of the set of states reachable in i i or fewer steps and does not include any unsafe states. Each frame is represented as a CNF formula, and each clause within the formula is also referred to as a lemma . The process terminates when either F i = F i + 1 F_{i}=F_{i+1} for some i i , indicating that an inductive invariant has been reached and the system being verified satisfies the designated safety property, or when a real counterexample is found. The basic algorithm for computing the frame F i + 1 F_{i+1} from the previous F i F_{i} first initializes the frame F i + 1 F_{i+1} to ⊤ \top , which represents the set of all possible states. It then efficiently blocks any unsafe states through inductive generalization and propagates the lemmas learned in previous frames to F i + 1 F_{i+1} as far as possible.
+Given an unsafe state represented as a boolean cube, the inductive generalization procedure aims to expand it as much as possible to include additional unreachable states. The standard algorithm ( Bradley, 2011 ) adopts the "down" strategy by attempting to drop as many literals as possible. If a certain literal is dropped and the negation of the new cube is found to be inductive, this results in a smaller inductive clause. If unsuccessful, the algorithm then attempts the process again with a different literal. This process strengthens the frames and significantly reduces the number of iterations. However, it is also the most time-consuming part and has a significant impact on the performance of IC3. Numerous studies have been undertaken to improve generalizations. According to ( Hassan et al., 2013 ) , certain states that are unreachable but can be backtracked from unsafe states, which cannot be further generalized, are identified as counterexamples to generalization (CTG). The negation of a CTG proves to be inductive, leading to a reduction in the depth of the explicit backward search performed by IC3 and enabling stronger inductive generalizations. In ( Xia et al., 2023 ) , the authors first drop literals that have not appeared in any subsumed lemmas of the previous frame in order to increase the probability of producing lemmas that can be effectively propagated to the next frame. In ( Ivrii and Gurfinkel, 2015 ) , the learned lemmas are labeled as bad lemmas if they exclude certain reachable states. Later on, these lemmas are not pushed further and their usage in generalization is minimized.
+Figure 1 . F i − 1 F_{i-1} and F i F_{i} frames: the square represents the entire state space, the blue region represents the state space represented by the frame, and each triangle in the purple region represents states blocked by a cube.
+In this paper, we aim to address the inefficiency of IC3 generalization in the scenario depicted in Figure 1 . Let’s assume there is only one lemma ¬ c 1 \neg c_{1} (where c 1 c_{1} represents a cube) in the frame F i − 1 F_{i-1} at first. Later, an unsafe state b b is reached, and the generalization of b b yields the lemma ¬ c 2 \neg c_{2} . Furthermore, as the lemmas are further propagated to F i F_{i} , the lemma ¬ c 1 \neg c_{1} succeeds while ¬ c 2 \neg c_{2} fails. This failure indicates that the cube c 2 c_{2} cannot be blocked in F i F_{i} . In previous studies ( Bradley, 2011 ; Hassan et al., 2013 ; Ivrii and Gurfinkel, 2015 ; Xia et al., 2023 ) , the standard practice was to discard the lemma ¬ c 2 \neg c_{2} and then rediscover b b in an attempt to block and generalize it once again. If we could predict a potential lemma candidate before dropping variable in generalization based on the information learned so far and verify its validity, we might be able to avoid the costly process of dropping variables one by one. However, the challenge lies in developing a prediction mechanism with a high success rate, as an ineffective prediction would result in additional overhead.
+The work presented in this paper utilizes counterexample to propagation (CTP) to predict potential lemma candidates and thereby significantly reduce the number of costly generalization operations. As shown in Figure 1 , when the lemma ¬ c 2 \neg c_{2} cannot be propagated to F i F_{i} , it indicates the existence of two states, namely s s and t t . Here, t t is a successor state of s s , where s ⊧ F i − 1 s\models F_{i-1} and t ⊧ c 2 t\models c_{2} . We will propose a method for predicting candidates for the lemma ¬ c 3 \neg c_{3} , which blocks the unsafe state b b and is inductive relative to F i − 1 F_{i-1} , based on c 2 c_{2} , t t , and b b . This marks the first implementation of a lemma prediction mechanism in the IC3 algorithm. We conducted a comprehensive performance evaluation of the proposed method, and the results demonstrate that our approach achieves a commendable success rate in predicting lemmas, thereby significantly improving the performance of IC3.
+Organization: Section 2 provides some background concepts. In Section 3 , the algorithm predicting lemma candidates is presented. The proposed algorithm is comprehensively evaluated in Section 4 . Section 5 discusses related works. Section 6 concludes this paper and present directions for future work.
+2. Preliminaries
+2.1. Basics and Notations
+Our context is standard propositional logic. We use notations such as x , y x,y for Boolean variables, and X , Y X,Y for sets of Boolean variables. The terms x x and ¬ x \lnot x are referred to as literals . Cube is conjunction of literals, while clause is disjunction of literals. The negation of a cube becomes a clause, and vice versa. A Boolean formula in Conjunctive Normal Form (CNF) is a conjunction of clauses. It is often convenient to treat a clause or a cube as a set of literals, and a CNF as a set of clauses. For instance, given a CNF formula F F , a clause c c , and a literal l l , we write l ∈ c l\in c to indicate that l l occurs in c c , and c ∈ F c\in F to indicate that c c occurs in F F . A formula F F implies another formula G G , if every satisfying assignment of F F satisfies G G , denoted as F ⇒ G F\Rightarrow G . This relation can also be expressed as F ⊧ G F\models G .
+A Boolean transition system, denoted as S S , can be defined as a tuple ⟨ X , Y , I , T ⟩ \langle X,Y,I,T\rangle . Here, X X and X ′ X^{\prime} represent the sets of state variables in the current state and the next state respectively, while Y Y represents the set of input variables. The Boolean formula I ⁡ ( X ) I(X) represents the initial states, and T ⁡ ( X , Y , X ′ ) T(X,Y,X^{\prime}) describes the transition relation of the system. State s 2 s_{2} is a successor of state s 1 s_{1} iff ( s 1 , s 2 ′ ) (s_{1},s_{2}^{\prime}) is an assignment of T T ( ( s 1 , s 2 ′ ) ⊧ T (s_{1},s_{2}^{\prime})\models T ). A p ​ a ​ t ​ h path of length n n in S S is a finite sequence of states s 0 , s 1 , … , s n s_{0},s_{1},\ldots,s_{n} such that s 0 s_{0} is an initial state ( s 0 ⊧ I s_{0}\models I ) and for each i i where 0 ≤ i < n 0\leq i<n , state s i + 1 s_{i+1} is a successor of state s i s_{i} ( ( s i , s i + 1 ′ ) ⊧ T (s_{i},s_{i+1}^{\prime})\models T ). Checking a safety property of a transition system S S is reducible to checking an invariant property ( Manna and Pnueli, 1995 ) . An invariant property P ⁡ ( X ) P(X) is a Boolean formula over X X . A system S S satisfies the invariant property P P iff all reachable states of S S satisfy the property P P . Otherwise, there exists a counterexample path s 0 , s 1 , … , s k s_{0},s_{1},\ldots,s_{k} such that s k ⊧̸ P s_{k}\not\models P .
+2.2. Overview of IC3
+IC3 is a SAT-based safety model checking algorithm, which only needs to unroll the system at most once ( Bradley, 2011 ) . It tries to prove that S S satisfies P P by finding an inductive invariant I ​ N ​ V ​ ( X ) INV(X) such that:
+•
+I ⁡ ( X ) ⇒ I ​ N ​ V ​ ( X ) I(X)\Rightarrow INV(X)
+•
+I ​ N ​ V ​ ( X ) ∧ T ⁡ ( X , Y , X ′ ) ⇒ I ​ N ​ V ​ ( X ′ ) INV(X)\land T(X,Y,X^{\prime})\Rightarrow INV(X^{\prime})
+•
+I ​ N ​ V ​ ( X ) ⇒ P ⁡ ( X ) INV(X)\Rightarrow P(X)
+To achieve this objective, it maintains a monotone CNF sequence F 0 , F 1 ​ … ​ F k F_{0},F_{1}\ldots F_{k} . Each F i F_{i} in the sequence is called a frame , which represents an over-approximation of the states reachable in S S within i i transition steps. Each clause c c in F i F_{i} is called lemma and the index of a frame is called level . IC3 maintains the following invariant:
+•
+F 0 = I F_{0}=I
+•
+for i > 0 , F i i>0,F_{i} is a set of clauses
+•
+F i + 1 ⊆ F i F_{i+1}\subseteq F_{i} ( F i , F i + 1 F_{i},F_{i+1} are sets of clauses)
+•
+F i ⇒ F i + 1 F_{i}\Rightarrow F_{i+1}
+•
+F i ∧ T ⇒ F i + 1 F_{i}\land T\Rightarrow F_{i+1}
+•
+for i < k , F i ⇒ P i<k,F_{i}\Rightarrow P
+A lemma c c is said to be inductive relative to F i F_{i} if, starting from the intersection of F i F_{i} and c c , all states reached in a single transition are located inside c c . This condition can be expressed as a SAT query s ​ a ​ t ​ ( F i ∧ c ∧ T ∧ ¬ c ′ ) sat(F_{i}\land c\land T\land\lnot c^{\prime}) . If this query is satisfied, it indicates that c c is not inductive relative to F i F_{i} because we can find a counterexample to induction (CTI) that starting from F i ∧ c F_{i}\land c and transitioning outside of the lemma c c . If lemma c c is inductive relative to F i F_{i} , it can be also said that cube ¬ c \lnot c is blocked in F i + 1 F_{i+1} .
+Algorithm 1 provides an overview of the IC3 algorithm. This algorithm incrementally constructs frames by iteratively performing two phases: the blocking phase and the propagation phase. During the blocking phase, the IC3 algorithm focuses on making F k ⇒ P F_{k}\Rightarrow P . It iteratively get a cube c c such that c ⊧ ¬ P c\models\lnot P , and block it recursively. This process involves attempting to block the cube’s predecessors if it cannot be blocked directly. It continues until the initial states cannot be blocked, indicating that ¬ P \lnot P can be reached from the initial states in k k transitions thus violating the property. In cases where a cube can be confirmed as blocked, IC3 proceeds to enlarge the set of blocked states through a process called generalization. This involves dropping variables and ensuring that the resulting clause remains relative inductive, with the objective of obtaining a minimal inductive clause. Subsequently, IC3 attempts to push the generalized lemma to the top and incorporates it into the frames. Throughout this phase, the sequence is augmented with additional lemmas, which serve to strengthen the approximation of the reachable state space. The propagation phase tries to push lemmas to the top. If a lemma c c in F i ∖ F i + 1 F_{i}\setminus F_{i+1} is also inductive relative to F i F_{i} , then push it into F i + 1 F_{i+1} . During this process, if two consecutive frames become identical ( F i = F i + 1 F_{i}=F_{i+1} ), then the inductive invariant is found and the safety of this model can be proofed.
+Algorithm 1 Overview of IC3
+1:
+function i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e inductive\_relative (clause c c , level i i )
+2:
+   return ¬ s ​ a ​ t ​ ( F i ∧ c ∧ T ∧ ¬ c ′ ) \lnot sat(F_{i}\land c\land T\land\lnot c^{\prime})
+3:
+4:
+function g ​ e ​ n ​ e ​ r ​ a ​ l ​ i ​ z ​ e generalize (cube b b , level i i )
+5:
+   for each l ∈ b l\in b do
+6:
+    c ​ a ​ n ​ d ≔ b ∖ { l } cand\coloneqq b\setminus\{l\} ⊳ \triangleright drop variable
+7:
+    if I ⇒ ¬ c ​ a ​ n ​ d I\Rightarrow\lnot cand and i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e ​ ( ¬ c ​ a ​ n ​ d , i − 1 ) inductive\_relative(\lnot cand,i-1) then
+8:
+      b ≔ c ​ a ​ n ​ d b\coloneqq cand
+     
+9:
+   return b b
+10:
+11:
+function b ​ l ​ o ​ c ​ k block (cube c c , level i i , level k k )
+12:
+   if i = 0 i=0 then
+13:
+    return f ​ a ​ l ​ s ​ e false
+  
+14:
+   while ¬ i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e ​ ( ¬ c , i − 1 ) \lnot inductive\_relative(\lnot c,i-1) do
+15:
+    p ≔ g ​ e ​ t ​ _ ​ p ​ r ​ e ​ d ​ e ​ c ​ e ​ s ​ s ​ o ​ r ​ ( i − 1 ) p\coloneqq get\_predecessor(i-1)
+16:
+    if ¬ b ​ l ​ o ​ c ​ k ​ ( p , i − 1 , k ) \lnot block(p,i-1,k) then
+17:
+      return f ​ a ​ l ​ s ​ e false
+     
+18:
+   m ​ i ​ c ≔ ¬ g ​ e ​ n ​ e ​ r ​ a ​ l ​ i ​ z ​ e ​ ( c , i ) mic\coloneqq\lnot generalize(c,i)
+19:
+   while i < k i<k and i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e ​ ( m ​ i ​ c , i ) inductive\_relative(mic,i) do
+20:
+    i ≔ i + 1 i\coloneqq i+1 ⊳ \triangleright push lemma
+  
+21:
+   for 1 ≤ j ≤ i 1\leq j\leq i do
+22:
+    F j ≔ F j ∪ { m ​ i ​ c } F_{j}\coloneqq F_{j}\cup\{mic\}
+  
+23:
+   return t ​ r ​ u ​ e true
+24:
+25:
+function p ​ r ​ o ​ p ​ a ​ g ​ a ​ t ​ e propagate (level k k )
+26:
+   for 1 ≤ i < k 1\leq i<k do
+27:
+    for each c ∈ F i ∖ F i + 1 c\in F_{i}\setminus F_{i+1} do
+28:
+      if i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e ​ ( c , i ) inductive\_relative(c,i) then ⊳ \triangleright push lemma
+29:
+       F i + 1 ≔ F i + 1 ∪ { c } F_{i+1}\coloneqq F_{i+1}\cup\{c\}
+        
+30:
+    if F i = F i + 1 F_{i}=F_{i+1} then
+31:
+      return t ​ r ​ u ​ e true
+     
+32:
+   return f ​ a ​ l ​ s ​ e false
+33:
+34:
+procedure i ​ c ​ 3 ic3 ( I , T , P I,T,P )
+35:
+   if s ​ a ​ t ​ ( I ∧ ¬ P ) sat(I\land\lnot P) then
+36:
+    return u ​ n ​ s ​ a ​ f ​ e unsafe
+  
+37:
+   F 0 ≔ I , k ≔ 1 , F k ≔ ⊤ F_{0}\coloneqq I,k\coloneqq 1,F_{k}\coloneqq\top
+38:
+   while t ​ r ​ u ​ e true do
+39:
+    while s ​ a ​ t ​ ( F k ∧ ¬ P ) sat(F_{k}\land\lnot P) do ⊳ \triangleright blocking phase
+40:
+      c ≔ g ​ e ​ t ​ _ ​ p ​ r ​ e ​ d ​ e ​ c ​ e ​ s ​ s ​ o ​ r ​ ( k ) c\coloneqq get\_predecessor(k)
+41:
+      if ¬ b ​ l ​ o ​ c ​ k ​ ( c , k , k ) \lnot block(c,k,k) then
+42:
+       return u ​ n ​ s ​ a ​ f ​ e unsafe
+        
+43:
+    k ≔ k + 1 , F k ≔ ⊤ k\coloneqq k+1,F_{k}\coloneqq\top ⊳ \triangleright propagation phase
+44:
+    if p ​ r ​ o ​ p ​ a ​ g ​ a ​ t ​ e ​ ( k ) propagate(k) then
+45:
+      return s ​ a ​ f ​ e safe
+     
+3. Predicting Lemmas
+3.1. Intuition
+The generalization of the IC3 algorithm attempts to iteratively drop variables to obtain a minimal inductive clause. Each variable dropping corresponds to a SAT query, which can incur significant overhead. If there existed a method to speculatively predict a high-quality (minimal) inductive clause and demonstrate its relative inductiveness, it could improve the performance of generalization by avoiding dropping variables one by one.
+In Figure 1 , when attempting to push the lemma ¬ c 1 \lnot c_{1} and ¬ c 2 \lnot c_{2} from F i − 1 F_{i-1} to F i F_{i} (where c 1 c_{1} and c 2 c_{2} are cubes), c 1 c_{1} succeeds, but c 2 c_{2} fails. This failure indicates that the cube c 2 c_{2} cannot be blocked in F i F_{i} . However, it is highly likely that cube c 2 c_{2} is generalized from state b b , where b b is a bad state and b ⊧ c 2 b\models c_{2} . Since cube c 2 c_{2} cannot be blocked in F i F_{i} , it is possible that b b still exists in F i F_{i} ( b ⊧ F i b\models F_{i} ). IC3 will later find b b and attempt to block and generalize it again.
+Additionally, in case of a push failure, we encounter two states in counterexample to propagation (CTP): s s and t t , where t t is a successor state of s s , s ⊧ F i − 1 s\models F_{i-1} , and t ⊧ c 2 t\models c_{2} . The existence of CTP prevents c 2 c_{2} from being blocked in F i F_{i} . If we can remove state t t from c 2 c_{2} , CTP will no longer be effective to the remaining part, thus the remaining part may potentially be blocked in F i F_{i} . In this paper, we attempt to refine c 2 c_{2} by utilizing state t t to derive a new cube c 3 c_{3} , where t ⊧̸ c 3 t\not\models c_{3} , b ⊧ c 3 b\models c_{3} and c 3 c_{3} can potentially be blocked in F i F_{i} , thus a possible lemma in F i F_{i} is predicted.
+3.2. How to Refine Cubes
+How can we refine the cube c 2 c_{2} using t t to obtain a cube c 3 c_{3} such that t ⊧̸ c 3 t\not\models c_{3} and b ⊧ c 3 b\models c_{3} ? To achieve this objective, we introduce the concept of the diff set of two cubes:
+Definition 3.1 (Diff Set).
+Let a a and b b are cubes, d i f f ( a , b ) = { l ∣ l ∈ a ∧ ¬ l ∈ b diff(a,b)=\{l\mid l\in a\land\lnot l\in b }.
+Diff set d ​ i ​ f ​ f ​ ( a , b ) diff(a,b) represents the set of literals in a a such that their negations are in b b . It should be noted that d ​ i ​ f ​ f ​ ( a , b ) ≠ d ​ i ​ f ​ f ​ ( b , a ) diff(a,b)\neq diff(b,a) . The diff set has the following theorems:
+Theorem 3.2.
+Let a a and b b are cubes, a ≠ ⊥ a\neq\bot and b ≠ ⊥ b\neq\bot . a ∧ b = ⊥ a\land b=\bot , iff d ​ i ​ f ​ f ​ ( a , b ) ≠ ∅ diff(a,b)\neq\emptyset .
+Proof.
+Let cube c = a ∧ b c=a\land b ( c = a ∪ b c=a\cup b ). If c = ⊥ c=\bot , it implies the presence of a literal l l in c c along with its negation, ¬ l \lnot l . Since a ≠ ⊥ a\neq\bot and b ≠ ⊥ b\neq\bot , we can conclude that there exists a literal in a a and its negation in b b , indicating that d ​ i ​ f ​ f ​ ( a , b ) ≠ ∅ diff(a,b)\neq\emptyset . Conversely, if d ​ i ​ f ​ f ​ ( a , b ) ≠ ∅ diff(a,b)\neq\emptyset , we can identify a literal l l in d ​ i ​ f ​ f ​ ( a , b ) diff(a,b) , where both l l and its negation exist in c c , resulting in a ∧ b = ⊥ a\land b=\bot .
+∎
+Theorem 3.3.
+Let a a , b b , c c are cubes, if d ​ i ​ f ​ f ​ ( a , b ) ≠ ∅ diff(a,b)\neq\emptyset and c ∩ d ​ i ​ f ​ f ​ ( a , b ) ≠ ∅ c\cap diff(a,b)\neq\emptyset , then d ​ i ​ f ​ f ​ ( c , b ) ≠ ∅ diff(c,b)\neq\emptyset .
+Proof.
+Let l l be a literal, and suppose l ∈ c ∩ d ​ i ​ f ​ f ​ ( a , b ) l\in c\cap diff(a,b) . It can be derived that l ∈ c l\in c . According to Definition 3.1 , we know that l ∈ a l\in a and ¬ l ∈ b \lnot l\in b . Since l ∈ c l\in c and ¬ l ∈ b \lnot l\in b , it follows that l ∈ d ​ i ​ f ​ f ​ ( c , b ) l\in diff(c,b) , leading to the conclusion that d ​ i ​ f ​ f ​ ( c , b ) ≠ ∅ diff(c,b)\neq\emptyset .
+∎
+Additionally, cube has the following theorem:
+Theorem 3.4.
+Let a a and b b are cubes, a ≠ ⊥ a\neq\bot and b ≠ ⊥ b\neq\bot . a ⇒ b a\Rightarrow b (or a ⊧ b a\models b ) iff b ⊆ a b\subseteq a .
+Actually in IC3, t t and b b both are cubes, that they may not only represent one state but a set of states. It is possible for cubes t t and b b to have intersections. However, we will initially consider the case where there is no intersection, i.e., t ∧ b = ⊥ t\land b=\bot . According to Theorem 3.2 , we can derive the following equation:
+(1)
+d ​ i ​ f ​ f ​ ( b , t ) ≠ ∅ diff(b,t)\neq\emptyset
+Our objective is to find a cube c 3 c_{3} that satisfies c 3 ∧ t = ⊥ c_{3}\land t=\bot , b ⊧ c 3 b\models c_{3} , and c 3 ⊧ c 2 c_{3}\models c_{2} . Referring to Theorem 3.2 and Theorem 3.4 , we can achieve our objective if c 3 c_{3} satisfies the following equations:
+(2)
+d ​ i ​ f ​ f ​ ( c 3 , t ) ≠ ∅ diff(c_{3},t)\neq\emptyset
+(3)
+c 3 ⊆ b c_{3}\subseteq b
+(4)
+c 2 ⊆ c 3 c_{2}\subseteq c_{3}
+Building upon Theorem 3.3 and Equation 1 , we can establish the truth of Equation 2 by ensuring the satisfaction of the following equation:
+(5)
+c 3 ∩ d ​ i ​ f ​ f ​ ( b , t ) ≠ ∅ c_{3}\cap diff(b,t)\neq\emptyset
+By constructing c 3 c_{3} according to the following equation, we can satisfy Equation 5 :
+(6)
+c 3 = c 2 ∪ { l } ​ ( l ∈ d ​ i ​ f ​ f ​ ( b , t ) ) c_{3}=c_{2}\cup\{l\}\ (l\in diff(b,t))
+The method we use for predicting lemmas is represented by Equation 6 . This equation demonstrates the process of attempting to select an element from the diff set and incorporate it into c ​ 2 c2 , resulting in the creation of a new cube c ​ 3 c3 that is larger than c ​ 2 c2 by one element. If Equation 6 is satisfied, it is evident that Equation 4 is true. Additionally, based on Definition 3.1 , Equation 3 is also satisfied. As a result, we have successfully obtained the desired cube.
+3.3. The Algorithm
+Algorithm 2 Predicting Lemmas
+1:
+function p ​ a ​ r ​ e ​ n ​ t ​ _ ​ l ​ e ​ m ​ m ​ a ​ s parent\_lemmas (clause c c , level i i )
+2:
+   p ​ a ​ r ​ e ​ n ​ t ​ s ≔ ∅ parents\coloneqq\emptyset
+3:
+   if i ≠ 0 i\neq 0 then
+4:
+    for each p ∈ F i ∖ F i + 1 p\in F_{i}\setminus F_{i+1} do
+5:
+      if p ⊆ c p\subseteq c then
+6:
+       p ​ a ​ r ​ e ​ n ​ t ​ s ≔ p ​ a ​ r ​ e ​ n ​ t ​ s ∪ { p } parents\coloneqq parents\cup\{p\}
+          
+7:
+   return p ​ a ​ r ​ e ​ n ​ t ​ s parents
+8:
+9:
+function g ​ e ​ n ​ e ​ r ​ a ​ l ​ i ​ z ​ e generalize (cube b b , level i i )
+10:
+   p ​ a ​ r ​ e ​ n ​ t ​ s ≔ p ​ a ​ r ​ e ​ n ​ t ​ _ ​ l ​ e ​ m ​ m ​ a ​ s ​ ( ¬ b , i − 1 ) parents\coloneqq parent\_lemmas(\lnot b,i-1)
+11:
+   for each p ∈ p ​ a ​ r ​ e ​ n ​ t ​ s p\in parents do
+12:
+    if ¬ f ​ a ​ i ​ l ​ u ​ r ​ e ​ _ ​ p ​ u ​ s ​ h . h ​ a ​ s ​ ( p , i − 1 ) \lnot failure\_push.has(p,i-1) then ⊳ \triangleright find state t t
+13:
+      continue
+   
+14:
+    t ≔ f ​ a ​ i ​ l ​ u ​ r ​ e ​ _ ​ p ​ u ​ s ​ h ​ [ ( p , i − 1 ) ] t\coloneqq failure\_push[(p,i-1)]
+15:
+    d ​ s ≔ d ​ i ​ f ​ f ​ ( b , t ) ds\coloneqq diff(b,t) ⊳ \triangleright get diff set
+16:
+    if d ​ s = ∅ ds=\emptyset then ⊳ \triangleright push parent lemma
+17:
+      if i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e ​ ( p , i − 1 ) inductive\_relative(p,i-1) then
+18:
+       return p p
+19:
+      else
+20:
+       f ​ a ​ i ​ l ​ u ​ r ​ e ​ _ ​ p ​ u ​ s ​ h ​ [ ( p , i − 1 ) ] ≔ g ​ e ​ t ​ _ ​ m ​ o ​ d ​ e ​ l ​ ( i − 1 ) failure\_push[(p,i-1)]\coloneqq get\_model(i-1)
+     
+21:
+    else
+22:
+      for each d ∈ d ​ s d\in ds do
+23:
+       c ​ a ​ n ​ d ≔ p ∪ { ¬ d } cand\coloneqq p\cup\{\lnot d\}
+24:
+       if i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e ​ ( c ​ a ​ n ​ d , i − 1 ) inductive\_relative(cand,i-1) then
+25:
+         return ¬ c ​ a ​ n ​ d \lnot cand
+26:
+       else
+27:
+         d ​ s ≔ d ​ s ∩ d ​ i ​ f ​ f ​ ( b , g ​ e ​ t ​ _ ​ m ​ o ​ d ​ e ​ l ​ ( i − 1 ) ) ds\coloneqq ds\cap diff(b,get\_model(i-1))
+      
+     
+     
+28:
+   for each l ∈ b l\in b do
+29:
+    c ​ a ​ n ​ d ≔ b ∖ { l } cand\coloneqq b\setminus\{l\} ⊳ \triangleright drop variable
+30:
+    if I ⇒ ¬ c ​ a ​ n ​ d I\Rightarrow\lnot cand and i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e ​ ( ¬ c ​ a ​ n ​ d , i − 1 ) inductive\_relative(\lnot cand,i-1) then
+31:
+      b ≔ c ​ a ​ n ​ d b\coloneqq cand
+     
+32:
+   return b b
+33:
+34:
+function b ​ l ​ o ​ c ​ k block (cube c c , level i i , level k k )
+35:
+  …
+36:
+   while i < k i<k and i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e ​ ( m ​ i ​ c , i ) inductive\_relative(mic,i) do
+37:
+    i ≔ i + 1 i\coloneqq i+1 ⊳ \triangleright push lemma
+  
+38:
+   f ​ a ​ i ​ l ​ u ​ r ​ e ​ _ ​ p ​ u ​ s ​ h ​ [ ( m ​ i ​ c , i ) ] ≔ g ​ e ​ t ​ _ ​ m ​ o ​ d ​ e ​ l ​ ( i ) failure\_push[(mic,i)]\coloneqq get\_model(i) ⊳ \triangleright record state t t
+39:
+   for 1 ≤ j ≤ i 1\leq j\leq i do
+40:
+    F j ≔ F j ∪ { m ​ i ​ c } F_{j}\coloneqq F_{j}\cup\{mic\}
+  
+41:
+   return t ​ r ​ u ​ e true
+42:
+43:
+function p ​ r ​ o ​ p ​ a ​ g ​ a ​ t ​ e propagate (level k k )
+44:
+   f ​ a ​ i ​ l ​ u ​ r ​ e ​ _ ​ p ​ u ​ s ​ h . c ​ l ​ e ​ a ​ r ​ ( ) failure\_push.clear() ⊳ \triangleright reconstruct hash table
+45:
+   for 1 ≤ i < k 1\leq i<k do
+46:
+    for each c ∈ F i ∖ F i + 1 c\in F_{i}\setminus F_{i+1} do
+47:
+      if i ​ n ​ d ​ u ​ c ​ t ​ i ​ v ​ e ​ _ ​ r ​ e ​ l ​ a ​ t ​ i ​ v ​ e ​ ( c , i ) inductive\_relative(c,i) then ⊳ \triangleright push lemma
+48:
+       F i + 1 ≔ F i + 1 ∪ { c } F_{i+1}\coloneqq F_{i+1}\cup\{c\}
+49:
+      else ⊳ \triangleright record state t t
+50:
+       f ​ a ​ i ​ l ​ u ​ r ​ e ​ _ ​ p ​ u ​ s ​ h ​ [ ( c , i ) ] ≔ g ​ e ​ t ​ _ ​ m ​ o ​ d ​ e ​ l ​ ( i ) failure\_push[(c,i)]\coloneqq get\_model(i)
+        
+51:
+    if F i = F i + 1 F_{i}=F_{i+1} then
+52:
+      return t ​ r ​ u ​ e true
+     
+53:
+   return f ​ a ​ l ​ s ​ e false
+Algorithm 2 introduces our proposed approach for lemma prediction by leveraging the CTP in IC3. The modifications to the original IC3 algorithm are denoted by the blue-colored code. In line 36 and line 47 , the algorithm attempts to push lemmas. If push fails, it retrieves the corresponding state t t from the SAT solver and stores it in a hash table. The hash table uses a tuple consisting of the failed lemma and the current level as the key. Additionally, at regular intervals before each propagation step, the hash table is cleared and reconstructed.
+In the generalization, the algorithm first attempts to predict a possible minimal lemma and checks its validity, as demonstrated in lines 10 to 27 . Initially, it identifies all the parent lemmas of clause ¬ b \lnot b in level i i . A parent lemma of clause c c at level i i is the lemma p p only in the frame of level i − 1 i-1 (not in the current level) that p ⇒ c p\Rightarrow c . For example, it can be observed that ¬ c 2 \lnot c_{2} is the parent lemma of clause ¬ b \lnot b at level i i in Figure 1 . We make an attempt to predict a minimal lemma in F i F_{i} based on each identified parent lemma:
+(1)
+If the parent lemma p p does not have any failed push attempts at level i − 1 i-1 , we cannot find CTP, and thus cannot predict a lemma and proceed with the next parent lemma as shown in lines 12 - 13 .
+(2)
+Upon successfully retrieving state t t from the hash table, we proceed to calculate the diff set d ​ s ds of the cube b b and cube t t . In lines 16 - 20 , if the diff set is empty, it indicates an intersection between the cubes b b and t t according to Theorem 3.2 , meaning that some states in cube t t are already blocked due to the blocking of b b in F i F_{i} . In this case, we consider pushing the parent lemma p p to F i F_{i} as a predicted lemma. If successful, the predicted lemma is deemed valid, we take it as the final result. Otherwise, we store the state t t associated with this failure in the hash table.
+(3)
+If the diff set is not empty, we attempt to predict a possible lemma using Equation 6 by iteratively selecting a literal from the diff set as shown in lines 22 - 27 . If successful, since it is only one variable longer than the parent lemma, we consider it to be a high-quality lemma. Therefore, we no longer generalize it by dropping variables and directly treat it as the final result of generalization. If unsuccessful, it is highly likely that the counterexample is also an another CTP of pushing p p to F i F_{i} , thus we recalculate the diff set and eliminate certain infeasible candidates from it.
+4. Evaluation
+4.1. Experimental Setup
+IC3ref ( IC3, 2023 ) is an IC3 implementation provided by the inventor of this algorithm, which is competitive and commonly used as the baseline ( Seufert and Scholl, 2019 ; Seufert et al., 2022 ; Xia et al., 2023 ) . We also implemented IC3 algorithm in Rust, a modern programming language designed to offer both performance and safety, denoted as RIC3 , which is competitive to IC3ref. We integrated our proposed predicting lemmas optimization into both IC3ref and RIC3, denoted as IC3ref-pl and RIC3-pl respectively. Since our method is related to ( Xia et al., 2023 ) , which is also implemented in IC3ref, available at ( CAV, 2023 ) , we also conducted an evaluation of it, denoted as IC3ref-CAV23 . We also consider the PDR implementation in the ABC ( ABC, 2023 ) , which is a competitive model checker.
+We conducted all experiments using the complete benchmark set of HWMCC’15 (excluding restricted-access cases) and HWMCC’17, totaling 730 cases, under consistent resource constraints (8 GB, 1000s). The experiments were performed on an AMD EPYC 7532 machine with 32 cores running at 2.4 GHz. To ensure reproducibility, we have provided our experiment implementations ( Art, 2023 ) .
+4.2. Experimental Results
+The summary of results, comparisons among different configurations, and scatter plots of implementations with and without lemma prediction are presented in Table 1 , Figure 2 , and Figure 3 , respectively. It can be observed that by incorporating our proposed optimization, different implementations solve more cases compared to the original implementation within various time limits and a greater number of cases have been solved faster. It can also be observed that our proposed method solves more cases than IC3ref-CAV23 and ABC-PDR. This demonstrates the effectiveness of our proposed method in enhancing the performance of IC3.
+Table 1 . Summary of Results
+Configuration
+Solved
+Safe
+Unsafe
+RIC3
+365
+264
+101
+RIC3-pl
+375
+273
+102
+IC3ref
+371
+263
+108
+IC3ref-pl
+379
+268
+111
+IC3ref-CAV23
+375
+269
+106
+ABC-PDR
+373
+267
+106
+Figure 2 . Comparisons among the different configurations.
+Figure 3 . Scatters of RIC3 and IC3ref with and without the proposed optimization. Points below the diagonal indicate better performance with the proposed optimization active.
+4.3. Analysis
+Table 2 . Average Success Rates
+Configuration
+Avg S ​ R l ​ p SR_{lp}
+Avg S ​ R f ​ p SR_{fp}
+Avg S ​ R a ​ d ​ v SR_{adv}
+RIC3-pl
+38.61%
+40.67%
+24.03%
+IC3ref-pl
+31.5%
+37.81%
+19.46%
+Figure 4 . Comparing the ratio of runtime of different implementations without and with our proposed optimization (left y-axis) with the success rate of avoiding dropped variables S ​ R a ​ d ​ v SR_{adv} during generalization (x-axis). The right y-axis represents the cumulative number of cases with improved performance as the prediction accuracy increases. Cases with runtime both timeout or both less than 1s are ignored.
+To better demonstrate the effectiveness of our proposed method, we introduced several success rates: the lemma prediction success rate ( S ​ R l ​ p = N s ​ p / N p SR_{lp}=N_{sp}/N_{p} ), the success rate of finding failed pushed parent lemmas ( S ​ R f ​ p = N f ​ p / N g SR_{fp}=N_{fp}/N_{g} ), and the success rate of avoiding dropping variables ( S ​ R a ​ d ​ v = N s ​ p / N g SR_{adv}=N_{sp}/N_{g} ). Here, N s ​ p N_{sp} represents the number of successful lemma predictions, N p N_{p} represents the total number of lemma predictions (the number of SAT queries in prediction), N f ​ p N_{fp} represents the number of successfully finding failed pushed parent lemmas, and N g N_{g} represents the total number of generalizations. Table 2 presents the three kind of average success rates of different implementations with our proposed optimization. It can be observed that our method can achieve a considerable success rate if the failed pushed lemma is found. Figure 4 depicts the correlation between S ​ R a ​ d ​ v SR_{adv} and the checking time. It can be observed that higher prediction success rates result in a better performance in the proportion of cases. This observation supports the conjecture that higher accuracy in predictions can yield better performance.
+5. Related Work
+After the introduction of IC3 ( Bradley, 2011 ) , numerous works have been proposed to improve the efficiency. ( Seufert and Scholl, 2019 ) interleaves a forward and a backward execution of IC3 and strengthens one frame sequence by leveraging the other. ( Seufert et al., 2022 ) introduces under-approximation to improve the performance of bug-finding.
+When a clause fails to be relatively inductive, a common approach is to identify the counterexample of this failure and attempting to render it ineffective. ( Hassan et al., 2013 ) attempts to block counterexample to generalization (CTG) to make the variable dropped clause inductive. ( Ivrii and Gurfinkel, 2015 ) aggressively pushes lemmas to the top by adding may-proof-obligation (blocking counterexamples of push failure). The key distinction between our proposed method and these approaches lies in the fact that while they all focus on blocking the predecessor state (state s s in Figure 1 ) of a counterexample, we utilize the successor state (state t t ) to predict a possible lemma.
+Another related work is ( Xia et al., 2023 ) , which also attempts to find the parent lemma and doesn’t dropping literals which existed in the parent lemma during generalization. Our approach differs significantly as we attempt to avoid dropping variables by refining failed pushed parent lemma as a prediction.
+6. Conclusion and Future Work
+In this paper, we proposed a novel method for predicting minimal lemmas before dropping variables by utilizing the counterexample to propagation (CTP). By making successful predictions, we can effectively circumvent the need to drop variables during generalization, which is a significant overhead in the IC3 algorithm. The experimental results demonstrate a commendable success rate in lemma prediction, consequently leading to a significant performance improvement. In the future, we plan to improve the prediction rate of our proposed method in order to avoiding dropping variables as much as possible.
+Acknowledgements.
+This work was supported by the Basic Research Projects from the Institute of Software, Chinese Academy of Sciences (Grant No. ISCAS-JCZD-202307) and the National Natural Science Foundation of China (Grant No. 62372438).
+References
+ABC (2023)
+2023.
+ABC.
+https://github.com/berkeley-abc/abc .
+CAV (2023)
+2023.
+CAV23 Artifact.
+https://github.com/youyusama/i-Good_Lemmas_MC .
+IC3 (2023)
+2023.
+IC3ref.
+https://github.com/arbrad/IC3ref .
+Art (2023)
+2023.
+Reproductive Artifact.
+https://github.com/gipsyh/DAC24 .
+Bradley (2011)
+Aaron R. Bradley. 2011.
+SAT-Based Model Checking without Unrolling. In Proceedings of the 12th International Conference on Verification, Model Checking, and Abstract Interpretation (Austin, TX, USA) (VMCAI’11) . Springer-Verlag, Berlin, Heidelberg, 70–87.
+Een et al . (2011)
+Niklas Een, Alan Mishchenko, and Robert Brayton. 2011.
+Efficient implementation of property directed reachability. In 2011 Formal Methods in Computer-Aided Design (FMCAD) . 125–134.
+Hassan et al . (2013)
+Zyad Hassan, Aaron R. Bradley, and Fabio Somenzi. 2013.
+Better generalization in IC3. In 2013 Formal Methods in Computer-Aided Design . 157–164.
+https://doi.org/10.1109/FMCAD.2013.6679405
+Ivrii and Gurfinkel (2015)
+Alexander Ivrii and Arie Gurfinkel. 2015.
+Pushing to the top. In 2015 Formal Methods in Computer-Aided Design (FMCAD) . 65–72.
+Manna and Pnueli (1995)
+Zohar Manna and Amir Pnueli. 1995.
+Temporal Verification of Reactive Systems: Safety .
+Springer-Verlag, Berlin, Heidelberg.
+Seufert and Scholl (2019)
+Tobias Seufert and Christoph Scholl. 2019.
+fbPDR: In-depth combination of forward and backward analysis in Property Directed Reachability. In 2019 Design, Automation and Test in Europe Conference and Exhibition (DATE) . 456–461.
+Seufert et al . (2022)
+Tobias Seufert, Christoph Scholl, Arun Chandrasekharan, Sven Reimer, and Tobias Welp. 2022.
+Making PROGRESS in Property Directed Reachability. In Verification, Model Checking, and Abstract Interpretation , Bernd Finkbeiner and Thomas Wies (Eds.). Springer International Publishing, Cham, 355–377.
+Xia et al . (2023)
+Yechuan Xia, Anna Becchi, Alessandro Cimatti, Alberto Griggio, Jianwen Li, and Geguang Pu. 2023.
+Searching for i-Good Lemmas to Accelerate Safety Model Checking. In Computer Aided Verification . Springer Nature Switzerland, Cham, 288–308.
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" ( ) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

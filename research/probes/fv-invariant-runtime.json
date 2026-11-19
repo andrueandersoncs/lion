@@ -1,0 +1,22 @@
+[
+  "begin",
+  ["relation", "account", ["id", "status", "balance"], { "key": "id" }],
+  [
+    "invariant",
+    [
+      "and",
+      ["account", "?id", "open", "?balance"],
+      ["number/lessThan", "?balance", 0]
+    ],
+    { "assert": "none" }
+  ],
+  ["fact", ["account", "a", "open", 10]],
+  [
+    "define",
+    "withdraw",
+    ["lambda", ["balance", "amount"], ["number/subtract", "balance", "amount"]]
+  ],
+  ["fact", ["account", "a", "open", ["withdraw", 10, 4]]],
+  ["query", ["account", "?id", "?status", "?balance"]],
+  ["fact", ["account", "a", "open", ["withdraw", 6, 9]]]
+]

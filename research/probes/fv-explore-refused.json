@@ -1,0 +1,14 @@
+[
+  "begin",
+  ["relation", "amounts", ["value"]],
+  ["relation", "reach", ["balance"]],
+  ["fact", ["amounts", 3], ["amounts", 5]],
+  ["fact", ["reach", 0]],
+  [
+    "rule",
+    ["reach", ["number/add", "?b", "?a"]],
+    ["reach", "?b"],
+    ["amounts", "?a"]
+  ],
+  ["query", ["reach", "?balance"]]
+]

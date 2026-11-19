@@ -1,0 +1,548 @@
+► The Rosette Guide
+1 Getting Started
+2 Rosette Essentials
+3 Syntactic Forms
+4 Built- In Datatypes
+5 Structures
+6 Libraries
+7 Symbolic Reflection
+8 Unsafe Operations
+9 Performance
+10 Debugging
+11 References
+Index
+▼ 3 Syntactic Forms
+3.1 Lifted Racket Forms
+3.2 Solver- Aided Forms
+► 3.2 Solver- Aided Forms
+3.2.1 Symbolic Constants
+3.2.2 Assertions and Assumptions
+3.2.3 Verification
+3.2.4 Synthesis
+3.2.5 Angelic Execution
+3.2.6 Optimization
+3.2.7 Reasoning Precision
+On this page:
+3.2.1 Symbolic Constants
+define- symbolic
+define- symbolic*
+3.2.2 Assertions and Assumptions
+assert
+assume
+3.2.3 Verification
+verify
+3.2.4 Synthesis
+synthesize
+3.2.5 Angelic Execution
+solve
+solve+
+3.2.6 Optimization
+optimize
+3.2.7 Reasoning Precision
+current- bitwidth
+9.3
+Racket
+top contents &larr; prev up next &rarr;
+3.2 Solver-Aided Forms 🔗 ℹ
+The Essentials chapter introduced
+the key concepts of solver-aided programming. This section
+describes the corresponding syntactic constructs in detail.
+3.2.1 Symbolic Constants 🔗 ℹ
+syntax
+( define-symbolic id ...+ type )
+( define-symbolic id type #:length k )
+type : ( and/c solvable? type? )
+k : natural?
+The first form binds each provided identifier to a distinct
+symbolic constant of the given
+solvable type . The identifiers are bound to the
+same constants every time the form is evaluated.
+Examples:
+> ( define ( always-same )
+( define-symbolic x integer? )
+x )
+> ( always-same )
+x
+> ( always-same )
+x
+> ( equal? ( always-same ) ( always-same ) )
+#t
+The second form creates a list of k distinct
+constants and binds it to id . The same constants
+are bound to id every time the form is evaluated.
+The form requires k to evaluate to a natural number
+statically— i.e., at macro expansion time.
+Examples:
+> ( define ( always-same-3 )
+( define-symbolic y integer? #:length ( + 1 2 ) )
+y )
+> ( always-same-3 )
+(list y$0 y$1 y$2)
+> ( always-same-3 )
+(list y$0 y$1 y$2)
+> ( equal? ( always-same-3 ) ( always-same-3 ) )
+#t
+> ( define ( always-same-n n )
+( define-symbolic y integer? #:length n )
+y )
+eval:9.0: define-symbolic: expected a natural? for #:length
+at: (define-symbolic y integer? #:length n)
+in: (define-symbolic y integer? #:length n)
+syntax
+( define-symbolic* id ...+ type )
+( define-symbolic* id type #:length k )
+type : ( and/c solvable? type? )
+k : natural?
+The first form creates a stream of distinct
+symbolic constant s of the given
+solvable type for each identifier, binding the
+identifier to the next element from its stream every time
+the form is evaluated.
+Examples:
+> ( define ( always-different )
+( define-symbolic* x integer? )
+x )
+> ( always-different )
+x$0
+> ( always-different )
+x$1
+> ( eq? ( always-different ) ( always-different ) )
+(= x$2 x$3)
+The second form binds id to a list of the next
+k elements from its stream every time the form is
+evaluated. The expression k may produce different
+natural numbers depending on the calling context.
+Examples:
+> ( define ( always-different-n n )
+( define-symbolic* y integer? #:length n )
+y )
+> ( always-different-n 2 )
+(list y$4 y$5)
+> ( always-different-n 3 )
+(list y$6 y$7 y$8)
+> ( equal? ( always-different-n 4 ) ( always-different-n 4 ) )
+(&& (= y$9 y$13) (= y$10 y$14) (= y$11 y$15) (= y$12 y$16))
+3.2.2 Assertions and Assumptions 🔗 ℹ
+syntax
+( assert expr )
+( assert expr msg )
+msg : string?
+Checks that expr produces a true value. Rosette
+keeps track of all assertions and assumptions encountered
+during symbolic evaluation in the current verification condition (VC).
+If expr evaluates to #f ,
+the assertion adds #f to the VC and throws an error
+with the optional failure message msg . If
+expr evaluates to a symbolic boolean value, this
+value is added to the VC and execution continues. If
+expr evaluates to any other value, assert
+has no effect. The contents of the VC can be examined using
+the ( vc ) procedure, and they can be cleared using
+the clear-vc! procedure.
+Examples:
+> ( assert #t ) ; No effect.
+> ( assert 1 ) ; No effect.
+> ( vc ) ; The VC tracks assumptions and assertions.
+(vc #t #t)
+> ( define-symbolic x boolean? )
+> ( assert x )
+> ( vc ) ; x is added to the VC's asserts.
+(vc #t x)
+> ( assert #f "bad value" )
+[assert] bad value
+> ( vc )
+(vc #t #f)
+> ( clear-vc! ) ; Clear the VC.
+> ( vc )
+(vc #t #t)
+syntax
+( assume expr )
+( assume expr msg )
+msg : string?
+Behaves like assert except that it updates the
+assumption component of the current verification condition
+when expr evaluates to #f or to a
+symbolic boolean.
+Examples:
+> ( vc )
+(vc #t #t)
+> ( assume #t ) ; No effect.
+> ( assume 1 ) ; No effect.
+> ( vc ) ; The VC tracks assumptions and assertions.
+(vc #t #t)
+> ( define-symbolic x boolean? )
+> ( assume x )
+> ( vc ) ; x is added to the VC's assumes.
+(vc x #t)
+> ( assume #f "bad value" )
+[assume] bad value
+> ( vc )
+(vc #f #t)
+> ( clear-vc! ) ; Clear the VC.
+> ( vc )
+(vc #t #t)
+3.2.3 Verification 🔗 ℹ
+syntax
+( verify expr )
+Searches for a binding of symbolic constants to concrete
+values that satisfies all the assumptions and violates at
+least one of the assertions encountered during the
+evaluation of expr . The binding must also satisfy
+all the assumptions and assertions accumulated in the
+verification condition ( vc ) before the call to
+verify . If such a binding exists, the query returns
+one as part of a satisfiable solution? ; otherwise,
+the query returns ( unsat ) .
+Formally,
+( verify expr ) searches for a model of the formula
+( vc-assumes P ) ∧ ( vc-asserts P ) ∧
+( vc-assumes Q ) ∧ ¬ ( vc-asserts Q ) ,
+where P is the verification condition before the
+call to verify and Q is the verification condition
+generated by evaluating expr .
+The verify
+query does not retain the assumptions and assertions generated
+by expr , leaving the current verification condition
+( vc ) unchanged after the query returns.
+Examples:
+> ( define-symbolic a b c d boolean? )
+> ( vc )
+(vc #t #t)
+; This query forces a to be false:
+> ( verify ( assert a ) )
+(model
+[a #f])
+> ( vc ) ; VC is unchanged.
+(vc #t #t)
+> ( assume a )
+> ( assert b )
+> ( vc )
+(vc a (|| b (! a)))
+; This query forces a, b, c to be true, and d to be false:
+> ( verify
+( begin
+( assume c )
+( assert d ) ) )
+(model
+[a #t]
+[b #t]
+[c #t]
+[d #f])
+> ( vc )
+(vc a (|| b (! a)))
+; This query has no solution because we assumed a above:
+> ( verify ( assert a ) )
+(unsat)
+; Clearing the VC gives the expected solution:
+> ( clear-vc! )
+> ( vc )
+(vc #t #t)
+> ( verify ( assert a ) )
+(model
+[a #f])
+3.2.4 Synthesis 🔗 ℹ
+syntax
+( synthesize input expr )
+( synthesize #:forall input #:guarantee expr )
+Taking I to be the set of symbolic constants ( symbolics input )
+and H to be the complement of I ,
+searches for a binding B H
+from H to concrete values that
+satisfies expr as follows.
+If B H is extended with any binding
+B I from I
+to concrete values, then the extended binding
+B H ∪ B I
+satisfies all the assertions generated by evaluating expr whenever
+it satisfies the assumptions generated by expr , as
+well as the assumptions and assertions accumulated in the verification condition
+( vc ) before expr is evaluated. If such a binding
+B H exists, the query returns one as part of a
+satisfiable solution? ; otherwise, the query returns
+( unsat ) .
+Formally, ( synthesize input expr ) searches for a model of
+the formula
+∃ H . (∃ I . pre ( H , I )) ∧
+(∀ I . pre ( H , I ) ⇒ post ( H , I )),
+where pre ( H , I ) is ( vc-assumes P ) ∧
+( vc-asserts P ) ∧ ( vc-assumes Q ) ,
+post ( H , I ) is ( vc-asserts Q ) ,
+P is the verification condition accumulated before the evaluation of
+expr , and Q is the verification condition
+generated by evaluating expr . This formula is stronger than the
+classic synthesis formula
+∃ H . ∀ I . pre ( H , I ) ⇒ post ( H , I ).
+The additional constraint, ∃ I . pre ( H , I ), rules out
+trivial solutions that allow pre ( H , I ) to
+be false on all inputs I .
+The formulas pre ( H , I ) and
+post ( H , I ) are required to be free of quantifiers, so
+no quantified formulas can be part of
+the assumptions or assertions that make up a synthesis query.
+The synthesize query does not retain the
+assumptions and assertions generated by expr ,
+but it does retain the updates to ( vc ) , if any,
+produced by evaluating input . In other words,
+( synthesize input expr ) is equivalent to
+( let ( [ v input ] ) ( synthesize v expr ) ) , where v
+is a fresh variable.
+Examples:
+> ( define-symbolic x c integer? )
+> ( vc )
+(vc #t #t)
+; This query finds a binding for c that works for all even x:
+> ( synthesize
+#:forall ( list x )
+#:guarantee
+( begin
+( assume ( even? x ) )
+( assert ( odd? ( + x c ) ) ) ) )
+(model
+[c 1])
+> ( vc ) ; VC is unchanged.
+(vc #t #t)
+> ( assume ( odd? x ) )
+> ( vc )
+(vc (! (= 0 (remainder x 2))) #t)
+; This query finds a binding for c that works for all odd x:
+> ( synthesize
+#:forall ( list x )
+#:guarantee ( assert ( odd? ( + x c ) ) ) )
+(model
+[c 0])
+> ( vc )
+(vc (! (= 0 (remainder x 2))) #t)
+; This query has no solution because we assumed (odd? x) above:
+> ( synthesize
+#:forall ( list x )
+#:guarantee
+( begin
+( assume ( even? x ) )
+( assert ( odd? ( + x c ) ) ) ) )
+(unsat)
+; Clearing the VC gives the expected solution:
+> ( clear-vc! )
+> ( vc )
+(vc #t #t)
+> ( synthesize
+#:forall ( list x )
+#:guarantee
+( begin
+( assume ( even? x ) )
+( assert ( odd? ( + x c ) ) ) ) )
+(model
+[c 1])
+3.2.5 Angelic Execution 🔗 ℹ
+syntax
+( solve expr )
+Searches for a binding of symbolic constants to concrete
+values that satisfies all the assumptions and assertions
+encountered during the evaluation of expr , as well
+as all the assumptions and assertions accumulated in the
+verification condition ( vc ) before the call to
+solve . If such a binding exists, the query returns
+one as part of a satisfiable solution? ; otherwise,
+the result is an unsatisfiable solution.
+Formally,
+( solve expr ) searches for a model of the formula
+( vc-assumes P ) ∧ ( vc-asserts P ) ∧
+( vc-assumes Q ) ∧ ( vc-asserts Q ) ,
+where P is the verification condition before the
+call to solve and Q is the verification condition
+generated by evaluating expr .
+The solve
+query does not retain the assumptions and assertions generated
+by expr , leaving the current verification condition
+( vc ) unchanged after the query returns.
+Examples:
+> ( define-symbolic x y boolean? )
+> ( assume x )
+> ( vc ) ; x is added to the VC's assumes.
+(vc x #t)
+; This query forces both x and y to be true.
+> ( solve ( assert y ) )
+(model
+[x #t]
+[y #t])
+> ( vc ) ; VC is unchanged.
+(vc x #t)
+; This query has solution because we assumed (not x) above:
+> ( solve ( assert ( not x ) ) )
+(unsat)
+; Clearing the VC gives the expected solution:
+> ( clear-vc! )
+> ( vc )
+(vc #t #t)
+> ( solve ( assert ( not x ) ) )
+(model
+[x #f])
+procedure
+( solve+ ) &rarr; procedure?
+Returns a stateful procedure that uses a fresh solver? instance
+to incrementally solve a sequence of constraints.
+The returned procedure consumes a constraint (i.e., a boolean value or symbolic term ),
+a positive integer, or the symbol ' shutdown .
+If the argument is a constraint, it is pushed onto the solver’s constraint stack and
+a solution for all constraints on the stack is returned.
+If the argument is a positive integer k , then the top k constraints are popped
+from the solver’s constraint stack and the result is the solution to the remaining constraints.
+If the argument is ' shutdown , all resources used by the procedure are released, and any
+subsequent calls to the procedure throw an exception.
+Examples:
+> ( define-symbolic x y integer? )
+> ( define inc ( solve+ ) )
+> ( inc ( < x y ) ) ; Push (< x y) and solve.
+(model
+[x 0]
+[y 1])
+> ( inc ( > x 5 ) ) ; Push (> x 5) and solve.
+(model
+[x 6]
+[y 7])
+> ( inc ( < y 4 ) ) ; Push (< y 4) and solve.
+(unsat)
+> ( inc 1 ) ; Pop (< y 4) and solve.
+(model
+[x 6]
+[y 7])
+> ( inc ( < y 9 ) ) ; Push (< y 9) and solve.
+(model
+[x 6]
+[y 7])
+> ( inc ' shutdown ) ; Release resources.
+> ( inc ( > y 4 ) ) ; Unusable after shutdown.
+solver-push: contract violation:
+expected: solver?
+given: #f
+argument position: 1st
+3.2.6 Optimization 🔗 ℹ
+syntax
+( optimize
+maybe-minimize
+maybe-maximize
+#:guarantee expr )
+maybe-minimize =
+| #:minimize min-expr
+maybe-maximize =
+| #:maximize max-expr
+min-expr : ( listof ( or/c integer? real? bv? ) )
+max-expr : ( listof ( or/c integer? real? bv? ) )
+Searches for an optimal binding of symbolic constants to
+concrete values that satisfies all the assumptions and
+assertions encountered during the evaluation of
+expr , as well as all the assumptions and assertions
+accumulated in the verification condition ( vc )
+before the evaluation of expr . The binding is
+optimal in that it minimizes the cost terms in
+the min-expr list and maximizes those in the
+max-expr list. If such a binding exists, the query
+returns one as part of a satisfiable solution? ; otherwise,
+the query returns ( unsat ) . For more details on
+solving optimization problems, see the
+Z3 optimization tutorial .
+Formally,
+( solve expr ) searches for an optimal model of the formula
+( vc-assumes P ) ∧ ( vc-asserts P ) ∧
+( vc-assumes Q ) ∧ ( vc-asserts Q ) ,
+where P is the verification condition before the
+evaluation of expr , Q is the verification condition
+generated by evaluating expr , the cost terms min-expr are
+minimized, and the cost terms max-expr are maximized.
+The optimize query does not retain the
+assumptions and assertions generated by expr ,
+but it does retain the updates to ( vc ) , if any,
+produced by evaluating min-expr and max-expr . In other words,
+( optimize #:minimize min-expr #:maximize max-expr #:guarantee expr ) is
+equivalent to
+( let ( [ v min-expr ] [ w max-expr ] ) ( optimize #:minimize v #:maximize w #:guarantee expr ) ) ,
+where v and w are fresh variables.
+Examples:
+> ( define-symbolic x y integer? )
+; This query maximizes x + y while ensuring that y - x < 1 whenever x < 2:
+> ( optimize
+#:maximize ( list ( + x y ) )
+#:guarantee
+( begin
+( assume ( < x 2 ) )
+( assert ( < ( - y x ) 1 ) ) ) )
+(model
+[x 1]
+[y 1])
+3.2.7 Reasoning Precision 🔗 ℹ
+parameter
+( current-bitwidth ) &rarr; ( or/c #f positive-integer? )
+( current-bitwidth k ) &rarr; void?
+k : ( or/c #f positive-integer? )
+= #f
+A parameter that defines the current reasoning precision
+for solver-aided queries over integer? and real? constants.
+Setting current-bitwidth to a positive integer k instructs Rosette to approximate
+both reals and integers with signed k -bit words. Setting it to #f instructs Rosette to use
+infinite precision for real and integer operations. As a general rule, current-bitwidth should
+be set once, before any solver-aided queries are issued.
+When current-bitwidth is #f , Rosette translates queries over
+reals and integers into constraints in the
+theories of reals and integers .
+These theories are effectively decidable only for linear constraints,
+so setting current-bitwidth to a positive integer will lead to better
+performance for programs that perform nonlinear arithmetic.
+When current-bitwidth is set to a positive integer k ,
+Rosette translates queries over reals and integers into constraints in the
+theory of bitvectors
+(of size k ), which can be decided efficiently in practice.
+When this form of translation is used, however, solver-aided queries can produce
+counterintuitive results due to arithmetic over- and under-flow, as demonstrated below.
+Rosette sets current-bitwidth to #f by default for two reasons.
+First, this setting is consistent with Racket’s infinite-precision semantics for integers and reals,
+avoiding counterintuitive query behavior.
+Second, the current-bitwidth parameter must be set to #f when
+executing queries over assertions that contain quantified formulas
+or uninterpreted functions .
+Otherwise, such a query will throw an exception.
+Examples:
+> ( define-symbolic x y real? )
+> ( define-symbolic f ( ~> real? real? ) )
+> ( current-bitwidth 5 ) ; Use 5 bits for integers and reals.
+> ( solve ( assert ( = x 3.5 ) ) ) ; 3.5 = 3 under 5-bit semantics.
+(model
+[x 3])
+> ( solve ( assert ( = x 64 ) ) ) ; 0 = 64 under 5-bit semantics,
+(model
+[x 0])
+> ( solve ( assert ( and ( = x 64 ) ( = x 0 ) ) ) ) ; leading to counterintuitive results.
+(model
+[x 0])
+> ( solve ; Quantifiers are not supported,
+( assert ( forall ( list x ) ( = x ( + x y ) ) ) ) )
+finitize: cannot use (current-bitwidth 5) with a quantified
+formula (forall (x) (= x (+ x y))); use (current-bitwidth
+#f) instead
+> ( solve ; and neither are uninterpreted functions.
+( assert ( = x ( f x ) ) ) )
+finitize: cannot use (current-bitwidth 5) with an
+uninterpreted function f; use (current-bitwidth #f) instead
+> ( current-bitwidth #f ) ; Use infinite-precision semantics ...
+> ( solve ( assert ( = x 3.5 ) ) ) ; to obtain the expected results.
+(model
+[x 7/2])
+> ( solve ( assert ( = x 64 ) ) )
+(model
+[x 64])
+> ( solve ( assert ( and ( = x 64 ) ( = x 0 ) ) ) )
+(unsat)
+> ( solve ; Quantifiers work, and
+( assert ( forall ( list x ) ( = x ( + x y ) ) ) ) )
+(model
+[y 0])
+> ( solve ( assert ( = x ( f x ) ) ) ) ; so do uninterpreted functions.
+(model
+[x 0]
+[f (fv real?~>real?)])
+> ( define-symbolic i j integer? )
+> ( solve ; But nonlinear integer arithmetic
+( begin ; is undecidable.
+( assert ( > i 0 ) )
+( assert ( > j 0 ) )
+( assert ( or ( = ( / i j ) 2 ) ( = ( / j i ) 2 ) ) ) ) )
+(unknown)
+top contents &larr; prev up next &rarr;

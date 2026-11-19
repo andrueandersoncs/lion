@@ -1,0 +1,215 @@
+About
+Download
+Usage
+Publications
+Examples
+Contact Us
+DRAT-trim
+DRAT-trim
+DRAT-trim is a satisfiability proof checking
+and trimming utility designed to validate proofs for all known
+satisfiability solving and preprocessing techniques.
+DRAT-trim can also emit trimmed formulas, optimized proofs,
+and TraceCheck + dependency graphs.
+A system description can be found
+below .
+Download
+GitHub
+About
+RAT Checks
+DRAT-trim is an improvement over its predecessor
+DRUP-trim because it allows for a stronger form of
+redundancy, RAT. This check permits all known techniques
+including extended resolution, blocked clause addition,
+bounded variable addition, extended learning, and many
+more.
+Deletion Information
+DRAT-trim is based on the DRAT
+( D eletion R esolution A symmetric T autology)
+proof format which includes lemma deletion instructions that
+can greatly reduce proof checking time.
+Backward Checking
+DRAT-trim employs backward checking (Goldberg and Novikov
+2003) of clausal proofs to minimize dependencies between
+clauses. Clauses are marked during conflict analysis and
+only marked clauses need to be checked.
+Core-first Unit Propagation
+The unit propagation routine of DRAT-trim has been
+modified to give preference to clauses marked as necessary,
+which further reduces the number of "necessary" clauses.
+Trimmed Formulas
+Trimmed formulas can optionally be emitted from
+DRAT-trim. These are ordered subsets of the original
+formula where unnecessary clauses have been omitted. One
+application of this output is preprocessing for Minimal
+Unsatisfiable Subset (MUS) extractors.
+Optmized Proofs
+DRAT-trim can optionally produce optimized proofs
+conataining a subset of the input lemmas and extra deletion
+information gained during backward checking.
+Dependency Graphs
+DRAT-trim also produces a dependency graph in the
+TraceCheck + format. This format is a derivative
+of the TraceCheck resolution graph format, but allows for
+stronger dependencies.
+Download
+Download DRAT-trim
+Last updated October 30, 2018.
+Usage
+DRAT-trim can be compiled with gcc/g++ with command:
+gcc -O2 -o drat-trim drat-trim.c
+A DIMACS CNF formula and DRAT/DRUP proof are mandatory
+arguments, but there several options for controlling behavior
+and emitting additional results.
+./drat-trim FORMULA PROOF [options]
+Option
+Description
+-h
+Prints a command line option summary.
+-c FILENAME
+Emits a trimmed formula in DIMACS CNF format.
+-l FILENAME
+Emits an optimized DRAT proof.
+-r FILENAME
+Emits a TraceCheck + dependency graph.
+-t NUMBER
+Enforce a time limit (in seconds). Default 20000.
+-f
+Forward checking for proof of unsatisfiability.
+-S
+Forward checking for proof of satisfiability.
+-u
+Do not use core-first unit propagation.
+-p
+Ignore deletion information.
+-v
+Verbose output.
+-x
+Only check lemmas for RUP.
+Publications
+Wetzler, N., Heule, M.J.H., and Hunt, Jr., W.A.:
+DRAT-trim: Efficient Checking and Trimming Using Expressive Clausal Proofs.
+In: Theory and Applications of Satisfiability Testing (SAT)
+Volume 8561 of LNCS, Springer (2014) 422-429
+[ pdf ]
+Heule, M.J.H., Hunt, Jr., W.A., and Wetzler, N.: Trimming
+while checking clausal proofs. In: Formal Methods in
+Computer-Aided Design (FMCAD), IEEE (2013) 181-188
+[ pdf ]
+Heule, M.J.H., Hunt, Jr., W.A., and Wetzler, N.: Verifying
+refutations with extended resolution. In: International
+Conference on Automated Deduction (CADE). Volume 7898 of
+LNAI, Springer (2013) 345-359
+[ pdf ]
+Examples
+Example 1.
+Consider below an input formula in DIMACS format (left), a DRAT proof with no deletion
+information (middle) and a DRAT proof with deletion information (right). Spaces and empty lines
+are added to the examples to improve readability. Deletion information is not required to include
+in proofs. However, adding deletion information to proofs can significantly lower the costs to
+check proofs by DRAT-trim.
+p cnf 4 8
+1 2 -3 0
+-1 -2 3 0
+2 3 -4 0
+-2 -3 4 0
+-1 -3 -4 0
+1 3 4 0
+-1 2 4 0
+1 -2 -4 0
+-1 0
+2 0
+0
+-1 0
+d -1 -2 3 0
+d -1 -3 -4 0
+d -1 2 4 0
+2 0
+d 1 2 -3 0
+d 2 3 -4 0
+0
+Example 2.
+In contrast to the DRUP format, DRAT allows the introduction of new variables. Consider the formula
+below in DIMACS format (left). The first six clauses in this formula can be replaced by five new
+clauses using a technique called bounded variable addition. To express this technique in DRAT, first
+add the new clauses with the literal of the new variable in the first position of the clause.
+Afterwards, remove the (original) clauses that have become redundant after adding the new ones.
+Addition of the new clauses and removal of some original clauses is shown in the DRAT proof below (right).
+The last two lines of the DRAT proof are added to make it a refutation.
+p cnf 5 8
+1 4 0
+1 5 0
+2 4 0
+2 5 0
+3 4 0
+3 5 0
+-1 -2 -3 0
+-4 -5 0
+6 1 0
+6 2 0
+6 3 0
+-6 4 0
+-6 5 0
+d 1 4 0
+d 2 4 0
+d 3 4 0
+d 1 5 0
+d 2 5 0
+d 3 5 0
+6 0
+0
+Binary Format
+Mapping DIMACS Literals to Unsigned Integers
+The first step of the binary encoding is mapping literals in
+the DIMACS format to unsigned integers. The following mapping function is used:
+map(l) := (l > 0)? 2*l : -2*l + 1. The mapping for some DIMACS literals are shown below.
+DIMACS literals unsigned integers
+-63 127
+129 258
+-8191 16383
+-8193 16387
+Variable-Byte Encoding of Unsigned Integers
+Assume that 'w0, ..., wi' are 7-bit words, 'w1' to 'wi' all non zero and
+the unsigned number 'x' can be represented as
+x = w0 + 2^7*w1 + 2^14*w2 + 2^(7*i)*wi
+The variable-byte encoding of DRAT (also used in AIGER ) is the sequence of
+i bytes b0, ... bi:
+1w0, 1w1, 1w2, ..., 0wi
+The MSB of a byte in this sequence signals whether this byte is the last
+byte in the sequence, or whether there are still more bytes to follow.
+Here are some examples:
+unsigned integer byte sequence of encoding (in hexadecimal)
+x b0 b1 b2 b3 b4
+0 00
+1 01
+2^7-1 = 127 7f
+2^7 = 128 80 01
+2^8 + 2 = 258 82 02
+2^14 - 1 = 16383 ff 7f
+2^14 + 3 = 16387 83 80 01
+2^28 - 1 ff ff ff 7f
+2^28 + 7 87 80 80 80 01
+Bringing it together
+In the binary DRAT format, each clause consists of at least two bytes. The
+first byte expresses whether the lemma is added (character 'a' or 61 in
+hexadecimal) or deleted (character 'd' or 64 in hexadecimal). The last byte
+of each lemma is the zero byte (00 in hexadecimal). In between these two
+bytes, the literals of the lemma are shown as unsigned integers in the
+variable-byte encoding.
+In the example below, the plain DRAT format requires 26 bytes (including the
+new line characters and excluding the redundant spaces in the second lemma),
+while the binary DRAT format of the same proof requires only 12 bytes. Emiting
+proofs in the binary format reduces the size on disk by approximatedly a
+factor of three compared to the conventional (plain) DRAT format.
+plain DRAT binary DRAT (in hexadecimal)
+d -63 -8193 0 64 7f 83 80 01 00 61 82 02 ff 7f 00
+129 -8191 0
+Contact Us
+Marijn J.H. Heule --- firstname at cs dot utexas dot edu
+Warren A. Hunt, Jr. --- lastname at cs dot utexas dot edu
+Nathan Wetzler --- firstinitial nospace lastname at cs dot
+utexas dot edu
+Marijn J. H. Heule, Warren A. Hunt, Jr., and Nathan Wetzler
+Supported by DARPA contract number N66001-10-2-4087
+Template
+from Bootstrap

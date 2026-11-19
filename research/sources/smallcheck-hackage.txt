@@ -1,0 +1,89 @@
+Hackage :: [Package]
+Search
+Browse
+What's new
+Upload
+User accounts
+smallcheck : A property-based testing library
+[ bsd3 , library , testing ]
+[ Propose Tags ]
+[ Report a vulnerability ]
+As of 2023, this library is largely obsolete: arbitrary test generators
+with shrinking such as falsify
+offer much better user experience.
+SmallCheck is a testing library that allows to verify properties
+for all test cases up to some depth. The test cases are generated
+automatically by SmallCheck.
+[ Skip to Readme ]
+Modules
+[ Index ] [ Quick Jump ]
+Test Test.SmallCheck Test.SmallCheck.Drivers
+Test.SmallCheck.Series
+Downloads
+smallcheck-1.2.2.tar.gz [ browse ] (Cabal source package)
+Package description (as included in the package)
+Maintainer's Corner
+Package maintainers
+ColinRunciman , GwernBranwen , OliverCharles , RomanCheplyaka , jdnavarro , Bodigrim
+For package maintainers and hackage trustees
+edit package information
+Candidates
+1.2.1
+Versions [ RSS ]
+0.2.1 , 0.4 , 0.5 , 0.6 , 0.6.1 , 0.6.2 , 1.0 , 1.0.1 , 1.0.2 , 1.0.3 , 1.0.4 , 1.1 , 1.1.0.1 , 1.1.1 , 1.1.2 , 1.1.3 , 1.1.3.1 , 1.1.4 , 1.1.5 , 1.1.6 , 1.1.7 , 1.2.0 , 1.2.1 , 1.2.1.1 , 1.2.2 ( info )
+Change log
+CHANGELOG.md
+Dependencies
+base (>=4.10 && <5) , logict (>=0.5 && <0.9) , mtl (<2.4) , pretty (<1.2) [ details ]
+Tested with
+ghc ==9.12.2, ghc ==9.10.2, ghc ==9.8.4, ghc ==9.6.7, ghc ==9.4.8, ghc ==9.2.8, ghc ==9.0.2, ghc ==8.10.7, ghc ==8.8.4, ghc ==8.6.5, ghc ==8.4.4, ghc ==8.2.2
+License
+BSD-3-Clause
+Author
+Colin Runciman, Roman Cheplyaka
+Maintainer
+Andrew Lelechenko <andrew.lelechenko@gmail.com>
+Uploaded
+by Bodigrim at 2026-08-01T12:36:30Z
+Category
+Testing
+Home page
+https://github.com/Bodigrim/smallcheck
+Bug tracker
+https://github.com/Bodigrim/smallcheck/issues
+Source repo
+head: git clone https://github.com/Bodigrim/smallcheck
+Distributions
+Arch: 1.2.2 , Fedora: 1.2.1.1 , LTSHaskell: 1.2.2 , Stackage: 1.2.2
+Reverse Dependencies
+26 direct, 155 indirect [ details ]
+Downloads
+53282 total (177 in the last 30 days)
+Rating
+2.0 (votes: 2)
+[estimated by Bayesian average ]
+Your Rating
+&lambda;
+&lambda;
+&lambda;
+Status
+Docs available [ build log ]
+Last success reported on 2026-08-01 [ all 1 reports ]
+Readme for smallcheck-1.2.2
+[ back to package description ]
+SmallCheck: a property-based testing library for Haskell
+As of 2023, this library is largely obsolete: arbitrary test generators
+with shrinking such as falsify
+offer much better user experience.
+SmallCheck is a testing library that allows to verify properties for all test
+cases up to some depth. The test cases are generated automatically by
+SmallCheck.
+Usefulness of such an approach to testing is based on the following observation:
+If a program fails to meet its specification in some cases, it almost always
+fails in some simple case.
+In many ways SmallCheck is very similar to QuickCheck. It uses the idea of type-based generators for test data, and the way testable properties are expressed is closely based on the QuickCheck approach. Like QuickCheck, SmallCheck tests whether properties hold for finite completely defined values at specific types, and reports counter-examples.
+The big difference is that instead of using a sample of randomly generated values, SmallCheck tests properties for all the finitely many values up to some depth, progressively increasing the depth used. For data values, depth means depth of construction. For functional values, it is a measure combining the depth to which arguments may be evaluated and the depth of possible results.
+The package is based on the paper
+by Colin Runciman, Matthew Naylor and Fredrik Lindblad.
+See the blog post by Roman Cheplyaka for the detailed comparison to QuickCheck.
+Produced by hackage and Cabal 3.16.1.0.

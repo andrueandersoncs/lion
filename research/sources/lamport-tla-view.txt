@@ -1,0 +1,480 @@
+A High-Level View of TLA+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A High-Level View of TLA+
+
+
+
+Leslie Lamport 
+Last modified on 10 August 2021 
+
+
+
+
+
+
+
+
+
+
+
+You'll miss a lot on this web site unless you enable Javascript
+in your browser.
+
+
+Introduction 
+
+
+[show] 
+
+
+
+
+TLA+ is a language for modeling software above the code level and
+hardware above the circuit level. It has an IDE (Integrated
+Development Environment) for writing models and running tools to check
+them. The tool most commonly used by engineers is the TLC model
+checker, but there is also a proof checker. TLA+ is based on
+mathematics and does not resemble any programming language. 
+Most engineers will find PlusCal, described below, to be the easiest way to
+start using TLA+.
+
+
+
+TLA+ models are usually called specifications . They are called
+
+models 
+in this introduction.
+
+
+PlusCal 
+
+[show] 
+
+
+
+
+
+PlusCal is a language for writing algorithms—especially
+concurrent and distributed ones. It is meant to replace
+pseudocode with precise, testable code. PlusCal looks like a
+simple toy programming language, but with constructs for describing
+concurrency and nondeterminacy. It is infinitely more expressive
+than any programming language because any mathematical formula can be
+used as a PlusCal expression. 
+A PlusCal algorithm is translated into a
+TLA+ model that can be checked with the TLA+ tools. 
+Because it looks like a programming language, most engineers find PlusCal
+easier to learn than TLA+. But because it looks like a
+programming language, PlusCal cannot structure complex models as well as
+TLA+ can.
+
+
+
+Click here for an example of 
+an algorithm written in PlusCal.
+
+
+
+
+
+
+Models
+
+
+[show] 
+
+
+
+
+Computers and computer networks are physical objects whose behaviors
+are described by continuous physical laws. They differ from most
+other kinds of physical objects in that their behaviors are naturally 
+modeled as sets of discrete events. Programming, software
+engineering, and most of computer science is concerned with models in
+which a behavior of a system is described as a set of discrete events.
+No model is a completely accurate description of a real system. 
+A model is a description of some aspect of the system, written for
+some purpose. 
+
+
+
+
+
+
+
+TLA+ is state-based, meaning that it models an execution of a system
+as a sequence of states, where an event is represented by a pair of
+consecutive states. We call a sequence of states a
+behavior ; and we call a pair of consecutive states a
+step rather than an event. 
+A system is modeled as the set of behaviors describing all of its
+possible executions.
+
+
+
+Modeling Above the Code Level
+
+
+[show] 
+
+
+
+
+
+TLA+ is used to model systems above the code level. 
+
+To see what this, means consider Euclid's algorithm for computing
+&thinsp; GCD(M,N) &thinsp;, the greatest
+common divisor of two positive integers &thinsp; M &thinsp;
+and &thinsp; N . Here is the algorithm:
+
+
+
+Let &thinsp; x &thinsp; equal
+&thinsp; M &thinsp; and &thinsp; y &thinsp;
+equal &thinsp; N &thinsp;.
+
+
+
+Repeated subtract the smaller of &thinsp; x &thinsp; and
+&thinsp; y &thinsp; from the larger.
+
+
+
+Stop when &thinsp; x &thinsp; and
+&thinsp; y &thinsp; have the same value. That value is the
+GCD of &thinsp; M &thinsp; and
+&thinsp; N &thinsp;.
+
+
+
+This description is above the code level. 
+
+Code to compute &thinsp; GCD(M,N) &thinsp; 
+would have to specify additional details such as the type of
+&thinsp; M &thinsp; and &thinsp; N &thinsp; (is
+it &thinsp; int ?
+&thinsp; long ?
+&thinsp; BigInteger ?) and what to do if
+&thinsp; M &thinsp; or &thinsp; N &thinsp; is
+not positive (throw an exception? return an error value?). 
+
+A programmer who didn't know Euclid's algorithm might decide to compute 
+&thinsp; GCD(M,N) &thinsp; 
+by a naive algorithm that sets &thinsp; x &thinsp; to the
+minimum of &thinsp; M &thinsp; and
+&thinsp; N &thinsp; and keeps decreasing
+&thinsp; x &thinsp; until it divides both
+&thinsp; M &thinsp; and
+&thinsp; N &thinsp;. The best coder in the world will
+not produce a good GCD program by coding the naive algorithm. 
+Moreover, thinking in terms of code makes it harder for a programmer
+to find a better algorithm. Finding a good algorithm requires
+thinking above the code level.
+
+
+
+
+No one writes a piece of code without first having a high-level model
+of what the code should do and how it should do it. A programmer
+never starts by deciding to declare some variables, adding a
+&thinsp; while &thinsp; statement, then adding an
+&thinsp; if &thinsp; statement, and so on—only discovering
+when finished that she's written a sorting program. But
+programmers rarely start with a precise model of the code.
+Having only a vague, incomplete model leads to basic design errors
+that the best coding won't correct. 
+
+
+TLA+ is a language for writing precise high-level models of what
+code does and how it does it. 
+
+
+
+
+Most programmers believe that precise models are good only for
+tiny well-defined problems like computing the GCD, but are useless for
+implementing complex systems. They're wrong. The more
+complex a system is, the more important it is to make it as simple as
+possible. In complex systems, simplicity isn't achieved by coding
+tricks. It's achieved by rigorous thinking above the code level.
+
+
+
+In 
+
+one industrial project ,
+starting with a TLA+ model reduced the size of a real-time
+operating system's code by a factor of ten. 
+Such a reduction in
+code size isn't obtained by better coding; it comes from thinking
+rigorously above the code level. 
+
+
+
+Writing a model above the code level doesn't prevent coding
+errors. Many methods and tools have been developed for finding
+coding errors, and they should be used. But they are not good
+for finding errors in the high-level model from which the code is
+derived. And it's impossible to test that a high-level model is
+implemented correctly if the model is just a vague idea in the
+programmer's mind, with no precise description.
+
+
+
+Testing the code is not an effective way to find fundamental design
+errors—especially in concurrent and distributed systems. 
+Moreover, a design error found after the code has been written is
+usually fixed with an ad hoc patch that is unlikely to
+eliminate all instances of the problem and is likely to introduce new
+errors. Design errors should be caught by writing a precise
+high-level model, before the code is written.
+
+
+
+
+Modeling Concurrent Systems 
+
+
+[show] 
+
+
+
+
+A concurrent system is one that we think of as composed of multiple
+concurrently operating components called 
+
+processes 
+. 
+
+
+
+A distributed system is a concurrent system in which we
+think of the processes as being spatially separated, usually communicating
+with one other by sending messages.
+
+
+
+
+
+In a state-based model, a state represents the entire physical state
+of a system. Some people find it hard to believe that one can or
+should model a distributed system in terms of a single global
+state. Over 40 years of experience has taught me that this is
+the most generally useful way to model distributed algorithms and
+systems.
+
+
+
+State Machines
+
+
+[show] 
+
+
+
+
+Like many state-based methods, TLA+ describes a set of
+behaviors with two things:
+
+An initial condition that specifies the 
+possible starting states.
+
+
+A next-state relation that
+specifies the possible steps (pairs of successive states).
+
+
+
+They specify the set of behaviors whose first state satisfies the
+initial condition and whose every step 
+satisfies the next-state relation. 
+
+
+
+This kind of model is often called a state machine . (A
+finite-state machine is a state machine with a finite set of possible
+states. Finite-state machines are not nearly as useful as
+general state machines.) A Turing machine is an example of a
+state machine. In a deterministic Turing machine, the next-state
+relation allows at most one next state for any state, and it allows no
+next state for a terminating state. 
+
+
+
+The simplest and most practical method of precisely describing the
+semantics of a programming language, called operational semantics,
+essentially consists of showing how to compile a program in the
+language to a state machine. Given an operational semantics, any
+program in the language can be viewed as a state machine. I
+suspect that most programmers intuitively think of a program in that
+way.
+
+The next-state action specifies what steps may happen; it
+doesn't specify what steps, if any, must happen. That
+requires an additional condition, called a fairness 
+property. A state machine that models a sequential program
+usually includes the fairness property that some step must be taken
+(the behavior must not stop) if the next-state relation allows a step
+to be taken. Models of concurrent and distributed programs often
+have more complicated fairness properties.
+
+
+
+
+
+
+
+A state-machine model without a fairness condition can be used to
+catch errors of commission , in which the system does something
+wrong. It can't be used to catch errors of omission , in
+which the system fails to do something. In practice, errors of
+commission are more numerous and harder to find than errors of
+omission. Often, engineers don't bother adding fairness
+conditions. Therefore, you should first learn to write the
+initial condition and next-state relation in your TLA+ models. 
+Later, you can learn to write fairness conditions.
+
+
+
+Checking Properties 
+
+
+[show] 
+
+
+
+
+One reason for modeling a system is to check if it does what we want
+it to. We do that by checking if the model satisfies properties
+that we believe assert that the system does what it should. TLA+
+can assert, and its tools can check, only that some property of an
+individual behavior is true of every possible behavior of the
+model. Thus, TLA+ cannot assert that 99% of all possible
+behaviors terminate in a correct state. However, it can assert
+(and its tools can check) that every possible behavior terminates in a
+correct state if its initial state belongs to a particular set
+containing 99% of all possible initial states.
+
+
+
+
+The most useful type of property to check is an invariance property,
+which asserts that something is true of every state of every possible
+behavior. Often, an engineer will check only invariance
+properties of a model.
+
+
+
+For a model containing a fairness condition, you should also check
+simple properties asserting that something eventually happens—for
+example, that every execution eventually halts. Those properties,
+called liveness properties , are easily expressed in TLA+.
+
+
+
+
+The rich variety of properties that we want to check for concurrent
+systems can't all be expressed as invariance and simple liveness
+properties. They can be expressed as state machines (possibly with
+fairness conditions). 
+
+A state machine can be viewed as the property that is satisfied by the
+possible behaviors of the state machine. We can check whether
+another state machine satisfies this property. If it does, we
+say that the other state machine implements the state
+machine.
+
+
+
+
+In TLA+ there is no formal distinction between a state machine and a
+property. Both are described by mathematical formulas. 
+
+A state machine is a formula having a particular shape , 
+different from the shape of an invariance or liveness property. 
+
+
+Both satisfying a property and implementing a state
+machine mean that one formula implies another.
+
+
+
+
+
+Today, most engineers check only invariance properties and simple
+liveness properties. 
+
+However, even if you never do it, knowing how it is done explains
+what it means for a program to implement a model, which can help you
+avoid making errors in your code. 
+
+
+
+
+
+
+The TLA+ Language 
+
+
+[show] 
+
+
+
+
+TLA+ is based on mathematics and does not resemble a programming
+language. Most engineers are familiar with programming
+languages, but not with precise mathematical notation. We
+naturally find what we're familiar with to be simpler than anything
+else. It's hard for me to believe that English is not inherently
+simpler than German. Upon first seeing a TLA+ model, some
+engineers find TLA+ intimidating. Read the
+
+Industrial Use of TLA+ 
+page to see that TLA+ is not very hard to learn.
+
+
+
+Using TLA+ teaches you that math is inherently more expressive than
+programming languages because it can describe a value without having
+to describe how the value is computed. For example, it can
+describe the greatest common divisor (GCD) of two numbers as the
+largest positive integer that divides both numbers. This makes
+it possible to write a model for a specific purpose, abstracting away
+irrelevant details such as how to calculate the GCD. (Putting
+code in a procedure doesn't abstract it away; it just makes you
+go elsewhere to read the code, requiring that you understand the
+semantics of procedure call as well as the code.) 
+
+
+
+Starting with PlusCal provides a gentle entry to TLA+. Even if you
+know TLA+, it's easier to write some models in PlusCal rather
+than directly in TLA+. But to get the full benefit of thinking
+mathematically above the code level, you should learn TLA+.
+
+
+
+
+
+
+
+
+
+
+
+Back

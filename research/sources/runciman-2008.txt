@@ -1,0 +1,250 @@
+Skip to main content 
+
+
+research .chalmers.se 
+
+
+
+
+
+På svenska 
+
+
+
+
+
+
+
+
+
+Login
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SmallCheck and Lazy SmallCheck: automatic exhaustive testing for small values
+
+Journal article, 2008 
+
+
+
+
+This paper describes two Haskell libraries for property-based testing. Following the lead of QuickCheck, these testing libraries SmallCheck and Lazy SmallCheck also use type-based generators to obtain test-sets of finite values for which properties are checked, and report any counter-examples found. But instead of using a sample of randomly generated values they test properties for all values up to some limiting depth, progressively increasing this limit. The paper explains the design and implementation of both libraries and evaluates them in comparison with each other and with QuickCheck.
+
+
+
+
+Testing and Debugging
+
+
+Applicative (Functional) Programming
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Author
+
+
+
+
+Fredrik Lindblad
+
+
+Chalmers, Computer Science and Engineering (Chalmers)
+
+
+
+Other publications 
+Research 
+
+
+
+
+
+Matthew Naylor
+
+
+
+
+
+
+
+
+Colin Runciman
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SIGPLAN Notices (ACM Special Interest Group on Programming Languages)
+
+
+15420205 (ISSN)
+
+Vol. 44 2 37-48
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Subject Categories (SSIF 2011)
+
+Computer Science
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+More information
+
+
+
+
+
+
+
+Created
+
+10/7/2017 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Feedback and support
+
+
+If you have questions, need help, find a bug or just want to give us feedback you can contact us per e-mail research.lib@chalmers.se.
+
+
+
+
+About
+
+
+Research.chalmers.se contains research information from Chalmers University of Technology, Sweden. It includes information on projects, publications, research funders and collaborations.
+
+More about coverage period and what is publicly available
+
+Privacy and cookies
+
+Accessibility
+
+
+Bibliography processing 
+
+
+Citation Style Language
+
+citeproc-js (Frank Bennett) 
+
+
+
+
+
+Links
+
+
+Chalmers Library 
+
+
+Chalmers Research 
+
+
+Chalmers Student Theses 
+
+Chalmers University of Technology
+
+
+SE-412 96 GOTHENBURG, SWEDEN
+
+PHONE: +46 (0)31-772 10 00
+
+WWW.CHALMERS.SE

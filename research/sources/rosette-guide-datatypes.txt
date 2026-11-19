@@ -1,0 +1,76 @@
+► The Rosette Guide
+1 Getting Started
+2 Rosette Essentials
+3 Syntactic Forms
+4 Built- In Datatypes
+5 Structures
+6 Libraries
+7 Symbolic Reflection
+8 Unsafe Operations
+9 Performance
+10 Debugging
+11 References
+Index
+▼ 4 Built- In Datatypes
+4.1 Equality
+4.2 Booleans, Integers, and Reals
+4.3 Bitvectors
+4.4 Uninterpreted Functions
+4.5 Procedures
+4.6 Pairs and Lists
+4.7 Vectors
+4.8 Boxes
+4.9 Solvers and Solutions
+9.3
+Racket
+top contents &larr; prev up next &rarr;
+4 Built-In Datatypes 🔗 ℹ
+The previous chapter describes the
+Racket syntax forms that are lifted by Rosette to
+work on symbolic values.
+This chapter describes the lifted datatypes and their corresponding operations. Most
+lifted operations retain their Racket semantics, with the exception of
+equality predicates (Section 4.1 ) and
+numeric operations (Section 4.2 ).
+Rosette distinguishes between two kinds of built-in datatypes:
+solvable and unsolvable .
+Solvable types are (efficiently) supported by SMT solvers, and they include booleans,
+integers, reals, bitvectors, and uninterpreted functions. All other built-in types are
+unsolvable— that is, not as well supported by SMT solvers.
+Every lifted type is equipped with a predicate (e.g., boolean? ) that
+recognizes values of that type. Solvable types are themselves recognized by
+the solvable? predicate. Lifted types include both concrete Racket
+values and symbolic Rosette values, but only solvable types include
+symbolic constants ,
+as introduced by define-symbolic [ * ] .
+4.1 Equality
+4.2 Booleans, Integers, and Reals
+4.2.1 Additional Logical Operators
+4.2.2 Quantifiers
+4.3 Bitvectors
+4.3.1 Comparison Operators
+4.3.2 Bitwise Operators
+4.3.3 Arithmetic Operators
+4.3.4 Conversion Operators
+4.3.5 Additional Operators
+4.4 Uninterpreted Functions
+4.5 Procedures
+4.6 Pairs and Lists
+4.6.1 Lifted Operations on Pairs and Lists
+4.6.2 Additional Operations on Pairs and Lists
+4.7 Vectors
+4.7.1 Lifted Operations on Vectors
+4.7.2 Additional Operations on Vectors
+4.8 Boxes
+4.9 Solvers and Solutions
+4.9.1 The Solver Interface
+4.9.2 Supported Solvers
+4.9.2.1 Z3
+4.9.2.2 CVC4
+4.9.2.3 Boolector
+4.9.2.4 Bitwuzla
+4.9.2.5 CVC5
+4.9.2.6 STP
+4.9.2.7 Yices2
+4.9.3 Solutions
+top contents &larr; prev up next &rarr;

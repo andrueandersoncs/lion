@@ -1,0 +1,145 @@
+packages/domain/src/Prove/internal/Smt.ts and Induction.ts at alchemy-run/alchemy e4adb720c6648882aa9b80fbc3707dddd628fbf8 (comments and the solver setup)
+
+import * as Effect from "effect/Effect";
+import * as Result from "effect/Result";
+import type * as Aggregate from "../../Aggregate.ts";
+import type * as Decision from "../../Decision.ts";
+import type { Verdict } from "./Check.ts";
+import * as Check from "./Check.ts";
+import type { Interpreter } from "./Interpreter.ts";
+import * as Paths from "./Paths.ts";
+import type * as Smt from "./Smt.ts";
+import * as Symbolic from "./Symbolic.ts";
+import * as Value from "./Value.ts";
+
+/** What one command does to every invariant, from any state the schema allows. */
+export interface Row {
+  readonly command: string;
+  /** The paths through the command that were checked. */
+  readonly paths: number;
+  readonly verdicts: ReadonlyMap<string, Verdict>;
+  /**
+   * Whether every state the command leaves is one the state's schema allows.
+   * The proofs assume it of the state a command meets, so they follow one
+   * another only when every command keeps it.
+   */
+  readonly fits: Verdict;
+  /**
+   * Whether some state the invariants allow lets the command record an event:
+   * `false` when none does, so the proofs say nothing about it, and
+   * `undefined` when the prover could not tell.
+   */
+  readonly accepted: boolean | undefined;
+  /**
+   * What the command writes to a part of the state whose schema has a check
+   * the prover does not read: the new value is not proved to pass it.
+   */
+  readonly unkept: ReadonlyArray<string>;
+}
+
+/** The checks of the state's schema no proof covers, as lines of a report. */
+export const unkept = (rows: ReadonlyArray<Row>): ReadonlyArray<string> =>
+  rows.flatMap((row) =>
+    row.unkept.map(
+      (line) => `${line}: the prover does not read that check, so it is not proved kept`,
+    ),
+  );
+
+/** Whether every command keeps the state in its schema, so that the proofs follow one another. */
+export const closed = (rows: ReadonlyArray<Row>): boolean =>
+  rows.every((row) => row.fits._tag === "Proved");
+
+const RANK = {
+  Proved: 0,
+  Bounded: 1,
+  Unknown: 2,
+  NotTranslated: 3,
+  Unconfirmed: 4,
+  Violated: 5,
+} as const;
+
+/**
+ * What a proof on one path is worth: where the path gave a list only a few
+ * items, it says nothing of a longer one.
+ */
+export const within = (verdict: Verdict, run: Value.Run): Verdict =>
+  verdict._tag !== "Proved" || run.bounds.size === 0
+    ? verdict
+    : {
+        _tag: "Bounded",
+        reason: [...run.bounds]
+          .map(([name, most]) => `${name} was tried with up to ${most} items`)
+          .join(", "),
+      };
+
+export const worse = (a: Verdict, b: Verdict): Verdict => (RANK[b._tag] > RANK[a._tag] ? b : a);
+
+export const notRead = (error: Value.NotTranslated): Verdict => ({
+  _tag: "NotTranslated",
+  file: error.file,
+  line: error.line,
+  reason: error.reason,
+});
+
+export const MAX_PATHS = 4096;
+
+/**
+ * Take each command from any state that satisfies every invariant, along
+ * every path through its code, and say whether each invariant still holds.
+ */
+export const rows = Effect.fn(function* (
+  solver: Smt.Solver,
+  interpreter: Interpreter,
+
+----- Smt.ts -----
+  return head?._tag === "Atom" ? bare(head.text) : undefined;
+};
+
+/** A name no TypeScript value is given: the constant a value is read back through. */
+const READ = "$read.";
+
+/** The most work the solver does on one question, in its own units: a few seconds of it. */
+const RLIMIT = 40_000_000;
+
+/**
+ * Z3, compiled to WebAssembly. One instance serves every query, each in a
+ * solver of its own; it is torn down with the scope.
+ *
+ * A query is loaded with `solver_from_string`, which reads the text before it
+ * returns. Z3's `eval_smtlib2_string` hands the text to another thread and
+ * frees it first, so now and then the solver reads garbage.
+ */
+export const solver: Effect.Effect<Solver, SolverError, Scope.Scope> = Effect.gen(function* () {
+  const failed = (step: string) => (cause: unknown) =>
+    new SolverError({ message: `${step}: ${String(cause)}` });
+  const z3 = yield* Effect.tryPromise({
+    try: () => import("z3-solver"),
+    catch: failed("z3-solver, a dependency of @alchemy.run/domain, did not load"),
+  });
+  const { Z3, context } = yield* Effect.acquireRelease(
+    Effect.tryPromise({
+      try: () => z3.init(),
+      catch: failed("z3-solver did not start (it runs under Node, not Bun)"),
+    }).pipe(
+      Effect.map((started) => {
+        // The same question gets the same answer on every machine: the solver stops
+        // after a fixed amount of work, not of time, and starts from fixed seeds. The
+        // timeout is only for a question that hangs.
+        started.Z3.global_param_set("smt.random_seed", "0");
+        started.Z3.global_param_set("sat.random_seed", "0");
+        const config = started.Z3.mk_config();
+        started.Z3.set_param_value(config, "rlimit", String(RLIMIT));
+        started.Z3.set_param_value(config, "timeout", "60000");
+        const context = started.Z3.mk_context(config);
+        // Models print as `(define-fun name () Sort value)`, which `parse` reads.
+        started.Z3.set_ast_print_mode(context, z3.Z3_ast_print_mode.Z3_PRINT_SMTLIB2_COMPLIANT);
+        return {
+          Z3: started.Z3,
+          em: started.em as { readonly PThread?: { readonly terminateAllThreads?: () => void } },
+          context,
+        };
+      }),
+    ),
+    (started) =>
+      Effect.sync(() => {
+        started.Z3.del_context(started.context);

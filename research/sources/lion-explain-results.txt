@@ -1,0 +1,137 @@
+This guide shows how to use why to trace a derived fact back to its sources, and to find what a fact that does not hold is missing.
+Ask why a fact holds
+Give why the fact, with no variables:
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["why", ["path", "a", "c"]]]
+Each level names the fact, the rule that derived it, and the facts because of which it holds. A fact you added says "given": true.
+See which way is told
+A row can come about in several ways. why tells the one a new database finds first: rules run in the order they were added, round after round from the facts, and of the answers of the first rule that gives the row, the least. So a path is explained by its shortest chain of edges, here the edge from a to c that came after the path was derived through b:
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["query", ["path", "?x", "?y"]],
+  ["fact", ["edge", "a", "c"]],
+  ["why", ["path", "a", "c"]]]
+The tree does not depend on the order the facts were added in, or on what the database derived before they changed: a database given the three edges at once tells the same.
+Read filters and negations
+Filters appear as check, with the values they were called on, and negations as absent, with the goal that had no match and why it had none:
+["begin",
+  ["relation", "user", ["name", "age"]],
+  ["relation", "banned", ["name"]],
+  ["relation", "eligible", ["name"]],
+  ["fact", ["user", "ana", 34]],
+  ["rule", ["eligible", "?n"],
+    ["user", "?n", "?age"],
+    ["number/greaterThan", "?age", 18],
+    ["not", ["banned", "?n"]]],
+  ["why", ["eligible", "ana"]]]
+See how a figure was worked out
+A rule that computes a value with = shows the computation as a check too, with the values it was given in place of its variables, so a ratio or a total traces to the rows it came from. Every check, evaluated as it stands, is true, so anyone can work the arithmetic again:
+["begin",
+  ["relation", "line", ["item", "usd_m"]],
+  ["relation", "gross_margin", ["percent"]],
+  ["fact", ["line", "revenue", 409.8], ["line", "cost of services", 301.5]],
+  ["rule", ["gross_margin", "?percent"],
+    ["line", "revenue", "?revenue"],
+    ["line", "cost of services", "?cost"],
+    ["=", "?percent",
+      ["number/divide",
+        ["number/round", ["number/multiply", 1000, ["number/divide", ["number/subtract", "?revenue", "?cost"], "?revenue"]]],
+        10]]],
+  ["why", ["gross_margin", ["array/head", ["find", "?p", ["gross_margin", "?p"]]]]]]
+The figure in the last line is itself worked out, with find, so the program never states the 26.4 it explains.
+See what a pattern matched
+A goal can say which rows it wants with a pattern or a schema, and then the goal itself does not say which row it found. why does: the premise is the row the goal matched. A schema check that held is a check:
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["relation", "big", ["id"]],
+  ["schema", "Order", ["schema/open", {"id": "value/integer?"}]],
+  ["fact",
+    ["inbox", {"id": 1, "total": 80, "note": "gift"}],
+    ["inbox", {"id": 2, "total": 20}]],
+  ["rule", ["big", "?id"],
+    ["inbox", ["schema/open", {"id": "?id", "total": "?total"}]],
+    ["schema/fits?", {"id": "?id"}, "Order"],
+    ["number/greaterThan", "?total", 50]],
+  ["why", ["big", 1]]]
+See what an aggregate combined
+For an aggregated fact, why lists every match it combined under matches, in the order of their answers. For min, max, and shortest, it explains the one match that produced the value, the least where several did.
+["begin",
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["relation", "spend", ["customer", "total"]],
+  ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20]],
+  ["rule", ["spend", "?c", ["aggregate/sum", "?a"]], ["order", "?_", "?c", "?a"]],
+  ["why", ["spend", "ana", 50]]]
+Ask why a fact does not hold
+For a fact that does not hold, why returns it as absent, and under because every way it could have held and what stood in the way. Each rule that could give the fact is a way. It names the rule, the goals of its body that held under because, and under but the goal that stopped it:
+["begin",
+  ["relation", "user", ["name", "age"]],
+  ["relation", "banned", ["name"]],
+  ["relation", "eligible", ["name"]],
+  ["fact", ["user", "ana", 34], ["user", "bo", 16], ["user", "cy", 40], ["banned", "cy"]],
+  ["rule", ["eligible", "?n"],
+    ["user", "?n", "?age"],
+    ["number/greaterThan", "?age", 18],
+    ["not", ["banned", "?n"]]],
+  {"bo": ["why", ["eligible", "bo"]],
+   "cy": ["why", ["eligible", "cy"]],
+   "dee": ["why", ["eligible", "dee"]]}]
+What stands under but is the other side of the goal that stopped the rule. A filter that was false and a relation call with no match are absent. A not stops a rule because what it denies holds, so cy's but is the fact that he is banned. Every absent, asked as it stands, is false, as every check is true. A variable the rule had not bound when it stopped keeps its name, as ?age does for dee.
+Lion runs a rule's body from the values the fact gives its head, so the goals those values reach come first and a rule stops as early as it can. A rule is told once for every answer of its first goals that the next goal stops. A fact that no rule could give has an empty because.
+Follow an absent fact through its rules
+An absent goal that rules could give is explained in turn, so the tree goes down to the facts that are missing. A goal the tree has explained once is written without because wherever it comes up again, which is also where recursion ends: ["path", "a", "d"] would need itself.
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "a"], ["edge", "c", "d"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"]],
+  ["why", ["path", "a", "d"]]]
+See what a rule gave instead
+When a rule's whole body holds and the fact is still absent, the rule gave another row: its head computes or combines a value, and it is not the one asked about. Such a way has no because of its own. Its but is the row the rule gave, explained as any row that holds:
+["begin",
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["relation", "spend", ["customer", "total"]],
+  ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20]],
+  ["rule", ["spend", "?c", ["aggregate/sum", "?a"]], ["order", "?_", "?c", "?a"]],
+  ["why", ["spend", "ana", 60]]]
+See why a goal under not has no match
+A goal under not can be made of several goals, with variables of its own. When it is absent, each of its alternatives is a way, told like a rule's body but without a rule:
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "tall", ["name"]],
+  ["relation", "plain", ["name"]],
+  ["fact", ["person", "ada"], ["mother", "ada", "eve"]],
+  ["rule", ["plain", "?p"],
+    ["person", "?p"],
+    ["not", ["and", ["mother", "?p", "?m"], ["tall", "?m"]]]],
+  ["why", ["plain", "ada"]]]
+See what is only assumed
+Lion is closed-world: what is not known does not hold. Most of what is absent stays absent whatever is learned later about an unknown, but not all of it. Ben's unknown mother is not known to be eve, and she may be. why marks such a goal with "assumed": true: it could come to hold once an unknown is known.
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "stranger", ["name"]],
+  ["fact", ["person", "ada"], ["person", "ben"], ["mother", "ada", "eve"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["stranger", "?c"], ["mother", "?c", "?m"], ["not", ["=", "?m", "eve"]]],
+  {"ben is a stranger": ["why", ["stranger", "ben"]],
+   "ada is not": ["why", ["stranger", "ada"]],
+   "ben's mother is not eve": ["why", ["mother", "ben", "eve"]],
+   "ada's mother is not fay": ["why", ["mother", "ada", "fay"]]}]
+Ben is a stranger only as far as is known: the absent his row rests on is assumed. Ada is not a stranger whatever ben's mother turns out to be, so nothing there is marked. Read the mark on the goal it stands on:
+  An absent goal that is not marked stays absent whatever the unknowns are. What stands under its because says what stood in the way, and a mark there is about that goal, not about this one.
+  A fact holds whatever the unknowns are when nothing it rests on is marked: no premise under its because or matches, however deep, other than under the because of an absent goal.
+  A check is marked when it computes with an unknown, as ["value/unknown?", "?m"] does. An = or in between values holds whatever an unknown is. A row that combines matches, such as a count, is marked when a match holds an unknown or its rule's body could gain one.
+The mark is safe rather than exact. Lion follows each rule that could give the goal, and marks the goal when a row that holds an unknown could match one of the goals on the way. A goal that is not marked cannot change. One that is marked may still not change, for a reason Lion does not look for. "Saying what an unknown is" means adding the fact its some form describes with a value in place of its variable, such as ["fact", ["mother", "ben", "eve"]].
+Related
+  why in the reference.

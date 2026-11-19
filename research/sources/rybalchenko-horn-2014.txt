@@ -1,0 +1,298 @@
+(Quantified) Horn Constraint Solving for Program Verification and Synthesis
+Andrey Rybalchenko
+Microsoft Research
+Email: rybal@microsoft.com
+Abstract
+We show how automatic tools for the verification of linear and branching time properties of procedural, multi-threaded, and functional programs as well as program synthesis can be naturally and uniformly seen as solvers of constraints in form of (quantified) Horn clauses over background logical theories. Such a perspective can offer various advantages, e. g., a logical separation of concerns between constraint generation (also known as generation of proof obligations) and constraint solving (also known as proof discovery), reuse of solvers across different verifications tasks, and liberation of proof designers from low level algorithmic concerns and vice versa.
+To appear in Theory and Practice of Logic Programming (TPLP)
+keywords
+Horn constraints, program verification, program synthesis
+1 Introduction
+A variety of interesting and important verification and synthesis
+questions about programs can be formulated as constraint satisfaction
+problems in form of implication/Horn constraints over a suitable
+background
+theory [ 11 , 13 , 10 , 22 , 5 , 3 ] .
+Verification of temporal properties and program synthesis are
+particularly relevant examples of such questions.
+Then, given an efficient constraint solver we can obtain a program
+verifier or synthesizer by composing it with a constraint generator.
+As a result we achieve a separation of concerns such that deduction
+rules for reasoning about programs can be developed independently and
+interact compositionally with inference engines (that automate the
+deduction process).
+2 Constraint generation
+We illustrate the constraint based approach using the following example.
+Let a program be represented by an assertion 𝑖𝑛𝑖𝑡 ⁡ ( v ) \mathit{init}(v) that describes
+a set of initial states, and an assertion 𝑛𝑒𝑥𝑡 ⁡ ( v , v ′ ) \mathit{next}(v,v^{\prime}) that
+describes a binary transition relation.
+Safety
+To prove that each state that is reachable from an initial state by
+following the transition relation satisfies an assertion 𝑠𝑎𝑓𝑒 ⁡ ( v ) \mathit{safe}(v) we
+generate the following constraint.
+∃ 𝑖𝑛𝑣 : ( ∀ v : 𝑖𝑛𝑖𝑡 ( v ) → 𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v ∀ v ′ : 𝑖𝑛𝑣 ( v ) ∧ 𝑛𝑒𝑥𝑡 ( v , v ′ ) → 𝑖𝑛𝑣 ( v ′ ) ) ∧ ( ∀ v : 𝑖𝑛𝑣 ( v ) → 𝑠𝑎𝑓𝑒 ( v ) ) \begin{array}[t]{@{}l@{}}\exists\mathit{inv}:\\[3.0pt]
+\qquad\begin{array}[t]{@{}l@{\;}l@{}}&(\forall v:\mathit{init}(v)\rightarrow\mathit{inv}(v))\\[3.0pt]
+\land&(\forall v\;\forall v^{\prime}:\mathit{inv}(v)\land\mathit{next}(v,v^{\prime})\rightarrow\mathit{inv}(v^{\prime}))\\[3.0pt]
+\land&(\forall v:\mathit{inv}(v)\rightarrow\mathit{safe}(v))\end{array}\end{array}
+Here we rely on second order existential quantifier to model the
+search for a safe (forward-)inductive invariant.
+Any model of 𝑖𝑛𝑣 \mathit{inv} is such an invariant.
+Note that by using the following constraint system (but not the
+solver/inference engine) we can change the proof rule from forward
+invariance to backward invariance.
+∃ 𝑏𝑖𝑛𝑣 : ( ∀ v : ¬ 𝑠𝑎𝑓𝑒 ( v ) → 𝑏𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v ∀ v ′ : 𝑏𝑖𝑛𝑣 ( v ′ ) ∧ 𝑛𝑒𝑥𝑡 ( v , v ′ ) → 𝑏𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v : 𝑏𝑖𝑛𝑣 ( v ) ∧ 𝑠𝑎𝑓𝑒 ( v ) → 𝑓𝑎𝑙𝑠𝑒 ) \begin{array}[t]{@{}l@{}}\exists\mathit{binv}:\\[3.0pt]
+\qquad\begin{array}[t]{@{}l@{\;}l@{}}&(\forall v:\neg\mathit{safe}(v)\rightarrow\mathit{binv}(v))\\[3.0pt]
+\land&(\forall v\;\forall v^{\prime}:\mathit{binv}(v^{\prime})\land\mathit{next}(v,v^{\prime})\rightarrow\mathit{binv}(v))\\[3.0pt]
+\land&(\forall v:\mathit{binv}(v)\land\mathit{safe}(v)\rightarrow\mathit{false})\end{array}\end{array}
+Furthermore, we can combine forward and backward reasoning in the same
+constraint system:
+∃ 𝑖𝑛𝑣 ​ ∃ 𝑏𝑖𝑛𝑣 : ( ∀ v : 𝑖𝑛𝑖𝑡 ( v ) → 𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v ∀ v ′ : 𝑖𝑛𝑣 ( v ) ∧ 𝑛𝑒𝑥𝑡 ( v , v ′ ) → 𝑖𝑛𝑣 ( v ′ ) ) ∧ ( ∀ v : ¬ 𝑠𝑎𝑓𝑒 ( v ) → 𝑏𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v ∀ v ′ : 𝑏𝑖𝑛𝑣 ( v ′ ) ∧ 𝑛𝑒𝑥𝑡 ( v , v ′ ) → 𝑏𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v : 𝑖𝑛𝑣 ( v ) ∧ 𝑏𝑖𝑛𝑣 ( v ) → 𝑓𝑎𝑙𝑠𝑒 ) \begin{array}[t]{@{}l@{}}\exists\mathit{inv}\;\exists\mathit{binv}:\\[3.0pt]
+\qquad\begin{array}[t]{@{}l@{\;}l@{}}&(\forall v:\mathit{init}(v)\rightarrow\mathit{inv}(v))\\[3.0pt]
+\land&(\forall v\;\forall v^{\prime}:\mathit{inv}(v)\land\mathit{next}(v,v^{\prime})\rightarrow\mathit{inv}(v^{\prime}))\\[3.0pt]
+\land&(\forall v:\neg\mathit{safe}(v)\rightarrow\mathit{binv}(v))\\[3.0pt]
+\land&(\forall v\;\forall v^{\prime}:\mathit{binv}(v^{\prime})\land\mathit{next}(v,v^{\prime})\rightarrow\mathit{binv}(v))\\[3.0pt]
+\land&(\forall v:\mathit{inv}(v)\land\mathit{binv}(v)\rightarrow\mathit{false})\end{array}\end{array}
+All these reasoning approaches can be automated by the same solver,
+which can be made highly beneficial through consolidation of
+heuristics, optimizations, and improvements.
+Termination
+To prove program termination, i.e., absence of infinite sequences of
+states that start in an initial state and follow the transition
+relation, we can resort to the following constraint.
+∃ 𝑖𝑛𝑣 ​ ∃ 𝑟𝑜𝑢𝑛𝑑 : ( ∀ v : 𝑖𝑛𝑖𝑡 ( v ) → 𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v ∀ v ′ : 𝑖𝑛𝑣 ( v ) ∧ 𝑛𝑒𝑥𝑡 ( v , v ′ ) → 𝑖𝑛𝑣 ( v ′ ) ) ∧ ( ∀ v : ¬ 𝑠𝑎𝑓𝑒 ( v ) → 𝑏𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v ∀ v ′ : 𝑖𝑛𝑣 ( v ) ∧ 𝑛𝑒𝑥𝑡 ( v , v ′ ) → 𝑟𝑜𝑢𝑛𝑑 ( v , v ′ ) ) ∧ 𝑤𝑓 ⁡ ( 𝑟𝑜𝑢𝑛𝑑 ) \begin{array}[t]{@{}l@{}}\exists\mathit{inv}\;\exists\mathit{round}:\\[3.0pt]
+\qquad\begin{array}[t]{@{}l@{\;}l@{}}&(\forall v:\mathit{init}(v)\rightarrow\mathit{inv}(v))\\[3.0pt]
+\land&(\forall v\;\forall v^{\prime}:\mathit{inv}(v)\land\mathit{next}(v,v^{\prime})\rightarrow\mathit{inv}(v^{\prime}))\\[3.0pt]
+\land&(\forall v:\neg\mathit{safe}(v)\rightarrow\mathit{binv}(v))\\[3.0pt]
+\land&(\forall v\;\forall v^{\prime}:\mathit{inv}(v)\land\mathit{next}(v,v^{\prime})\rightarrow\mathit{round}(v,v^{\prime}))\\[3.0pt]
+\land&\mathit{wf}(\mathit{round})\end{array}\end{array}
+Note that we rely on a second order predicate 𝑤𝑓 \mathit{wf} that holds for
+well-founded relations.
+Each solver can rely on a specific way of proving well-foundedness,
+e.g., using abstract interpretation [ 8 ] ,
+ranking functions [ 25 ] or transition
+invariants [ 20 , 24 ] .
+Instead of using forward invariance to keep track of reachable states,
+we can use alternative approaches, as exemplified by the constraint
+systems for reasoning about program safety.
+Information flow property
+Security properties often require proving that any alternation of
+a (secret) program input is undetected by observing its (public)
+output.
+Let 𝑓𝑖𝑛𝑎𝑙 ⁡ ( v ) \mathit{final}(v) be an assertion that describes the set of all states
+where computation can stop.
+The program satisfies the non-interference property if the following
+constraint is satisfiable.
+∃ 𝑖𝑜 : ( ∀ v : 𝑖𝑛𝑖𝑡 ( v ) 𝑛𝑒𝑥𝑡 ( v , v ′ ) → 𝑖𝑜 ( v , v ′ ) ) ∧ ( ∀ v ∀ v ′ ∀ v ′′ : 𝑖𝑜 ( v , v ′ ) ∧ 𝑛𝑒𝑥𝑡 ( v ′ , v ′′ ) → 𝑖𝑜 ( v , v ′′ ) ) ∧ ( ∀ v ∀ v ′ ∀ w ∀ w ′ : v ≠ w ∧ 𝑖𝑜 ( v , v ′ ) ∧ 𝑖𝑜 ( w , w ′ ) ∧ 𝑓𝑖𝑛𝑎𝑙 ( v ) ∧ 𝑓𝑖𝑛𝑎𝑙 ( w ′ ) → w = w ′ ) \begin{array}[t]{@{}l@{}}\exists\mathit{io}:\\[3.0pt]
+\qquad\begin{array}[t]{@{}l@{\;}l@{}}&(\forall v:\mathit{init}(v)\mathit{next}(v,v^{\prime})\rightarrow\mathit{io}(v,v^{\prime}))\\[3.0pt]
+\land&(\forall v\;\forall v^{\prime}\;\forall v^{\prime\prime}:\mathit{io}(v,v^{\prime})\land\mathit{next}(v^{\prime},v^{\prime\prime})\rightarrow\mathit{io}(v,v^{\prime\prime}))\\[3.0pt]
+\land&(\forall v\;\forall v^{\prime}\;\forall w\;\forall w^{\prime}:v\neq w\land\mathit{io}(v,v^{\prime})\land\mathit{io}(w,w^{\prime})\land\mathit{final}(v)\land\mathit{final}(w^{\prime})\rightarrow w=w^{\prime})\end{array}\end{array}
+This constraint captures reasoning about pairs of computations through
+self-composition of input/output relation of the program, instead of
+performing a source-to-source transformation [ 2 ] or a
+specialized inference procedure [ 1 ] .
+Temporal property
+For proving properties expressed in temporal logics we can rely on
+existing proof systems that reduce temporal reasoning to first-order
+reasoning (with auxiliary assertions), e.g., the proof system for
+CTL* [ 16 ] .
+For example, to prove that there exists a computation that visits
+states satisfying an assertion p ⁡ ( v ) p(v) until finally it reaches a state
+satisfying an assertion q ⁡ ( v ) q(v) , i.e., ( 𝑖𝑛𝑖𝑡 ⁡ ( v ) , 𝑛𝑒𝑥𝑡 ⁡ ( v , v ′ ) ) ⊧ E ⁡ ( p ⁡ ( v ) ​ U ​ q ​ ( v ) ) (\mathit{init}(v),\mathit{next}(v,v^{\prime}))\models E\;(p(v)Uq(v)) , we need to solve the following constraint.
+∃ 𝑖𝑛𝑣 ​ ∃ 𝑟𝑜𝑢𝑛𝑑 : ( ∀ v : 𝑖𝑛𝑖𝑡 ( v ) → 𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v : 𝑖𝑛𝑣 ( v ) ∧ ¬ q ( v ) → ∃ v ′ : 𝑛𝑒𝑥𝑡 ( v , v ′ ) ∧ 𝑖𝑛𝑣 ( v ′ ) ∧ 𝑟𝑜𝑢𝑛𝑑 ( v , v ′ ) ) ∧ ( ∀ v : 𝑖𝑛𝑣 ( v ) → p ( v ) ) ∧ 𝑤𝑓 ⁡ ( 𝑟𝑜𝑢𝑛𝑑 ) \begin{array}[t]{@{}l@{}}\exists\mathit{inv}\;\exists\mathit{round}:\\[3.0pt]
+\qquad\begin{array}[t]{@{}l@{\;}l@{}}&(\forall v:\mathit{init}(v)\rightarrow\mathit{inv}(v))\\[3.0pt]
+\land&(\forall v:\mathit{inv}(v)\land\neg q(v)\rightarrow\exists v^{\prime}:\mathit{next}(v,v^{\prime})\land\mathit{inv}(v^{\prime})\land\mathit{round}(v,v^{\prime}))\\[3.0pt]
+\land&(\forall v:\mathit{inv}(v)\rightarrow p(v))\\[3.0pt]
+\land&\mathit{wf}(\mathit{round})\end{array}\end{array}
+Note that we model the existence of a computation by relying on
+existential quantification in the constraints together with a
+recursive dependency [ 4 ] .
+Reactive synthesis
+We formulate the reactive synthesis problem as constraint solving by
+turning this problem into a game solving
+problem [ 3 ] .
+For example, consider the synthesis of a system with an unknown
+transition relation 𝑠𝑦𝑠 ⁡ ( v , v ′ ) \mathit{sys}(v,v^{\prime}) that is executed in an adversarial
+environment with a given transition relation 𝑒𝑛𝑣 ⁡ ( v , v ′ ) \mathit{env}(v,v^{\prime}) .
+The system’s objective is to reach a state satisfying an assertion
+𝑔𝑜𝑎𝑙 ⁡ ( v ) \mathit{goal}(v) regardless of environment’s behavior.
+The following constraint characterizes the synthesis problem.
+∃ 𝑖𝑛𝑣 ​ ∃ 𝑟𝑜𝑢𝑛𝑑 : ( ∀ v : 𝑖𝑛𝑖𝑡 ( v ) → 𝑖𝑛𝑣 ( v ) ) ∧ ( ∀ v ∀ v ′ : 𝑖𝑛𝑣 ( v ) ∧ ¬ 𝑔𝑜𝑎𝑙 ( v ) ∧ 𝑒𝑛𝑣 ( v , v ′ ) → ∃ v ′′ : 𝑠𝑦𝑠 ⁡ ( v ′ , v ′′ ) ∧ 𝑖𝑛𝑣 ⁡ ( v ′′ ) OPEN ∧ 𝑟𝑜𝑢𝑛𝑑 ⁡ ( v , v ′′ ) ) ∧ 𝑤𝑓 ⁡ ( 𝑟𝑜𝑢𝑛𝑑 ) \begin{array}[t]{@{}l@{}}\exists\mathit{inv}\;\exists\mathit{round}:\\[3.0pt]
+\qquad\begin{array}[t]{@{}l@{\;}l@{}}&(\forall v:\mathit{init}(v)\rightarrow\mathit{inv}(v))\\[3.0pt]
+\land&(\forall v\;\forall v^{\prime}:\mathit{inv}(v)\land\neg\mathit{goal}(v)\land\mathit{env}(v,v^{\prime})\rightarrow\exists v^{\prime\prime}:\begin{array}[t]{@{}l@{}}\mathit{sys}(v^{\prime},v^{\prime\prime})\land\mathit{inv}(v^{\prime\prime})\\[3.0pt]
+\mathrel{\land}\mathit{round}(v,v^{\prime\prime}))\\[3.0pt]
+\end{array}\\
+\land&\mathit{wf}(\mathit{round})\end{array}\end{array}
+Other temporal objectives can be satisfied by relying on a temporal
+proof system, akin to temporal verification.
+3 Constraint solving
+In the previous section we illustrated how program verification and
+synthesis question can be formalized as second-order constraint
+solving problems in form of recursive implication constraints with
+well-foundedness conditions, and quantifier alternation.
+Solving (various sub-classes of) such constraints is a thriving area
+of research.
+Solvers often take advantage of the fact that constraints have
+Horn-like structure, which enables iterative, abstraction based
+solving approaches.
+Important classes include recursion-only
+case [ 15 , 10 , 18 , 23 ] that is
+facilitates reasoning about safety properties, extension with
+well-foundedness for reasoning about liveness
+properties [ 10 ] , extension with universal
+quantification for inferring universally quantified
+invariants [ 6 ] , and extension with existential
+quantification for dealing with synthesis and branching time
+questions [ 4 ] .
+Often such solvers rely on recursion-free fragments of implication
+constrains [ 17 , 12 , 14 , 7 ]
+and ranking function synthesis [ 19 ] as a basic
+inference components.
+Constraint logic programming offers an effective tool for implementing
+solvers for quantified (Horn) implication constraints with
+well-foundedness, e.g., the HSF solver and its
+extensions [ 9 , 4 , 6 ] is implemented using ideas of
+blending meta-logic programming and constraint logic
+programming [ 21 ] .
+References
+Backes
+et al . (2009)
+Backes, M. , Köpf, B. , and Rybalchenko, A. 2009.
+Automatic discovery and quantification of information leaks.
+In Security and Privacy . IEEE Computer Society.
+Barthe
+et al . (2004)
+Barthe, G. , D’Argenio, P. , and Rezk, T. 2004.
+Secure information flow by self-composition.
+In CSF: Computer Security Foundations . IEEE.
+Beyene et al . (2014)
+Beyene, T. , Chaudhuri, S. , Popeea, C. , and Rybalchenko, A. 2014.
+A constraint-based approach to solving games on infinite graphs.
+In POPL: Principles of Programming Languages . ACM.
+Beyene
+et al . (2013)
+Beyene, T. , Popeea, C. , and Rybalchenko, A. 2013.
+Solving existentially quantified Horn clauses.
+In CAV: Computer Aided Verification . Springer.
+Bjørner et al . (2012)
+Bjørner, N. , McMillan, K. L. , and Rybalchenko, A.
+2012.
+Program verification as satisfiability modulo theories.
+In SMT@IJCAR:Satisfiability Modulo Theories . EasyChair.
+Bjørner et al . (2013)
+Bjørner, N. , McMillan, K. L. , and Rybalchenko, A.
+2013.
+On solving universally quantified Horn clauses.
+In SAS: Static Analysis . Springer.
+Blanc
+et al . (2013)
+Blanc, R. , Gupta, A. , Kovács, L. , and Kragl,
+B. 2013.
+Tree interpolation in Vampire.
+In LPAR: Logic for Programming, Artificial Intelligence, and
+Reasoning . Springer.
+Cousot and
+Cousot (2012)
+Cousot, P. and Cousot, R. 2012.
+An abstract interpretation framework for termination.
+In POPL: Principles of Programming Languages . ACM.
+Grebenshchikov et al . (2012)
+Grebenshchikov, S. , Gupta, A. , Lopes, N. P. , Popeea,
+C. , and Rybalchenko, A. 2012.
+HSF(C): A software verifier based on Horn clauses - (competition
+contribution).
+In TACAS: Tools and Algorithms for the Construction and Analysis
+of Systems . Springer.
+Grebenshchikov et al . (2012)
+Grebenshchikov, S. , Lopes, N. P. , Popeea, C. , and Rybalchenko, A. 2012.
+Synthesizing software verifiers from proof rules.
+In PLDI: Programming Language Design and Implementation . ACM.
+Gupta
+et al . (2011a)
+Gupta, A. , Popeea, C. , and Rybalchenko, A. 2011a.
+Predicate abstraction and refinement for verifying multi-threaded
+programs.
+In POPL: Principles of Programming Languages . ACM.
+Gupta
+et al . (2011b)
+Gupta, A. , Popeea, C. , and Rybalchenko, A. 2011b.
+Solving recursion-free Horn clauses over LI+UIF.
+In APLAS: Programming Languages and Systems . Springer.
+Gupta
+et al . (2011c)
+Gupta, A. , Popeea, C. , and Rybalchenko, A. 2011c.
+Threader: A constraint-based verifier for multi-threaded programs.
+In CAV: Computer Aided Verification . Springer.
+Gurfinkel
+et al . (2013)
+Gurfinkel, A. , Rollini, S. F. , and Sharygina, N. 2013.
+Interpolation properties and SAT-based model checking.
+In ATVA: Automated Technology for Verification and Analysis .
+Springer.
+Hoder
+et al . (2011)
+Hoder, K. , Bjørner, N. , and de Moura, L. M. 2011.
+μ \mu Z - an efficient engine for fixed points with constraints.
+In CAV: Computer Aided Verification . Springer.
+Kesten and
+Pnueli (2005)
+Kesten, Y. and Pnueli, A. 2005.
+A compositional approach to CTL ∗ verification.
+Theor. Comput. Sci. 331, 2-3.
+McMillan (2005)
+McMillan, K. L. 2005.
+An interpolating theorem prover.
+Theor. Comput. Sci. 345, 1.
+McMillan and
+Rybalchenko (2012)
+McMillan, K. L. and Rybalchenko, A. 2012.
+Computing relational fixed points using interpolation.
+Tech. rep., Microsoft Research.
+MSR-TR-2013-6.
+Podelski and
+Rybalchenko (2004a)
+Podelski, A. and Rybalchenko, A. 2004a.
+A complete method for the synthesis of linear ranking functions.
+In VMCAI: Verification, Model Checking, and Abstract
+Interpretation . Springer.
+Podelski and
+Rybalchenko (2004b)
+Podelski, A. and Rybalchenko, A. 2004b.
+Transition invariants.
+In LICS: Logic in Computer Science . IEEE.
+Podelski and
+Rybalchenko (2007)
+Podelski, A. and Rybalchenko, A. 2007.
+ARMC: The logical choice for software model checking with
+abstraction refinement.
+In PADL: Practical Aspects of Declarative Languages . Springer.
+Popeea and
+Rybalchenko (2012)
+Popeea, C. and Rybalchenko, A. 2012.
+Compositional termination proofs for multi-threaded programs.
+In TACAS: Tools and Algorithms for the Construction and
+Analysis . Springer.
+Rümmer
+et al . (2013)
+Rümmer, P. , Hojjat, H. , and Kuncak, V. 2013.
+Disjunctive interpolants for Horn-clause verification.
+In CAV: Computer Aided Verification . Springer.
+Rybalchenko (2005)
+Rybalchenko, A. 2005.
+Temporal verification with transition invariants.
+Ph.D. thesis.
+Turing (1949)
+Turing, A. M. 1949.
+Checking a large routine.
+In Conf. on High Speed Automatic Calculating machines .
+◄
+Feeling
+lucky?
+Conversion
+report
+Report
+an issue
+View original
+on arXiv ►
+Copyright
+Privacy Policy
+Generated by L a T e XML oxide

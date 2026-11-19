@@ -1,0 +1,3159 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "http://web.archive.org/web/2024id_/https://cacm.acm.org/research/how-amazon-web-services-uses-formal-methods/"
+   ],
+   [
+    "quote",
+    "How Amazon Web Services Uses Formal Methods"
+   ],
+   [
+    "quote",
+    "Newcombe, Rath, Zhang, Munteanu, Brooker, and Deardeuff (Communications of the ACM)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20150401
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "https://lamport.azurewebsites.net/tla/tools.html"
+   ],
+   [
+    "quote",
+    "TLA+ Tools"
+   ],
+   [
+    "quote",
+    "Lamport"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lamport-tla-view"
+   ],
+   [
+    "quote",
+    "https://lamport.azurewebsites.net/tla/high-level-view.html"
+   ],
+   [
+    "quote",
+    "A High-Level View of TLA+"
+   ],
+   [
+    "quote",
+    "Lamport"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "learntla-invariants"
+   ],
+   [
+    "quote",
+    "https://learntla.com/core/invariants.html"
+   ],
+   [
+    "quote",
+    "Invariants (Learn TLA+)"
+   ],
+   [
+    "quote",
+    "Hillel Wayne"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "learntla-temporal"
+   ],
+   [
+    "quote",
+    "https://learntla.com/core/temporal-logic.html"
+   ],
+   [
+    "quote",
+    "Temporal Properties (Learn TLA+)"
+   ],
+   [
+    "quote",
+    "Hillel Wayne"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "https://apalache-mc.org/docs/apalache/running.html"
+   ],
+   [
+    "quote",
+    "Running the Tool (Apalache manual)"
+   ],
+   [
+    "quote",
+    "Apalache team (Informal Systems)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "apalache-symbmc"
+   ],
+   [
+    "quote",
+    "https://apalache-mc.org/docs/tutorials/symbmc.html"
+   ],
+   [
+    "quote",
+    "Symbolic Model Checking (Apalache tutorial)"
+   ],
+   [
+    "quote",
+    "Apalache team (Informal Systems)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "http://web.archive.org/web/2024id_/https://cacm.acm.org/research/alloy/"
+   ],
+   [
+    "quote",
+    "Alloy: A Language and Tool for Exploring Software Designs"
+   ],
+   [
+    "quote",
+    "Daniel Jackson (Communications of the ACM)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20190901
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "alloy-about"
+   ],
+   [
+    "quote",
+    "https://alloytools.org/about.html"
+   ],
+   [
+    "quote",
+    "about alloy"
+   ],
+   [
+    "quote",
+    "Alloy team (MIT Software Design Group)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "p-what-is-p"
+   ],
+   [
+    "quote",
+    "https://p-org.github.io/P/whatisP/"
+   ],
+   [
+    "quote",
+    "What is P?"
+   ],
+   [
+    "quote",
+    "P Developers (AWS)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "p-verifier"
+   ],
+   [
+    "quote",
+    "https://p-org.github.io/P/advanced/PVerifierLanguageExtensions/announcement/"
+   ],
+   [
+    "quote",
+    "PVerifier: Formal Proofs for P Programs"
+   ],
+   [
+    "quote",
+    "P Developers (AWS)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "http://web.archive.org/web/2025id_/https://cacm.acm.org/practice/systems-correctness-practices-at-amazon-web-services/"
+   ],
+   [
+    "quote",
+    "Systems Correctness Practices at Amazon Web Services"
+   ],
+   [
+    "quote",
+    "Brooker and Desai (Communications of the ACM)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20250529
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "kind2-kinduction"
+   ],
+   [
+    "quote",
+    "https://kind.cs.uiowa.edu/kind2_user_doc/1_techniques/2_kinduction.html"
+   ],
+   [
+    "quote",
+    "k-Induction (Kind 2 user documentation)"
+   ],
+   [
+    "quote",
+    "University of Iowa (Kind 2 team)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "kind2-invgen"
+   ],
+   [
+    "quote",
+    "https://kind.cs.uiowa.edu/kind2_user_doc/1_techniques/3_invgen.html"
+   ],
+   [
+    "quote",
+    "Invariant Generation (Kind 2 user documentation)"
+   ],
+   [
+    "quote",
+    "University of Iowa (Kind 2 team)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "cprover-kinduction"
+   ],
+   [
+    "quote",
+    "https://www.cprover.org/kinduction/"
+   ],
+   [
+    "quote",
+    "Software Verification Using k-Induction"
+   ],
+   [
+    "quote",
+    "Donaldson, Haller, Kroening, and Rümmer (CPROVER)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "sheeran-2000"
+   ],
+   [
+    "quote",
+    "https://doi.org/10.1007/3-540-40922-X_8"
+   ],
+   [
+    "quote",
+    "Checking Safety Properties Using Induction and a SAT-Solver"
+   ],
+   [
+    "quote",
+    "Sheeran, Singh, and Stålmarck"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "https://ar5iv.labs.arxiv.org/html/1612.01198"
+   ],
+   [
+    "quote",
+    "Implementing and Evaluating Candidate-Based Invariant Generation"
+   ],
+   [
+    "quote",
+    "Betts, Chong, Deligiannis, Donaldson, and Ketema"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "flanagan-leino-2001"
+   ],
+   [
+    "quote",
+    "https://doi.org/10.1007/3-540-45251-6_29"
+   ],
+   [
+    "quote",
+    "Houdini, an Annotation Assistant for ESC/Java"
+   ],
+   [
+    "quote",
+    "Flanagan and Leino"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "runciman-2008"
+   ],
+   [
+    "quote",
+    "https://research.chalmers.se/en/publication/111867"
+   ],
+   [
+    "quote",
+    "SmallCheck and Lazy SmallCheck: automatic exhaustive testing for small values"
+   ],
+   [
+    "quote",
+    "Runciman, Naylor, and Lindblad"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "smallcheck-hackage"
+   ],
+   [
+    "quote",
+    "https://hackage.haskell.org/package/smallcheck"
+   ],
+   [
+    "quote",
+    "smallcheck: A property-based testing library"
+   ],
+   [
+    "quote",
+    "SmallCheck maintainers (Hackage)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "quickcheck-docs"
+   ],
+   [
+    "quote",
+    "https://hackage.haskell.org/package/QuickCheck-2.14.3/docs/Test-QuickCheck.html"
+   ],
+   [
+    "quote",
+    "Test.QuickCheck"
+   ],
+   [
+    "quote",
+    "QuickCheck maintainers (Hackage)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c1"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "tools like the TLC model checker 9 that take a TLA+ specification and exhaustively checks the desired correctness properties across all possible execution traces."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of every sequence of changes up to a bound",
+     "by": "explicit-state model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c2"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "This was a very subtle bug; the shortest error trace exhibiting the bug included 35 high-level steps."
+   ],
+   [
+    "quote",
+    {
+     "result": "explicit-state model checking",
+     "measure": "high-level steps in the shortest error trace of a DynamoDB bug",
+     "bound": "exact",
+     "count": 35
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c3"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "This was a very subtle bug; the shortest error trace exhibiting the bug included 35 high-level steps."
+   ],
+   [
+    "quote",
+    {
+     "covers": "the shortest sequence of changes that breaks a rule",
+     "by": "explicit-state model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c4"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "we have found that software engineers more readily grasp the concept and practical value of TLA+ if we dub it “exhaustively testable pseudo-code.”"
+   ],
+   [
+    "quote",
+    {
+     "defines": "exhaustively testable pseudo-code"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c5"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "To model-check the specification, we used the distributed version of the TLC model checker running on a cluster of 10 cc1.4xlarge EC2 instances"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "explicit-state model checking",
+     "in": "Amazon Web Services"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c6"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "Liveness. What the system must eventually do."
+   ],
+   [
+    "quote",
+    {
+     "defines": "liveness"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c7"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "Safety. What the system is allowed to do."
+   ],
+   [
+    "quote",
+    {
+     "defines": "safety"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c8"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "At the time of this writing, Amazon engineers have used TLA+ on 10 large complex real-world systems."
+   ],
+   [
+    "quote",
+    {
+     "result": "explicit-state model checking",
+     "measure": "large complex real-world systems at Amazon that used TLA+",
+     "bound": "exact",
+     "count": 10
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c9"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "On learning about TLA+, engineers usually ask, “How do we know that the executable code correctly implements the verified design?” The answer is we do not know."
+   ],
+   [
+    "quote",
+    {
+     "covers": "running a program's own code on symbolic values",
+     "by": "explicit-state model checking",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c10"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "We used TLA+ to design a non-trivial schema with semantic invariants over the data that were much richer than standard multiplicity constraints and foreign key constraints."
+   ],
+   [
+    "quote",
+    {
+     "covers": "invariants",
+     "by": "explicit-state model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c11"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "we could not find a practical way in Alloy to represent rich data structures (such as dynamic sequences containing nested records with multiple fields)."
+   ],
+   [
+    "quote",
+    {
+     "covers": "rich data such as nested records and sequences",
+     "by": "small scope hypothesis",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c12"
+   ],
+   [
+    "quote",
+    "newcombe-2015"
+   ],
+   [
+    "quote",
+    "A good system invariant captures the fundamental reason the system works; the system will not do anything wrong that could violate a safety property as long as it continuously maintains the system invariant."
+   ],
+   [
+    "quote",
+    {
+     "defines": "system invariant"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c13"
+   ],
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "It is an explicit-state model checker that can check both safety and liveness properties."
+   ],
+   [
+    "quote",
+    {
+     "covers": "rules about what must eventually happen",
+     "by": "explicit-state model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c14"
+   ],
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "It is an explicit-state model checker that can check both safety and liveness properties."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "explicit-state model checking",
+     "in": "TLA+ TLC"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c15"
+   ],
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "It checks safety for bounded executions and inductive invariants for unbounded executions, assuming that all data structures are finite."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of every sequence of changes up to a bound",
+     "by": "bounded model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c16"
+   ],
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "It checks safety for bounded executions and inductive invariants for unbounded executions, assuming that all data structures are finite."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "inductive invariant checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c17"
+   ],
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "It checks safety for bounded executions and inductive invariants for unbounded executions, assuming that all data structures are finite."
+   ],
+   [
+    "quote",
+    {
+     "needs": "finite data structures",
+     "by": "inductive invariant checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c18"
+   ],
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "It checks safety for bounded executions and inductive invariants for unbounded executions, assuming that all data structures are finite."
+   ],
+   [
+    "quote",
+    {
+     "needs": "finite data structures",
+     "by": "bounded model checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c19"
+   ],
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "The tool leverages the SMT solver Z3, from Microsoft Research."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "smt solving",
+     "in": "Apalache"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c20"
+   ],
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "A system for mechanically checking proofs written in TLA+"
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs written by hand and checked by machine",
+     "by": "interactive theorem proving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c21"
+   ],
+   [
+    "quote",
+    "lamport-tla-tools"
+   ],
+   [
+    "quote",
+    "A system for mechanically checking proofs written in TLA+"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "interactive theorem proving",
+     "in": "TLAPS"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c22"
+   ],
+   [
+    "quote",
+    "lamport-tla-view"
+   ],
+   [
+    "quote",
+    "The most useful type of property to check is an invariance property, which asserts that something is true of every state of every possible behavior."
+   ],
+   [
+    "quote",
+    {
+     "defines": "invariance property"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c23"
+   ],
+   [
+    "quote",
+    "lamport-tla-view"
+   ],
+   [
+    "quote",
+    "simple properties asserting that something eventually happens—for example, that every execution eventually halts. Those properties, called liveness properties , are easily expressed in TLA+."
+   ],
+   [
+    "quote",
+    {
+     "defines": "liveness properties"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c24"
+   ],
+   [
+    "quote",
+    "learntla-invariants"
+   ],
+   [
+    "quote",
+    "An invariant is something that must be true on every single step of the program, regardless of the initial values, regardless of where we are."
+   ],
+   [
+    "quote",
+    {
+     "defines": "invariant"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c25"
+   ],
+   [
+    "quote",
+    "learntla-invariants"
+   ],
+   [
+    "quote",
+    "To check this, we add it as an invariant . TLC will check it at every possible state."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of every sequence of changes up to a bound",
+     "by": "explicit-state model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c26"
+   ],
+   [
+    "quote",
+    "learntla-invariants"
+   ],
+   [
+    "quote",
+    "the bottom box is the sequences of steps that lead to the invariant being violated."
+   ],
+   [
+    "quote",
+    {
+     "defines": "error trace"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c27"
+   ],
+   [
+    "quote",
+    "learntla-temporal"
+   ],
+   [
+    "quote",
+    "(1) is a standard invariant. (2) is a safety property, but not an invariant. There is no individual state, by itself, that would violate it."
+   ],
+   [
+    "quote",
+    {
+     "defines": "safety property that is not an invariant"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c28"
+   ],
+   [
+    "quote",
+    "learntla-temporal"
+   ],
+   [
+    "quote",
+    "[]P means that P is true in every state. When on the outside of a predicate, this is equivalent to an invariant, and in fact is how TLC supports them: making P an invariant is the same thing as making []P a property."
+   ],
+   [
+    "quote",
+    {
+     "defines": "always ([]P)"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c29"
+   ],
+   [
+    "quote",
+    "learntla-temporal"
+   ],
+   [
+    "quote",
+    "Because “Not always not P” is a mouthful, we have a separate operator that means the same thing: <>P , or “Eventually P”."
+   ],
+   [
+    "quote",
+    {
+     "defines": "eventually (<>P)"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c30"
+   ],
+   [
+    "quote",
+    "learntla-temporal"
+   ],
+   [
+    "quote",
+    "This is a liveness property, not a safety property. In order to satisfy Liveness , the behavior has to reach a state where the server is offline."
+   ],
+   [
+    "quote",
+    {
+     "defines": "liveness property"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c31"
+   ],
+   [
+    "quote",
+    "learntla-temporal"
+   ],
+   [
+    "quote",
+    "In TLA+, any behavior is allowed to stutter , or make a new state where nothing happens and all variables are unchanged."
+   ],
+   [
+    "quote",
+    {
+     "defines": "stuttering"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c32"
+   ],
+   [
+    "quote",
+    "learntla-temporal"
+   ],
+   [
+    "quote",
+    "So we need a way to say “don’t assume this system can crash”. We do this by saying it’s a fair process ."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a fairness assumption, to check rules about what must eventually happen",
+     "by": "explicit-state model checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c33"
+   ],
+   [
+    "quote",
+    "learntla-temporal"
+   ],
+   [
+    "quote",
+    "Weak fairness says that if a process can always make progress, it will eventually make progress."
+   ],
+   [
+    "quote",
+    {
+     "defines": "weak fairness"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c34"
+   ],
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "check performs all of the operations of typecheck and then runs the model checker in bounded model checking mode, which checks invariants for all executions , the length of which does not exceed the value specified by the --length parameter."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of every sequence of changes up to a bound",
+     "by": "bounded model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c35"
+   ],
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "check performs all of the operations of typecheck and then runs the model checker in bounded model checking mode, which checks invariants for all executions , the length of which does not exceed the value specified by the --length parameter."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a bound on the search",
+     "by": "bounded model checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c36"
+   ],
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "--length specifies the maximal number of Next steps, 10 by default"
+   ],
+   [
+    "quote",
+    {
+     "result": "bounded model checking",
+     "measure": "default bound on steps checked by Apalache",
+     "bound": "exact",
+     "count": 10
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c37"
+   ],
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "By default, Apalache performs bounded model checking , that is, it encodes a symbolic execution of length k and a violation of a state invariant in SMT:"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "bounded model checking",
+     "in": "Apalache"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c38"
+   ],
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "Otherwise, it reports that no bug was found up to the given length. If a bug needs a long execution to get revealed, bounded model checking may miss it!"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "bounded model checking",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c39"
+   ],
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "(2) whenever the specification makes a step when starting in a state that satisfies TypeOK /\\ IndInv , it ends up in a state that again satisfies TypeOK /\\ IndInv ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "inductive invariant checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c40"
+   ],
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "It may happen that your inductive invariant IndInv is too weak and it violates Safety . In this case, you would have to add additional constraints to IndInv ."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a user-written invariant strong enough to be inductive",
+     "by": "inductive invariant checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c41"
+   ],
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "Note that we usually check IndInv in conjunction with TypeOK , as we have to constrain the variable values."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a type invariant that constrains every variable",
+     "by": "inductive invariant checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c42"
+   ],
+   [
+    "quote",
+    "apalache-running"
+   ],
+   [
+    "quote",
+    "The second call to apalache checks, whether a single specification step satisfies the invariant, when starting in a state that satisfies the invariant."
+   ],
+   [
+    "quote",
+    {
+     "defines": "inductive invariant"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c43"
+   ],
+   [
+    "quote",
+    "apalache-symbmc"
+   ],
+   [
+    "quote",
+    "However, this comes at a cost of guarantees: while bounded model checking might still find an invariant violation if it can occur within the bound \\(k\\), it will fail if the shortest possible trace, on which the invariant is violated has a length greater than \\(k\\)."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "bounded model checking",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c44"
+   ],
+   [
+    "quote",
+    "apalache-symbmc"
+   ],
+   [
+    "quote",
+    "If the system has a finite diameter, bounded model checking is equivalent to model checking, as long as \\(k\\) exceeds the diameter."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a finite diameter and a bound above it, to be complete",
+     "by": "bounded model checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c45"
+   ],
+   [
+    "quote",
+    "apalache-symbmc"
+   ],
+   [
+    "quote",
+    "Bounding the execution length guarantees termination of the algorithm if \\(S_0\\) is finite and each state has finitely many successors w.r.t. \\(\\to\\), even if the state space is unbounded in general."
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "bounded model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c46"
+   ],
+   [
+    "quote",
+    "apalache-symbmc"
+   ],
+   [
+    "quote",
+    "Bounding the execution length guarantees termination of the algorithm if \\(S_0\\) is finite and each state has finitely many successors w.r.t. \\(\\to\\), even if the state space is unbounded in general."
+   ],
+   [
+    "quote",
+    {
+     "needs": "finitely many initial states and finitely many successors of each state",
+     "by": "bounded model checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c47"
+   ],
+   [
+    "quote",
+    "apalache-symbmc"
+   ],
+   [
+    "quote",
+    "However, even in a situation where states are computable, and \\(R\\) is finite, the size of \\(R\\) itself might be an issue in practice."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a reachable state space small enough to enumerate",
+     "by": "explicit-state model checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c48"
+   ],
+   [
+    "quote",
+    "apalache-symbmc"
+   ],
+   [
+    "quote",
+    "The key insight behind symbolic model checking is the following: it is often the case that the size of the reachable state space is large, not because of the properties of the specification, but simply because of the constants or sets involved."
+   ],
+   [
+    "quote",
+    {
+     "defines": "symbolic model checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c49"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "The rationale for this is the small scope hypothesis , which asserts that most bugs can be demonstrated with small counterexamples."
+   ],
+   [
+    "quote",
+    {
+     "defines": "small scope hypothesis"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c50"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "Alloy offered a new approach: running all small tests. The designer specifies a scope that bounds each of the types in the specification."
+   ],
+   [
+    "quote",
+    {
+     "covers": "every value a schema allows, up to a size",
+     "by": "small scope hypothesis",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c51"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "The designer specifies a scope that bounds each of the types in the specification."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a bound on the search",
+     "by": "small scope hypothesis"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c52"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "Alloy offered a new approach: running all small tests."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "small scope hypothesis",
+     "in": "Alloy"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c53"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "Alloy therefore does not perform an explicit search, but instead translates the design problem to a satisfiability problem whose variables are not relations but simple bits."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "sat solving",
+     "in": "Alloy"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c54"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "By flipping bits individually, a satisfiability (SAT) solver can usually find a solution (if there is one) or show that none exists by examining only a tiny portion of the space."
+   ],
+   [
+    "quote",
+    {
+     "covers": "values that satisfy constraints over unbound variables",
+     "by": "sat solving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c55"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "By flipping bits individually, a satisfiability (SAT) solver can usually find a solution (if there is one) or show that none exists by examining only a tiny portion of the space."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that a goal has no answer for any value",
+     "by": "sat solving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c56"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "Model checkers work by exploring the space of possible states of a system, and if that space is large, they may require considerable computational resources (or may fail to terminate)."
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "explicit-state model checking",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c57"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "The so-called “state explosion” problem arises because model checkers are often used to analyze designs involving components that run in parallel, resulting in an overall state space that grows exponentially with the number of components."
+   ],
+   [
+    "quote",
+    {
+     "defines": "state explosion"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c58"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "Also, because they generate mathematical proofs, which can be checked by tools that are smaller and simpler than the tool that finds the proof, you can be confident the analysis is sound."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof a small checker can recheck",
+     "by": "interactive theorem proving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c59"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "Moreover, failure to find a proof does not mean that a proof does not exist, and theorem provers don’t provide counterexamples that explain concretely why a theorem is not valid."
+   ],
+   [
+    "quote",
+    {
+     "covers": "the shortest sequence of changes that breaks a rule",
+     "by": "interactive theorem proving",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c60"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "On the down side, the combination of an expressive logic and sound proof means that finding proofs cannot generally be automated."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs written by hand and checked by machine",
+     "by": "interactive theorem proving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c61"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "every bug was found within two minutes and a scope of 8."
+   ],
+   [
+    "quote",
+    {
+     "result": "small scope hypothesis",
+     "measure": "scope within which every bug was found in a study of web security mechanisms",
+     "bound": "up to",
+     "count": 8
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c62"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "The finite scopes of Alloy can also be an issue when a designer would like numbers to be unbounded."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs about states of unbounded size",
+     "by": "small scope hypothesis",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c64"
+   ],
+   [
+    "quote",
+    "jackson-alloy-2019"
+   ],
+   [
+    "quote",
+    "You do not need a property to check; you can just ask for an instance of the model satisfying all the constraints."
+   ],
+   [
+    "quote",
+    {
+     "covers": "values that satisfy constraints over unbound variables",
+     "by": "small scope hypothesis",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c65"
+   ],
+   [
+    "quote",
+    "alloy-about"
+   ],
+   [
+    "quote",
+    "Alloy’s tool, the Alloy Analyzer, is a solver that takes the constraints of a model and finds structures that satisfy them."
+   ],
+   [
+    "quote",
+    {
+     "covers": "values that satisfy constraints over unbound variables",
+     "by": "small scope hypothesis",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c67"
+   ],
+   [
+    "quote",
+    "p-what-is-p"
+   ],
+   [
+    "quote",
+    "On finding a bug, the checker provides a reproducible error-trace for debugging."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a counterexample written as a test to rerun",
+     "by": "explicit-state model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c68"
+   ],
+   [
+    "quote",
+    "p-what-is-p"
+   ],
+   [
+    "quote",
+    "Model checking scenario — provides the finite non-deterministic test-harness under which the model checker verifies that the model satisfies its specifications"
+   ],
+   [
+    "quote",
+    {
+     "needs": "a finite test harness that fixes the system's configuration",
+     "by": "explicit-state model checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c69"
+   ],
+   [
+    "quote",
+    "p-what-is-p"
+   ],
+   [
+    "quote",
+    "Specify and check both safety and liveness specifications (global invariants)"
+   ],
+   [
+    "quote",
+    {
+     "covers": "rules about what must eventually happen",
+     "by": "explicit-state model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c70"
+   ],
+   [
+    "quote",
+    "p-what-is-p"
+   ],
+   [
+    "quote",
+    "PSym Symbolic execution Sound exploration of all possible behaviors"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "symbolic evaluation",
+     "in": "P"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c71"
+   ],
+   [
+    "quote",
+    "p-what-is-p"
+   ],
+   [
+    "quote",
+    "It validates service logs and execution traces from the running system against the same P specification monitors that were verified during formal verification."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "runtime monitoring",
+     "in": "P"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c72"
+   ],
+   [
+    "quote",
+    "p-verifier"
+   ],
+   [
+    "quote",
+    "Before the P Verifier, P helped users catch design-level bugs early in the development process through explicit-state model checking"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "explicit-state model checking",
+     "in": "P"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c73"
+   ],
+   [
+    "quote",
+    "p-verifier"
+   ],
+   [
+    "quote",
+    "Given a formal model, specification, and a test driver describing a system configuration, the model checking backend systematically explores the given model in search of an execution that violates the given specification for the given system configuration."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a finite test harness that fixes the system's configuration",
+     "by": "explicit-state model checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c74"
+   ],
+   [
+    "quote",
+    "p-verifier"
+   ],
+   [
+    "quote",
+    "The new verification backend allows users to prove that their system design is correct for all executions over all possible system configurations."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs about states of unbounded size",
+     "by": "inductive invariant checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c75"
+   ],
+   [
+    "quote",
+    "p-verifier"
+   ],
+   [
+    "quote",
+    "Instead of using explicit-state model checking, the new backend supports proofs by induction."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "inductive invariant checking",
+     "in": "P"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c76"
+   ],
+   [
+    "quote",
+    "p-verifier"
+   ],
+   [
+    "quote",
+    "But, instead of giving a test driver, users must provide assumptions about what is possible in the system and an inductive invariant that implies that the given model satisfies the given specification under the given assumptions."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a user-written invariant strong enough to be inductive",
+     "by": "inductive invariant checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c77"
+   ],
+   [
+    "quote",
+    "p-verifier"
+   ],
+   [
+    "quote",
+    "The main job of the backend is to check that that given invariant is indeed inductive (all possible events in the system preserve it) and that the given invariant does indeed imply the given specification."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "inductive invariant checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c78"
+   ],
+   [
+    "quote",
+    "p-verifier"
+   ],
+   [
+    "quote",
+    "UCLID5 accomplishes this job by way of a satisfiability modulo theories (SMT) solver, like Z3"
+   ],
+   [
+    "quote",
+    {
+     "needs": "a solver",
+     "by": "inductive invariant checking"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c79"
+   ],
+   [
+    "quote",
+    "p-verifier"
+   ],
+   [
+    "quote",
+    "UCLID5 accomplishes this job by way of a satisfiability modulo theories (SMT) solver, like Z3"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "smt solving",
+     "in": "P"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c80"
+   ],
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "P helped eliminate several design-level bugs early in the development process and allowed the team to deliver risky optimizations with confidence, as they could be validated using model checking."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "explicit-state model checking",
+     "in": "Amazon Web Services"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c81"
+   ],
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "The most notable single example of leveraging lightweight formal methods is in Amazon S3’s ShardStore, where the team used property-based testing throughout the development cycle both to test correctness and to speed up development"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "property-based testing",
+     "in": "Amazon Web Services"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c82"
+   ],
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "and minimization (where counterexamples are automatically reduced to aid human-guided debugging)."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a smaller counterexample, found by shrinking",
+     "by": "property-based testing",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c83"
+   ],
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "Another lightweight method widely used at AWS is deterministic simulation testing, in which a distributed system is executed on a single-threaded simulator with control over all sources of randomness, such as thread scheduling, timing, and message delivery order."
+   ],
+   [
+    "quote",
+    {
+     "covers": "results that repeat on every machine",
+     "by": "deterministic simulation testing",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c84"
+   ],
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "Another lightweight method widely used at AWS is deterministic simulation testing, in which a distributed system is executed on a single-threaded simulator with control over all sources of randomness, such as thread scheduling, timing, and message delivery order."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "deterministic simulation testing",
+     "in": "Amazon Web Services"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c85"
+   ],
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "The scheduler in the testing framework can also be extended for fuzzing of orderings or exploring all possible orderings to be tested."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of every sequence of changes up to a bound",
+     "by": "deterministic simulation testing",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c86"
+   ],
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "Using Dafny, the team was able to prove that the implementation satisfies a variety of security properties."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "verification conditions",
+     "in": "Cedar"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c88"
+   ],
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "Traditional formal approaches to modeling distributed systems typically focus on safety (nothing bad happens) and liveness (something good eventually happens)"
+   ],
+   [
+    "quote",
+    {
+     "defines": "safety and liveness"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c89"
+   ],
+   [
+    "quote",
+    "brooker-desai-2025"
+   ],
+   [
+    "quote",
+    "Proofs around the behaviors of programs are an important part of AWS’s software correctness program, so we support development on tools such as Kani, Dafny, 18 and Lean, 16 and the underlying tools—such as satisfiability modulo theory (SMT) solvers—that power them."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "smt solving",
+     "in": "Amazon Web Services"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c90"
+   ],
+   [
+    "quote",
+    "kind2-kinduction"
+   ],
+   [
+    "quote",
+    "A k-induction engine is composed of two parts: base and step . Base performs bounded model checking on the properties, i.e. checks the base case ."
+   ],
+   [
+    "quote",
+    {
+     "defines": "k-induction"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c91"
+   ],
+   [
+    "quote",
+    "kind2-kinduction"
+   ],
+   [
+    "quote",
+    "Step checks whether it is possible to reach a violation of one of the properties from a trace of states satisfying them: the inductive step ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "k-induction",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c92"
+   ],
+   [
+    "quote",
+    "kind2-kinduction"
+   ],
+   [
+    "quote",
+    "will not yield anything interesting, as step cannot falsify properties nor prove anything without base."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a bounded model check of the base case",
+     "by": "k-induction"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c93"
+   ],
+   [
+    "quote",
+    "kind2-kinduction"
+   ],
+   [
+    "quote",
+    "To run the actual k-induction engine, you must enable base ( BMC ) and step ( IND ):"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "k-induction",
+     "in": "Kind 2"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c94"
+   ],
+   [
+    "quote",
+    "kind2-kinduction"
+   ],
+   [
+    "quote",
+    "Instead, when a step counterexample is found each invariant is evaluated on the model until one blocks it."
+   ],
+   [
+    "quote",
+    {
+     "covers": "states that break an induction step but may be unreachable",
+     "by": "k-induction",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c95"
+   ],
+   [
+    "quote",
+    "kind2-invgen"
+   ],
+   [
+    "quote",
+    "Once the candidate invariant graph has been updated by base for some depth, step runs at the same depth and broadcasts the invariants it discovers to the whole framework."
+   ],
+   [
+    "quote",
+    {
+     "covers": "invariants found automatically",
+     "by": "k-induction",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c96"
+   ],
+   [
+    "quote",
+    "kind2-invgen"
+   ],
+   [
+    "quote",
+    "It works by instantiating templates on a set of terms provided by a syntactic analysis of the system."
+   ],
+   [
+    "quote",
+    {
+     "needs": "candidate invariants from templates over the system's terms",
+     "by": "k-induction"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c97"
+   ],
+   [
+    "quote",
+    "cprover-kinduction"
+   ],
+   [
+    "quote",
+    "Standard Boogie cannot verify this program correct without any loop invariant being supplied."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a user-written invariant strong enough to be inductive",
+     "by": "verification conditions"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c98"
+   ],
+   [
+    "quote",
+    "cprover-kinduction"
+   ],
+   [
+    "quote",
+    "However, the program can be verified without any additional invariants if k -induction is used, with k =3:"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "k-induction",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c99"
+   ],
+   [
+    "quote",
+    "cprover-kinduction"
+   ],
+   [
+    "quote",
+    "Verification does not succeed with smaller values of k ."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a large enough k",
+     "by": "k-induction"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c100"
+   ],
+   [
+    "quote",
+    "cprover-kinduction"
+   ],
+   [
+    "quote",
+    "K-Inductor is a k -induction-based verifier for ANSI C programs, built on top of the CBMC tool."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "k-induction",
+     "in": "K-Inductor"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c101"
+   ],
+   [
+    "quote",
+    "cprover-kinduction"
+   ],
+   [
+    "quote",
+    "K-Inductor uses MiniSat 2 as a back-end SAT solver."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "sat solving",
+     "in": "K-Inductor"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c102"
+   ],
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "Checking is done by means of the Houdini algorithm [ 5 ] , which returns the unique, maximal conjunction of candidates that form an inductive invariant"
+   ],
+   [
+    "quote",
+    {
+     "covers": "invariants found automatically",
+     "by": "houdini",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c103"
+   ],
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "Beginning with a full set of candidates, Houdini removes candidates that cannot be proven, until a fixpoint is reached."
+   ],
+   [
+    "quote",
+    {
+     "defines": "houdini"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c104"
+   ],
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "If a candidate is true but unprovable, the candidate might become provable in the context of a larger set of candidates"
+   ],
+   [
+    "quote",
+    {
+     "needs": "candidates that include the supporting invariants",
+     "by": "houdini"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c105"
+   ],
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "Houdini is sound, deterministic, and terminating, assuming each call to the underlying SMT solver returns"
+   ],
+   [
+    "quote",
+    {
+     "covers": "results that repeat on every machine",
+     "by": "houdini",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c106"
+   ],
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "Houdini is sound, deterministic, and terminating, assuming each call to the underlying SMT solver returns"
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "houdini",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c107"
+   ],
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "assuming each call to the underlying SMT solver returns (which is not guaranteed if the logic used to encode verification conditions is undecidable)."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a decidable theory",
+     "by": "houdini"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c108"
+   ],
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "The restriction also makes it impossible to synthesize disjunctive invariants over predicates using Houdini."
+   ],
+   [
+    "quote",
+    {
+     "covers": "disjunctive invariants found automatically",
+     "by": "houdini",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c109"
+   ],
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "Houdini was proposed as an annotation assistant for the ESC/Java tool [ 5 ] , and is formally presented in [ 13 ] ."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "houdini",
+     "in": "ESC/Java"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c110"
+   ],
+   [
+    "quote",
+    "betts-2016"
+   ],
+   [
+    "quote",
+    "The ‘HOUDINI’ component of GPUVerify uses the Houdini algorithm"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "houdini",
+     "in": "GPUVerify"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c111"
+   ],
+   [
+    "quote",
+    "runciman-2008"
+   ],
+   [
+    "quote",
+    "But instead of using a sample of randomly generated values they test properties for all values up to some limiting depth, progressively increasing this limit."
+   ],
+   [
+    "quote",
+    {
+     "covers": "every value a schema allows, up to a size",
+     "by": "small scope hypothesis",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c112"
+   ],
+   [
+    "quote",
+    "runciman-2008"
+   ],
+   [
+    "quote",
+    "But instead of using a sample of randomly generated values they test properties for all values up to some limiting depth, progressively increasing this limit."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "small scope hypothesis",
+     "in": "SmallCheck"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c113"
+   ],
+   [
+    "quote",
+    "runciman-2008"
+   ],
+   [
+    "quote",
+    "these testing libraries SmallCheck and Lazy SmallCheck also use type-based generators to obtain test-sets of finite values for which properties are checked, and report any counter-examples found."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a type whose values can be enumerated",
+     "by": "small scope hypothesis"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c114"
+   ],
+   [
+    "quote",
+    "smallcheck-hackage"
+   ],
+   [
+    "quote",
+    "SmallCheck is a testing library that allows to verify properties for all test cases up to some depth."
+   ],
+   [
+    "quote",
+    {
+     "covers": "every value a schema allows, up to a size",
+     "by": "small scope hypothesis",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c115"
+   ],
+   [
+    "quote",
+    "quickcheck-docs"
+   ],
+   [
+    "quote",
+    "By default up to 100 tests are performed, which may not be enough to find all bugs."
+   ],
+   [
+    "quote",
+    {
+     "result": "property-based testing",
+     "measure": "tests run by default",
+     "bound": "up to",
+     "count": 100
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c116"
+   ],
+   [
+    "quote",
+    "quickcheck-docs"
+   ],
+   [
+    "quote",
+    "By default up to 100 tests are performed, which may not be enough to find all bugs."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that a goal has no answer for any value",
+     "by": "property-based testing",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c117"
+   ],
+   [
+    "quote",
+    "quickcheck-docs"
+   ],
+   [
+    "quote",
+    "by customising the behaviour of shrink you can often get simpler counterexamples."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a smaller counterexample, found by shrinking",
+     "by": "property-based testing",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c118"
+   ],
+   [
+    "quote",
+    "quickcheck-docs"
+   ],
+   [
+    "quote",
+    "The default implementation returns the empty list, so will not try to shrink the value."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a shrink function written for the type",
+     "by": "property-based testing"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-c119"
+   ],
+   [
+    "quote",
+    "quickcheck-docs"
+   ],
+   [
+    "quote",
+    "Note: saving a seed from one version of QuickCheck and replaying it in another is not supported. If you want to store a test case permanently you should save the test case itself."
+   ],
+   [
+    "quote",
+    {
+     "needs": "the failing case saved as a value, not as a random seed",
+     "by": "property-based testing"
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

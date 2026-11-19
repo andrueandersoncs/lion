@@ -1,0 +1,3519 @@
+QuickCheck-2.14.3: Automatic testing of Haskell programs Source
+Contents
+Index
+Safe Haskell Safe
+Language Haskell2010
+Test.QuickCheck
+Contents
+Running tests Running tests verbosely
+Testing all properties in a module
+Testing polymorphic properties
+The Arbitrary typeclass: generation of random values Helper functions for implementing shrink
+Lifting of Arbitrary to unary and binary type constructors
+The Gen monad: combinators for building random generators Generator combinators
+Generators for lists
+Generators for particular types
+Running generators
+Debugging generators
+The Function typeclass: generation of random shrinkable, showable functions
+The CoArbitrary typeclass: generation of functions the old-fashioned way
+Type-level modifiers for changing generator behavior
+Property combinators Controlling property execution
+Conjunction and disjunction
+What to do on failure
+Analysing test case distribution Checking test case distribution
+Generating example test cases
+Description
+The QuickCheck manual
+gives detailed information about using QuickCheck effectively.
+You can also try https://begriffs.com/posts/2017-01-14-design-use-quickcheck.html ,
+a tutorial written by a user of QuickCheck.
+To start using QuickCheck, write down your property as a function returning Bool .
+For example, to check that reversing a list twice gives back the same list you can write:
+import Test.QuickCheck
+prop_reverse :: [Int] -> Bool
+prop_reverse xs = reverse (reverse xs) == xs
+You can then use QuickCheck to test prop_reverse on 100 random lists:
+>>> quickCheck prop_reverse
++++ OK, passed 100 tests.
+To run more tests you can use the withMaxSuccess combinator:
+>>> quickCheck (withMaxSuccess 10000 prop_reverse)
++++ OK, passed 10000 tests.
+To use QuickCheck on your own data types you will need to write Arbitrary
+instances for those types. See the
+QuickCheck manual for
+details about how to do that.
+Synopsis quickCheck :: Testable prop => prop -> IO ()
+data Args = Args { replay :: Maybe (QCGen, Int )
+maxSuccess :: Int
+maxDiscardRatio :: Int
+maxSize :: Int
+chatty :: Bool
+maxShrinks :: Int
+}
+data Result = Success { numTests :: Int
+numDiscarded :: Int
+labels :: !( Map [ String ] Int )
+classes :: !( Map String Int )
+tables :: !( Map String ( Map String Int ))
+output :: String
+}
+| GaveUp { numTests :: Int
+numDiscarded :: Int
+labels :: !( Map [ String ] Int )
+classes :: !( Map String Int )
+tables :: !( Map String ( Map String Int ))
+output :: String
+}
+| Failure { numTests :: Int
+numDiscarded :: Int
+numShrinks :: Int
+numShrinkTries :: Int
+numShrinkFinal :: Int
+usedSeed :: QCGen
+usedSize :: Int
+reason :: String
+theException :: Maybe AnException
+output :: String
+failingTestCase :: [ String ]
+failingLabels :: [ String ]
+failingClasses :: Set String
+}
+| NoExpectedFailure { numTests :: Int
+numDiscarded :: Int
+labels :: !( Map [ String ] Int )
+classes :: !( Map String Int )
+tables :: !( Map String ( Map String Int ))
+output :: String
+}
+stdArgs :: Args
+quickCheckWith :: Testable prop => Args -> prop -> IO ()
+quickCheckWithResult :: Testable prop => Args -> prop -> IO Result
+quickCheckResult :: Testable prop => prop -> IO Result
+isSuccess :: Result -> Bool
+verboseCheck :: Testable prop => prop -> IO ()
+verboseCheckWith :: Testable prop => Args -> prop -> IO ()
+verboseCheckWithResult :: Testable prop => Args -> prop -> IO Result
+verboseCheckResult :: Testable prop => prop -> IO Result
+quickCheckAll :: Q Exp
+verboseCheckAll :: Q Exp
+forAllProperties :: Q Exp
+allProperties :: Q Exp
+polyQuickCheck :: Name -> ExpQ
+polyVerboseCheck :: Name -> ExpQ
+monomorphic :: Name -> ExpQ
+class Arbitrary a where arbitrary :: Gen a
+shrink :: a -> [a]
+genericShrink :: ( Generic a, RecursivelyShrink ( Rep a), GSubterms ( Rep a) a) => a -> [a]
+subterms :: ( Generic a, GSubterms ( Rep a) a) => a -> [a]
+recursivelyShrink :: ( Generic a, RecursivelyShrink ( Rep a)) => a -> [a]
+shrinkNothing :: a -> [a]
+shrinkList :: (a -> [a]) -> [a] -> [[a]]
+shrinkMap :: Arbitrary a => (a -> b) -> (b -> a) -> b -> [b]
+shrinkMapBy :: (a -> b) -> (b -> a) -> (a -> [a]) -> b -> [b]
+shrinkIntegral :: Integral a => a -> [a]
+shrinkRealFrac :: RealFrac a => a -> [a]
+shrinkBoundedEnum :: ( Bounded a, Enum a, Eq a) => a -> [a]
+shrinkDecimal :: RealFrac a => a -> [a]
+class Arbitrary1 f where liftArbitrary :: Gen a -> Gen (f a)
+liftShrink :: (a -> [a]) -> f a -> [f a]
+arbitrary1 :: ( Arbitrary1 f, Arbitrary a) => Gen (f a)
+shrink1 :: ( Arbitrary1 f, Arbitrary a) => f a -> [f a]
+class Arbitrary2 f where liftArbitrary2 :: Gen a -> Gen b -> Gen (f a b)
+liftShrink2 :: (a -> [a]) -> (b -> [b]) -> f a b -> [f a b]
+arbitrary2 :: ( Arbitrary2 f, Arbitrary a, Arbitrary b) => Gen (f a b)
+shrink2 :: ( Arbitrary2 f, Arbitrary a, Arbitrary b) => f a b -> [f a b]
+data Gen a
+choose :: Random a => (a, a) -> Gen a
+chooseInt :: ( Int , Int ) -> Gen Int
+chooseInteger :: ( Integer , Integer ) -> Gen Integer
+chooseBoundedIntegral :: ( Bounded a, Integral a) => (a, a) -> Gen a
+chooseEnum :: Enum a => (a, a) -> Gen a
+chooseAny :: Random a => Gen a
+oneof :: [ Gen a] -> Gen a
+frequency :: [( Int , Gen a)] -> Gen a
+elements :: [a] -> Gen a
+growingElements :: [a] -> Gen a
+sized :: ( Int -> Gen a) -> Gen a
+getSize :: Gen Int
+resize :: Int -> Gen a -> Gen a
+scale :: ( Int -> Int ) -> Gen a -> Gen a
+suchThat :: Gen a -> (a -> Bool ) -> Gen a
+suchThatMap :: Gen a -> (a -> Maybe b) -> Gen b
+suchThatMaybe :: Gen a -> (a -> Bool ) -> Gen ( Maybe a)
+applyArbitrary2 :: ( Arbitrary a, Arbitrary b) => (a -> b -> r) -> Gen r
+applyArbitrary3 :: ( Arbitrary a, Arbitrary b, Arbitrary c) => (a -> b -> c -> r) -> Gen r
+applyArbitrary4 :: ( Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d) => (a -> b -> c -> d -> r) -> Gen r
+listOf :: Gen a -> Gen [a]
+listOf1 :: Gen a -> Gen [a]
+vectorOf :: Int -> Gen a -> Gen [a]
+vector :: Arbitrary a => Int -> Gen [a]
+infiniteListOf :: Gen a -> Gen [a]
+infiniteList :: Arbitrary a => Gen [a]
+shuffle :: [a] -> Gen [a]
+sublistOf :: [a] -> Gen [a]
+orderedList :: ( Ord a, Arbitrary a) => Gen [a]
+arbitrarySizedIntegral :: Integral a => Gen a
+arbitrarySizedNatural :: Integral a => Gen a
+arbitrarySizedFractional :: Fractional a => Gen a
+arbitrarySizedBoundedIntegral :: ( Bounded a, Integral a) => Gen a
+arbitraryBoundedIntegral :: ( Bounded a, Integral a) => Gen a
+arbitraryBoundedRandom :: ( Bounded a, Random a) => Gen a
+arbitraryBoundedEnum :: ( Bounded a, Enum a) => Gen a
+arbitraryUnicodeChar :: Gen Char
+arbitraryASCIIChar :: Gen Char
+arbitraryPrintableChar :: Gen Char
+generate :: Gen a -> IO a
+sample :: Show a => Gen a -> IO ()
+sample' :: Gen a -> IO [a]
+data Fun a b = Fun (a :-> b, b, Shrunk) (a -> b)
+applyFun :: Fun a b -> a -> b
+applyFun2 :: Fun (a, b) c -> a -> b -> c
+applyFun3 :: Fun (a, b, c) d -> a -> b -> c -> d
+pattern Fn :: (a -> b) -> Fun a b
+pattern Fn2 :: (a -> b -> c) -> Fun (a, b) c
+pattern Fn3 :: (a -> b -> c -> d) -> Fun (a, b, c) d
+class Function a where function :: (a -> b) -> a :-> b
+functionMap :: Function b => (a -> b) -> (b -> a) -> (a -> c) -> a :-> c
+functionShow :: ( Show a, Read a) => (a -> c) -> a :-> c
+functionIntegral :: Integral a => (a -> b) -> a :-> b
+functionRealFrac :: RealFrac a => (a -> b) -> a :-> b
+functionBoundedEnum :: ( Eq a, Bounded a, Enum a) => (a -> b) -> a :-> b
+functionVoid :: ( forall b. void -> b) -> void :-> c
+class CoArbitrary a where coarbitrary :: a -> Gen b -> Gen b
+genericCoarbitrary :: ( Generic a, GCoArbitrary ( Rep a)) => a -> Gen b -> Gen b
+variant :: Integral n => n -> Gen a -> Gen a
+coarbitraryIntegral :: Integral a => a -> Gen b -> Gen b
+coarbitraryReal :: Real a => a -> Gen b -> Gen b
+coarbitraryShow :: Show a => a -> Gen b -> Gen b
+coarbitraryEnum :: Enum a => a -> Gen b -> Gen b
+(><) :: ( Gen a -> Gen a) -> ( Gen a -> Gen a) -> Gen a -> Gen a
+newtype Blind a = Blind { getBlind :: a
+}
+newtype Fixed a = Fixed { getFixed :: a
+}
+newtype OrderedList a = Ordered { getOrdered :: [a]
+}
+newtype NonEmptyList a = NonEmpty { getNonEmpty :: [a]
+}
+data InfiniteList a = InfiniteList { getInfiniteList :: [a]
+infiniteListInternalData :: InfiniteListInternalData a
+}
+newtype SortedList a = Sorted { getSorted :: [a]
+}
+newtype Positive a = Positive { getPositive :: a
+}
+newtype Negative a = Negative { getNegative :: a
+}
+newtype NonZero a = NonZero { getNonZero :: a
+}
+newtype NonNegative a = NonNegative { getNonNegative :: a
+}
+newtype NonPositive a = NonPositive { getNonPositive :: a
+}
+newtype Large a = Large { getLarge :: a
+}
+newtype Small a = Small { getSmall :: a
+}
+data Smart a = Smart Int a
+newtype Shrink2 a = Shrink2 { getShrink2 :: a
+}
+data Shrinking s a = Shrinking s a
+class ShrinkState s a where shrinkInit :: a -> s
+shrinkState :: a -> s -> [(a, s)]
+newtype ASCIIString = ASCIIString { getASCIIString :: String
+}
+newtype UnicodeString = UnicodeString { getUnicodeString :: String
+}
+newtype PrintableString = PrintableString { getPrintableString :: String
+}
+data Property
+class Testable prop where property :: prop -> Property
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> prop) -> Property
+forAll :: ( Show a, Testable prop) => Gen a -> (a -> prop) -> Property
+forAllShrink :: ( Show a, Testable prop) => Gen a -> (a -> [a]) -> (a -> prop) -> Property
+forAllShow :: Testable prop => Gen a -> (a -> String ) -> (a -> prop) -> Property
+forAllShrinkShow :: Testable prop => Gen a -> (a -> [a]) -> (a -> String ) -> (a -> prop) -> Property
+forAllBlind :: Testable prop => Gen a -> (a -> prop) -> Property
+forAllShrinkBlind :: Testable prop => Gen a -> (a -> [a]) -> (a -> prop) -> Property
+shrinking :: Testable prop => (a -> [a]) -> a -> (a -> prop) -> Property
+(==>) :: Testable prop => Bool -> prop -> Property
+data Discard = Discard
+discard :: a
+(===) :: ( Eq a, Show a) => a -> a -> Property
+(=/=) :: ( Eq a, Show a) => a -> a -> Property
+total :: NFData a => a -> Property
+ioProperty :: Testable prop => IO prop -> Property
+idempotentIOProperty :: Testable prop => IO prop -> Property
+verbose :: Testable prop => prop -> Property
+verboseShrinking :: Testable prop => prop -> Property
+noShrinking :: Testable prop => prop -> Property
+withMaxSuccess :: Testable prop => Int -> prop -> Property
+within :: Testable prop => Int -> prop -> Property
+discardAfter :: Testable prop => Int -> prop -> Property
+once :: Testable prop => prop -> Property
+again :: Testable prop => prop -> Property
+mapSize :: Testable prop => ( Int -> Int ) -> prop -> Property
+(.&.) :: ( Testable prop1, Testable prop2) => prop1 -> prop2 -> Property
+(.&&.) :: ( Testable prop1, Testable prop2) => prop1 -> prop2 -> Property
+conjoin :: Testable prop => [prop] -> Property
+(.||.) :: ( Testable prop1, Testable prop2) => prop1 -> prop2 -> Property
+disjoin :: Testable prop => [prop] -> Property
+counterexample :: Testable prop => String -> prop -> Property
+printTestCase :: Testable prop => String -> prop -> Property
+whenFail :: Testable prop => IO () -> prop -> Property
+whenFail' :: Testable prop => IO () -> prop -> Property
+expectFailure :: Testable prop => prop -> Property
+label :: Testable prop => String -> prop -> Property
+collect :: ( Show a, Testable prop) => a -> prop -> Property
+classify :: Testable prop => Bool -> String -> prop -> Property
+tabulate :: Testable prop => String -> [ String ] -> prop -> Property
+cover :: Testable prop => Double -> Bool -> String -> prop -> Property
+coverTable :: Testable prop => String -> [( String , Double )] -> prop -> Property
+checkCoverage :: Testable prop => prop -> Property
+checkCoverageWith :: Testable prop => Confidence -> prop -> Property
+data Confidence = Confidence { certainty :: Integer
+tolerance :: Double
+}
+stdConfidence :: Confidence
+labelledExamples :: Testable prop => prop -> IO ()
+labelledExamplesWith :: Testable prop => Args -> prop -> IO ()
+labelledExamplesWithResult :: Testable prop => Args -> prop -> IO Result
+labelledExamplesResult :: Testable prop => prop -> IO Result
+Running tests
+quickCheck :: Testable prop => prop -> IO () Source #
+Tests a property and prints the results to stdout .
+By default up to 100 tests are performed, which may not be enough
+to find all bugs. To run more tests, use withMaxSuccess .
+If you want to get the counterexample as a Haskell value,
+rather than just printing it, try the
+quickcheck-with-counterexamples
+package.
+data Args Source #
+Args specifies arguments to the QuickCheck driver
+Constructors
+Args
+Fields
+replay :: Maybe (QCGen, Int ) Should we replay a previous test?
+Note: saving a seed from one version of QuickCheck and
+replaying it in another is not supported.
+If you want to store a test case permanently you should save
+the test case itself.
+maxSuccess :: Int Maximum number of successful tests before succeeding. Testing stops
+at the first failure. If all tests are passing and you want to run more tests,
+increase this number.
+maxDiscardRatio :: Int Maximum number of discarded tests per successful test before giving up
+maxSize :: Int Size to use for the biggest test cases
+chatty :: Bool Whether to print anything
+maxShrinks :: Int Maximum number of shrinks to before giving up. Setting this to zero
+turns shrinking off.
+Instances
+Instances details Read Args Source #
+Instance details Defined in Test.QuickCheck.Test
+Methods
+readsPrec :: Int -> ReadS Args #
+readList :: ReadS [ Args ] #
+readPrec :: ReadPrec Args #
+readListPrec :: ReadPrec [ Args ] #
+Show Args Source #
+Instance details Defined in Test.QuickCheck.Test
+Methods
+showsPrec :: Int -> Args -> ShowS #
+show :: Args -> String #
+showList :: [ Args ] -> ShowS #
+data Result Source #
+Result represents the test result
+Constructors
+Success A successful test run
+Fields
+numTests :: Int Number of tests performed
+numDiscarded :: Int Number of tests skipped
+labels :: !( Map [ String ] Int ) The number of test cases having each combination of labels (see label )
+classes :: !( Map String Int ) The number of test cases having each class (see classify )
+tables :: !( Map String ( Map String Int )) Data collected by tabulate
+output :: String Printed output
+GaveUp Given up
+Fields
+numTests :: Int Number of tests performed
+numDiscarded :: Int Number of tests skipped
+labels :: !( Map [ String ] Int ) The number of test cases having each combination of labels (see label )
+classes :: !( Map String Int ) The number of test cases having each class (see classify )
+tables :: !( Map String ( Map String Int )) Data collected by tabulate
+output :: String Printed output
+Failure A failed test run
+Fields
+numTests :: Int Number of tests performed
+numDiscarded :: Int Number of tests skipped
+numShrinks :: Int Number of successful shrinking steps performed
+numShrinkTries :: Int Number of unsuccessful shrinking steps performed
+numShrinkFinal :: Int Number of unsuccessful shrinking steps performed since last successful shrink
+usedSeed :: QCGen What seed was used
+usedSize :: Int What was the test size
+reason :: String Why did the property fail
+theException :: Maybe AnException The exception the property threw, if any
+output :: String Printed output
+failingTestCase :: [ String ] The test case which provoked the failure
+failingLabels :: [ String ] The test case's labels (see label )
+failingClasses :: Set String The test case's classes (see classify )
+NoExpectedFailure A property that should have failed did not
+Fields
+numTests :: Int Number of tests performed
+numDiscarded :: Int Number of tests skipped
+labels :: !( Map [ String ] Int ) The number of test cases having each combination of labels (see label )
+classes :: !( Map String Int ) The number of test cases having each class (see classify )
+tables :: !( Map String ( Map String Int )) Data collected by tabulate
+output :: String Printed output
+Instances
+Instances details Show Result Source #
+Instance details Defined in Test.QuickCheck.Test
+Methods
+showsPrec :: Int -> Result -> ShowS #
+show :: Result -> String #
+showList :: [ Result ] -> ShowS #
+stdArgs :: Args Source #
+The default test arguments
+quickCheckWith :: Testable prop => Args -> prop -> IO () Source #
+Tests a property, using test arguments, and prints the results to stdout .
+quickCheckWithResult :: Testable prop => Args -> prop -> IO Result Source #
+Tests a property, using test arguments, produces a test result, and prints the results to stdout .
+quickCheckResult :: Testable prop => prop -> IO Result Source #
+Tests a property, produces a test result, and prints the results to stdout .
+isSuccess :: Result -> Bool Source #
+Check if the test run result was a success
+Running tests verbosely
+verboseCheck :: Testable prop => prop -> IO () Source #
+Tests a property and prints the results and all test cases generated to stdout .
+This is just a convenience function that means the same as quickCheck . verbose .
+Note: for technical reasons, the test case is printed out after
+the property is tested. To debug a property that goes into an
+infinite loop, use within to add a timeout instead.
+verboseCheckWith :: Testable prop => Args -> prop -> IO () Source #
+Tests a property, using test arguments, and prints the results and all test cases generated to stdout .
+This is just a convenience function that combines quickCheckWith and verbose .
+Note: for technical reasons, the test case is printed out after
+the property is tested. To debug a property that goes into an
+infinite loop, use within to add a timeout instead.
+verboseCheckWithResult :: Testable prop => Args -> prop -> IO Result Source #
+Tests a property, using test arguments, produces a test result, and prints the results and all test cases generated to stdout .
+This is just a convenience function that combines quickCheckWithResult and verbose .
+Note: for technical reasons, the test case is printed out after
+the property is tested. To debug a property that goes into an
+infinite loop, use within to add a timeout instead.
+verboseCheckResult :: Testable prop => prop -> IO Result Source #
+Tests a property, produces a test result, and prints the results and all test cases generated to stdout .
+This is just a convenience function that combines quickCheckResult and verbose .
+Note: for technical reasons, the test case is printed out after
+the property is tested. To debug a property that goes into an
+infinite loop, use within to add a timeout instead.
+Testing all properties in a module
+These functions test all properties in the current module, using
+Template Haskell. You need to have a {-# LANGUAGE TemplateHaskell #-}
+pragma in your module for any of these to work.
+quickCheckAll :: Q Exp Source #
+Test all properties in the current module.
+The name of the property must begin with prop_ .
+Polymorphic properties will be defaulted to Integer .
+Returns True if all tests succeeded, False otherwise.
+To use quickCheckAll , add a definition to your module along
+the lines of
+return []
+runTests = $quickCheckAll
+and then execute runTests .
+Note: the bizarre return [] in the example above is needed on
+GHC 7.8 and later; without it, quickCheckAll will not be able to find
+any of the properties. For the curious, the return [] is a
+Template Haskell splice that makes GHC insert the empty list
+of declarations at that point in the program; GHC typechecks
+everything before the return [] before it starts on the rest
+of the module, which means that the later call to quickCheckAll
+can see everything that was defined before the return [] . Yikes!
+verboseCheckAll :: Q Exp Source #
+Test all properties in the current module.
+This is just a convenience function that combines quickCheckAll and verbose .
+verboseCheckAll has the same issue with scoping as quickCheckAll :
+see the note there about return [] .
+forAllProperties :: Q Exp Source #
+Test all properties in the current module, using a custom
+quickCheck function. The same caveats as with quickCheckAll
+apply.
+$ forAllProperties has type ( Property -> IO Result ) -> IO Bool .
+An example invocation is $ forAllProperties quickCheckResult ,
+which does the same thing as $ quickCheckAll .
+forAllProperties has the same issue with scoping as quickCheckAll :
+see the note there about return [] .
+allProperties :: Q Exp Source #
+List all properties in the current module.
+$ allProperties has type [( String , Property )] .
+allProperties has the same issue with scoping as quickCheckAll :
+see the note there about return [] .
+Testing polymorphic properties
+polyQuickCheck :: Name -> ExpQ Source #
+Test a polymorphic property, defaulting all type variables to Integer .
+Invoke as $( polyQuickCheck 'prop) , where prop is a property.
+Note that just evaluating quickCheck prop in GHCi will seem to
+work, but will silently default all type variables to () !
+$( polyQuickCheck 'prop) means the same as
+quickCheck $( monomorphic 'prop) .
+If you want to supply custom arguments to polyQuickCheck ,
+you will have to combine quickCheckWith and monomorphic yourself.
+If you want to use polyQuickCheck in the same file where you defined the
+property, the same scoping problems pop up as in quickCheckAll :
+see the note there about return [] .
+polyVerboseCheck :: Name -> ExpQ Source #
+Test a polymorphic property, defaulting all type variables to Integer .
+This is just a convenience function that combines verboseCheck and monomorphic .
+If you want to use polyVerboseCheck in the same file where you defined the
+property, the same scoping problems pop up as in quickCheckAll :
+see the note there about return [] .
+monomorphic :: Name -> ExpQ Source #
+Monomorphise an arbitrary property by defaulting all type variables to Integer .
+For example, if f has type Ord a => [a] -> [a]
+then $( monomorphic 'f) has type [ Integer ] -> [ Integer ] .
+If you want to use monomorphic in the same file where you defined the
+property, the same scoping problems pop up as in quickCheckAll :
+see the note there about return [] .
+The Arbitrary typeclass: generation of random values
+class Arbitrary a where Source #
+Random generation and shrinking of values.
+QuickCheck provides Arbitrary instances for most types in base ,
+except those which incur extra dependencies.
+For a wider range of Arbitrary instances see the
+quickcheck-instances
+package.
+Minimal complete definition
+arbitrary
+Methods
+arbitrary :: Gen a Source #
+A generator for values of the given type.
+It is worth spending time thinking about what sort of test data
+you want - good generators are often the difference between
+finding bugs and not finding them. You can use sample ,
+label and classify to check the quality of your test data.
+There is no generic arbitrary implementation included because we don't
+know how to make a high-quality one. If you want one, consider using the
+testing-feat or
+generic-random packages.
+The QuickCheck manual
+goes into detail on how to write good generators. Make sure to look at it,
+especially if your type is recursive!
+shrink :: a -> [a] Source #
+Produces a (possibly) empty list of all the possible
+immediate shrinks of the given value.
+The default implementation returns the empty list, so will not try to
+shrink the value. If your data type has no special invariants, you can
+enable shrinking by defining shrink = genericShrink , but by customising
+the behaviour of shrink you can often get simpler counterexamples.
+Most implementations of shrink should try at least three things:
+Shrink a term to any of its immediate subterms.
+You can use subterms to do this.
+Recursively apply shrink to all immediate subterms.
+You can use recursivelyShrink to do this.
+Type-specific shrinkings such as replacing a constructor by a
+simpler constructor.
+For example, suppose we have the following implementation of binary trees:
+data Tree a = Nil | Branch a (Tree a) (Tree a)
+We can then define shrink as follows:
+shrink Nil = []
+shrink (Branch x l r) =
+-- shrink Branch to Nil
+[Nil] ++
+-- shrink to subterms
+[l, r] ++
+-- recursively shrink subterms
+[Branch x' l' r' | (x', l', r') <- shrink (x, l, r)]
+There are a couple of subtleties here:
+QuickCheck tries the shrinking candidates in the order they
+appear in the list, so we put more aggressive shrinking steps
+(such as replacing the whole tree by Nil ) before smaller
+ones (such as recursively shrinking the subtrees).
+It is tempting to write the last line as
+[Branch x' l' r' | x' <- shrink x, l' <- shrink l, r' <- shrink r]
+but this is the wrong thing ! It will force QuickCheck to shrink
+x , l and r in tandem, and shrinking will stop once one of
+the three is fully shrunk.
+There is a fair bit of boilerplate in the code above.
+We can avoid it with the help of some generic functions.
+The function genericShrink tries shrinking a term to all of its
+subterms and, failing that, recursively shrinks the subterms.
+Using it, we can define shrink as:
+shrink x = shrinkToNil x ++ genericShrink x
+where
+shrinkToNil Nil = []
+shrinkToNil (Branch _ l r) = [Nil]
+genericShrink is a combination of subterms , which shrinks
+a term to any of its subterms, and recursivelyShrink , which shrinks
+all subterms of a term. These may be useful if you need a bit more
+control over shrinking than genericShrink gives you.
+A final gotcha: we cannot define shrink as simply shrink x = Nil: genericShrink x
+as this shrinks Nil to Nil , and shrinking will go into an
+infinite loop.
+If all this leaves you bewildered, you might try shrink = genericShrink to begin with,
+after deriving Generic for your type. However, if your data type has any
+special invariants, you will need to check that genericShrink can't break those invariants.
+Instances
+Instances details Arbitrary ASCIIString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ASCIIString Source #
+shrink :: ASCIIString -> [ ASCIIString ] Source #
+Arbitrary PrintableString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen PrintableString Source #
+shrink :: PrintableString -> [ PrintableString ] Source #
+Arbitrary UnicodeString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen UnicodeString Source #
+shrink :: UnicodeString -> [ UnicodeString ] Source #
+Arbitrary A Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+arbitrary :: Gen A Source #
+shrink :: A -> [ A ] Source #
+Arbitrary B Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+arbitrary :: Gen B Source #
+shrink :: B -> [ B ] Source #
+Arbitrary C Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+arbitrary :: Gen C Source #
+shrink :: C -> [ C ] Source #
+Arbitrary OrdA Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+arbitrary :: Gen OrdA Source #
+shrink :: OrdA -> [ OrdA ] Source #
+Arbitrary OrdB Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+arbitrary :: Gen OrdB Source #
+shrink :: OrdB -> [ OrdB ] Source #
+Arbitrary OrdC Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+arbitrary :: Gen OrdC Source #
+shrink :: OrdC -> [ OrdC ] Source #
+Arbitrary All Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen All Source #
+shrink :: All -> [ All ] Source #
+Arbitrary Any Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Any Source #
+shrink :: Any -> [ Any ] Source #
+Arbitrary Version Source # Generates Version with non-empty non-negative versionBranch , and empty versionTags
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Version Source #
+shrink :: Version -> [ Version ] Source #
+Arbitrary CChar Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CChar Source #
+shrink :: CChar -> [ CChar ] Source #
+Arbitrary CClock Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CClock Source #
+shrink :: CClock -> [ CClock ] Source #
+Arbitrary CDouble Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CDouble Source #
+shrink :: CDouble -> [ CDouble ] Source #
+Arbitrary CFloat Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CFloat Source #
+shrink :: CFloat -> [ CFloat ] Source #
+Arbitrary CInt Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CInt Source #
+shrink :: CInt -> [ CInt ] Source #
+Arbitrary CIntMax Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CIntMax Source #
+shrink :: CIntMax -> [ CIntMax ] Source #
+Arbitrary CIntPtr Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CIntPtr Source #
+shrink :: CIntPtr -> [ CIntPtr ] Source #
+Arbitrary CLLong Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CLLong Source #
+shrink :: CLLong -> [ CLLong ] Source #
+Arbitrary CLong Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CLong Source #
+shrink :: CLong -> [ CLong ] Source #
+Arbitrary CPtrdiff Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CPtrdiff Source #
+shrink :: CPtrdiff -> [ CPtrdiff ] Source #
+Arbitrary CSChar Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CSChar Source #
+shrink :: CSChar -> [ CSChar ] Source #
+Arbitrary CSUSeconds Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CSUSeconds Source #
+shrink :: CSUSeconds -> [ CSUSeconds ] Source #
+Arbitrary CShort Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CShort Source #
+shrink :: CShort -> [ CShort ] Source #
+Arbitrary CSigAtomic Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CSigAtomic Source #
+shrink :: CSigAtomic -> [ CSigAtomic ] Source #
+Arbitrary CSize Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CSize Source #
+shrink :: CSize -> [ CSize ] Source #
+Arbitrary CTime Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CTime Source #
+shrink :: CTime -> [ CTime ] Source #
+Arbitrary CUChar Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CUChar Source #
+shrink :: CUChar -> [ CUChar ] Source #
+Arbitrary CUInt Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CUInt Source #
+shrink :: CUInt -> [ CUInt ] Source #
+Arbitrary CUIntMax Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CUIntMax Source #
+shrink :: CUIntMax -> [ CUIntMax ] Source #
+Arbitrary CUIntPtr Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CUIntPtr Source #
+shrink :: CUIntPtr -> [ CUIntPtr ] Source #
+Arbitrary CULLong Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CULLong Source #
+shrink :: CULLong -> [ CULLong ] Source #
+Arbitrary CULong Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CULong Source #
+shrink :: CULong -> [ CULong ] Source #
+Arbitrary CUSeconds Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CUSeconds Source #
+shrink :: CUSeconds -> [ CUSeconds ] Source #
+Arbitrary CUShort Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CUShort Source #
+shrink :: CUShort -> [ CUShort ] Source #
+Arbitrary CWchar Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen CWchar Source #
+shrink :: CWchar -> [ CWchar ] Source #
+Arbitrary ExitCode Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ExitCode Source #
+shrink :: ExitCode -> [ ExitCode ] Source #
+Arbitrary Newline Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Newline Source #
+shrink :: Newline -> [ Newline ] Source #
+Arbitrary NewlineMode Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen NewlineMode Source #
+shrink :: NewlineMode -> [ NewlineMode ] Source #
+Arbitrary Int16 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Int16 Source #
+shrink :: Int16 -> [ Int16 ] Source #
+Arbitrary Int32 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Int32 Source #
+shrink :: Int32 -> [ Int32 ] Source #
+Arbitrary Int64 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Int64 Source #
+shrink :: Int64 -> [ Int64 ] Source #
+Arbitrary Int8 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Int8 Source #
+shrink :: Int8 -> [ Int8 ] Source #
+Arbitrary Word16 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Word16 Source #
+shrink :: Word16 -> [ Word16 ] Source #
+Arbitrary Word32 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Word32 Source #
+shrink :: Word32 -> [ Word32 ] Source #
+Arbitrary Word64 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Word64 Source #
+shrink :: Word64 -> [ Word64 ] Source #
+Arbitrary Word8 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Word8 Source #
+shrink :: Word8 -> [ Word8 ] Source #
+Arbitrary IntSet Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen IntSet Source #
+shrink :: IntSet -> [ IntSet ] Source #
+Arbitrary Ordering Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Ordering Source #
+shrink :: Ordering -> [ Ordering ] Source #
+Arbitrary Integer Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Integer Source #
+shrink :: Integer -> [ Integer ] Source #
+Arbitrary () Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen () Source #
+shrink :: () -> [()] Source #
+Arbitrary Bool Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Bool Source #
+shrink :: Bool -> [ Bool ] Source #
+Arbitrary Char Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Char Source #
+shrink :: Char -> [ Char ] Source #
+Arbitrary Double Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Double Source #
+shrink :: Double -> [ Double ] Source #
+Arbitrary Float Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Float Source #
+shrink :: Float -> [ Float ] Source #
+Arbitrary Int Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Int Source #
+shrink :: Int -> [ Int ] Source #
+Arbitrary Word Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen Word Source #
+shrink :: Word -> [ Word ] Source #
+Arbitrary a => Arbitrary ( Blind a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Blind a) Source #
+shrink :: Blind a -> [ Blind a] Source #
+Arbitrary a => Arbitrary ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Fixed a) Source #
+shrink :: Fixed a -> [ Fixed a] Source #
+Arbitrary a => Arbitrary ( InfiniteList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( InfiniteList a) Source #
+shrink :: InfiniteList a -> [ InfiniteList a] Source #
+( Integral a, Bounded a) => Arbitrary ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Large a) Source #
+shrink :: Large a -> [ Large a] Source #
+( Num a, Ord a, Arbitrary a) => Arbitrary ( Negative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Negative a) Source #
+shrink :: Negative a -> [ Negative a] Source #
+Arbitrary a => Arbitrary ( NonEmptyList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( NonEmptyList a) Source #
+shrink :: NonEmptyList a -> [ NonEmptyList a] Source #
+( Num a, Ord a, Arbitrary a) => Arbitrary ( NonNegative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( NonNegative a) Source #
+shrink :: NonNegative a -> [ NonNegative a] Source #
+( Num a, Ord a, Arbitrary a) => Arbitrary ( NonPositive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( NonPositive a) Source #
+shrink :: NonPositive a -> [ NonPositive a] Source #
+( Num a, Eq a, Arbitrary a) => Arbitrary ( NonZero a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( NonZero a) Source #
+shrink :: NonZero a -> [ NonZero a] Source #
+( Ord a, Arbitrary a) => Arbitrary ( OrderedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( OrderedList a) Source #
+shrink :: OrderedList a -> [ OrderedList a] Source #
+( Num a, Ord a, Arbitrary a) => Arbitrary ( Positive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Positive a) Source #
+shrink :: Positive a -> [ Positive a] Source #
+Arbitrary a => Arbitrary ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Shrink2 a) Source #
+shrink :: Shrink2 a -> [ Shrink2 a] Source #
+Integral a => Arbitrary ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Small a) Source #
+shrink :: Small a -> [ Small a] Source #
+Arbitrary a => Arbitrary ( Smart a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Smart a) Source #
+shrink :: Smart a -> [ Smart a] Source #
+( Arbitrary a, Ord a) => Arbitrary ( SortedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( SortedList a) Source #
+shrink :: SortedList a -> [ SortedList a] Source #
+Arbitrary a => Arbitrary ( ZipList a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( ZipList a) Source #
+shrink :: ZipList a -> [ ZipList a] Source #
+Arbitrary a => Arbitrary ( Complex a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Complex a) Source #
+shrink :: Complex a -> [ Complex a] Source #
+Arbitrary a => Arbitrary ( Identity a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Identity a) Source #
+shrink :: Identity a -> [ Identity a] Source #
+Arbitrary a => Arbitrary ( First a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( First a) Source #
+shrink :: First a -> [ First a] Source #
+Arbitrary a => Arbitrary ( Last a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Last a) Source #
+shrink :: Last a -> [ Last a] Source #
+Arbitrary a => Arbitrary ( Dual a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Dual a) Source #
+shrink :: Dual a -> [ Dual a] Source #
+( Arbitrary a, CoArbitrary a) => Arbitrary ( Endo a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Endo a) Source #
+shrink :: Endo a -> [ Endo a] Source #
+Arbitrary a => Arbitrary ( Product a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Product a) Source #
+shrink :: Product a -> [ Product a] Source #
+Arbitrary a => Arbitrary ( Sum a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Sum a) Source #
+shrink :: Sum a -> [ Sum a] Source #
+Integral a => Arbitrary ( Ratio a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Ratio a) Source #
+shrink :: Ratio a -> [ Ratio a] Source #
+Arbitrary a => Arbitrary ( IntMap a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( IntMap a) Source #
+shrink :: IntMap a -> [ IntMap a] Source #
+Arbitrary a => Arbitrary ( Seq a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Seq a) Source #
+shrink :: Seq a -> [ Seq a] Source #
+( Ord a, Arbitrary a) => Arbitrary ( Set a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Set a) Source #
+shrink :: Set a -> [ Set a] Source #
+Arbitrary a => Arbitrary ( Tree a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Tree a) Source #
+shrink :: Tree a -> [ Tree a] Source #
+Arbitrary a => Arbitrary ( Maybe a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Maybe a) Source #
+shrink :: Maybe a -> [ Maybe a] Source #
+Arbitrary a => Arbitrary [a] Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen [a] Source #
+shrink :: [a] -> [[a]] Source #
+( Function a, CoArbitrary a, Arbitrary b) => Arbitrary (a :-> b) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+arbitrary :: Gen (a :-> b) Source #
+shrink :: (a :-> b) -> [a :-> b] Source #
+( Function a, CoArbitrary a, Arbitrary b) => Arbitrary ( Fun a b) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+arbitrary :: Gen ( Fun a b) Source #
+shrink :: Fun a b -> [ Fun a b] Source #
+( Arbitrary a, ShrinkState s a) => Arbitrary ( Shrinking s a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Shrinking s a) Source #
+shrink :: Shrinking s a -> [ Shrinking s a] Source #
+Arbitrary (m a) => Arbitrary ( WrappedMonad m a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( WrappedMonad m a) Source #
+shrink :: WrappedMonad m a -> [ WrappedMonad m a] Source #
+( Arbitrary a, Arbitrary b) => Arbitrary ( Either a b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Either a b) Source #
+shrink :: Either a b -> [ Either a b] Source #
+HasResolution a => Arbitrary ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Fixed a) Source #
+shrink :: Fixed a -> [ Fixed a] Source #
+( Ord k, Arbitrary k, Arbitrary v) => Arbitrary ( Map k v) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Map k v) Source #
+shrink :: Map k v -> [ Map k v] Source #
+( CoArbitrary a, Arbitrary b) => Arbitrary (a -> b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a -> b) Source #
+shrink :: (a -> b) -> [a -> b] Source #
+( Arbitrary a, Arbitrary b) => Arbitrary (a, b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a, b) Source #
+shrink :: (a, b) -> [(a, b)] Source #
+Arbitrary (a b c) => Arbitrary ( WrappedArrow a b c) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( WrappedArrow a b c) Source #
+shrink :: WrappedArrow a b c -> [ WrappedArrow a b c] Source #
+Arbitrary a => Arbitrary ( Const a b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Const a b) Source #
+shrink :: Const a b -> [ Const a b] Source #
+Arbitrary (f a) => Arbitrary ( Alt f a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Alt f a) Source #
+shrink :: Alt f a -> [ Alt f a] Source #
+Arbitrary a => Arbitrary ( Constant a b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Constant a b) Source #
+shrink :: Constant a b -> [ Constant a b] Source #
+( Arbitrary a, Arbitrary b, Arbitrary c) => Arbitrary (a, b, c) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a, b, c) Source #
+shrink :: (a, b, c) -> [(a, b, c)] Source #
+( Arbitrary1 f, Arbitrary1 g, Arbitrary a) => Arbitrary ( Product f g a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Product f g a) Source #
+shrink :: Product f g a -> [ Product f g a] Source #
+( Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d) => Arbitrary (a, b, c, d) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a, b, c, d) Source #
+shrink :: (a, b, c, d) -> [(a, b, c, d)] Source #
+( Arbitrary1 f, Arbitrary1 g, Arbitrary a) => Arbitrary ( Compose f g a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen ( Compose f g a) Source #
+shrink :: Compose f g a -> [ Compose f g a] Source #
+( Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d, Arbitrary e) => Arbitrary (a, b, c, d, e) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a, b, c, d, e) Source #
+shrink :: (a, b, c, d, e) -> [(a, b, c, d, e)] Source #
+( Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d, Arbitrary e, Arbitrary f) => Arbitrary (a, b, c, d, e, f) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a, b, c, d, e, f) Source #
+shrink :: (a, b, c, d, e, f) -> [(a, b, c, d, e, f)] Source #
+( Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d, Arbitrary e, Arbitrary f, Arbitrary g) => Arbitrary (a, b, c, d, e, f, g) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a, b, c, d, e, f, g) Source #
+shrink :: (a, b, c, d, e, f, g) -> [(a, b, c, d, e, f, g)] Source #
+( Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d, Arbitrary e, Arbitrary f, Arbitrary g, Arbitrary h) => Arbitrary (a, b, c, d, e, f, g, h) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a, b, c, d, e, f, g, h) Source #
+shrink :: (a, b, c, d, e, f, g, h) -> [(a, b, c, d, e, f, g, h)] Source #
+( Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d, Arbitrary e, Arbitrary f, Arbitrary g, Arbitrary h, Arbitrary i) => Arbitrary (a, b, c, d, e, f, g, h, i) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a, b, c, d, e, f, g, h, i) Source #
+shrink :: (a, b, c, d, e, f, g, h, i) -> [(a, b, c, d, e, f, g, h, i)] Source #
+( Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d, Arbitrary e, Arbitrary f, Arbitrary g, Arbitrary h, Arbitrary i, Arbitrary j) => Arbitrary (a, b, c, d, e, f, g, h, i, j) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+arbitrary :: Gen (a, b, c, d, e, f, g, h, i, j) Source #
+shrink :: (a, b, c, d, e, f, g, h, i, j) -> [(a, b, c, d, e, f, g, h, i, j)] Source #
+Helper functions for implementing shrink
+genericShrink :: ( Generic a, RecursivelyShrink ( Rep a), GSubterms ( Rep a) a) => a -> [a] Source #
+Shrink a term to any of its immediate subterms,
+and also recursively shrink all subterms.
+subterms :: ( Generic a, GSubterms ( Rep a) a) => a -> [a] Source #
+All immediate subterms of a term.
+recursivelyShrink :: ( Generic a, RecursivelyShrink ( Rep a)) => a -> [a] Source #
+Recursively shrink all immediate subterms.
+shrinkNothing :: a -> [a] Source #
+Returns no shrinking alternatives.
+shrinkList :: (a -> [a]) -> [a] -> [[a]] Source #
+Shrink a list of values given a shrinking function for individual values.
+shrinkMap :: Arbitrary a => (a -> b) -> (b -> a) -> b -> [b] Source #
+Map a shrink function to another domain. This is handy if your data type
+has special invariants, but is almost isomorphic to some other type.
+shrinkOrderedList :: (Ord a, Arbitrary a) => [a] -> [[a]]
+shrinkOrderedList = shrinkMap sort id
+shrinkSet :: (Ord a, Arbitrary a) => Set a -> [Set a]
+shrinkSet = shrinkMap fromList toList
+shrinkMapBy :: (a -> b) -> (b -> a) -> (a -> [a]) -> b -> [b] Source #
+Non-overloaded version of shrinkMap .
+shrinkIntegral :: Integral a => a -> [a] Source #
+Shrink an integral number.
+shrinkRealFrac :: RealFrac a => a -> [a] Source #
+Shrink a fraction, preferring numbers with smaller
+numerators or denominators. See also shrinkDecimal .
+shrinkBoundedEnum :: ( Bounded a, Enum a, Eq a) => a -> [a] Source #
+Shrink an element of a bounded enumeration.
+Example
+Expand data MyEnum = E0 | E1 | E2 | E3 | E4 | E5 | E6 | E7 | E8 | E9
+deriving (Bounded, Enum, Eq, Ord, Show)
+>>> shrinkBoundedEnum E9
+[E0,E5,E7,E8]
+>>> shrinkBoundedEnum E5
+[E0,E3,E4]
+>>> shrinkBoundedEnum E0
+[]
+shrinkDecimal :: RealFrac a => a -> [a] Source #
+Shrink a real number, preferring numbers with shorter
+decimal representations. See also shrinkRealFrac .
+Lifting of Arbitrary to unary and binary type constructors
+class Arbitrary1 f where Source #
+Lifting of the Arbitrary class to unary type constructors.
+Minimal complete definition
+liftArbitrary
+Methods
+liftArbitrary :: Gen a -> Gen (f a) Source #
+liftShrink :: (a -> [a]) -> f a -> [f a] Source #
+Instances
+Instances details Arbitrary1 ZipList Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen ( ZipList a) Source #
+liftShrink :: (a -> [a]) -> ZipList a -> [ ZipList a] Source #
+Arbitrary1 Identity Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen ( Identity a) Source #
+liftShrink :: (a -> [a]) -> Identity a -> [ Identity a] Source #
+Arbitrary1 IntMap Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen ( IntMap a) Source #
+liftShrink :: (a -> [a]) -> IntMap a -> [ IntMap a] Source #
+Arbitrary1 Seq Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen ( Seq a) Source #
+liftShrink :: (a -> [a]) -> Seq a -> [ Seq a] Source #
+Arbitrary1 Tree Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen ( Tree a) Source #
+liftShrink :: (a -> [a]) -> Tree a -> [ Tree a] Source #
+Arbitrary1 Maybe Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen ( Maybe a) Source #
+liftShrink :: (a -> [a]) -> Maybe a -> [ Maybe a] Source #
+Arbitrary1 [] Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen [a] Source #
+liftShrink :: (a -> [a]) -> [a] -> [[a]] Source #
+Arbitrary a => Arbitrary1 ( Either a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a0 -> Gen ( Either a a0) Source #
+liftShrink :: (a0 -> [a0]) -> Either a a0 -> [ Either a a0] Source #
+( Ord k, Arbitrary k) => Arbitrary1 ( Map k) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen ( Map k a) Source #
+liftShrink :: (a -> [a]) -> Map k a -> [ Map k a] Source #
+Arbitrary a => Arbitrary1 ( (,) a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a0 -> Gen (a, a0) Source #
+liftShrink :: (a0 -> [a0]) -> (a, a0) -> [(a, a0)] Source #
+Arbitrary a => Arbitrary1 ( Const a :: Type -> Type ) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a0 -> Gen ( Const a a0) Source #
+liftShrink :: (a0 -> [a0]) -> Const a a0 -> [ Const a a0] Source #
+Arbitrary a => Arbitrary1 ( Constant a :: Type -> Type ) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a0 -> Gen ( Constant a a0) Source #
+liftShrink :: (a0 -> [a0]) -> Constant a a0 -> [ Constant a a0] Source #
+( Arbitrary1 f, Arbitrary1 g) => Arbitrary1 ( Product f g) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen ( Product f g a) Source #
+liftShrink :: (a -> [a]) -> Product f g a -> [ Product f g a] Source #
+CoArbitrary a => Arbitrary1 ((->) a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a0 -> Gen (a -> a0) Source #
+liftShrink :: (a0 -> [a0]) -> (a -> a0) -> [a -> a0] Source #
+( Arbitrary1 f, Arbitrary1 g) => Arbitrary1 ( Compose f g) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary :: Gen a -> Gen ( Compose f g a) Source #
+liftShrink :: (a -> [a]) -> Compose f g a -> [ Compose f g a] Source #
+arbitrary1 :: ( Arbitrary1 f, Arbitrary a) => Gen (f a) Source #
+shrink1 :: ( Arbitrary1 f, Arbitrary a) => f a -> [f a] Source #
+class Arbitrary2 f where Source #
+Lifting of the Arbitrary class to binary type constructors.
+Minimal complete definition
+liftArbitrary2
+Methods
+liftArbitrary2 :: Gen a -> Gen b -> Gen (f a b) Source #
+liftShrink2 :: (a -> [a]) -> (b -> [b]) -> f a b -> [f a b] Source #
+Instances
+Instances details Arbitrary2 Either Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary2 :: Gen a -> Gen b -> Gen ( Either a b) Source #
+liftShrink2 :: (a -> [a]) -> (b -> [b]) -> Either a b -> [ Either a b] Source #
+Arbitrary2 (,) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary2 :: Gen a -> Gen b -> Gen (a, b) Source #
+liftShrink2 :: (a -> [a]) -> (b -> [b]) -> (a, b) -> [(a, b)] Source #
+Arbitrary2 ( Const :: Type -> Type -> Type ) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary2 :: Gen a -> Gen b -> Gen ( Const a b) Source #
+liftShrink2 :: (a -> [a]) -> (b -> [b]) -> Const a b -> [ Const a b] Source #
+Arbitrary2 ( Constant :: Type -> Type -> Type ) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+liftArbitrary2 :: Gen a -> Gen b -> Gen ( Constant a b) Source #
+liftShrink2 :: (a -> [a]) -> (b -> [b]) -> Constant a b -> [ Constant a b] Source #
+arbitrary2 :: ( Arbitrary2 f, Arbitrary a, Arbitrary b) => Gen (f a b) Source #
+shrink2 :: ( Arbitrary2 f, Arbitrary a, Arbitrary b) => f a b -> [f a b] Source #
+The Gen monad: combinators for building random generators
+data Gen a Source #
+A generator for values of type a .
+The third-party packages
+QuickCheck-GenT
+and
+quickcheck-transformer
+provide monad transformer versions of Gen .
+Instances
+Instances details MonadFix Gen Source #
+Instance details Defined in Test.QuickCheck.Gen
+Methods
+mfix :: (a -> Gen a) -> Gen a #
+Applicative Gen Source #
+Instance details Defined in Test.QuickCheck.Gen
+Methods
+pure :: a -> Gen a #
+(<*>) :: Gen (a -> b) -> Gen a -> Gen b #
+liftA2 :: (a -> b -> c) -> Gen a -> Gen b -> Gen c #
+(*>) :: Gen a -> Gen b -> Gen b #
+(<*) :: Gen a -> Gen b -> Gen a #
+Functor Gen Source #
+Instance details Defined in Test.QuickCheck.Gen
+Methods
+fmap :: (a -> b) -> Gen a -> Gen b #
+(<$) :: a -> Gen b -> Gen a #
+Monad Gen Source #
+Instance details Defined in Test.QuickCheck.Gen
+Methods
+(>>=) :: Gen a -> (a -> Gen b) -> Gen b #
+(>>) :: Gen a -> Gen b -> Gen b #
+return :: a -> Gen a #
+Testable prop => Testable ( Gen prop) Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: Gen prop -> Property Source #
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> Gen prop) -> Property Source #
+Generator combinators
+choose :: Random a => (a, a) -> Gen a Source #
+Generates a random element in the given inclusive range.
+For integral and enumerated types, the specialised variants of
+choose below run much quicker.
+chooseInt :: ( Int , Int ) -> Gen Int Source #
+A fast implementation of choose for Int .
+chooseInteger :: ( Integer , Integer ) -> Gen Integer Source #
+A fast implementation of choose for Integer .
+chooseBoundedIntegral :: ( Bounded a, Integral a) => (a, a) -> Gen a Source #
+A fast implementation of choose for bounded integral types.
+chooseEnum :: Enum a => (a, a) -> Gen a Source #
+A fast implementation of choose for enumerated types.
+chooseAny :: Random a => Gen a Source #
+Generates a random element over the natural range of a .
+oneof :: [ Gen a] -> Gen a Source #
+Randomly uses one of the given generators. The input list
+must be non-empty.
+frequency :: [( Int , Gen a)] -> Gen a Source #
+Chooses one of the given generators, with a weighted random distribution.
+The input list must be non-empty.
+elements :: [a] -> Gen a Source #
+Generates one of the given values. The input list must be non-empty.
+growingElements :: [a] -> Gen a Source #
+Takes a list of elements of increasing size, and chooses
+among an initial segment of the list. The size of this initial
+segment increases with the size parameter.
+The input list must be non-empty.
+sized :: ( Int -> Gen a) -> Gen a Source #
+Used to construct generators that depend on the size parameter.
+For example, listOf , which uses the size parameter as an upper bound on
+length of lists it generates, can be defined like this:
+listOf :: Gen a -> Gen [a]
+listOf gen = sized $ \n ->
+do k <- choose (0,n)
+vectorOf k gen
+You can also do this using getSize .
+getSize :: Gen Int Source #
+Returns the size parameter. Used to construct generators that depend on
+the size parameter.
+For example, listOf , which uses the size parameter as an upper bound on
+length of lists it generates, can be defined like this:
+listOf :: Gen a -> Gen [a]
+listOf gen = do
+n <- getSize
+k <- choose (0,n)
+vectorOf k gen
+You can also do this using sized .
+resize :: Int -> Gen a -> Gen a Source #
+Overrides the size parameter. Returns a generator which uses
+the given size instead of the runtime-size parameter.
+scale :: ( Int -> Int ) -> Gen a -> Gen a Source #
+Adjust the size parameter, by transforming it with the given
+function.
+suchThat :: Gen a -> (a -> Bool ) -> Gen a Source #
+Generates a value that satisfies a predicate.
+suchThatMap :: Gen a -> (a -> Maybe b) -> Gen b Source #
+Generates a value for which the given function returns a Just , and then
+applies the function.
+suchThatMaybe :: Gen a -> (a -> Bool ) -> Gen ( Maybe a) Source #
+Tries to generate a value that satisfies a predicate.
+If it fails to do so after enough attempts, returns Nothing .
+applyArbitrary2 :: ( Arbitrary a, Arbitrary b) => (a -> b -> r) -> Gen r Source #
+Apply a binary function to random arguments.
+applyArbitrary3 :: ( Arbitrary a, Arbitrary b, Arbitrary c) => (a -> b -> c -> r) -> Gen r Source #
+Apply a ternary function to random arguments.
+applyArbitrary4 :: ( Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d) => (a -> b -> c -> d -> r) -> Gen r Source #
+Apply a function of arity 4 to random arguments.
+Generators for lists
+listOf :: Gen a -> Gen [a] Source #
+Generates a list of random length. The maximum length depends on the
+size parameter.
+listOf1 :: Gen a -> Gen [a] Source #
+Generates a non-empty list of random length. The maximum length
+depends on the size parameter.
+vectorOf :: Int -> Gen a -> Gen [a] Source #
+Generates a list of the given length.
+vector :: Arbitrary a => Int -> Gen [a] Source #
+Generates a list of a given length.
+infiniteListOf :: Gen a -> Gen [a] Source #
+Generates an infinite list.
+infiniteList :: Arbitrary a => Gen [a] Source #
+Generates an infinite list.
+shuffle :: [a] -> Gen [a] Source #
+Generates a random permutation of the given list.
+sublistOf :: [a] -> Gen [a] Source #
+Generates a random subsequence of the given list.
+orderedList :: ( Ord a, Arbitrary a) => Gen [a] Source #
+Generates an ordered list.
+Generators for particular types
+arbitrarySizedIntegral :: Integral a => Gen a Source #
+Generates an integral number. The number can be positive or negative
+and its maximum absolute value depends on the size parameter.
+arbitrarySizedNatural :: Integral a => Gen a Source #
+Generates a natural number. The number's maximum value depends on
+the size parameter.
+arbitrarySizedFractional :: Fractional a => Gen a Source #
+Uniformly generates a fractional number. The number can be positive or negative
+and its maximum absolute value depends on the size parameter.
+arbitrarySizedBoundedIntegral :: ( Bounded a, Integral a) => Gen a Source #
+Generates an integral number from a bounded domain. The number is
+chosen from the entire range of the type, but small numbers are
+generated more often than big numbers. Inspired by demands from
+Phil Wadler.
+arbitraryBoundedIntegral :: ( Bounded a, Integral a) => Gen a Source #
+Generates an integral number. The number is chosen uniformly from
+the entire range of the type. You may want to use
+arbitrarySizedBoundedIntegral instead.
+arbitraryBoundedRandom :: ( Bounded a, Random a) => Gen a Source #
+Generates an element of a bounded type. The element is
+chosen from the entire range of the type.
+arbitraryBoundedEnum :: ( Bounded a, Enum a) => Gen a Source #
+Generates an element of a bounded enumeration.
+arbitraryUnicodeChar :: Gen Char Source #
+Generates any Unicode character (but not a surrogate)
+arbitraryASCIIChar :: Gen Char Source #
+Generates a random ASCII character (0-127).
+arbitraryPrintableChar :: Gen Char Source #
+Generates a printable Unicode character.
+Running generators
+generate :: Gen a -> IO a Source #
+Run a generator. The size passed to the generator is always 30;
+if you want another size then you should explicitly use resize .
+Debugging generators
+sample :: Show a => Gen a -> IO () Source #
+Generates some example values and prints them to stdout .
+sample' :: Gen a -> IO [a] Source #
+Generates some example values.
+The Function typeclass: generation of random shrinkable, showable functions
+Example of use:
+>>> :{
+>>> let prop :: Fun String Integer -> Bool
+>>> prop (Fun _ f) = f "monkey" == f "banana" || f "banana" == f "elephant"
+>>> :}
+>>> quickCheck prop
+*** Failed! Falsified (after 3 tests and 134 shrinks):
+{"elephant"->1, "monkey"->1, _->0}
+To generate random values of type Fun a b ,
+you must have an instance Function a .
+If your type has a Show instance, you can use functionShow to write the instance; otherwise,
+use functionMap to give a bijection between your type and a type that is already an instance of Function .
+See the Function [a] instance for an example of the latter.
+For more information, see the paper "Shrinking and showing functions" by Koen Claessen.
+data Fun a b Source #
+Generation of random shrinkable, showable functions.
+To generate random values of type Fun a b ,
+you must have an instance Function a .
+See also applyFun , and Fn with GHC >= 7.8.
+Constructors
+Fun (a :-> b, b, Shrunk) (a -> b)
+Instances
+Instances details Functor ( Fun a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+fmap :: (a0 -> b) -> Fun a a0 -> Fun a b #
+(<$) :: a0 -> Fun a b -> Fun a a0 #
+( Function a, CoArbitrary a, Arbitrary b) => Arbitrary ( Fun a b) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+arbitrary :: Gen ( Fun a b) Source #
+shrink :: Fun a b -> [ Fun a b] Source #
+( Show a, Show b) => Show ( Fun a b) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+showsPrec :: Int -> Fun a b -> ShowS #
+show :: Fun a b -> String #
+showList :: [ Fun a b] -> ShowS #
+applyFun :: Fun a b -> a -> b Source #
+Extracts the value of a function.
+Fn is the pattern equivalent of this function.
+prop :: Fun String Integer -> Bool
+prop f = applyFun f "banana" == applyFun f "monkey"
+|| applyFun f "banana" == applyFun f "elephant"
+applyFun2 :: Fun (a, b) c -> a -> b -> c Source #
+Extracts the value of a binary function.
+Fn2 is the pattern equivalent of this function.
+prop_zipWith :: Fun (Int, Bool) Char -> [Int] -> [Bool] -> Bool
+prop_zipWith f xs ys = zipWith (applyFun2 f) xs ys == [ applyFun2 f x y | (x, y) <- zip xs ys]
+applyFun3 :: Fun (a, b, c) d -> a -> b -> c -> d Source #
+Extracts the value of a ternary function. Fn3 is the
+pattern equivalent of this function.
+pattern Fn :: (a -> b) -> Fun a b Source #
+A modifier for testing functions.
+prop :: Fun String Integer -> Bool
+prop (Fn f) = f "banana" == f "monkey"
+|| f "banana" == f "elephant"
+pattern Fn2 :: (a -> b -> c) -> Fun (a, b) c Source #
+A modifier for testing binary functions.
+prop_zipWith :: Fun (Int, Bool) Char -> [Int] -> [Bool] -> Bool
+prop_zipWith (Fn2 f) xs ys = zipWith f xs ys == [ f x y | (x, y) <- zip xs ys]
+pattern Fn3 :: (a -> b -> c -> d) -> Fun (a, b, c) d Source #
+A modifier for testing ternary functions.
+class Function a where Source #
+The class Function a is used for random generation of showable
+functions of type a -> b .
+There is a default implementation for function , which you can use
+if your type has structural equality. Otherwise, you can normally
+use functionMap or functionShow .
+Minimal complete definition
+Nothing
+Methods
+function :: (a -> b) -> a :-> b Source #
+default function :: ( Generic a, GFunction ( Rep a)) => (a -> b) -> a :-> b Source #
+Instances
+Instances details Function A Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( A -> b) -> A :-> b Source #
+Function B Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( B -> b) -> B :-> b Source #
+Function C Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( C -> b) -> C :-> b Source #
+Function OrdA Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( OrdA -> b) -> OrdA :-> b Source #
+Function OrdB Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( OrdB -> b) -> OrdB :-> b Source #
+Function OrdC Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( OrdC -> b) -> OrdC :-> b Source #
+Function All Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( All -> b) -> All :-> b Source #
+Function Any Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Any -> b) -> Any :-> b Source #
+Function Newline Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Newline -> b) -> Newline :-> b Source #
+Function NewlineMode Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( NewlineMode -> b) -> NewlineMode :-> b Source #
+Function Int16 Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Int16 -> b) -> Int16 :-> b Source #
+Function Int32 Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Int32 -> b) -> Int32 :-> b Source #
+Function Int64 Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Int64 -> b) -> Int64 :-> b Source #
+Function Int8 Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Int8 -> b) -> Int8 :-> b Source #
+Function Word16 Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Word16 -> b) -> Word16 :-> b Source #
+Function Word32 Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Word32 -> b) -> Word32 :-> b Source #
+Function Word64 Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Word64 -> b) -> Word64 :-> b Source #
+Function Word8 Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Word8 -> b) -> Word8 :-> b Source #
+Function IntSet Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( IntSet -> b) -> IntSet :-> b Source #
+Function Ordering Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Ordering -> b) -> Ordering :-> b Source #
+Function Integer Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Integer -> b) -> Integer :-> b Source #
+Function () Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: (() -> b) -> () :-> b Source #
+Function Bool Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Bool -> b) -> Bool :-> b Source #
+Function Char Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Char -> b) -> Char :-> b Source #
+Function Double Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Double -> b) -> Double :-> b Source #
+Function Float Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Float -> b) -> Float :-> b Source #
+Function Int Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Int -> b) -> Int :-> b Source #
+Function Word Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Word -> b) -> Word :-> b Source #
+( RealFloat a, Function a) => Function ( Complex a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Complex a -> b) -> Complex a :-> b Source #
+Function a => Function ( Identity a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Identity a -> b) -> Identity a :-> b Source #
+Function a => Function ( First a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( First a -> b) -> First a :-> b Source #
+Function a => Function ( Last a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Last a -> b) -> Last a :-> b Source #
+Function a => Function ( Dual a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Dual a -> b) -> Dual a :-> b Source #
+Function a => Function ( Product a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Product a -> b) -> Product a :-> b Source #
+Function a => Function ( Sum a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Sum a -> b) -> Sum a :-> b Source #
+( Integral a, Function a) => Function ( Ratio a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Ratio a -> b) -> Ratio a :-> b Source #
+Function a => Function ( IntMap a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( IntMap a -> b) -> IntMap a :-> b Source #
+Function a => Function ( Seq a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Seq a -> b) -> Seq a :-> b Source #
+( Ord a, Function a) => Function ( Set a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Set a -> b) -> Set a :-> b Source #
+Function a => Function ( Tree a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Tree a -> b) -> Tree a :-> b Source #
+Function a => Function ( Maybe a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Maybe a -> b) -> Maybe a :-> b Source #
+Function a => Function [a] Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ([a] -> b) -> [a] :-> b Source #
+( Function a, Function b) => Function ( Either a b) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Either a b -> b0) -> Either a b :-> b0 Source #
+HasResolution a => Function ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Fixed a -> b) -> Fixed a :-> b Source #
+( Ord a, Function a, Function b) => Function ( Map a b) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Map a b -> b0) -> Map a b :-> b0 Source #
+( Function a, Function b) => Function (a, b) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ((a, b) -> b0) -> (a, b) :-> b0 Source #
+Function a => Function ( Const a b) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Const a b -> b0) -> Const a b :-> b0 Source #
+Function (f a) => Function ( Alt f a) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ( Alt f a -> b) -> Alt f a :-> b Source #
+( Function a, Function b, Function c) => Function (a, b, c) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ((a, b, c) -> b0) -> (a, b, c) :-> b0 Source #
+( Function a, Function b, Function c, Function d) => Function (a, b, c, d) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ((a, b, c, d) -> b0) -> (a, b, c, d) :-> b0 Source #
+( Function a, Function b, Function c, Function d, Function e) => Function (a, b, c, d, e) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ((a, b, c, d, e) -> b0) -> (a, b, c, d, e) :-> b0 Source #
+( Function a, Function b, Function c, Function d, Function e, Function f) => Function (a, b, c, d, e, f) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ((a, b, c, d, e, f) -> b0) -> (a, b, c, d, e, f) :-> b0 Source #
+( Function a, Function b, Function c, Function d, Function e, Function f, Function g) => Function (a, b, c, d, e, f, g) Source #
+Instance details Defined in Test.QuickCheck.Function
+Methods
+function :: ((a, b, c, d, e, f, g) -> b0) -> (a, b, c, d, e, f, g) :-> b0 Source #
+functionMap :: Function b => (a -> b) -> (b -> a) -> (a -> c) -> a :-> c Source #
+The basic building block for Function instances.
+Provides a Function instance by mapping to and from a type that
+already has a Function instance.
+functionShow :: ( Show a, Read a) => (a -> c) -> a :-> c Source #
+Provides a Function instance for types with Show and Read .
+functionIntegral :: Integral a => (a -> b) -> a :-> b Source #
+Provides a Function instance for types with Integral .
+functionRealFrac :: RealFrac a => (a -> b) -> a :-> b Source #
+Provides a Function instance for types with RealFrac .
+functionBoundedEnum :: ( Eq a, Bounded a, Enum a) => (a -> b) -> a :-> b Source #
+Provides a Function instance for types with Bounded and Enum .
+Use only for small types (i.e. not integers): creates
+the list [ minBound .. maxBound ] !
+functionVoid :: ( forall b. void -> b) -> void :-> c Source #
+Provides a Function instance for types isomorphic to Void .
+An actual Function Void instance is defined in
+quickcheck-instances .
+The CoArbitrary typeclass: generation of functions the old-fashioned way
+class CoArbitrary a where Source #
+Used for random generation of functions.
+You should consider using Fun instead, which
+can show the generated functions as strings.
+If you are using a recent GHC, there is a default definition of
+coarbitrary using genericCoarbitrary , so if your type has a
+Generic instance it's enough to say
+instance CoArbitrary MyType
+You should only use genericCoarbitrary for data types where
+equality is structural, i.e. if you can't have two different
+representations of the same value. An example where it's not
+safe is sets implemented using binary search trees: the same
+set can be represented as several different trees.
+Here you would have to explicitly define
+coarbitrary s = coarbitrary (toList s) .
+Minimal complete definition
+Nothing
+Methods
+coarbitrary :: a -> Gen b -> Gen b Source #
+Used to generate a function of type a -> b .
+The first argument is a value, the second a generator.
+You should use variant to perturb the random generator;
+the goal is that different values for the first argument will
+lead to different calls to variant . An example will help:
+instance CoArbitrary a => CoArbitrary [a] where
+coarbitrary [] = variant 0
+coarbitrary (x:xs) = variant 1 . coarbitrary (x,xs)
+default coarbitrary :: ( Generic a, GCoArbitrary ( Rep a)) => a -> Gen b -> Gen b Source #
+Instances
+Instances details CoArbitrary A Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+coarbitrary :: A -> Gen b -> Gen b Source #
+CoArbitrary B Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+coarbitrary :: B -> Gen b -> Gen b Source #
+CoArbitrary C Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+coarbitrary :: C -> Gen b -> Gen b Source #
+CoArbitrary OrdA Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+coarbitrary :: OrdA -> Gen b -> Gen b Source #
+CoArbitrary OrdB Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+coarbitrary :: OrdB -> Gen b -> Gen b Source #
+CoArbitrary OrdC Source #
+Instance details Defined in Test.QuickCheck.Poly
+Methods
+coarbitrary :: OrdC -> Gen b -> Gen b Source #
+CoArbitrary All Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: All -> Gen b -> Gen b Source #
+CoArbitrary Any Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Any -> Gen b -> Gen b Source #
+CoArbitrary Version Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Version -> Gen b -> Gen b Source #
+CoArbitrary Newline Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Newline -> Gen b -> Gen b Source #
+CoArbitrary NewlineMode Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: NewlineMode -> Gen b -> Gen b Source #
+CoArbitrary Int16 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Int16 -> Gen b -> Gen b Source #
+CoArbitrary Int32 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Int32 -> Gen b -> Gen b Source #
+CoArbitrary Int64 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Int64 -> Gen b -> Gen b Source #
+CoArbitrary Int8 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Int8 -> Gen b -> Gen b Source #
+CoArbitrary Word16 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Word16 -> Gen b -> Gen b Source #
+CoArbitrary Word32 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Word32 -> Gen b -> Gen b Source #
+CoArbitrary Word64 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Word64 -> Gen b -> Gen b Source #
+CoArbitrary Word8 Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Word8 -> Gen b -> Gen b Source #
+CoArbitrary IntSet Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: IntSet -> Gen b -> Gen b Source #
+CoArbitrary Ordering Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Ordering -> Gen b -> Gen b Source #
+CoArbitrary Integer Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Integer -> Gen b -> Gen b Source #
+CoArbitrary () Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: () -> Gen b -> Gen b Source #
+CoArbitrary Bool Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Bool -> Gen b -> Gen b Source #
+CoArbitrary Char Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Char -> Gen b -> Gen b Source #
+CoArbitrary Double Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Double -> Gen b -> Gen b Source #
+CoArbitrary Float Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Float -> Gen b -> Gen b Source #
+CoArbitrary Int Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Int -> Gen b -> Gen b Source #
+CoArbitrary Word Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Word -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( ZipList a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: ZipList a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Complex a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Complex a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Identity a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Identity a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( First a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: First a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Last a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Last a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Dual a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Dual a -> Gen b -> Gen b Source #
+( Arbitrary a, CoArbitrary a) => CoArbitrary ( Endo a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Endo a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Product a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Product a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Sum a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Sum a -> Gen b -> Gen b Source #
+( Integral a, CoArbitrary a) => CoArbitrary ( Ratio a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Ratio a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( IntMap a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: IntMap a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Seq a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Seq a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Set a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Set a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Tree a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Tree a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Maybe a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Maybe a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary [a] Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: [a] -> Gen b -> Gen b Source #
+( CoArbitrary a, CoArbitrary b) => CoArbitrary ( Either a b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Either a b -> Gen b0 -> Gen b0 Source #
+HasResolution a => CoArbitrary ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Fixed a -> Gen b -> Gen b Source #
+( CoArbitrary k, CoArbitrary v) => CoArbitrary ( Map k v) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Map k v -> Gen b -> Gen b Source #
+( Arbitrary a, CoArbitrary b) => CoArbitrary (a -> b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: (a -> b) -> Gen b0 -> Gen b0 Source #
+( CoArbitrary a, CoArbitrary b) => CoArbitrary (a, b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: (a, b) -> Gen b0 -> Gen b0 Source #
+CoArbitrary a => CoArbitrary ( Const a b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Const a b -> Gen b0 -> Gen b0 Source #
+CoArbitrary (f a) => CoArbitrary ( Alt f a) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Alt f a -> Gen b -> Gen b Source #
+CoArbitrary a => CoArbitrary ( Constant a b) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: Constant a b -> Gen b0 -> Gen b0 Source #
+( CoArbitrary a, CoArbitrary b, CoArbitrary c) => CoArbitrary (a, b, c) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: (a, b, c) -> Gen b0 -> Gen b0 Source #
+( CoArbitrary a, CoArbitrary b, CoArbitrary c, CoArbitrary d) => CoArbitrary (a, b, c, d) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: (a, b, c, d) -> Gen b0 -> Gen b0 Source #
+( CoArbitrary a, CoArbitrary b, CoArbitrary c, CoArbitrary d, CoArbitrary e) => CoArbitrary (a, b, c, d, e) Source #
+Instance details Defined in Test.QuickCheck.Arbitrary
+Methods
+coarbitrary :: (a, b, c, d, e) -> Gen b0 -> Gen b0 Source #
+genericCoarbitrary :: ( Generic a, GCoArbitrary ( Rep a)) => a -> Gen b -> Gen b Source #
+Generic CoArbitrary implementation.
+variant :: Integral n => n -> Gen a -> Gen a Source #
+Modifies a generator using an integer seed.
+coarbitraryIntegral :: Integral a => a -> Gen b -> Gen b Source #
+A coarbitrary implementation for integral numbers.
+coarbitraryReal :: Real a => a -> Gen b -> Gen b Source #
+A coarbitrary implementation for real numbers.
+coarbitraryShow :: Show a => a -> Gen b -> Gen b Source #
+coarbitrary helper for lazy people :-).
+coarbitraryEnum :: Enum a => a -> Gen b -> Gen b Source #
+A coarbitrary implementation for enums.
+(><) :: ( Gen a -> Gen a) -> ( Gen a -> Gen a) -> Gen a -> Gen a Source #
+Deprecated: Use ordinary function composition instead
+Combine two generator perturbing functions, for example the
+results of calls to variant or coarbitrary .
+Type-level modifiers for changing generator behavior
+These types do things such as restricting the kind of test data that can be generated.
+They can be pattern-matched on in properties as a stylistic
+alternative to using explicit quantification.
+Examples:
+-- Functions cannot be shown (but see Function )
+prop_TakeDropWhile ( Blind p) (xs :: [ A ]) =
+takeWhile p xs ++ dropWhile p xs == xs
+prop_TakeDrop ( NonNegative n) (xs :: [ A ]) =
+take n xs ++ drop n xs == xs
+-- cycle does not work for empty lists
+prop_Cycle ( NonNegative n) ( NonEmpty (xs :: [ A ])) =
+take n (cycle xs) == take n (xs ++ cycle xs)
+-- Instead of forAll orderedList
+prop_Sort ( Ordered (xs :: [ OrdA ])) =
+sort xs == xs
+newtype Blind a Source #
+Blind x : as x, but x does not have to be in the Show class.
+Constructors
+Blind
+Fields
+getBlind :: a
+Instances
+Instances details Functor Blind Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> Blind a -> Blind b #
+(<$) :: a -> Blind b -> Blind a #
+Arbitrary a => Arbitrary ( Blind a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Blind a) Source #
+shrink :: Blind a -> [ Blind a] Source #
+Enum a => Enum ( Blind a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: Blind a -> Blind a #
+pred :: Blind a -> Blind a #
+toEnum :: Int -> Blind a #
+fromEnum :: Blind a -> Int #
+enumFrom :: Blind a -> [ Blind a] #
+enumFromThen :: Blind a -> Blind a -> [ Blind a] #
+enumFromTo :: Blind a -> Blind a -> [ Blind a] #
+enumFromThenTo :: Blind a -> Blind a -> Blind a -> [ Blind a] #
+Num a => Num ( Blind a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(+) :: Blind a -> Blind a -> Blind a #
+(-) :: Blind a -> Blind a -> Blind a #
+(*) :: Blind a -> Blind a -> Blind a #
+negate :: Blind a -> Blind a #
+abs :: Blind a -> Blind a #
+signum :: Blind a -> Blind a #
+fromInteger :: Integer -> Blind a #
+Integral a => Integral ( Blind a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+quot :: Blind a -> Blind a -> Blind a #
+rem :: Blind a -> Blind a -> Blind a #
+div :: Blind a -> Blind a -> Blind a #
+mod :: Blind a -> Blind a -> Blind a #
+quotRem :: Blind a -> Blind a -> ( Blind a, Blind a) #
+divMod :: Blind a -> Blind a -> ( Blind a, Blind a) #
+toInteger :: Blind a -> Integer #
+Real a => Real ( Blind a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+toRational :: Blind a -> Rational #
+Show ( Blind a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> Blind a -> ShowS #
+show :: Blind a -> String #
+showList :: [ Blind a] -> ShowS #
+Eq a => Eq ( Blind a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: Blind a -> Blind a -> Bool #
+(/=) :: Blind a -> Blind a -> Bool #
+Ord a => Ord ( Blind a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: Blind a -> Blind a -> Ordering #
+(<) :: Blind a -> Blind a -> Bool #
+(<=) :: Blind a -> Blind a -> Bool #
+(>) :: Blind a -> Blind a -> Bool #
+(>=) :: Blind a -> Blind a -> Bool #
+max :: Blind a -> Blind a -> Blind a #
+min :: Blind a -> Blind a -> Blind a #
+newtype Fixed a Source #
+Fixed x : as x, but will not be shrunk.
+Constructors
+Fixed
+Fields
+getFixed :: a
+Instances
+Instances details Functor Fixed Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> Fixed a -> Fixed b #
+(<$) :: a -> Fixed b -> Fixed a #
+Arbitrary a => Arbitrary ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Fixed a) Source #
+shrink :: Fixed a -> [ Fixed a] Source #
+Enum a => Enum ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: Fixed a -> Fixed a #
+pred :: Fixed a -> Fixed a #
+toEnum :: Int -> Fixed a #
+fromEnum :: Fixed a -> Int #
+enumFrom :: Fixed a -> [ Fixed a] #
+enumFromThen :: Fixed a -> Fixed a -> [ Fixed a] #
+enumFromTo :: Fixed a -> Fixed a -> [ Fixed a] #
+enumFromThenTo :: Fixed a -> Fixed a -> Fixed a -> [ Fixed a] #
+Num a => Num ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(+) :: Fixed a -> Fixed a -> Fixed a #
+(-) :: Fixed a -> Fixed a -> Fixed a #
+(*) :: Fixed a -> Fixed a -> Fixed a #
+negate :: Fixed a -> Fixed a #
+abs :: Fixed a -> Fixed a #
+signum :: Fixed a -> Fixed a #
+fromInteger :: Integer -> Fixed a #
+Read a => Read ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( Fixed a) #
+readList :: ReadS [ Fixed a] #
+readPrec :: ReadPrec ( Fixed a) #
+readListPrec :: ReadPrec [ Fixed a] #
+Integral a => Integral ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+quot :: Fixed a -> Fixed a -> Fixed a #
+rem :: Fixed a -> Fixed a -> Fixed a #
+div :: Fixed a -> Fixed a -> Fixed a #
+mod :: Fixed a -> Fixed a -> Fixed a #
+quotRem :: Fixed a -> Fixed a -> ( Fixed a, Fixed a) #
+divMod :: Fixed a -> Fixed a -> ( Fixed a, Fixed a) #
+toInteger :: Fixed a -> Integer #
+Real a => Real ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+toRational :: Fixed a -> Rational #
+Show a => Show ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> Fixed a -> ShowS #
+show :: Fixed a -> String #
+showList :: [ Fixed a] -> ShowS #
+Eq a => Eq ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: Fixed a -> Fixed a -> Bool #
+(/=) :: Fixed a -> Fixed a -> Bool #
+Ord a => Ord ( Fixed a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: Fixed a -> Fixed a -> Ordering #
+(<) :: Fixed a -> Fixed a -> Bool #
+(<=) :: Fixed a -> Fixed a -> Bool #
+(>) :: Fixed a -> Fixed a -> Bool #
+(>=) :: Fixed a -> Fixed a -> Bool #
+max :: Fixed a -> Fixed a -> Fixed a #
+min :: Fixed a -> Fixed a -> Fixed a #
+newtype OrderedList a Source #
+Ordered xs : guarantees that xs is ordered.
+Constructors
+Ordered
+Fields
+getOrdered :: [a]
+Instances
+Instances details Functor OrderedList Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> OrderedList a -> OrderedList b #
+(<$) :: a -> OrderedList b -> OrderedList a #
+( Ord a, Arbitrary a) => Arbitrary ( OrderedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( OrderedList a) Source #
+shrink :: OrderedList a -> [ OrderedList a] Source #
+Read a => Read ( OrderedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( OrderedList a) #
+readList :: ReadS [ OrderedList a] #
+readPrec :: ReadPrec ( OrderedList a) #
+readListPrec :: ReadPrec [ OrderedList a] #
+Show a => Show ( OrderedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> OrderedList a -> ShowS #
+show :: OrderedList a -> String #
+showList :: [ OrderedList a] -> ShowS #
+Eq a => Eq ( OrderedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: OrderedList a -> OrderedList a -> Bool #
+(/=) :: OrderedList a -> OrderedList a -> Bool #
+Ord a => Ord ( OrderedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: OrderedList a -> OrderedList a -> Ordering #
+(<) :: OrderedList a -> OrderedList a -> Bool #
+(<=) :: OrderedList a -> OrderedList a -> Bool #
+(>) :: OrderedList a -> OrderedList a -> Bool #
+(>=) :: OrderedList a -> OrderedList a -> Bool #
+max :: OrderedList a -> OrderedList a -> OrderedList a #
+min :: OrderedList a -> OrderedList a -> OrderedList a #
+newtype NonEmptyList a Source #
+NonEmpty xs : guarantees that xs is non-empty.
+Constructors
+NonEmpty
+Fields
+getNonEmpty :: [a]
+Instances
+Instances details Functor NonEmptyList Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> NonEmptyList a -> NonEmptyList b #
+(<$) :: a -> NonEmptyList b -> NonEmptyList a #
+Arbitrary a => Arbitrary ( NonEmptyList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( NonEmptyList a) Source #
+shrink :: NonEmptyList a -> [ NonEmptyList a] Source #
+Read a => Read ( NonEmptyList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( NonEmptyList a) #
+readList :: ReadS [ NonEmptyList a] #
+readPrec :: ReadPrec ( NonEmptyList a) #
+readListPrec :: ReadPrec [ NonEmptyList a] #
+Show a => Show ( NonEmptyList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> NonEmptyList a -> ShowS #
+show :: NonEmptyList a -> String #
+showList :: [ NonEmptyList a] -> ShowS #
+Eq a => Eq ( NonEmptyList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: NonEmptyList a -> NonEmptyList a -> Bool #
+(/=) :: NonEmptyList a -> NonEmptyList a -> Bool #
+Ord a => Ord ( NonEmptyList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: NonEmptyList a -> NonEmptyList a -> Ordering #
+(<) :: NonEmptyList a -> NonEmptyList a -> Bool #
+(<=) :: NonEmptyList a -> NonEmptyList a -> Bool #
+(>) :: NonEmptyList a -> NonEmptyList a -> Bool #
+(>=) :: NonEmptyList a -> NonEmptyList a -> Bool #
+max :: NonEmptyList a -> NonEmptyList a -> NonEmptyList a #
+min :: NonEmptyList a -> NonEmptyList a -> NonEmptyList a #
+data InfiniteList a Source #
+InfiniteList xs _ : guarantees that xs is an infinite list.
+When a counterexample is found, only prints the prefix of xs
+that was used by the program.
+Here is a contrived example property:
+prop_take_10 :: InfiniteList Char -> Bool
+prop_take_10 (InfiniteList xs _) =
+or [ x == 'a' | x <- take 10 xs ]
+In the following counterexample, the list must start with "bbbbbbbbbb" but
+the remaining (infinite) part can contain anything:
+>>> quickCheck prop_take_10
+*** Failed! Falsified (after 1 test and 14 shrinks):
+"bbbbbbbbbb" ++ ...
+Constructors
+InfiniteList
+Fields
+getInfiniteList :: [a]
+infiniteListInternalData :: InfiniteListInternalData a
+Instances
+Instances details Arbitrary a => Arbitrary ( InfiniteList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( InfiniteList a) Source #
+shrink :: InfiniteList a -> [ InfiniteList a] Source #
+Show a => Show ( InfiniteList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> InfiniteList a -> ShowS #
+show :: InfiniteList a -> String #
+showList :: [ InfiniteList a] -> ShowS #
+newtype SortedList a Source #
+Sorted xs : guarantees that xs is sorted.
+Constructors
+Sorted
+Fields
+getSorted :: [a]
+Instances
+Instances details Functor SortedList Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> SortedList a -> SortedList b #
+(<$) :: a -> SortedList b -> SortedList a #
+( Arbitrary a, Ord a) => Arbitrary ( SortedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( SortedList a) Source #
+shrink :: SortedList a -> [ SortedList a] Source #
+Read a => Read ( SortedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( SortedList a) #
+readList :: ReadS [ SortedList a] #
+readPrec :: ReadPrec ( SortedList a) #
+readListPrec :: ReadPrec [ SortedList a] #
+Show a => Show ( SortedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> SortedList a -> ShowS #
+show :: SortedList a -> String #
+showList :: [ SortedList a] -> ShowS #
+Eq a => Eq ( SortedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: SortedList a -> SortedList a -> Bool #
+(/=) :: SortedList a -> SortedList a -> Bool #
+Ord a => Ord ( SortedList a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: SortedList a -> SortedList a -> Ordering #
+(<) :: SortedList a -> SortedList a -> Bool #
+(<=) :: SortedList a -> SortedList a -> Bool #
+(>) :: SortedList a -> SortedList a -> Bool #
+(>=) :: SortedList a -> SortedList a -> Bool #
+max :: SortedList a -> SortedList a -> SortedList a #
+min :: SortedList a -> SortedList a -> SortedList a #
+newtype Positive a Source #
+Positive x : guarantees that x > 0 .
+Constructors
+Positive
+Fields
+getPositive :: a
+Instances
+Instances details Functor Positive Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> Positive a -> Positive b #
+(<$) :: a -> Positive b -> Positive a #
+( Num a, Ord a, Arbitrary a) => Arbitrary ( Positive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Positive a) Source #
+shrink :: Positive a -> [ Positive a] Source #
+Enum a => Enum ( Positive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: Positive a -> Positive a #
+pred :: Positive a -> Positive a #
+toEnum :: Int -> Positive a #
+fromEnum :: Positive a -> Int #
+enumFrom :: Positive a -> [ Positive a] #
+enumFromThen :: Positive a -> Positive a -> [ Positive a] #
+enumFromTo :: Positive a -> Positive a -> [ Positive a] #
+enumFromThenTo :: Positive a -> Positive a -> Positive a -> [ Positive a] #
+Read a => Read ( Positive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( Positive a) #
+readList :: ReadS [ Positive a] #
+readPrec :: ReadPrec ( Positive a) #
+readListPrec :: ReadPrec [ Positive a] #
+Show a => Show ( Positive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> Positive a -> ShowS #
+show :: Positive a -> String #
+showList :: [ Positive a] -> ShowS #
+Eq a => Eq ( Positive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: Positive a -> Positive a -> Bool #
+(/=) :: Positive a -> Positive a -> Bool #
+Ord a => Ord ( Positive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: Positive a -> Positive a -> Ordering #
+(<) :: Positive a -> Positive a -> Bool #
+(<=) :: Positive a -> Positive a -> Bool #
+(>) :: Positive a -> Positive a -> Bool #
+(>=) :: Positive a -> Positive a -> Bool #
+max :: Positive a -> Positive a -> Positive a #
+min :: Positive a -> Positive a -> Positive a #
+newtype Negative a Source #
+Negative x : guarantees that x < 0 .
+Constructors
+Negative
+Fields
+getNegative :: a
+Instances
+Instances details Functor Negative Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> Negative a -> Negative b #
+(<$) :: a -> Negative b -> Negative a #
+( Num a, Ord a, Arbitrary a) => Arbitrary ( Negative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Negative a) Source #
+shrink :: Negative a -> [ Negative a] Source #
+Enum a => Enum ( Negative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: Negative a -> Negative a #
+pred :: Negative a -> Negative a #
+toEnum :: Int -> Negative a #
+fromEnum :: Negative a -> Int #
+enumFrom :: Negative a -> [ Negative a] #
+enumFromThen :: Negative a -> Negative a -> [ Negative a] #
+enumFromTo :: Negative a -> Negative a -> [ Negative a] #
+enumFromThenTo :: Negative a -> Negative a -> Negative a -> [ Negative a] #
+Read a => Read ( Negative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( Negative a) #
+readList :: ReadS [ Negative a] #
+readPrec :: ReadPrec ( Negative a) #
+readListPrec :: ReadPrec [ Negative a] #
+Show a => Show ( Negative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> Negative a -> ShowS #
+show :: Negative a -> String #
+showList :: [ Negative a] -> ShowS #
+Eq a => Eq ( Negative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: Negative a -> Negative a -> Bool #
+(/=) :: Negative a -> Negative a -> Bool #
+Ord a => Ord ( Negative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: Negative a -> Negative a -> Ordering #
+(<) :: Negative a -> Negative a -> Bool #
+(<=) :: Negative a -> Negative a -> Bool #
+(>) :: Negative a -> Negative a -> Bool #
+(>=) :: Negative a -> Negative a -> Bool #
+max :: Negative a -> Negative a -> Negative a #
+min :: Negative a -> Negative a -> Negative a #
+newtype NonZero a Source #
+NonZero x : guarantees that x /= 0 .
+Constructors
+NonZero
+Fields
+getNonZero :: a
+Instances
+Instances details Functor NonZero Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> NonZero a -> NonZero b #
+(<$) :: a -> NonZero b -> NonZero a #
+( Num a, Eq a, Arbitrary a) => Arbitrary ( NonZero a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( NonZero a) Source #
+shrink :: NonZero a -> [ NonZero a] Source #
+Enum a => Enum ( NonZero a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: NonZero a -> NonZero a #
+pred :: NonZero a -> NonZero a #
+toEnum :: Int -> NonZero a #
+fromEnum :: NonZero a -> Int #
+enumFrom :: NonZero a -> [ NonZero a] #
+enumFromThen :: NonZero a -> NonZero a -> [ NonZero a] #
+enumFromTo :: NonZero a -> NonZero a -> [ NonZero a] #
+enumFromThenTo :: NonZero a -> NonZero a -> NonZero a -> [ NonZero a] #
+Read a => Read ( NonZero a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( NonZero a) #
+readList :: ReadS [ NonZero a] #
+readPrec :: ReadPrec ( NonZero a) #
+readListPrec :: ReadPrec [ NonZero a] #
+Show a => Show ( NonZero a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> NonZero a -> ShowS #
+show :: NonZero a -> String #
+showList :: [ NonZero a] -> ShowS #
+Eq a => Eq ( NonZero a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: NonZero a -> NonZero a -> Bool #
+(/=) :: NonZero a -> NonZero a -> Bool #
+Ord a => Ord ( NonZero a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: NonZero a -> NonZero a -> Ordering #
+(<) :: NonZero a -> NonZero a -> Bool #
+(<=) :: NonZero a -> NonZero a -> Bool #
+(>) :: NonZero a -> NonZero a -> Bool #
+(>=) :: NonZero a -> NonZero a -> Bool #
+max :: NonZero a -> NonZero a -> NonZero a #
+min :: NonZero a -> NonZero a -> NonZero a #
+newtype NonNegative a Source #
+NonNegative x : guarantees that x >= 0 .
+Constructors
+NonNegative
+Fields
+getNonNegative :: a
+Instances
+Instances details Functor NonNegative Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> NonNegative a -> NonNegative b #
+(<$) :: a -> NonNegative b -> NonNegative a #
+( Num a, Ord a, Arbitrary a) => Arbitrary ( NonNegative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( NonNegative a) Source #
+shrink :: NonNegative a -> [ NonNegative a] Source #
+Enum a => Enum ( NonNegative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: NonNegative a -> NonNegative a #
+pred :: NonNegative a -> NonNegative a #
+toEnum :: Int -> NonNegative a #
+fromEnum :: NonNegative a -> Int #
+enumFrom :: NonNegative a -> [ NonNegative a] #
+enumFromThen :: NonNegative a -> NonNegative a -> [ NonNegative a] #
+enumFromTo :: NonNegative a -> NonNegative a -> [ NonNegative a] #
+enumFromThenTo :: NonNegative a -> NonNegative a -> NonNegative a -> [ NonNegative a] #
+Read a => Read ( NonNegative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( NonNegative a) #
+readList :: ReadS [ NonNegative a] #
+readPrec :: ReadPrec ( NonNegative a) #
+readListPrec :: ReadPrec [ NonNegative a] #
+Show a => Show ( NonNegative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> NonNegative a -> ShowS #
+show :: NonNegative a -> String #
+showList :: [ NonNegative a] -> ShowS #
+Eq a => Eq ( NonNegative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: NonNegative a -> NonNegative a -> Bool #
+(/=) :: NonNegative a -> NonNegative a -> Bool #
+Ord a => Ord ( NonNegative a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: NonNegative a -> NonNegative a -> Ordering #
+(<) :: NonNegative a -> NonNegative a -> Bool #
+(<=) :: NonNegative a -> NonNegative a -> Bool #
+(>) :: NonNegative a -> NonNegative a -> Bool #
+(>=) :: NonNegative a -> NonNegative a -> Bool #
+max :: NonNegative a -> NonNegative a -> NonNegative a #
+min :: NonNegative a -> NonNegative a -> NonNegative a #
+newtype NonPositive a Source #
+NonPositive x : guarantees that x <= 0 .
+Constructors
+NonPositive
+Fields
+getNonPositive :: a
+Instances
+Instances details Functor NonPositive Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> NonPositive a -> NonPositive b #
+(<$) :: a -> NonPositive b -> NonPositive a #
+( Num a, Ord a, Arbitrary a) => Arbitrary ( NonPositive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( NonPositive a) Source #
+shrink :: NonPositive a -> [ NonPositive a] Source #
+Enum a => Enum ( NonPositive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: NonPositive a -> NonPositive a #
+pred :: NonPositive a -> NonPositive a #
+toEnum :: Int -> NonPositive a #
+fromEnum :: NonPositive a -> Int #
+enumFrom :: NonPositive a -> [ NonPositive a] #
+enumFromThen :: NonPositive a -> NonPositive a -> [ NonPositive a] #
+enumFromTo :: NonPositive a -> NonPositive a -> [ NonPositive a] #
+enumFromThenTo :: NonPositive a -> NonPositive a -> NonPositive a -> [ NonPositive a] #
+Read a => Read ( NonPositive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( NonPositive a) #
+readList :: ReadS [ NonPositive a] #
+readPrec :: ReadPrec ( NonPositive a) #
+readListPrec :: ReadPrec [ NonPositive a] #
+Show a => Show ( NonPositive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> NonPositive a -> ShowS #
+show :: NonPositive a -> String #
+showList :: [ NonPositive a] -> ShowS #
+Eq a => Eq ( NonPositive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: NonPositive a -> NonPositive a -> Bool #
+(/=) :: NonPositive a -> NonPositive a -> Bool #
+Ord a => Ord ( NonPositive a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: NonPositive a -> NonPositive a -> Ordering #
+(<) :: NonPositive a -> NonPositive a -> Bool #
+(<=) :: NonPositive a -> NonPositive a -> Bool #
+(>) :: NonPositive a -> NonPositive a -> Bool #
+(>=) :: NonPositive a -> NonPositive a -> Bool #
+max :: NonPositive a -> NonPositive a -> NonPositive a #
+min :: NonPositive a -> NonPositive a -> NonPositive a #
+newtype Large a Source #
+Large x : by default, QuickCheck generates Int s drawn from a small
+range. Large Int gives you values drawn from the entire range instead.
+Constructors
+Large
+Fields
+getLarge :: a
+Instances
+Instances details Functor Large Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> Large a -> Large b #
+(<$) :: a -> Large b -> Large a #
+( Integral a, Bounded a) => Arbitrary ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Large a) Source #
+shrink :: Large a -> [ Large a] Source #
+Enum a => Enum ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: Large a -> Large a #
+pred :: Large a -> Large a #
+toEnum :: Int -> Large a #
+fromEnum :: Large a -> Int #
+enumFrom :: Large a -> [ Large a] #
+enumFromThen :: Large a -> Large a -> [ Large a] #
+enumFromTo :: Large a -> Large a -> [ Large a] #
+enumFromThenTo :: Large a -> Large a -> Large a -> [ Large a] #
+Ix a => Ix ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+range :: ( Large a, Large a) -> [ Large a] #
+index :: ( Large a, Large a) -> Large a -> Int #
+unsafeIndex :: ( Large a, Large a) -> Large a -> Int #
+inRange :: ( Large a, Large a) -> Large a -> Bool #
+rangeSize :: ( Large a, Large a) -> Int #
+unsafeRangeSize :: ( Large a, Large a) -> Int #
+Num a => Num ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(+) :: Large a -> Large a -> Large a #
+(-) :: Large a -> Large a -> Large a #
+(*) :: Large a -> Large a -> Large a #
+negate :: Large a -> Large a #
+abs :: Large a -> Large a #
+signum :: Large a -> Large a #
+fromInteger :: Integer -> Large a #
+Read a => Read ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( Large a) #
+readList :: ReadS [ Large a] #
+readPrec :: ReadPrec ( Large a) #
+readListPrec :: ReadPrec [ Large a] #
+Integral a => Integral ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+quot :: Large a -> Large a -> Large a #
+rem :: Large a -> Large a -> Large a #
+div :: Large a -> Large a -> Large a #
+mod :: Large a -> Large a -> Large a #
+quotRem :: Large a -> Large a -> ( Large a, Large a) #
+divMod :: Large a -> Large a -> ( Large a, Large a) #
+toInteger :: Large a -> Integer #
+Real a => Real ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+toRational :: Large a -> Rational #
+Show a => Show ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> Large a -> ShowS #
+show :: Large a -> String #
+showList :: [ Large a] -> ShowS #
+Eq a => Eq ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: Large a -> Large a -> Bool #
+(/=) :: Large a -> Large a -> Bool #
+Ord a => Ord ( Large a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: Large a -> Large a -> Ordering #
+(<) :: Large a -> Large a -> Bool #
+(<=) :: Large a -> Large a -> Bool #
+(>) :: Large a -> Large a -> Bool #
+(>=) :: Large a -> Large a -> Bool #
+max :: Large a -> Large a -> Large a #
+min :: Large a -> Large a -> Large a #
+newtype Small a Source #
+Small x : generates values of x drawn from a small range.
+The opposite of Large .
+Constructors
+Small
+Fields
+getSmall :: a
+Instances
+Instances details Functor Small Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> Small a -> Small b #
+(<$) :: a -> Small b -> Small a #
+Integral a => Arbitrary ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Small a) Source #
+shrink :: Small a -> [ Small a] Source #
+Enum a => Enum ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: Small a -> Small a #
+pred :: Small a -> Small a #
+toEnum :: Int -> Small a #
+fromEnum :: Small a -> Int #
+enumFrom :: Small a -> [ Small a] #
+enumFromThen :: Small a -> Small a -> [ Small a] #
+enumFromTo :: Small a -> Small a -> [ Small a] #
+enumFromThenTo :: Small a -> Small a -> Small a -> [ Small a] #
+Ix a => Ix ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+range :: ( Small a, Small a) -> [ Small a] #
+index :: ( Small a, Small a) -> Small a -> Int #
+unsafeIndex :: ( Small a, Small a) -> Small a -> Int #
+inRange :: ( Small a, Small a) -> Small a -> Bool #
+rangeSize :: ( Small a, Small a) -> Int #
+unsafeRangeSize :: ( Small a, Small a) -> Int #
+Num a => Num ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(+) :: Small a -> Small a -> Small a #
+(-) :: Small a -> Small a -> Small a #
+(*) :: Small a -> Small a -> Small a #
+negate :: Small a -> Small a #
+abs :: Small a -> Small a #
+signum :: Small a -> Small a #
+fromInteger :: Integer -> Small a #
+Read a => Read ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( Small a) #
+readList :: ReadS [ Small a] #
+readPrec :: ReadPrec ( Small a) #
+readListPrec :: ReadPrec [ Small a] #
+Integral a => Integral ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+quot :: Small a -> Small a -> Small a #
+rem :: Small a -> Small a -> Small a #
+div :: Small a -> Small a -> Small a #
+mod :: Small a -> Small a -> Small a #
+quotRem :: Small a -> Small a -> ( Small a, Small a) #
+divMod :: Small a -> Small a -> ( Small a, Small a) #
+toInteger :: Small a -> Integer #
+Real a => Real ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+toRational :: Small a -> Rational #
+Show a => Show ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> Small a -> ShowS #
+show :: Small a -> String #
+showList :: [ Small a] -> ShowS #
+Eq a => Eq ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: Small a -> Small a -> Bool #
+(/=) :: Small a -> Small a -> Bool #
+Ord a => Ord ( Small a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: Small a -> Small a -> Ordering #
+(<) :: Small a -> Small a -> Bool #
+(<=) :: Small a -> Small a -> Bool #
+(>) :: Small a -> Small a -> Bool #
+(>=) :: Small a -> Small a -> Bool #
+max :: Small a -> Small a -> Small a #
+min :: Small a -> Small a -> Small a #
+data Smart a Source #
+Smart _ x : tries a different order when shrinking.
+Constructors
+Smart Int a
+Instances
+Instances details Functor Smart Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> Smart a -> Smart b #
+(<$) :: a -> Smart b -> Smart a #
+Arbitrary a => Arbitrary ( Smart a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Smart a) Source #
+shrink :: Smart a -> [ Smart a] Source #
+Show a => Show ( Smart a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> Smart a -> ShowS #
+show :: Smart a -> String #
+showList :: [ Smart a] -> ShowS #
+newtype Shrink2 a Source #
+Shrink2 x : allows 2 shrinking steps at the same time when shrinking x
+Constructors
+Shrink2
+Fields
+getShrink2 :: a
+Instances
+Instances details Functor Shrink2 Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> Shrink2 a -> Shrink2 b #
+(<$) :: a -> Shrink2 b -> Shrink2 a #
+Arbitrary a => Arbitrary ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Shrink2 a) Source #
+shrink :: Shrink2 a -> [ Shrink2 a] Source #
+Enum a => Enum ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+succ :: Shrink2 a -> Shrink2 a #
+pred :: Shrink2 a -> Shrink2 a #
+toEnum :: Int -> Shrink2 a #
+fromEnum :: Shrink2 a -> Int #
+enumFrom :: Shrink2 a -> [ Shrink2 a] #
+enumFromThen :: Shrink2 a -> Shrink2 a -> [ Shrink2 a] #
+enumFromTo :: Shrink2 a -> Shrink2 a -> [ Shrink2 a] #
+enumFromThenTo :: Shrink2 a -> Shrink2 a -> Shrink2 a -> [ Shrink2 a] #
+Num a => Num ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(+) :: Shrink2 a -> Shrink2 a -> Shrink2 a #
+(-) :: Shrink2 a -> Shrink2 a -> Shrink2 a #
+(*) :: Shrink2 a -> Shrink2 a -> Shrink2 a #
+negate :: Shrink2 a -> Shrink2 a #
+abs :: Shrink2 a -> Shrink2 a #
+signum :: Shrink2 a -> Shrink2 a #
+fromInteger :: Integer -> Shrink2 a #
+Read a => Read ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ( Shrink2 a) #
+readList :: ReadS [ Shrink2 a] #
+readPrec :: ReadPrec ( Shrink2 a) #
+readListPrec :: ReadPrec [ Shrink2 a] #
+Integral a => Integral ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+quot :: Shrink2 a -> Shrink2 a -> Shrink2 a #
+rem :: Shrink2 a -> Shrink2 a -> Shrink2 a #
+div :: Shrink2 a -> Shrink2 a -> Shrink2 a #
+mod :: Shrink2 a -> Shrink2 a -> Shrink2 a #
+quotRem :: Shrink2 a -> Shrink2 a -> ( Shrink2 a, Shrink2 a) #
+divMod :: Shrink2 a -> Shrink2 a -> ( Shrink2 a, Shrink2 a) #
+toInteger :: Shrink2 a -> Integer #
+Real a => Real ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+toRational :: Shrink2 a -> Rational #
+Show a => Show ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> Shrink2 a -> ShowS #
+show :: Shrink2 a -> String #
+showList :: [ Shrink2 a] -> ShowS #
+Eq a => Eq ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: Shrink2 a -> Shrink2 a -> Bool #
+(/=) :: Shrink2 a -> Shrink2 a -> Bool #
+Ord a => Ord ( Shrink2 a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: Shrink2 a -> Shrink2 a -> Ordering #
+(<) :: Shrink2 a -> Shrink2 a -> Bool #
+(<=) :: Shrink2 a -> Shrink2 a -> Bool #
+(>) :: Shrink2 a -> Shrink2 a -> Bool #
+(>=) :: Shrink2 a -> Shrink2 a -> Bool #
+max :: Shrink2 a -> Shrink2 a -> Shrink2 a #
+min :: Shrink2 a -> Shrink2 a -> Shrink2 a #
+data Shrinking s a Source #
+Shrinking _ x : allows for maintaining a state during shrinking.
+Constructors
+Shrinking s a
+Instances
+Instances details Functor ( Shrinking s) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+fmap :: (a -> b) -> Shrinking s a -> Shrinking s b #
+(<$) :: a -> Shrinking s b -> Shrinking s a #
+( Arbitrary a, ShrinkState s a) => Arbitrary ( Shrinking s a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ( Shrinking s a) Source #
+shrink :: Shrinking s a -> [ Shrinking s a] Source #
+Show a => Show ( Shrinking s a) Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> Shrinking s a -> ShowS #
+show :: Shrinking s a -> String #
+showList :: [ Shrinking s a] -> ShowS #
+class ShrinkState s a where Source #
+Methods
+shrinkInit :: a -> s Source #
+shrinkState :: a -> s -> [(a, s)] Source #
+newtype ASCIIString Source #
+ASCIIString : generates an ASCII string.
+Constructors
+ASCIIString
+Fields
+getASCIIString :: String
+Instances
+Instances details Arbitrary ASCIIString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen ASCIIString Source #
+shrink :: ASCIIString -> [ ASCIIString ] Source #
+Read ASCIIString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS ASCIIString #
+readList :: ReadS [ ASCIIString ] #
+readPrec :: ReadPrec ASCIIString #
+readListPrec :: ReadPrec [ ASCIIString ] #
+Show ASCIIString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> ASCIIString -> ShowS #
+show :: ASCIIString -> String #
+showList :: [ ASCIIString ] -> ShowS #
+Eq ASCIIString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: ASCIIString -> ASCIIString -> Bool #
+(/=) :: ASCIIString -> ASCIIString -> Bool #
+Ord ASCIIString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: ASCIIString -> ASCIIString -> Ordering #
+(<) :: ASCIIString -> ASCIIString -> Bool #
+(<=) :: ASCIIString -> ASCIIString -> Bool #
+(>) :: ASCIIString -> ASCIIString -> Bool #
+(>=) :: ASCIIString -> ASCIIString -> Bool #
+max :: ASCIIString -> ASCIIString -> ASCIIString #
+min :: ASCIIString -> ASCIIString -> ASCIIString #
+newtype UnicodeString Source #
+UnicodeString : generates a unicode String.
+The string will not contain surrogate pairs.
+Constructors
+UnicodeString
+Fields
+getUnicodeString :: String
+Instances
+Instances details Arbitrary UnicodeString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen UnicodeString Source #
+shrink :: UnicodeString -> [ UnicodeString ] Source #
+Read UnicodeString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS UnicodeString #
+readList :: ReadS [ UnicodeString ] #
+readPrec :: ReadPrec UnicodeString #
+readListPrec :: ReadPrec [ UnicodeString ] #
+Show UnicodeString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> UnicodeString -> ShowS #
+show :: UnicodeString -> String #
+showList :: [ UnicodeString ] -> ShowS #
+Eq UnicodeString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: UnicodeString -> UnicodeString -> Bool #
+(/=) :: UnicodeString -> UnicodeString -> Bool #
+Ord UnicodeString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: UnicodeString -> UnicodeString -> Ordering #
+(<) :: UnicodeString -> UnicodeString -> Bool #
+(<=) :: UnicodeString -> UnicodeString -> Bool #
+(>) :: UnicodeString -> UnicodeString -> Bool #
+(>=) :: UnicodeString -> UnicodeString -> Bool #
+max :: UnicodeString -> UnicodeString -> UnicodeString #
+min :: UnicodeString -> UnicodeString -> UnicodeString #
+newtype PrintableString Source #
+PrintableString : generates a printable unicode String.
+The string will not contain surrogate pairs.
+Constructors
+PrintableString
+Fields
+getPrintableString :: String
+Instances
+Instances details Arbitrary PrintableString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+arbitrary :: Gen PrintableString Source #
+shrink :: PrintableString -> [ PrintableString ] Source #
+Read PrintableString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+readsPrec :: Int -> ReadS PrintableString #
+readList :: ReadS [ PrintableString ] #
+readPrec :: ReadPrec PrintableString #
+readListPrec :: ReadPrec [ PrintableString ] #
+Show PrintableString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+showsPrec :: Int -> PrintableString -> ShowS #
+show :: PrintableString -> String #
+showList :: [ PrintableString ] -> ShowS #
+Eq PrintableString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+(==) :: PrintableString -> PrintableString -> Bool #
+(/=) :: PrintableString -> PrintableString -> Bool #
+Ord PrintableString Source #
+Instance details Defined in Test.QuickCheck.Modifiers
+Methods
+compare :: PrintableString -> PrintableString -> Ordering #
+(<) :: PrintableString -> PrintableString -> Bool #
+(<=) :: PrintableString -> PrintableString -> Bool #
+(>) :: PrintableString -> PrintableString -> Bool #
+(>=) :: PrintableString -> PrintableString -> Bool #
+max :: PrintableString -> PrintableString -> PrintableString #
+min :: PrintableString -> PrintableString -> PrintableString #
+Property combinators
+data Property Source #
+The type of properties.
+Instances
+Instances details Testable Property Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: Property -> Property Source #
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> Property ) -> Property Source #
+class Testable prop where Source #
+The class of properties, i.e., types which QuickCheck knows how to test.
+Typically a property will be a function returning Bool or Property .
+If a property does no quantification, i.e. has no
+parameters and doesn't use forAll , it will only be tested once.
+This may not be what you want if your property is an IO Bool .
+You can change this behaviour using the again combinator.
+Minimal complete definition
+property
+Methods
+property :: prop -> Property Source #
+Convert the thing to a property.
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> prop) -> Property Source #
+Optional; used internally in order to improve shrinking.
+Tests a property but also quantifies over an extra value
+(with a custom shrink and show function).
+The Testable instance for functions defines
+propertyForAllShrinkShow in a way that improves shrinking.
+Instances
+Instances details Testable Discard Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: Discard -> Property Source #
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> Discard ) -> Property Source #
+Testable Property Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: Property -> Property Source #
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> Property ) -> Property Source #
+Testable () Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: () -> Property Source #
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> ()) -> Property Source #
+Testable Bool Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: Bool -> Property Source #
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> Bool ) -> Property Source #
+Testable prop => Testable ( Gen prop) Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: Gen prop -> Property Source #
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> Gen prop) -> Property Source #
+Testable prop => Testable ( Maybe prop) Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: Maybe prop -> Property Source #
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> Maybe prop) -> Property Source #
+( Arbitrary a, Show a, Testable prop) => Testable (a -> prop) Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: (a -> prop) -> Property Source #
+propertyForAllShrinkShow :: Gen a0 -> (a0 -> [a0]) -> (a0 -> [ String ]) -> (a0 -> a -> prop) -> Property Source #
+forAll :: ( Show a, Testable prop) => Gen a -> (a -> prop) -> Property Source #
+Explicit universal quantification: uses an explicitly given
+test case generator.
+forAllShrink :: ( Show a, Testable prop) => Gen a -> (a -> [a]) -> (a -> prop) -> Property Source #
+Like forAll , but tries to shrink the argument for failing test cases.
+forAllShow :: Testable prop => Gen a -> (a -> String ) -> (a -> prop) -> Property Source #
+Like forAll , but with an explicitly given show function.
+forAllShrinkShow :: Testable prop => Gen a -> (a -> [a]) -> (a -> String ) -> (a -> prop) -> Property Source #
+Like forAllShrink , but with an explicitly given show function.
+forAllBlind :: Testable prop => Gen a -> (a -> prop) -> Property Source #
+Like forAll , but without printing the generated value.
+forAllShrinkBlind :: Testable prop => Gen a -> (a -> [a]) -> (a -> prop) -> Property Source #
+Like forAllShrink , but without printing the generated value.
+shrinking Source #
+Arguments
+:: Testable prop
+=> (a -> [a]) shrink -like function.
+-> a The original argument
+-> (a -> prop)
+-> Property
+Shrinks the argument to a property if it fails. Shrinking is done
+automatically for most types. This function is only needed when you want to
+override the default behavior.
+(==>) :: Testable prop => Bool -> prop -> Property infixr 0 Source #
+Implication for properties: The resulting property holds if
+the first argument is False (in which case the test case is discarded),
+or if the given property holds. Note that using implication carelessly can
+severely skew test case distribution: consider using cover to make sure
+that your test data is still good quality.
+data Discard Source #
+If a property returns Discard , the current test case is discarded,
+the same as if a precondition was false.
+An example is the definition of ==> :
+(==>) :: Testable prop => Bool -> prop -> Property
+False ==> _ = property Discard
+True ==> p = property p
+Constructors
+Discard
+Instances
+Instances details Testable Discard Source #
+Instance details Defined in Test.QuickCheck.Property
+Methods
+property :: Discard -> Property Source #
+propertyForAllShrinkShow :: Gen a -> (a -> [a]) -> (a -> [ String ]) -> (a -> Discard ) -> Property Source #
+discard :: a Source #
+A special error value. If a property evaluates discard , it
+causes QuickCheck to discard the current test case.
+This can be useful if you want to discard the current test case,
+but are somewhere you can't use ==> , such as inside a
+generator.
+(===) :: ( Eq a, Show a) => a -> a -> Property infix 4 Source #
+Like == , but prints a counterexample when it fails.
+(=/=) :: ( Eq a, Show a) => a -> a -> Property infix 4 Source #
+Like /= , but prints a counterexample when it fails.
+total :: NFData a => a -> Property Source #
+Checks that a value is total, i.e., doesn't crash when evaluated.
+ioProperty :: Testable prop => IO prop -> Property Source #
+Do I/O inside a property.
+Warning: any random values generated inside of the argument to ioProperty
+will not currently be shrunk. For best results, generate all random values
+before calling ioProperty , or use idempotentIOProperty if that is safe.
+Note: if your property does no quantification, it will only be tested once.
+To test it repeatedly, use again .
+idempotentIOProperty :: Testable prop => IO prop -> Property Source #
+Do I/O inside a property.
+Warning: during shrinking, the I/O may not always be re-executed.
+Instead, the I/O may be executed once and then its result retained.
+If this is not acceptable, use ioProperty instead.
+Controlling property execution
+verbose :: Testable prop => prop -> Property Source #
+Prints out the generated test case every time the property is tested.
+Only variables quantified over inside the verbose are printed.
+Note: for technical reasons, the test case is printed out after
+the property is tested. To debug a property that goes into an
+infinite loop, use within to add a timeout instead.
+verboseShrinking :: Testable prop => prop -> Property Source #
+Prints out the generated test case every time the property fails, including during shrinking.
+Only variables quantified over inside the verboseShrinking are printed.
+Note: for technical reasons, the test case is printed out after
+the property is tested. To debug a property that goes into an
+infinite loop, use within to add a timeout instead.
+noShrinking :: Testable prop => prop -> Property Source #
+Disables shrinking for a property altogether.
+Only quantification inside the call to noShrinking is affected.
+withMaxSuccess :: Testable prop => Int -> prop -> Property Source #
+Configures how many times a property will be tested.
+For example,
+quickCheck (withMaxSuccess 1000 p)
+will test p up to 1000 times.
+within :: Testable prop => Int -> prop -> Property Source #
+Considers a property failed if it does not complete within
+the given number of microseconds.
+Note: if the property times out, variables quantified inside the
+within will not be printed. Therefore, you should use within
+only in the body of your property.
+Good: prop_foo a b c = within 1000000 ...
+Bad: prop_foo = within 1000000 $ \a b c -> ...
+Bad: prop_foo a b c = ...; main = quickCheck (within 1000000 prop_foo)
+discardAfter :: Testable prop => Int -> prop -> Property Source #
+Discards the test case if it does not complete within the given
+number of microseconds. This can be useful when testing algorithms
+that have pathological cases where they run extremely slowly.
+once :: Testable prop => prop -> Property Source #
+Modifies a property so that it only will be tested once.
+Opposite of again .
+again :: Testable prop => prop -> Property Source #
+Modifies a property so that it will be tested repeatedly.
+Opposite of once .
+mapSize :: Testable prop => ( Int -> Int ) -> prop -> Property Source #
+Adjust the test case size for a property, by transforming it with the given
+function.
+Conjunction and disjunction
+(.&.) :: ( Testable prop1, Testable prop2) => prop1 -> prop2 -> Property infixr 1 Source #
+Nondeterministic choice: p1 .&. p2 picks randomly one of
+p1 and p2 to test. If you test the property 100 times it
+makes 100 random choices.
+(.&&.) :: ( Testable prop1, Testable prop2) => prop1 -> prop2 -> Property infixr 1 Source #
+Conjunction: p1 .&&. p2 passes if both p1 and p2 pass.
+conjoin :: Testable prop => [prop] -> Property Source #
+Take the conjunction of several properties.
+(.||.) :: ( Testable prop1, Testable prop2) => prop1 -> prop2 -> Property infixr 1 Source #
+Disjunction: p1 .||. p2 passes unless p1 and p2 simultaneously fail.
+disjoin :: Testable prop => [prop] -> Property Source #
+Take the disjunction of several properties.
+What to do on failure
+counterexample :: Testable prop => String -> prop -> Property Source #
+Adds the given string to the counterexample if the property fails.
+printTestCase :: Testable prop => String -> prop -> Property Source #
+Deprecated: Use counterexample instead
+Adds the given string to the counterexample if the property fails.
+whenFail :: Testable prop => IO () -> prop -> Property Source #
+Performs an IO action after the last failure of a property.
+whenFail' :: Testable prop => IO () -> prop -> Property Source #
+Performs an IO action every time a property fails. Thus,
+if shrinking is done, this can be used to keep track of the
+failures along the way.
+expectFailure :: Testable prop => prop -> Property Source #
+Indicates that a property is supposed to fail.
+QuickCheck will report an error if it does not fail.
+Analysing test case distribution
+label :: Testable prop => String -> prop -> Property Source #
+Attaches a label to a test case. This is used for reporting
+test case distribution.
+For example:
+prop_reverse_reverse :: [Int] -> Property
+prop_reverse_reverse xs =
+label ("length of input is " ++ show (length xs)) $
+reverse (reverse xs) === xs
+>>> quickCheck prop_reverse_reverse
++++ OK, passed 100 tests:
+7% length of input is 7
+6% length of input is 3
+5% length of input is 4
+4% length of input is 6
+...
+Each use of label in your property results in a separate
+table of test case distribution in the output. If this is
+not what you want, use tabulate .
+collect :: ( Show a, Testable prop) => a -> prop -> Property Source #
+Attaches a label to a test case. This is used for reporting
+test case distribution.
+collect x = label (show x)
+For example:
+prop_reverse_reverse :: [Int] -> Property
+prop_reverse_reverse xs =
+collect (length xs) $
+reverse (reverse xs) === xs
+>>> quickCheck prop_reverse_reverse
++++ OK, passed 100 tests:
+7% 7
+6% 3
+5% 4
+4% 6
+...
+Each use of collect in your property results in a separate
+table of test case distribution in the output. If this is
+not what you want, use tabulate .
+classify Source #
+Arguments
+:: Testable prop
+=> Bool True if the test case should be labelled.
+-> String Label.
+-> prop
+-> Property
+Reports how many test cases satisfy a given condition.
+For example:
+prop_sorted_sort :: [Int] -> Property
+prop_sorted_sort xs =
+sorted xs ==>
+classify (length xs > 1) "non-trivial" $
+sort xs === xs
+>>> quickCheck prop_sorted_sort
++++ OK, passed 100 tests (22% non-trivial).
+tabulate :: Testable prop => String -> [ String ] -> prop -> Property Source #
+Collects information about test case distribution into a table.
+The arguments to tabulate are the table's name and a list of values
+associated with the current test case. After testing, QuickCheck prints the
+frequency of all collected values. The frequencies are expressed as a
+percentage of the total number of values collected.
+You should prefer tabulate to label when each test case is associated
+with a varying number of values. Here is a (not terribly useful) example,
+where the test data is a list of integers and we record all values that
+occur in the list:
+prop_sorted_sort :: [Int] -> Property
+prop_sorted_sort xs =
+sorted xs ==>
+tabulate "List elements" (map show xs) $
+sort xs === xs
+>>> quickCheck prop_sorted_sort
++++ OK, passed 100 tests; 1684 discarded.
+List elements (109 in total):
+3.7% 0
+3.7% 17
+3.7% 2
+3.7% 6
+2.8% -6
+2.8% -7
+Here is a more useful example. We are testing a chatroom, where the user can
+log in, log out, or send a message:
+data Command = LogIn | LogOut | SendMessage String deriving (Data, Show)
+instance Arbitrary Command where ...
+There are some restrictions on command sequences; for example, the user must
+log in before doing anything else. The function valid :: [Command] -> Bool
+checks that a command sequence is allowed. Our property then has the form:
+prop_chatroom :: [Command] -> Property
+prop_chatroom cmds =
+valid cmds ==>
+...
+The use of ==> may skew test case distribution. We use collect to see the
+length of the command sequences, and tabulate to get the frequencies of the
+individual commands:
+prop_chatroom :: [Command] -> Property
+prop_chatroom cmds =
+wellFormed cmds LoggedOut ==>
+'collect' (length cmds) $
+'tabulate' "Commands" (map (show . 'Data.Data.toConstr') cmds) $
+...
+>>> quickCheckWith stdArgs{maxDiscardRatio = 1000} prop_chatroom
++++ OK, passed 100 tests; 2775 discarded:
+60% 0
+20% 1
+15% 2
+3% 3
+1% 4
+1% 5
+Commands (68 in total):
+62% LogIn
+22% SendMessage
+16% LogOut
+Checking test case distribution
+cover Source #
+Arguments
+:: Testable prop
+=> Double The required percentage (0-100) of test cases.
+-> Bool True if the test case belongs to the class.
+-> String Label for the test case class.
+-> prop
+-> Property
+Checks that at least the given proportion of successful test
+cases belong to the given class. Discarded tests (i.e. ones
+with a false precondition) do not affect coverage.
+Note: If the coverage check fails, QuickCheck prints out a warning, but
+the property does not fail. To make the property fail, use checkCoverage .
+For example:
+prop_sorted_sort :: [Int] -> Property
+prop_sorted_sort xs =
+sorted xs ==>
+cover 50 (length xs > 1) "non-trivial" $
+sort xs === xs
+>>> quickCheck prop_sorted_sort
++++ OK, passed 100 tests; 135 discarded (26% non-trivial).
+Only 26% non-trivial, but expected 50%
+coverTable :: Testable prop => String -> [( String , Double )] -> prop -> Property Source #
+Checks that the values in a given table appear a certain proportion of
+the time. A call to coverTable table [(x1, p1), ..., (xn, pn)] asserts
+that of the values in table , x1 should appear at least p1 percent of
+the time, x2 at least p2 percent of the time, and so on.
+Note: If the coverage check fails, QuickCheck prints out a warning, but
+the property does not fail. To make the property fail, use checkCoverage .
+Continuing the example from the tabular combinator...
+data Command = LogIn | LogOut | SendMessage String deriving (Data, Show)
+prop_chatroom :: [Command] -> Property
+prop_chatroom cmds =
+wellFormed cmds LoggedOut ==>
+'tabulate' "Commands" (map (show . 'Data.Data.toConstr') cmds) $
+...
+...we can add a coverage requirement as follows, which checks that LogIn ,
+LogOut and SendMessage each occur at least 25% of the time:
+prop_chatroom :: [Command] -> Property
+prop_chatroom cmds =
+wellFormed cmds LoggedOut ==>
+coverTable "Commands" [("LogIn", 25), ("LogOut", 25), ("SendMessage", 25)] $
+'tabulate' "Commands" (map (show . 'Data.Data.toConstr') cmds) $
+... property goes here ...
+>>> quickCheck prop_chatroom
++++ OK, passed 100 tests; 2909 discarded:
+56% 0
+17% 1
+10% 2
+6% 3
+5% 4
+3% 5
+3% 7
+Commands (111 in total):
+51.4% LogIn
+30.6% SendMessage
+18.0% LogOut
+Table 'Commands' had only 18.0% LogOut, but expected 25.0%
+checkCoverage :: Testable prop => prop -> Property Source #
+Check that all coverage requirements defined by cover and coverTable
+are met, using a statistically sound test, and fail if they are not met.
+Ordinarily, a failed coverage check does not cause the property to fail.
+This is because the coverage requirement is not tested in a statistically
+sound way. If you use cover to express that a certain value must appear 20%
+of the time, QuickCheck will warn you if the value only appears in 19 out of
+100 test cases - but since the coverage varies randomly, you may have just
+been unlucky, and there may not be any real problem with your test
+generation.
+When you use checkCoverage , QuickCheck uses a statistical test to account
+for the role of luck in coverage failures. It will run as many tests as
+needed until it is sure about whether the coverage requirements are met. If a
+coverage requirement is not met, the property fails.
+Example:
+quickCheck (checkCoverage prop_foo)
+checkCoverageWith :: Testable prop => Confidence -> prop -> Property Source #
+Check coverage requirements using a custom confidence level.
+See stdConfidence .
+An example of making the statistical test less stringent in order to improve
+performance:
+quickCheck (checkCoverageWith stdConfidence{certainty = 10^6} prop_foo)
+data Confidence Source #
+The statistical parameters used by checkCoverage .
+Constructors
+Confidence
+Fields
+certainty :: Integer How certain checkCoverage must be before the property fails.
+If the coverage requirement is met, and the certainty parameter is n ,
+then you should get a false positive at most one in n runs of QuickCheck.
+The default value is 10^9 .
+Lower values will speed up checkCoverage at the cost of false
+positives.
+If you are using checkCoverage as part of a test suite, you should
+be careful not to set certainty too low. If you want, say, a 1% chance
+of a false positive during a project's lifetime, then certainty should
+be set to at least 100 * m * n , where m is the number of uses of
+cover in the test suite, and n is the number of times you expect the
+test suite to be run during the project's lifetime. The default value
+is chosen to be big enough for most projects.
+tolerance :: Double For statistical reasons, checkCoverage will not reject coverage
+levels that are only slightly below the required levels.
+If the required level is p then an actual level of tolerance * p
+will be accepted. The default value is 0.9 .
+Lower values will speed up checkCoverage at the cost of not detecting
+minor coverage violations.
+Instances
+Instances details Show Confidence Source #
+Instance details Defined in Test.QuickCheck.State
+Methods
+showsPrec :: Int -> Confidence -> ShowS #
+show :: Confidence -> String #
+showList :: [ Confidence ] -> ShowS #
+stdConfidence :: Confidence Source #
+The standard parameters used by checkCoverage : certainty = 10^9 ,
+tolerance = 0.9 . See Confidence for the meaning of the parameters.
+Generating example test cases
+labelledExamples :: Testable prop => prop -> IO () Source #
+Given a property, which must use label , collect , classify or cover
+to associate labels with test cases, find an example test case for each possible label.
+The example test cases are minimised using shrinking.
+For example, suppose we test delete x xs and record the number
+of times that x occurs in xs :
+prop_delete :: Int -> [Int] -> Property
+prop_delete x xs =
+classify (count x xs == 0) "count x xs == 0" $
+classify (count x xs == 1) "count x xs == 1" $
+classify (count x xs >= 2) "count x xs >= 2" $
+counterexample (show (delete x xs)) $
+count x (delete x xs) == max 0 (count x xs-1)
+where count x xs = length (filter (== x) xs)
+labelledExamples generates three example test cases, one for each label:
+>>> labelledExamples prop_delete
+*** Found example of count x xs == 0
+0
+[]
+[]
+*** Found example of count x xs == 1
+0
+[0]
+[]
+*** Found example of count x xs >= 2
+5
+[5,5]
+[5]
++++ OK, passed 100 tests:
+78% count x xs == 0
+21% count x xs == 1
+1% count x xs >= 2
+labelledExamplesWith :: Testable prop => Args -> prop -> IO () Source #
+A variant of labelledExamples that takes test arguments.
+labelledExamplesWithResult :: Testable prop => Args -> prop -> IO Result Source #
+A variant of labelledExamples that takes test arguments and returns a result.
+labelledExamplesResult :: Testable prop => prop -> IO Result Source #
+A variant of labelledExamples that returns a result.
+Produced by Haddock version 2.26.0

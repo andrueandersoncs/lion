@@ -1,0 +1,93 @@
+Skip to main content
+Z3 Guide SMTLIB Tutorial Programming Z3 Playground
+GitHub
+Search
+Logic
+Introduction
+Basic Commands
+Propositional Logic
+Uninterpreted Functions and Constants
+Quantifiers
+Lambdas
+Recursive Functions
+Conclusion
+Theories
+Strategies
+Optimization
+FixedPoints
+Logic
+Basic Commands
+On this page
+Basic Commands
+info
+The Z3 input format is an extension of the one defined by the SMT-LIB format .
+A Z3 script is a sequence of commands. As an extension of the SMT-LIB format, this means that Z3 is not technically a programming language in the same way that Java, Python, or Javascript are; there are no loops or variables as they are commonly understood, for example. The help command displays a list of all available commands. The command echo displays a message.
+Internally, Z3 maintains a stack of user provided formulas and declarations. We say these are the assertions provided by the user. The command declare-const declares a constant of a given type (aka sort). The command declare-fun declares a function. In the following example, we declare a function f that receives an integer and a Boolean and returns an integer.
+Run
+The assert command adds a formula to the Z3 internal stack. We say that the set of formulas in the Z3 stack is satisfiable if there is an interpretation (for the user declared constants and functions) that makes all asserted formulas true.
+Run
+The first asserted formula states that the constant a must be less than 10. The second one states that the function f applied to a and true must return a value less than 100.
+The check-sat command determines whether the current formulas on the Z3 stack are satisfiable or not. If the formulas are satisfiable, Z3 returns sat . If they are not satisfiable, Z3 returns unsat .
+Z3 may also return unknown if it can't determine whether a formula is satisfiable or not.
+When the check-sat command returns sat , the get-model command can be used to retrieve an interpretation that makes all formulas on the Z3 internal stack true.
+Run
+The interpretation is provided using definitions. For example, the definition
+(define-fun a () Int [val])
+states that the value of a in the model is [val]. The definition
+(define-fun f ((x!0 Int) (x!1 Bool)) Int
+...
+)
+is very similar to a function definition used in programming languages. In this example, x!0 and x!1 are the arguments of the function interpretation created by Z3. For this simple example, the definition of f is based on ite's (aka if-then-elses or conditional expressions). For example, the expression
+(ite (and (= x!0 0) (= x!1 false)) 151 101))
+evaluates to (returns) 151 when x!0 is equal to 0, and x!1 is equal to false. Otherwise, it returns 101.
+Using Scopes ​
+In some applications, we want to explore several similar problems that share several definitions and assertions.
+We can use the commands push and pop for doing that. Z3 maintains a global stack of declarations and assertions.
+The push command creates a new scope by saving the current stack size.
+The pop command removes any assertion or declaration performed between it and the matching push .
+The check-sat and get-assertions commands always operate on the content of the global stack.
+In the following example, the command (assert p) gives an error because pop removed the declaration for p.
+If the last pop command is removed, then the error is corrected.
+Run
+The push and pop commands can optionally receive a numeral argument
+indicating how many stack levels to push or pop,
+as specified by the SMT 2 language.
+Configuration ​
+The set-option command is used to configure Z3.
+Z3 has several options to control its behavior.
+Some of these options (e.g., produce-proofs) can only be set before any declaration or assertion. We use the reset command to erase all assertions and declarations. After reset , all configuration options can be set.
+Run
+The print-success true option is particularly useful when Z3 is being controlled by another application using pipes. In this mode, commands that otherwise would not print any output, will print success .
+info
+Here is a summary of all parameters
+Additional commands ​
+The command (display t) just applies the Z3 pretty printer to the given expression. The command (simplify t) displays a possibly simpler expression equivalent to t. This command accepts many different options, and (help simplify) will display all available options.
+Run
+The define-sort command defines a new sort symbol that is an abbreviation for a sort expression. The new sort symbol can be parameterized, in which case the names of the parameters are specified in the command and the sort expression uses the sort parameters. The form of the command is this
+(define-sort [symbol] ([symbol]+) [sort])
+The following example defines several abbreviations for sort expressions:
+Run
+Edit this page
+Previous
+Introduction
+Next
+Propositional Logic
+Using Scopes
+Configuration Additional commands
+More Z3
+Programming Z3 in Python
+Z3 on GitHub
+Acknowledgments
+Z3 Material
+API
+Slides
+Wiki
+Stay Connected
+GitHub
+Twitter
+RiSE @ MSR
+Legal
+Privacy & Cookies
+Terms of Use
+Trademarks
+72e37427 | z3-solver 5.0.0 | Copyright © 2026 Microsoft Corporation.

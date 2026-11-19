@@ -1,0 +1,96 @@
+SEARCH
+">
+About Brown
+Academics
+Admission
+Research
+Campus Life
+Information for:
+Current Students
+Faculty
+Staff
+Families
+Alumni
+Friends & Neighbors
+A to Z Index
+People Directory
+Social@Brown
+Facebook
+Twitter
+LinkedIn
+Google+
+Computer Science
+About
+About the Department
+Contact
+Directions
+Partners
+Rooms
+Systems & Software
+Conduit
+News
+Events
+Blog
+People
+Our Community
+Faculty
+Staff
+Grad Students
+Ugrad Students
+Alums
+Directory
+Research
+Research Links
+Areas
+Publications
+Degrees
+Degree Programs
+Doctoral
+Masters
+Undergrad
+Programs
+Miscellaneous
+Courses
+Course List
+Schedule
+Sections
+TA Program
+Home
+>&nbsp Research
+>&nbsp Publications
+>&nbsp Tech Reports
+Tech Report CS-94-31
+Constraint Programming and Database Query Languages
+Paris C. Kanellakis and Dina Q Goldin
+June 1994
+Abstract:
+The declarative programming paradigms used in constraint languages can lead to
+powerful extensions of Codd's relational data model. The development of
+constraint database query languages from logical database query languages has
+many similarities with the development of constraint logic programming from
+logic programming, but with the additional requirements of data efficient,
+set-at-a-time, and bottom-up evaluation. In this overview of constraint query
+languages (CQLs) we first present the framework of [KKR]. The principal
+idea is that: ``the k-tuple (or record) data type can be generalized by a
+conjunction of quantifier-free constraints over k variables''. The
+generalization must preserve various language properties of the relational
+data model, e.g., the calculus/algebra equivalence, and have time complexity
+polynomial in the size of the data. We next present an algebra for dense
+order constraints that is simpler to evaluate than the calculus described in
+[KKR], and we sharpen some of the related data complexity bounds. We note
+that CQLs are applicable to spatial databases. This is because these
+languages have ``spatial point set'' as the semantics of their record data
+type and because existing multi-dimensional searching data structures can
+support I/O efficient access to sets of records. Finally, we observe that
+CQLs can be augmented with complex object data types, aggregate operations,
+and null-values, just like the relational data model.
+P. C. Kanellakis, G. M. Kuper, P. Z. Revesz, ``Constraint Query Languages'',
+Proc. 9th ACM PODS, 1990, pp. 299-313.
+Full version available as Brown Univ. Tech. Rep. CS-92-50; to appear in JCSS.
+(complete text in pdf or gzipped postscript )
+Computer Science at Brown University
+Providence, Rhode Island 02912 USA
+Phone: 401-863-1000
+Map & Directions /
+Contact Us
+Sign In

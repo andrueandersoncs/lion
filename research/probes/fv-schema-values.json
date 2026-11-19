@@ -1,0 +1,1 @@
+["find", "?x", ["schema/fits?", "?x", ["schema/anyOf", 1, 2, 3]]]

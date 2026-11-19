@@ -1,0 +1,781 @@
+{
+  "sources": [
+    {
+      "id": "rosette-guide-essentials",
+      "url": "https://docs.racket-lang.org/rosette-guide/ch_essentials.html",
+      "title": "The Rosette Guide, 2: Rosette Essentials",
+      "publisher": "Emina Torlak",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "rosette-guide-solver-aided-forms",
+      "url": "https://docs.racket-lang.org/rosette-guide/ch_syntactic-forms_rosette.html",
+      "title": "The Rosette Guide, 3.2: Solver-Aided Forms",
+      "publisher": "Emina Torlak",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "rosette-guide-datatypes",
+      "url": "https://docs.racket-lang.org/rosette-guide/ch_built-in-datatypes.html",
+      "title": "The Rosette Guide, 4: Built-In Datatypes",
+      "publisher": "Emina Torlak",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "rosette-guide-unsafe",
+      "url": "https://docs.racket-lang.org/rosette-guide/ch_unsafe.html",
+      "title": "The Rosette Guide, 8: Unsafe Operations",
+      "publisher": "Emina Torlak",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "rosette-home",
+      "url": "https://emina.github.io/rosette/",
+      "title": "The Rosette Language",
+      "publisher": "Emina Torlak",
+      "kind": "primary",
+      "published": 20230704
+    },
+    {
+      "id": "z3-solver-npm-readme",
+      "url": "https://raw.githubusercontent.com/Z3Prover/z3/master/src/api/js/PUBLISHED_README.md",
+      "title": "Z3 TypeScript Bindings",
+      "publisher": "Microsoft (Z3 project)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "bjorner-programming-z3",
+      "url": "https://theory.stanford.edu/~nikolaj/programmingz3.html",
+      "title": "Programming Z3",
+      "publisher": "Bjørner, de Moura, Nachmanson, and Wintersteiger (Microsoft Research)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "z3-guide-intro",
+      "url": "https://microsoft.github.io/z3guide/docs/logic/intro",
+      "title": "Z3 Guide: Introduction",
+      "publisher": "Microsoft Research",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "z3-guide-basic-commands",
+      "url": "https://microsoft.github.io/z3guide/docs/logic/basiccommands",
+      "title": "Z3 Guide: Basic Commands",
+      "publisher": "Microsoft Research",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "z3-guide-fixedpoints",
+      "url": "https://microsoft.github.io/z3guide/docs/fixedpoints/intro",
+      "title": "Z3 Guide: FixedPoints, Introduction",
+      "publisher": "Microsoft Research",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "demoura-bjorner-z3-2008",
+      "url": "https://www.microsoft.com/en-us/research/publication/z3-an-efficient-smt-solver/",
+      "title": "Z3: an efficient SMT solver",
+      "publisher": "de Moura and Bjørner (Microsoft Research)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "bembenek-formulog-2020",
+      "url": "https://arxiv.org/html/2009.08361",
+      "title": "Formulog: Datalog for SMT-Based Static Analysis",
+      "publisher": "Bembenek, Greenberg, and Chong",
+      "kind": "primary",
+      "published": 20201016
+    },
+    {
+      "id": "wikipedia-symbolic-execution",
+      "url": "https://en.wikipedia.org/wiki/Symbolic_execution",
+      "title": "Symbolic execution",
+      "publisher": "Wikipedia",
+      "kind": "tertiary",
+      "published": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "fv-a1",
+      "source": "rosette-guide-essentials",
+      "quote": "Symbolic values, including constants, can be used just like concrete values of the same type.",
+      "says": {
+        "covers": "running a program's own code on symbolic values",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a2",
+      "source": "rosette-guide-essentials",
+      "quote": "A better approach is to delegate such checks to a constraint solver, which can search large input spaces much more effectively than naive enumeration.",
+      "says": {
+        "covers": "values that satisfy constraints over unbound variables",
+        "by": "smt solving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a3",
+      "source": "rosette-guide-essentials",
+      "quote": "If such a binding exists, as it does in our case, it is called a counterexample .",
+      "says": { "defines": "counterexample" }
+    },
+    {
+      "id": "fv-a4",
+      "source": "rosette-guide-essentials",
+      "quote": "Bindings are first-class values in Rosette, and they can be freely manipulated by programs.",
+      "says": {
+        "covers": "a counterexample written as a test to rerun",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a5",
+      "source": "rosette-guide-essentials",
+      "quote": "Rosette implements solver-aided queries by translating them to the input language of an SMT solver.",
+      "says": { "adopted": "smt solving", "in": "Rosette" }
+    },
+    {
+      "id": "fv-a6",
+      "source": "rosette-guide-essentials",
+      "quote": "At a high level, Rosette’s symbolic evaluation works by executing all paths through a program, and collecting all the assumptions and assertions on these paths into the current verification condition ( vc ) .",
+      "says": { "defines": "symbolic evaluation" }
+    },
+    {
+      "id": "fv-a7",
+      "source": "rosette-guide-essentials",
+      "quote": "At a high level, Rosette’s symbolic evaluation works by executing all paths through a program, and collecting all the assumptions and assertions on these paths into the current verification condition ( vc ) .",
+      "says": { "adopted": "symbolic evaluation", "in": "Rosette" }
+    },
+    {
+      "id": "fv-a8",
+      "source": "rosette-guide-essentials",
+      "quote": "Second, if a program terminates quickly on all concrete inputs, it can still perform poorly or fail to terminate on symbolic inputs.",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "symbolic evaluation",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-a9",
+      "source": "rosette-guide-essentials",
+      "quote": "This approach is called finitization , and it is the standard way to handle unbounded loops and recursion under symbolic evaluation.",
+      "says": { "needs": "a bound on the search", "by": "symbolic evaluation" }
+    },
+    {
+      "id": "fv-a10",
+      "source": "rosette-guide-essentials",
+      "quote": "If a verify query returns ( unsat ) under a sound policy, we know that (1) the unrolling bound k is sufficient to execute all possible inputs to bvsqrt , and (2) all of these executions satisfy the query.",
+      "says": {
+        "covers": "a proof that a goal has no answer for any value",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a11",
+      "source": "rosette-guide-essentials",
+      "quote": "But if the query returns ( unsat ) , we know only that there are no bugs within k or fewer unrollings— we cannot conclude anything about longer executions.",
+      "says": {
+        "covers": "proofs about states of unbounded size",
+        "by": "symbolic evaluation",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-a12",
+      "source": "rosette-guide-essentials",
+      "quote": "Given a program with symbolic values, it instructs the solver to find a binding for them that will cause the program to execute normally— that is, without any assumption or assertion failures.",
+      "says": {
+        "covers": "values that satisfy constraints over unbound variables",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a13",
+      "source": "rosette-guide-essentials",
+      "quote": "In Rosette, as in other solver-aided frameworks, we use assumptions to describe which inputs are legal.",
+      "says": { "defines": "assumption" }
+    },
+
+    {
+      "id": "fv-a14",
+      "source": "rosette-guide-solver-aided-forms",
+      "quote": "Searches for a binding of symbolic constants to concrete values that satisfies all the assumptions and violates at least one of the assertions encountered during the evaluation of expr .",
+      "says": { "defines": "verify" }
+    },
+    {
+      "id": "fv-a15",
+      "source": "rosette-guide-solver-aided-forms",
+      "quote": "If such a binding exists, the query returns one as part of a satisfiable solution? ; otherwise, the query returns ( unsat ) .",
+      "says": {
+        "covers": "a proof that a goal has no answer for any value",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a16",
+      "source": "rosette-guide-solver-aided-forms",
+      "quote": "The verify query does not retain the assumptions and assertions generated by expr , leaving the current verification condition ( vc ) unchanged after the query returns.",
+      "says": {
+        "covers": "adding facts for the duration of a goal",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a17",
+      "source": "rosette-guide-solver-aided-forms",
+      "quote": "These theories are effectively decidable only for linear constraints, so setting current-bitwidth to a positive integer will lead to better performance for programs that perform nonlinear arithmetic.",
+      "says": { "needs": "a decidable theory", "by": "smt solving" }
+    },
+
+    {
+      "id": "fv-a18",
+      "source": "rosette-guide-datatypes",
+      "quote": "Solvable types are (efficiently) supported by SMT solvers, and they include booleans, integers, reals, bitvectors, and uninterpreted functions.",
+      "says": { "defines": "solvable type" }
+    },
+    {
+      "id": "fv-a19",
+      "source": "rosette-guide-datatypes",
+      "quote": "Lifted types include both concrete Racket values and symbolic Rosette values, but only solvable types include symbolic constants , as introduced by define-symbolic [ * ] .",
+      "says": {
+        "needs": "symbolic values only of types the solver supports",
+        "by": "symbolic evaluation"
+      }
+    },
+    {
+      "id": "fv-a20",
+      "source": "rosette-guide-datatypes",
+      "quote": "Most lifted operations retain their Racket semantics, with the exception of equality predicates (Section 4.1 ) and numeric operations (Section 4.2 ).",
+      "says": {
+        "covers": "the host language's own semantics for equality and numbers",
+        "by": "symbolic evaluation",
+        "is": false
+      }
+    },
+
+    {
+      "id": "fv-a21",
+      "source": "rosette-guide-unsafe",
+      "quote": "This means that the SVM can correctly interpret the application of a procedure or a macro to a symbolic value, and it can correctly handle any side-effects (in particular, writes to memory) performed by rosette/safe code.",
+      "says": {
+        "covers": "running a program's own code on symbolic values",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a22",
+      "source": "rosette-guide-unsafe",
+      "quote": "Because the SVM controls only the execution of rosette/safe code, it cannot, in general, guarantee the safety or correctness of arbitrary rosette programs.",
+      "says": {
+        "needs": "every operation lifted to symbolic values",
+        "by": "symbolic evaluation"
+      }
+    },
+    {
+      "id": "fv-a23",
+      "source": "rosette-guide-unsafe",
+      "quote": "The procedures make-hash , hash-ref , and hash-clear! are not in rosette/safe .",
+      "says": {
+        "covers": "symbolic values in hash tables",
+        "by": "symbolic evaluation",
+        "is": false
+      }
+    },
+
+    {
+      "id": "fv-a24",
+      "source": "rosette-home",
+      "quote": "Rosette extends the Racket programming language, and uses the Z3 solver from Microsoft Research.",
+      "says": { "adopted": "smt solving", "in": "Rosette" }
+    },
+    {
+      "id": "fv-a25",
+      "source": "rosette-home",
+      "quote": "Rosette is a solver-aided programming language that extends Racket with language constructs for program synthesis, verification, and more.",
+      "says": { "defines": "solver-aided language" }
+    },
+    {
+      "id": "fv-a26",
+      "source": "rosette-home",
+      "quote": "You simply write an interpreter for your language in Rosette, and you get the tools for free!",
+      "says": {
+        "covers": "a verifier for a language from its interpreter",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+
+    {
+      "id": "fv-a27",
+      "source": "z3-solver-npm-readme",
+      "quote": "Z3 itself is distributed as a wasm artifact as part of this package.",
+      "says": { "adopted": "smt solving in webassembly", "in": "Z3" }
+    },
+    {
+      "id": "fv-a28",
+      "source": "z3-solver-npm-readme",
+      "quote": "Z3 itself is distributed as a wasm artifact as part of this package.",
+      "says": {
+        "covers": "evaluates entirely in memory",
+        "by": "smt solving in webassembly",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a29",
+      "source": "z3-solver-npm-readme",
+      "quote": "This package has different initialization for browser and node.",
+      "says": {
+        "covers": "runs in a web browser",
+        "by": "smt solving in webassembly",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a30",
+      "source": "z3-solver-npm-readme",
+      "quote": "The package requires threads, which means you'll need to be running in an environment which supports `SharedArrayBuffer`.",
+      "says": {
+        "needs": "threads with SharedArrayBuffer",
+        "by": "smt solving in webassembly"
+      }
+    },
+    {
+      "id": "fv-a31",
+      "source": "z3-solver-npm-readme",
+      "quote": "In browsers, in addition to ensuring the browser has implemented `SharedArrayBuffer`, you'll need to serve your page with [special headers](https://web.dev/coop-coep/).",
+      "says": {
+        "needs": "a page served with cross-origin isolation headers",
+        "by": "smt solving in webassembly"
+      }
+    },
+    {
+      "id": "fv-a32",
+      "source": "z3-solver-npm-readme",
+      "quote": "Certain long-running APIs are not appropriate to call on the main thread. In the TS bindings those APIs are marked as `async` and are automatically called on a different thread.",
+      "says": {
+        "needs": "asynchronous calls for long solver runs",
+        "by": "smt solving in webassembly"
+      }
+    },
+
+    {
+      "id": "fv-a33",
+      "source": "bjorner-programming-z3",
+      "quote": "Dually, the negation of fml is unsatisfiable and the call to Z3 produces unsat .",
+      "says": {
+        "covers": "a proof that a goal has no answer for any value",
+        "by": "smt solving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a34",
+      "source": "bjorner-programming-z3",
+      "quote": "When s.check() returns sat Z3 can provide a model that assigns values to the free constants and functions in the assertions.",
+      "says": {
+        "covers": "values that satisfy constraints over unbound variables",
+        "by": "smt solving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a35",
+      "source": "bjorner-programming-z3",
+      "quote": "We can extract a subset of assumptions used to derive unsatisfiability.",
+      "says": {
+        "covers": "which assumptions make a goal unsatisfiable",
+        "by": "smt solving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a36",
+      "source": "bjorner-programming-z3",
+      "quote": "Proofs for the SMT Core, are relatively fined-grained, while proofs for procedures that perform quantifier elimination, for instance QSAT described in Section 6.4 , are exposed as big opaque steps.",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "smt solving",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-a37",
+      "source": "bjorner-programming-z3",
+      "quote": "Bounded model checking unfolds the transition relation trans until it can establish that the goal is reachable.",
+      "says": {
+        "covers": "a check of every sequence of changes up to a bound",
+        "by": "bounded model checking",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a38",
+      "source": "bjorner-programming-z3",
+      "quote": "Bounded model checking is good for establishing reachability, but does not produce certificates for non-reachability (or safety).",
+      "says": {
+        "covers": "a proof that every change keeps an invariant",
+        "by": "bounded model checking",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-a39",
+      "source": "bjorner-programming-z3",
+      "quote": "Bounded model checking diverges if goal is unreachable.",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "bounded model checking",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-a40",
+      "source": "bjorner-programming-z3",
+      "quote": "The IC3 [ 10 ] algorithm is complete for both reachability and non-reachability.",
+      "says": {
+        "covers": "a proof that every change keeps an invariant",
+        "by": "ic3/pdr",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a41",
+      "source": "bjorner-programming-z3",
+      "quote": "Z3 finds a solution for mc that is a sufficient invariant to establish the assertions.",
+      "says": {
+        "covers": "invariants found automatically",
+        "by": "constrained horn clauses",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a42",
+      "source": "bjorner-programming-z3",
+      "quote": "As our original formula required these to be distinct, congruence closure reasoning determines that the formula is unsatisfiable.",
+      "says": {
+        "covers": "congruence closure",
+        "by": "smt solving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a43",
+      "source": "bjorner-programming-z3",
+      "quote": "The transitive closure of a relation is a property that cannot be fully axiomatized using first-order formalisms.",
+      "says": {
+        "needs": "a dedicated theory for transitive closure",
+        "by": "smt solving"
+      }
+    },
+    {
+      "id": "fv-a44",
+      "source": "bjorner-programming-z3",
+      "quote": "It is easy to see that EPR is decidable by first replacing the existentially quantified variables by fresh constants and then instantiate the universally quantified variables by all combinations of the free constant.",
+      "says": {
+        "covers": "decidable query answering",
+        "by": "effectively propositional reasoning",
+        "is": true
+      }
+    },
+
+    {
+      "id": "fv-a45",
+      "source": "z3-guide-intro",
+      "quote": "Z3 is a state-of-the art theorem prover from Microsoft Research. It can be used to check the satisfiability of logical formulas over one or more theories.",
+      "says": { "adopted": "smt solving", "in": "Z3" }
+    },
+    {
+      "id": "fv-a46",
+      "source": "z3-guide-intro",
+      "quote": "Z3 is a low-level tool. It is best used as a component in the context of other tools that require solving logical formulas.",
+      "says": {
+        "needs": "a front end that translates a language into formulas",
+        "by": "smt solving"
+      }
+    },
+    {
+      "id": "fv-a47",
+      "source": "z3-guide-intro",
+      "quote": "It uses LISP-like syntax to make it easy for tools to serialize and de-serialize models.",
+      "says": { "defines": "SMT-LIB format" }
+    },
+
+    {
+      "id": "fv-a48",
+      "source": "z3-guide-basic-commands",
+      "quote": "Z3 may also return unknown if it can't determine whether a formula is satisfiable or not.",
+      "says": {
+        "covers": "a yes or no answer for every query",
+        "by": "smt solving",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-a49",
+      "source": "z3-guide-basic-commands",
+      "quote": "When the check-sat command returns sat , the get-model command can be used to retrieve an interpretation that makes all formulas on the Z3 internal stack true.",
+      "says": {
+        "covers": "values that satisfy constraints over unbound variables",
+        "by": "smt solving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a50",
+      "source": "z3-guide-basic-commands",
+      "quote": "The pop command removes any assertion or declaration performed between it and the matching push .",
+      "says": {
+        "covers": "adding facts for the duration of a goal",
+        "by": "smt solving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a51",
+      "source": "z3-guide-basic-commands",
+      "quote": "We say that the set of formulas in the Z3 stack is satisfiable if there is an interpretation (for the user declared constants and functions) that makes all asserted formulas true.",
+      "says": { "defines": "satisfiable" }
+    },
+
+    {
+      "id": "fv-a52",
+      "source": "z3-guide-fixedpoints",
+      "quote": "Z3 contains an extension called muZ for reasoning about Constrained Horn Clauses and Datalog programs.",
+      "says": { "adopted": "constrained horn clauses", "in": "Z3" }
+    },
+    {
+      "id": "fv-a53",
+      "source": "z3-guide-fixedpoints",
+      "quote": "Z3 contains an extension called muZ for reasoning about Constrained Horn Clauses and Datalog programs.",
+      "says": { "adopted": "stratified datalog", "in": "Z3" }
+    },
+    {
+      "id": "fv-a54",
+      "source": "z3-guide-fixedpoints",
+      "quote": "Datalog programs are special cases of Horn Clauses where the domains of variables is finite, but extend Horn Clauses by supporting stratified negation.",
+      "says": { "defines": "datalog" }
+    },
+    {
+      "id": "fv-a55",
+      "source": "z3-guide-fixedpoints",
+      "quote": "Constrained Horn Clauses allow formulating symbolic model checking problems for push-down systems.",
+      "says": { "defines": "constrained horn clauses" }
+    },
+    {
+      "id": "fv-a56",
+      "source": "z3-guide-fixedpoints",
+      "quote": "The IC3 engine for Constrained Horn Clauses is now based on advances in SPACER .",
+      "says": { "adopted": "ic3/pdr", "in": "Z3" }
+    },
+
+    {
+      "id": "fv-a57",
+      "source": "demoura-bjorner-z3-2008",
+      "quote": "Satisfiability Modulo Theories (SMT) problem is a decision problem for logical first order formulas with respect to combinations of background theories such as: arithmetic, bit-vectors, arrays, and uninterpreted functions.",
+      "says": { "defines": "satisfiability modulo theories" }
+    },
+    {
+      "id": "fv-a58",
+      "source": "demoura-bjorner-z3-2008",
+      "quote": "Z3 is a new and efficient SMT Solver freely available from Microsoft Research.",
+      "says": { "adopted": "smt solving", "in": "Z3" }
+    },
+    {
+      "id": "fv-a59",
+      "source": "demoura-bjorner-z3-2008",
+      "quote": "It provides bindings for several programming languages including .NET, C, C++, Java, OCaml, Web Assembly and Python.",
+      "says": { "adopted": "smt solving in webassembly", "in": "Z3" }
+    },
+
+    {
+      "id": "fv-a60",
+      "source": "bembenek-formulog-2020",
+      "quote": "Formulog augments Datalog with an interface to an external SMT solver and a first-order fragment of the functional language ML.",
+      "says": { "adopted": "datalog with smt terms", "in": "Formulog" }
+    },
+    {
+      "id": "fv-a61",
+      "source": "bembenek-formulog-2020",
+      "quote": "Importantly, because formula variables are ground terms, we can derive facts containing formula variables without violating Datalog’s range restriction, which requires that every derived fact is variable-free.",
+      "says": {
+        "needs": "formulas represented as ground terms",
+        "by": "datalog with smt terms"
+      }
+    },
+    {
+      "id": "fv-a62",
+      "source": "bembenek-formulog-2020",
+      "quote": "These operators are assumed to act deterministically during a single Formulog run; an implementation can achieve this in the presence of a non-deterministic SMT solver by memoizing operations.",
+      "says": {
+        "needs": "a solver that gives the same answer to the same query",
+        "by": "datalog with smt terms"
+      }
+    },
+    {
+      "id": "fv-a63",
+      "source": "bembenek-formulog-2020",
+      "quote": "These operators are assumed to act deterministically during a single Formulog run; an implementation can achieve this in the presence of a non-deterministic SMT solver by memoizing operations.",
+      "says": {
+        "covers": "results that repeat on every machine",
+        "by": "smt solving",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-a64",
+      "source": "bembenek-formulog-2020",
+      "quote": "but these constraints do not leak into the larger context.",
+      "says": {
+        "covers": "adding facts for the duration of a goal",
+        "by": "datalog with smt terms",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a65",
+      "source": "bembenek-formulog-2020",
+      "quote": "In general, an SMT solver can return three possible answers to such a query: “yes,” “no,” and “unknown.”",
+      "says": {
+        "covers": "a yes or no answer for every query",
+        "by": "smt solving",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-a66",
+      "source": "bembenek-formulog-2020",
+      "quote": "Our parallel implementation of semi-naive evaluation ( Bancilhon, 1986 ) uses a work-stealing thread pool; worker threads dispatch SMT queries to external solvers (Z3 by default ( de Moura and Bjørner, 2008 ) ).",
+      "says": { "adopted": "smt solving", "in": "Formulog" }
+    },
+    {
+      "id": "fv-a67",
+      "source": "bembenek-formulog-2020",
+      "quote": "Due to automatic parallelization, our symbolic evaluator achieves a speedup of 8 ×",
+      "says": {
+        "result": "datalog with smt terms",
+        "measure": "speedup of a Formulog symbolic evaluator over KLEE",
+        "bound": "about",
+        "times": 8
+      }
+    },
+    {
+      "id": "fv-a68",
+      "source": "bembenek-formulog-2020",
+      "quote": "Moreover, this speedup increases to 12 × \\times when we use the magic set transformation",
+      "says": {
+        "result": "datalog with smt terms",
+        "measure": "speedup of a Formulog symbolic evaluator over KLEE with the magic set transformation",
+        "bound": "about",
+        "times": 12
+      }
+    },
+    {
+      "id": "fv-a69",
+      "source": "bembenek-formulog-2020",
+      "quote": "A symbolic evaluator ( King, 1976 ) interprets a program in which some values are unknown.",
+      "says": { "defines": "symbolic evaluation" }
+    },
+    {
+      "id": "fv-a70",
+      "source": "bembenek-formulog-2020",
+      "quote": "Our symbolic evaluator uses fuel to bound the depth of its execution.",
+      "says": { "needs": "a bound on the search", "by": "symbolic evaluation" }
+    },
+    {
+      "id": "fv-a71",
+      "source": "bembenek-formulog-2020",
+      "quote": "Formulog provides two sets of operators for testing the satisfiability and logical validity of propositions.",
+      "says": {
+        "covers": "a proof that a goal has no answer for any value",
+        "by": "datalog with smt terms",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a72",
+      "source": "bembenek-formulog-2020",
+      "quote": "The operator get_model takes a list of propositions and an optional timeout; it returns a model for the conjunction of the propositions if the SMT solver is able to find one in time, and none otherwise.",
+      "says": {
+        "covers": "values that satisfy constraints over unbound variables",
+        "by": "datalog with smt terms",
+        "is": true
+      }
+    },
+
+    {
+      "id": "fv-a73",
+      "source": "wikipedia-symbolic-execution",
+      "quote": "In computer science , symbolic execution (also symbolic evaluation or symbex ) is a means of analyzing a program to determine what inputs cause each part of a program to execute .",
+      "says": { "defines": "symbolic execution" }
+    },
+    {
+      "id": "fv-a74",
+      "source": "wikipedia-symbolic-execution",
+      "quote": "An interpreter follows the program, assuming symbolic values for inputs rather than obtaining actual inputs as normal execution of the program would.",
+      "says": {
+        "covers": "running a program's own code on symbolic values",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a75",
+      "source": "wikipedia-symbolic-execution",
+      "quote": "Finally, the possible inputs that trigger a branch can be determined by solving the constraints.",
+      "says": { "needs": "a solver", "by": "symbolic evaluation" }
+    },
+    {
+      "id": "fv-a76",
+      "source": "wikipedia-symbolic-execution",
+      "quote": "These concrete values can be thought of as concrete test cases that can, e.g., help developers reproduce bugs.",
+      "says": {
+        "covers": "a counterexample written as a test to rerun",
+        "by": "symbolic evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-a77",
+      "source": "wikipedia-symbolic-execution",
+      "quote": "The number of feasible paths in a program grows exponentially with an increase in program size and can even be infinite in the case of programs with unbounded loop iterations.",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "symbolic evaluation",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-a78",
+      "source": "wikipedia-symbolic-execution",
+      "quote": "The concept of symbolic execution was introduced academically in the 1970s with descriptions of: the Select system, [ 13 ] the EFFIGY system, [ 14 ]",
+      "says": { "adopted": "symbolic evaluation", "in": "EFFIGY" }
+    },
+    {
+      "id": "fv-a79",
+      "source": "wikipedia-symbolic-execution",
+      "quote": "Tools such as KLEE, [ 7 ] Cloud9, and Otter [ 8 ] take this approach by implementing models for file system operations, sockets, IPC , etc.",
+      "says": { "adopted": "symbolic evaluation", "in": "KLEE" }
+    }
+  ]
+}

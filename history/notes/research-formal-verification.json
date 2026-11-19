@@ -1,0 +1,12 @@
+{
+  "claims": [
+    {
+      "quote": "The run on formal verification (2026-11-19) asks what Lion should add so a model can be proved correct, the way Alchemy's Verify proves its domain models with the Z3 solver. It weighs ten ideas against twelve programs on a bank account, in `research/probes/fv-*.json`, which show that Lion keeps invariants at every change and can search every sequence of commands up to a bound in plain code, but refuses any question about every value a variable could take. It ranks first a solver for the values a question leaves open, then bounded search with inputs drawn from schemas, then rules about what must eventually happen; proofs that every command keeps the invariants, invariant inference, and proof certificates build on the solver.",
+      "says": {
+        "feature": "formal-verification-research",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}

@@ -20974,6 +20974,18 @@
     ]
   },
   {
+    "feature": "formal-verification-research",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      [
+        "array/length",
+        ["repo/files", "research/runs/formal-verification/report.md"]
+      ],
+      1
+    ]
+  },
+  {
     "feature": "separation-logic-research",
     "kind": "file",
     "program": [

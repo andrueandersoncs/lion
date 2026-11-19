@@ -1,0 +1,88 @@
+SEARCH
+">
+About Brown
+Academics
+Admission
+Research
+Campus Life
+Information for:
+Current Students
+Faculty
+Staff
+Families
+Alumni
+Friends & Neighbors
+A to Z Index
+People Directory
+Social@Brown
+Facebook
+Twitter
+LinkedIn
+Google+
+Computer Science
+About
+About the Department
+Contact
+Directions
+Partners
+Rooms
+Systems & Software
+Conduit
+News
+Events
+Blog
+People
+Our Community
+Faculty
+Staff
+Grad Students
+Ugrad Students
+Alums
+Directory
+Research
+Research Links
+Areas
+Publications
+Degrees
+Degree Programs
+Doctoral
+Masters
+Undergrad
+Programs
+Miscellaneous
+Courses
+Course List
+Schedule
+Sections
+TA Program
+Home
+>&nbsp Research
+>&nbsp Publications
+>&nbsp Tech Reports
+Tech Report CS-92-50
+Constraint Query Languages
+Paris C. Kanellakis, Gabriel M. Kuper and Peter Z. Revesz
+October 1992
+Abstract:
+We investigate the relationship between programming with constraints and
+database query languages. We show that efficient, declarative database
+programming can be combined with efficient constraint solving. The key
+intuition is that the generalization of a ground fact, or tuple, is a
+conjunction of constraints over a small number of variables. We describe the
+basic constraint query language design principles and illustrate them with four
+classes of constraints: real polynomial inequalities, dense linear order
+inequalities, equalities over an infinite domain, and boolean equalities. For
+the analysis, we use quantifier elimination techniques from logic and the
+concept of data complexity from database theory. This framework is applicable
+to managing spatial data and can be combined with existing multi-dimensional
+searching algorithms and data structures.
+KEYWORDS: database queries, spatial databases, data complexity,
+quantifier elimination, constraint logic programming, relational calculus,
+Datalog.
+(complete text in pdf or gzipped postscript )
+Computer Science at Brown University
+Providence, Rhode Island 02912 USA
+Phone: 401-863-1000
+Map & Directions /
+Contact Us
+Sign In

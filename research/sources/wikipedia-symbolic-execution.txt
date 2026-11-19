@@ -1,0 +1,438 @@
+Jump to content
+Main menu
+Main menu
+move to sidebar
+hide
+Navigation
+Main page
+Contents
+Current events
+Random article
+About Wikipedia
+Contact us
+Contribute
+Help
+Learn to edit
+Community portal
+Recent changes
+Upload file
+Special pages
+Search
+Search
+Appearance
+Donate
+Create account
+Log in
+Personal tools
+Donate
+Create account
+Log in
+Contents
+move to sidebar
+hide
+(Top)
+1
+Example
+2
+Limitations
+Toggle Limitations subsection
+2.1
+Path explosion
+2.2
+Program-dependent efficiency
+2.3
+Memory aliasing
+2.4
+Arrays
+2.5
+Environment interactions
+3
+Tools
+4
+Earlier versions of the tools
+5
+History
+6
+See also
+7
+References
+8
+External links
+Toggle the table of contents
+Symbolic execution
+6 languages
+العربية
+فارسی
+Qaraqalpaqsha
+한국어
+Українська
+中文
+Edit links
+Article
+Talk
+English
+Read
+Edit
+View history
+Save
+Tools
+Tools
+move to sidebar
+hide
+Actions
+Read
+Edit
+View history
+Save
+General
+What links here
+Related changes
+Upload file
+Permanent link
+Page information
+Cite this page
+Get shortened URL
+Switch to legacy parser
+Print/export
+Download as PDF
+Printable version
+In other projects
+Wikidata item
+Appearance
+move to sidebar
+hide
+From Wikipedia, the free encyclopedia
+Technique for program analysis
+In computer science , symbolic execution (also symbolic evaluation or symbex ) is a means of analyzing a program to determine what inputs cause each part of a program to execute . An interpreter follows the program, assuming symbolic values for inputs rather than obtaining actual inputs as normal execution of the program would. It thus arrives at expressions in terms of those symbols for expressions and variables in the program, and constraints in terms of those symbols for the possible outcomes of each conditional branch. Finally, the possible inputs that trigger a branch can be determined by solving the constraints.
+The field of symbolic simulation applies the same concept to hardware.
+Example
+[ edit ]
+Consider the program below, which reads in a value and fails if the input is 6.
+\n\n// reads an integer from somewhere and returns it\nint read();\n\nint main() {\n int y = read();\n int z = y * 2;\n if (z == 12) {\n perror(\"Program failed!\");\n return 1;\n } else {\n printf(\"OK\");\n return 0;\n }\n}\n"}}'> #include <stdio.h>
+// reads an integer from somewhere and returns it
+int read ();
+int main () {
+int y = read ();
+int z = y * 2 ;
+if ( z == 12 ) {
+perror ( "Program failed!" );
+return 1 ;
+} else {
+printf ( "OK" );
+return 0 ;
+}
+}
+During a normal execution ("concrete" execution), the program would read a concrete input value (e.g., 5) and assign it to y . Execution would then proceed with the multiplication and the conditional branch, which would evaluate to false and print OK .
+During symbolic execution, the program reads a symbolic value (e.g., λ ) and assigns it to y . The program would then proceed with the multiplication and assign λ * 2 to z . When reaching the if statement, it would evaluate λ * 2 == 12 . At this point of the program, λ could take any value, and symbolic execution can therefore proceed along both branches, by "forking" two paths. Each path gets assigned a copy of the program state at the branch instruction as well as a path constraint. In this example, the path constraint is λ * 2 == 12 for the if branch and λ * 2 != 12 for the else branch. Both paths can be symbolically executed independently. When paths terminate (e.g., as a result of executing fail() or simply exiting), symbolic execution computes a concrete value for λ by solving the accumulated path constraints on each path. These concrete values can be thought of as concrete test cases that can, e.g., help developers reproduce bugs. In this example, the constraint solver would determine that in order to reach the fail() statement, λ would need to equal 6 or (if int is a 32-bit two's complement integer and integer overflow is taken into account) -2147483642.
+Limitations
+[ edit ]
+Path explosion
+[ edit ]
+Main article: Path explosion
+Symbolically executing all feasible program paths does not scale to large programs. The number of feasible paths in a program grows exponentially with an increase in program size and can even be infinite in the case of programs with unbounded loop iterations. [ 1 ] Solutions to the path explosion problem generally use either heuristics for path-finding to increase code coverage, [ 2 ] reduce execution time by parallelizing independent paths, [ 3 ] or by merging similar paths. [ 4 ] One example of merging is veritesting , which "employs static symbolic execution to amplify the effect of dynamic symbolic execution". [ 5 ]
+Program-dependent efficiency
+[ edit ]
+Symbolic execution is used to reason about a program path-by-path which is an advantage over reasoning about a program input-by-input as other testing paradigms use (e.g. dynamic program analysis ). However, if few inputs take the same path through the program, there is little savings over testing each of the inputs separately.
+Memory aliasing
+[ edit ]
+Symbolic execution is harder when the same memory location can be accessed through different names ( aliasing ). Aliasing cannot always be recognized statically, so the symbolic execution engine can't recognize that a change to the value of one variable also changes the other. [ 6 ]
+Arrays
+[ edit ]
+Since an array is a collection of many distinct values, symbolic executors must either treat the entire array as one value or treat each array element as a separate location. The problem with treating each array element separately is that a reference such as "A[i]" can only be specified dynamically, when the value for i has a concrete value. [ 6 ]
+Environment interactions
+[ edit ]
+Programs interact with their environment by performing system calls , receiving signals, etc. Consistency problems may arise when execution reaches components that are not under control of the symbolic execution tool (e.g., kernel or libraries). Consider the following example:
+int main () {
+FILE * fp = fopen ( "my_document.txt" , "w" );
+char data [ 100 ];
+bool cond = /* some condition here */ ;
+if ( cond ) {
+fputs ( "Some data" , fp );
+} else {
+fputs ( "Some other data" , fp );
+}
+fgets ( data , sizeof ( data ), fp );
+}
+This program opens a file and, based on some condition, writes different kind of data to the file. It then later reads back the written data. In theory, symbolic execution would fork two paths at line 5 and each path from there on would have its own copy of the file. The statement at line 11 would therefore return data that is consistent with the value of "condition" at line 5. In practice, file operations are implemented as system calls in the kernel, and are outside the control of the symbolic execution tool. The main approaches to address this challenge are:
+Executing calls to the environment directly. The advantage of this approach is that it is simple to implement. The disadvantage is that the side effects of such calls will clobber all states managed by the symbolic execution engine. In the example above, the instruction at line 11 would return "some datasome other data" or "some other datasome data" depending on the sequential ordering of the states.
+Modeling the environment. In this case, the engine instruments the system calls with a model that simulates their effects and that keeps all the side effects in per-state storage. The advantage is that one would get correct results when symbolically executing programs that interact with the environment. The disadvantage is that one needs to implement and maintain many potentially complex models of system calls. Tools such as KLEE, [ 7 ] Cloud9, and Otter [ 8 ] take this approach by implementing models for file system operations, sockets, IPC , etc.
+Forking the entire system state. Symbolic execution tools based on virtual machines solve the environment problem by forking the entire VM state. For example, in S2E [ 9 ] each state is an independent VM snapshot that can be executed separately. This approach alleviates the need for writing and maintaining complex models and allows virtually any program binary to be executed symbolically. However, it has higher memory usage overheads (VM snapshots may be large).
+Tools
+[ edit ]
+Tool
+Target
+URL
+Can anybody use it/ Open source/ Downloadable
+angr
+libVEX based (supporting x86, x86-64, ARM, AARCH64, MIPS, MIPS64, PPC, PPC64, and Java)
+http://angr.io/
+yes
+BE-PUM
+x86
+https://github.com/NMHai/BE-PUM
+yes
+BinLens
+x86, AMD64/x86-64, ARM32, Thumb, ARM Cortex-M, AArch64/ARM64, MIPS32, MIPS64, PowerPC 32-bit, PowerPC 64-bit, RISC-V 64-bit, IBM s390x, Java bytecode, p-code/Ghidra SLEIGH architectures
+https://binlens.com
+no
+BINSEC
+x86, ARM, RISC-V (32 bits)
+http://binsec.github.io
+yes
+crucible
+LLVM, JVM, etc
+https://github.com/GaloisInc/crucible
+yes
+ExpoSE
+JavaScript
+https://github.com/ExpoSEJS/ExpoSE
+yes
+FuzzBALL
+VineIL / Native
+http://bitblaze.cs.berkeley.edu/fuzzball.html
+yes
+GenSym
+LLVM
+https://github.com/Generative-Program-Analysis/GenSym
+yes
+Jalangi2
+JavaScript
+https://github.com/Samsung/jalangi2
+yes
+janala2
+Java
+https://github.com/ksen007/janala2
+yes
+JaVerT
+JavaScript
+https://www.doc.ic.ac.uk/~pg/publications/FragosoSantos2019JaVerT.pdf
+yes
+JBSE
+Java
+https://github.com/pietrobraione/jbse
+yes
+jCUTE
+Java
+https://github.com/osl/jcute
+yes
+KeY
+Java
+http://www.key-project.org/
+yes
+Kite
+LLVM
+http://www.cs.ubc.ca/labs/isd/Projects/Kite/
+yes
+KLEE
+LLVM
+https://klee.github.io/
+yes
+Kudzu
+JavaScript
+http://webblaze.cs.berkeley.edu/2010/kudzu/kudzu.pdf
+no
+MPro
+Ethereum Virtual Machine (EVM) / Native
+https://sites.google.com/view/smartcontract-analysis/home
+yes
+Maat
+Ghidra P-code / SLEIGH
+https://maat.re/
+yes
+Manticore
+x86-64, ARMv7, Ethereum Virtual Machine (EVM) / Native
+https://github.com/trailofbits/manticore/
+yes
+Mayhem
+Binary
+http://forallsecure.com
+no
+Mythril
+Ethereum Virtual Machine (EVM) / Native
+https://github.com/ConsenSys/mythril
+yes
+Otter
+C
+https://bitbucket.org/khooyp/otter/overview
+yes
+Owi [ 10 ]
+C , C++ , Rust , WebAssembly , Zig
+https://github.com/ocamlpro/owi
+yes
+Oyente-NG
+Ethereum Virtual Machine (EVM) / Native
+http://www.comp.ita.br/labsca/waiaf/papers/RafaelShigemura_paper_16.pdf
+no
+Pathgrind [ 11 ]
+Native 32-bit Valgrind-based
+https://github.com/codelion/pathgrind
+yes
+Pex
+.NET Framework
+http://research.microsoft.com/en-us/projects/pex/
+no
+pysymemu
+x86-64 / Native
+https://github.com/feliam/pysymemu/
+yes
+Rosette
+Dialect of Racket
+https://emina.github.io/rosette/
+yes
+Rubyx
+Ruby
+http://www.cs.umd.edu/~avik/papers/ssarorwa.pdf
+no
+S2E
+x86, x86-64, ARM / User and kernel-mode binaries
+http://s2e.systems/
+yes
+Symbolic PathFinder (SPF)
+Java Bytecode
+https://github.com/SymbolicPathFinder
+yes
+SymDroid
+Dalvik bytecode
+http://www.cs.umd.edu/~jfoster/papers/symdroid.pdf
+no
+SymJS
+JavaScript
+https://core.ac.uk/download/pdf/24067593.pdf
+no
+SymCC
+LLVM
+https://www.s3.eurecom.fr/tools/symbolic_execution/symcc.html
+yes
+Triton
+x86, x86-64, ARM and AArch64
+https://triton.quarkslab.com
+yes
+Verifast
+C, Java
+https://people.cs.kuleuven.be/~bart.jacobs/verifast
+yes
+Earlier versions of the tools
+[ edit ]
+EXE [ 12 ] is an earlier version of KLEE. The EXE paper can be found here .
+History
+[ edit ]
+The concept of symbolic execution was introduced academically in the 1970s with descriptions of: the Select system, [ 13 ]
+the EFFIGY system, [ 14 ]
+the DISSECT system, [ 15 ]
+and Clarke's system. [ 16 ]
+See also
+[ edit ]
+Abstract interpretation
+Symbolic simulation
+Symbolic computation
+Concolic testing
+Control-flow graph
+Dynamic recompilation
+References
+[ edit ]
+↑ Anand, Saswat; Patrice Godefroid; Nikolai Tillmann (2008). "Demand-Driven Compositional Symbolic Execution". Tools and Algorithms for the Construction and Analysis of Systems . Lecture Notes in Computer Science. Vol. 4963. pp. 367– 381. doi : 10.1007/978-3-540-78800-3_28 . ISBN 978-3-540-78799-0 .
+↑ Ma, Kin-Keng; Khoo Yit Phang; Jeffrey S. Foster; Michael Hicks (2011). "Directed Symbolic Execution" . Proceedings of the 18th International Conference on Statis Analysis . Springer. pp. 95– 111. ISBN 9783642237010 . Retrieved 2013-04-03 .
+↑ Staats, Matt; Corina Pasareanu (2010). "Parallel symbolic execution for structural test generation". Proceedings of the 19th International Symposium on Software Testing and Analysis . pp. 183– 194. doi : 10.1145/1831708.1831732 . hdl : 11299/217417 . ISBN 9781605588230 . S2CID 9898522 .
+↑ "},"doi":{"wt":"10.1145/2254064.2254088"},"first1":{"wt":"Volodymyr"},"last1":{"wt":"Kuznetsov"},"first2":{"wt":"Johannes"},"last2":{"wt":"Kinder"},"first3":{"wt":"Stefan"},"last3":{"wt":"Bucur"},"first4":{"wt":"George"},"last4":{"wt":"Candea"},"s2cid":{"wt":"135107"},"citeseerx":{"wt":"10.1.1.348.823"}},"i":0}}]}'/> Kuznetsov, Volodymyr; Kinder, Johannes; Bucur, Stefan; Candea, George (2012-01-01). "Efficient State Merging in Symbolic Execution". Proceedings of the 33rd ACM SIGPLAN Conference on Programming Language Design and Implementation . New York, NY, USA: ACM. pp. 193– 204. CiteSeerX 10.1.1.348.823 . doi : 10.1145/2254064.2254088 . ISBN 978-1-4503-1205-9 . S2CID 135107 . {{ cite book }} : Cite uses deprecated parameter | citeseerx= ( help )
+↑ "Enhancing Symbolic Execution with Veritesting" . June 2016.
+1 2 DeMillo, Rich; Offutt, Jeff (1991-09-01). "Constraint-Based Automatic Test Data Generation". IEEE Transactions on Software Engineering . 17 (9): 900– 910. doi : 10.1109/32.92910 .
+↑ Cadar, Cristian; Dunbar, Daniel; Engler, Dawson (2008-01-01). "KLEE: Unassisted and Automatic Generation of High-coverage Tests for Complex Systems Programs" . Proceedings of the 8th USENIX Conference on Operating Systems Design and Implementation . OSDI'08: 209– 224.
+↑ Turpie, Jonathan; Reisner, Elnatan; Foster, Jeffrey; Hicks, Michael. "MultiOtter: Multiprocess Symbolic Execution" (PDF) .
+↑ Chipounov, Vitaly; Kuznetsov, Volodymyr; Candea, George (2012-02-01). "The S2E Platform: Design, Implementation, and Applications" . ACM Trans. Comput. Syst . 30 (1): 2:1–2:49. doi : 10.1145/2110356.2110358 . ISSN 0734-2071 . S2CID 16905399 .
+↑ Andrès, Léo (2024). "Owi: Performant Parallel Symbolic Execution Made Easy, an Application to WebAssembly" . The Art, Science, and Engineering of Programming . 9 . arXiv : 2412.06391 . doi : 10.22152/programming-journal.org/2025/9/3 .
+↑ Sharma, Asankhaya (2014). "Exploiting Undefined Behaviors for Efficient Symbolic Execution". ICSE Companion 2014: Companion Proceedings of the 36th International Conference on Software Engineering . pp. 727– 729. doi : 10.1145/2591062.2594450 . ISBN 9781450327688 . S2CID 10092664 .
+↑ Cadar, Cristian; Ganesh, Vijay; Pawlowski, Peter M.; Dill, David L.; Engler, Dawson R. (2008). "EXE: Automatically Generating Inputs of Death". ACM Trans. Inf. Syst. Secur . 12 : 10:1–10:38. doi : 10.1145/1455518.1455522 . S2CID 10905673 .
+↑ Robert S. Boyer and Bernard Elspas and Karl N. Levitt SELECT--a formal system for testing and debugging programs by symbolic execution, Proceedings of the International Conference on Reliable Software, 1975, page 234--245, Los Angeles, California
+↑ James C. King, Symbolic execution and program testing, Communications of the ACM, volume 19, number 7, 1976, 385--394
+↑ William E. Howden, Experiments with a symbolic evaluation system, Proceedings, National Computer Conference, 1976.
+↑ Lori A. Clarke, A program testing system, ACM 76: Proceedings of the Annual Conference, 1976, pages 488-491, Houston, Texas, United States
+External links
+[ edit ]
+Symbolic Execution for finding bugs
+Symbolic Execution and Software Testing presentation at NASA Ames
+Symbolic Execution for Software Testing in Practice – Preliminary Assessment
+A bibliography of papers related to symbolic execution
+v
+t
+e
+Software testing
+Test levels
+Acceptance testing
+System integration testing
+System testing
+Integration testing
+Unit testing
+Test types,
+techniques,
+tactics
+A/B testing
+Benchmark
+Compatibility testing
+Concolic testing
+Concurrent testing
+Conformance testing
+Continuous testing
+Data-driven testing
+Destructive testing
+Development testing
+Differential testing
+Dynamic program analysis
+Installation testing
+Negative testing
+Random testing
+Regression testing
+Security testing
+Smoke testing (software)
+Software performance testing
+Stress testing
+Symbolic execution
+Test automation
+Usability testing
+[x]-box
+style
+Black-box testing
+All-pairs testing
+Exploratory testing
+Fuzz testing
+Model-based testing
+Scenario testing
+Grey-box testing
+White-box testing
+API testing
+Mutation testing
+Static testing
+See also
+Graphical user interface testing
+Manual testing
+Orthogonal array testing
+Pair testing
+Soak testing
+Software reliability testing
+Stress testing
+Web testing
+Retrieved from " https://en.wikipedia.org/w/index.php?title=Symbolic_execution&oldid=1378819010 "
+Categories : Abstract interpretation
+Program analysis
+Hidden categories: Articles with short description
+Short description is different from Wikidata
+CS1 errors: deprecated parameters
+This page was last edited on 6 October 2026, at 08:21 (UTC) .
+Page was rendered with Parsoid .
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License ;
+additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy . Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc. , a non-profit organization.
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Legal & safety contacts
+Code of Conduct
+Developers
+Statistics
+Cookie statement
+Mobile view
+Search
+Search
+Toggle the table of contents
+Symbolic execution
+6 languages
+Add topic

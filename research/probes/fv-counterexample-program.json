@@ -1,0 +1,66 @@
+[
+  "begin",
+  ["define", "found", ["quote", [{ "kind": "withdraw", "amount": 3 }]]],
+  [
+    "define",
+    "setup",
+    [
+      "quote",
+      [
+        ["relation", "event", ["account", "n", "kind", "amount"]],
+        ["relation", "delta", ["account", "n", "amount"]],
+        [
+          "rule",
+          ["delta", "?a", "?n", "?x"],
+          ["event", "?a", "?n", "deposit", "?x"]
+        ],
+        [
+          "rule",
+          ["delta", "?a", "?n", ["number/subtract", 0, "?x"]],
+          ["event", "?a", "?n", "withdraw", "?x"]
+        ],
+        ["relation", "balance", ["account", "amount"]],
+        [
+          "rule",
+          ["balance", "?a", ["aggregate/sum", "?d"]],
+          ["delta", "?a", "?_", "?d"]
+        ],
+        [
+          "invariant",
+          ["and", ["balance", "?a", "?b"], ["number/lessThan", "?b", 0]],
+          { "assert": "none" }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "test",
+    [
+      "array/concat",
+      ["array/make", "begin"],
+      "setup",
+      [
+        "array/map",
+        "found",
+        [
+          "lambda",
+          ["e"],
+          [
+            "array/make",
+            "fact",
+            [
+              "array/make",
+              "event",
+              "a",
+              1,
+              ["object/get", "e", "kind"],
+              ["object/get", "e", "amount"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["eval", "test"]
+]

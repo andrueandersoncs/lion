@@ -1,0 +1,53 @@
+Skip to main content
+Z3 Guide SMTLIB Tutorial Programming Z3 Playground
+GitHub
+Search
+Logic
+Introduction
+Basic Commands
+Propositional Logic
+Uninterpreted Functions and Constants
+Quantifiers
+Lambdas
+Recursive Functions
+Conclusion
+Theories
+Strategies
+Optimization
+FixedPoints
+Introduction
+Basic Datalog
+Generalized PDR with SPACER
+Syntax
+FixedPoints
+Introduction
+Introduction
+Z3 contains an extension called muZ for reasoning about Constrained Horn Clauses and Datalog programs.
+Constrained Horn Clauses allow formulating symbolic model checking problems for push-down systems.
+Datalog programs are special cases of Horn Clauses where the domains of variables is finite,
+but extend Horn Clauses by supporting stratified negation.
+This tutorial includes some examples that demonstrate features of this engine. The following papers μZ - An Efficient Engine for Fixed-Points with Constraints. ( CAV 2011 ) and Generalized Property Directed Reachability, IC3/PDR, ( SAT 2012 ) describe some of the main features of the engine.
+The IC3 engine for Constrained Horn Clauses is now based on advances in SPACER .
+Be sure to follow along with the examples by clicking the "edit" link in the corner. See what the tool says, try your own formulas, and experiment!
+Edit this page
+Previous
+Advanced Topics
+Next
+Basic Datalog
+More Z3
+Programming Z3 in Python
+Z3 on GitHub
+Acknowledgments
+Z3 Material
+API
+Slides
+Wiki
+Stay Connected
+GitHub
+Twitter
+RiSE @ MSR
+Legal
+Privacy & Cookies
+Terms of Use
+Trademarks
+72e37427 | z3-solver 5.0.0 | Copyright © 2026 Microsoft Corporation.

@@ -1,0 +1,21 @@
+[
+  "begin",
+  ["relation", "account", ["id"]],
+  ["relation", "balance", ["account", "amount"], { "key": "account" }],
+  ["fact", ["account", "a"]],
+  ["rule", ["exists", ["?b"], ["balance", "?a", "?b"]], ["account", "?a"]],
+  ["define", "held", ["query", ["balance", "?account", "?amount"]]],
+  [
+    "define",
+    "overdrawn",
+    [
+      "query",
+      [
+        "and",
+        ["balance", "?account", "?amount"],
+        ["number/lessThan", "?amount", 0]
+      ]
+    ]
+  ],
+  { "held": "held", "overdrawn": "overdrawn" }
+]

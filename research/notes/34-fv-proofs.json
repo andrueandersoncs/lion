@@ -1,0 +1,736 @@
+{
+  "sources": [
+    {
+      "id": "dafny-guide",
+      "url": "https://raw.githubusercontent.com/dafny-lang/dafny/master/docs/OnlineTutorial/guide.md",
+      "title": "Getting Started with Dafny: A Guide",
+      "publisher": "the Dafny project",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "dafny-user-guide",
+      "url": "https://raw.githubusercontent.com/dafny-lang/dafny/master/docs/DafnyRef/UserGuide.md",
+      "title": "Dafny User's Guide (section 13 of the Dafny Reference Manual)",
+      "publisher": "the Dafny project",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "lean-tpil-intro",
+      "url": "https://lean-lang.org/theorem_proving_in_lean4/introduction.html",
+      "title": "Theorem Proving in Lean 4: Introduction",
+      "publisher": "Avigad, de Moura, Kong, and Ullrich",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "lean-reference",
+      "url": "https://lean-lang.org/doc/reference/latest/",
+      "title": "The Lean Language Reference",
+      "publisher": "the Lean developers (Lean FRO)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "heule-drat-format",
+      "url": "https://ar5iv.labs.arxiv.org/html/1610.06229",
+      "title": "The DRAT format and DRAT-trim checker",
+      "publisher": "Heule",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "drat-trim",
+      "url": "https://www.cs.utexas.edu/~marijn/drat-trim/",
+      "title": "DRAT-trim",
+      "publisher": "Heule, Hunt, and Wetzler",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "cvc5-cpc",
+      "url": "https://cvc5.github.io/docs/latest/proofs/output_cpc.html",
+      "title": "Proof format: Cooperating Proof Calculus",
+      "publisher": "the authors of cvc5",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "degiacomo-vardi-2013",
+      "url": "https://www.ijcai.org/Abstract/13/132",
+      "title": "Linear Temporal Logic and Linear Dynamic Logic on Finite Traces",
+      "publisher": "De Giacomo and Vardi",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "chassaing-decider-2021",
+      "url": "https://thinkbeforecoding.com/post/2021/12/17/functional-event-sourcing-decider",
+      "title": "Functional Event Sourcing Decider",
+      "publisher": "Chassaing",
+      "kind": "primary",
+      "published": 20211217
+    },
+    {
+      "id": "verus-guide",
+      "url": "https://verus-lang.github.io/verus/guide/",
+      "title": "Verus overview",
+      "publisher": "the Verus project",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "dijkstra-ewd303",
+      "url": "https://www.cs.utexas.edu/~EWD/transcriptions/EWD03xx/EWD303.html",
+      "title": "On the reliability of programs (EWD303)",
+      "publisher": "Dijkstra",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "dijkstra-ewd340",
+      "url": "https://www.cs.utexas.edu/~EWD/transcriptions/EWD03xx/EWD340.html",
+      "title": "The Humble Programmer (EWD340, ACM Turing Lecture 1972)",
+      "publisher": "Dijkstra",
+      "kind": "primary",
+      "published": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "fv-d1",
+      "source": "dafny-guide",
+      "quote": "This works because Dafny will prove that all the methods satisfy their annotations, and refuse to compile our code until they do.",
+      "says": {
+        "covers": "pre- and postconditions on functions, proved before the program runs",
+        "by": "verification conditions",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d2",
+      "source": "dafny-guide",
+      "quote": "When you call a method, it is your job to establish (make true) the preconditions, something Dafny will enforce using a proof.",
+      "says": {
+        "covers": "pre- and postconditions on functions, proved before the program runs",
+        "by": "verification conditions",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d3",
+      "source": "dafny-guide",
+      "quote": "Dafny and the Boogie/Z3 system on which it is based are pretty smart, and will prove matching code and specifications with a minimum of fuss.",
+      "says": {
+        "adopted": "smt solving",
+        "in": "Dafny"
+      }
+    },
+    {
+      "id": "fv-d4",
+      "source": "dafny-guide",
+      "quote": "When you specify an invariant, Dafny proves two things: the invariant holds upon entering the loop and it is preserved by the loop.",
+      "says": {
+        "covers": "a proof that every change keeps an invariant",
+        "by": "inductive invariant checking",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d5",
+      "source": "dafny-guide",
+      "quote": "When you specify an invariant, Dafny proves two things: the invariant holds upon entering the loop and it is preserved by the loop.",
+      "says": {
+        "adopted": "inductive invariant checking",
+        "in": "Dafny"
+      }
+    },
+    {
+      "id": "fv-d6",
+      "source": "dafny-guide",
+      "quote": "Just as Dafny will not discover properties of a method on its own, it will not know any but the most basic properties of a loop are preserved unless it is told via an invariant.",
+      "says": {
+        "covers": "invariants found automatically",
+        "by": "verification conditions",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-d7",
+      "source": "dafny-guide",
+      "quote": "Just as Dafny will not discover properties of a method on its own, it will not know any but the most basic properties of a loop are preserved unless it is told via an invariant.",
+      "says": {
+        "needs": "invariants written by the user",
+        "by": "verification conditions"
+      }
+    },
+    {
+      "id": "fv-d8",
+      "source": "dafny-guide",
+      "quote": "The challenge in picking loop invariants is finding one that is preserved by the loop, but also that lets you prove what you need after the loop has executed.",
+      "says": {
+        "needs": "an invariant strong enough to be inductive",
+        "by": "inductive invariant checking"
+      }
+    },
+    {
+      "id": "fv-d9",
+      "source": "dafny-guide",
+      "quote": "Dafny also proves the termination of code, except in specially designated loops.",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "verification conditions",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d10",
+      "source": "dafny-guide",
+      "quote": "There are two conditions that Dafny needs to verify when using a `decreases` expression: that the expression actually gets smaller and that it is bounded.",
+      "says": {
+        "needs": "a measure that decreases and is bounded",
+        "by": "verification conditions"
+      }
+    },
+    {
+      "id": "fv-d11",
+      "source": "dafny-user-guide",
+      "quote": "verifying that the program meets its specifications, by translating the program to verification conditions and checking those with Boogie and an SMT solver, typically Z3;",
+      "says": {
+        "adopted": "verification conditions",
+        "in": "Dafny"
+      }
+    },
+    {
+      "id": "fv-d12",
+      "source": "dafny-user-guide",
+      "quote": "verifying that the program meets its specifications, by translating the program to verification conditions and checking those with Boogie and an SMT solver, typically Z3;",
+      "says": {
+        "needs": "a solver",
+        "by": "verification conditions"
+      }
+    },
+    {
+      "id": "fv-d13",
+      "source": "dafny-user-guide",
+      "quote": "The formula sent to the underlying SMT solver is the negation of the formula that the verifier wants to prove - also called a VC or verification condition.",
+      "says": {
+        "defines": "verification condition"
+      }
+    },
+    {
+      "id": "fv-d14",
+      "source": "dafny-user-guide",
+      "quote": "Hence, if the SMT solver returns \"unsat\", it means that the SMT formula is always false, meaning the verifier's formula is always true.",
+      "says": {
+        "covers": "a proof that a goal has no answer for any value",
+        "by": "smt solving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d15",
+      "source": "dafny-user-guide",
+      "quote": "if the SMT solver returns \"sat\", it means that the SMT formula can be made true with a special variable assignment, which means that the verifier's formula is false under that same variable assignment, meaning it's a counter-example for the verifier.",
+      "says": {
+        "covers": "values that satisfy constraints over unbound variables",
+        "by": "smt solving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d16",
+      "source": "dafny-user-guide",
+      "quote": "In practice and because of quantifiers, the SMT solver will usually return \"unknown\" instead of \"sat\", but will still provide a variable assignment that it couldn't prove that it does not make the formula true.",
+      "says": {
+        "needs": "a decidable theory",
+        "by": "smt solving"
+      }
+    },
+    {
+      "id": "fv-d17",
+      "source": "dafny-user-guide",
+      "quote": "The Z3 SMT solver that Dafny depends on attempts to efficiently search for proofs, but does so using both incomplete heuristics and a degree of randomness, with the result that it can sometimes fail to find a proof even when one exists (or continue searching forever).",
+      "says": {
+        "covers": "results that repeat on every machine",
+        "by": "smt solving",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-d18",
+      "source": "dafny-user-guide",
+      "quote": "The Z3 SMT solver that Dafny depends on attempts to efficiently search for proofs, but does so using both incomplete heuristics and a degree of randomness, with the result that it can sometimes fail to find a proof even when one exists (or continue searching forever).",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "smt solving",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-d19",
+      "source": "dafny-user-guide",
+      "quote": "it can sometimes occur that a proof obligation succeeds at first only for the prover to time out or report a potential error after minor, valid changes.",
+      "says": {
+        "defines": "brittle proof"
+      }
+    },
+    {
+      "id": "fv-d20",
+      "source": "lean-tpil-intro",
+      "quote": "Such systems can have bugs, and it can be difficult to ensure that the results they deliver are correct.",
+      "says": {
+        "needs": "trust in the solver's code",
+        "by": "smt solving"
+      }
+    },
+    {
+      "id": "fv-d21",
+      "source": "lean-tpil-intro",
+      "quote": "Architectures like SMT (\"satisfiability modulo theories”) combine domain-general search methods with domain-specific procedures.",
+      "says": {
+        "defines": "smt solving"
+      }
+    },
+    {
+      "id": "fv-d22",
+      "source": "lean-tpil-intro",
+      "quote": "In contrast, interactive theorem proving focuses on the “verification” aspect of theorem proving, requiring that every claim is supported by a proof in a suitable axiomatic foundation.",
+      "says": {
+        "covers": "proofs written by hand and checked by machine",
+        "by": "interactive theorem proving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d23",
+      "source": "lean-tpil-intro",
+      "quote": "In fact, most such systems provide fully elaborated “proof objects” that can be communicated to other systems and checked independently.",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "interactive theorem proving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d24",
+      "source": "lean-tpil-intro",
+      "quote": "Constructing such proofs typically requires much more input and interaction from users, but it allows you to obtain deeper and more complex proofs.",
+      "says": {
+        "needs": "proof steps written by the user",
+        "by": "interactive theorem proving"
+      }
+    },
+    {
+      "id": "fv-d25",
+      "source": "lean-tpil-intro",
+      "quote": "The Lean Theorem Prover aims to bridge the gap between interactive and automated theorem proving, by situating automated tools and methods in a framework that supports user interaction and the construction of fully specified axiomatic proofs.",
+      "says": {
+        "adopted": "interactive theorem proving",
+        "in": "Lean"
+      }
+    },
+    {
+      "id": "fv-d26",
+      "source": "lean-reference",
+      "quote": "Lean's core type theory is expressive enough to capture very complicated mathematical objects, but simple enough to admit independent implementations, reducing the risk of bugs that affect soundness.",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "interactive theorem proving",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d27",
+      "source": "lean-reference",
+      "quote": "The core type theory is implemented in a minimal kernel that does nothing other than check proof terms.",
+      "says": {
+        "adopted": "proof certificates",
+        "in": "Lean"
+      }
+    },
+    {
+      "id": "fv-d28",
+      "source": "lean-reference",
+      "quote": "Each tactic produces a term in the core type theory that is checked by the kernel, so bugs in tactics do not threaten the soundness of Lean as a whole.",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "proof certificates",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d29",
+      "source": "lean-reference",
+      "quote": "Lean is an interactive theorem prover based on dependent type theory, designed for use both in cutting-edge mathematics and in software verification.",
+      "says": {
+        "adopted": "interactive theorem proving",
+        "in": "Lean"
+      }
+    },
+    {
+      "id": "fv-d30",
+      "source": "heule-drat-format",
+      "quote": "Given a propositional formula and a clausal proof, DRAT-trim validates that the proof is a certificate of unsatisfiability of the formula.",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "proof certificates",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d31",
+      "source": "heule-drat-format",
+      "quote": "Clausal proofs should be in the DRAT format which is used to validate the results of the SAT competitions.",
+      "says": {
+        "adopted": "proof certificates",
+        "in": "SAT Competition"
+      }
+    },
+    {
+      "id": "fv-d32",
+      "source": "heule-drat-format",
+      "quote": "Each clause addition step should preserve satisfiability, which should be computable in polynomial time.",
+      "says": {
+        "needs": "steps each checkable in polynomial time",
+        "by": "proof certificates"
+      }
+    },
+    {
+      "id": "fv-d33",
+      "source": "heule-drat-format",
+      "quote": "all techniques used in state-of-the-art SAT solvers should be expressible in the format.",
+      "says": {
+        "needs": "a proof format that can express every solver technique",
+        "by": "proof certificates"
+      }
+    },
+    {
+      "id": "fv-d34",
+      "source": "drat-trim",
+      "quote": "DRAT-trim is a satisfiability proof checking and trimming utility designed to validate proofs for all known satisfiability solving and preprocessing techniques.",
+      "says": {
+        "adopted": "proof certificates",
+        "in": "DRAT-trim"
+      }
+    },
+    {
+      "id": "fv-d35",
+      "source": "drat-trim",
+      "quote": "Trimmed formulas can optionally be emitted from DRAT-trim. These are ordered subsets of the original formula where unnecessary clauses have been omitted.",
+      "says": {
+        "covers": "an unsatisfiable core",
+        "by": "proof certificates",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d37",
+      "source": "cvc5-cpc",
+      "quote": "This calculus was designed to faithfully represent cvc5’s internal reasoning.",
+      "says": {
+        "adopted": "proof certificates",
+        "in": "cvc5"
+      }
+    },
+    {
+      "id": "fv-d38",
+      "source": "cvc5-cpc",
+      "quote": "Ethos is an efficient proof checker written in C++ which can check proofs in the CPC format.",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "proof certificates",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d39",
+      "source": "cvc5-cpc",
+      "quote": "All proofs in the cpc format are closed refutations of the input, in that the proof will assume formulas from the input and end with a step proving false.",
+      "says": {
+        "covers": "a proof that a goal has no answer for any value",
+        "by": "proof certificates",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d40",
+      "source": "cvc5-cpc",
+      "quote": "A trust step proves an arbitrary formula with no provided justification.",
+      "says": {
+        "defines": "trust step"
+      }
+    },
+    {
+      "id": "fv-d41",
+      "source": "cvc5-cpc",
+      "quote": "Note that several proof rules in the Cooperating Proof Calculus are not yet supported in Eunoia signatures.",
+      "says": {
+        "needs": "every proof rule formalized for the checker",
+        "by": "proof certificates"
+      }
+    },
+    {
+      "id": "fv-d42",
+      "source": "cvc5-cpc",
+      "quote": "Logos is an alternative checker for the CPC format, written in Lean, whose soundness is proven against a formalization of the semantics of SMT-LIB.",
+      "says": {
+        "adopted": "interactive theorem proving",
+        "in": "Logos"
+      }
+    },
+    {
+      "id": "fv-d43",
+      "source": "degiacomo-vardi-2013",
+      "quote": "The variant of LTL interpreted over finite traces that we consider is that of [5; 20; 32; 43; 46], called here LTLf",
+      "says": {
+        "defines": "temporal logic on finite traces"
+      }
+    },
+    {
+      "id": "fv-d44",
+      "source": "degiacomo-vardi-2013",
+      "quote": "✸ϕ which stands for true U ϕ, and says that ϕ will eventually hold before the last instant (included).",
+      "says": {
+        "defines": "eventually on a finite trace"
+      }
+    },
+    {
+      "id": "fv-d45",
+      "source": "degiacomo-vardi-2013",
+      "quote": "✷ϕ, which stands for ¬✸¬ϕ, and says that from the current instant till the last instant ϕ will always hold.",
+      "says": {
+        "defines": "always on a finite trace"
+      }
+    },
+    {
+      "id": "fv-d46",
+      "source": "degiacomo-vardi-2013",
+      "quote": "\"Liveness\": ✸ϕ means that eventually before the end of the trace ϕ holds.",
+      "says": {
+        "covers": "rules about what must eventually happen",
+        "by": "temporal logic on finite traces",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d47",
+      "source": "degiacomo-vardi-2013",
+      "quote": "\"Liveness\": ✸ϕ means that eventually before the end of the trace ϕ holds.",
+      "says": {
+        "needs": "a trace with a last instant",
+        "by": "temporal logic on finite traces"
+      }
+    },
+    {
+      "id": "fv-d48",
+      "source": "degiacomo-vardi-2013",
+      "quote": "the term \"liveness\" is not fully appropriate, since often the class of the liveness properties is mathematically characterized exactly as that of those properties that cannot be checked within any finite length run.",
+      "says": {
+        "defines": "liveness"
+      }
+    },
+    {
+      "id": "fv-d49",
+      "source": "degiacomo-vardi-2013",
+      "quote": "\"Safety\": ✷ϕ means that always till the end of the trace ϕ holds.",
+      "says": {
+        "covers": "invariants",
+        "by": "temporal logic on finite traces",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d50",
+      "source": "degiacomo-vardi-2013",
+      "quote": "Notice that this meaning is completely different from the meaning on infinite traces and cannot be considered a \"fairness\" property as \"response\" is in the infinite case.",
+      "says": {
+        "covers": "fairness properties",
+        "by": "temporal logic on finite traces",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-d51",
+      "source": "degiacomo-vardi-2013",
+      "quote": "Theorem 1. [37] Satisfiability, validity, and logical implication for LTLf formulas are PSPACE-complete.",
+      "says": {
+        "covers": "decidable satisfiability",
+        "by": "temporal logic on finite traces",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d52",
+      "source": "degiacomo-vardi-2013",
+      "quote": "Indeed if it satisfiable there exists a sequence where eventually ϕg is true and such sequence is a run over the planning domain.",
+      "says": {
+        "covers": "a sequence of changes that reaches a goal",
+        "by": "temporal logic on finite traces",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d53",
+      "source": "chassaing-decider-2021",
+      "quote": "We will call a Decider the combination of the seven elements we’ve identified so far:",
+      "says": {
+        "defines": "decider pattern"
+      }
+    },
+    {
+      "id": "fv-d54",
+      "source": "chassaing-decider-2021",
+      "quote": "A decide function that takes a Command and a State and returns a list of Event",
+      "says": {
+        "defines": "decide function"
+      }
+    },
+    {
+      "id": "fv-d55",
+      "source": "chassaing-decider-2021",
+      "quote": "An evolve function that takes a State and an Event and returns a new State",
+      "says": {
+        "defines": "evolve function"
+      }
+    },
+    {
+      "id": "fv-d56",
+      "source": "chassaing-decider-2021",
+      "quote": "An Initial State that is the state of the Decider before anything happens",
+      "says": {
+        "defines": "initial state"
+      }
+    },
+    {
+      "id": "fv-d57",
+      "source": "chassaing-decider-2021",
+      "quote": "An isTerminal function that takes a State and returns a boolean value",
+      "says": {
+        "defines": "isTerminal"
+      }
+    },
+    {
+      "id": "fv-d58",
+      "source": "chassaing-decider-2021",
+      "quote": "Given a current State and a Command, the resulting Event list is always identical.",
+      "says": {
+        "covers": "results that repeat on every machine",
+        "by": "decider pattern",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d59",
+      "source": "chassaing-decider-2021",
+      "quote": "This function has no reason to produce any side effects, such as reading or writing external state, or calling external services.",
+      "says": {
+        "needs": "a decide function without side effects",
+        "by": "decider pattern"
+      }
+    },
+    {
+      "id": "fv-d60",
+      "source": "chassaing-decider-2021",
+      "quote": "We can easily make a decider run in memory on a mutable State variable:",
+      "says": {
+        "covers": "evaluates entirely in memory",
+        "by": "decider pattern",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d61",
+      "source": "chassaing-decider-2021",
+      "quote": "The nice thing it that it is also useful for rebuilding the current State from the Initial State and the full list of Events that happened:",
+      "says": {
+        "defines": "rebuilding state by folding evolve over events"
+      }
+    },
+    {
+      "id": "fv-d62",
+      "source": "chassaing-decider-2021",
+      "quote": "State built by the evolve function is just a projection to compact the information contained in the events to make it easier and/or faster for the decide function to take decisions.",
+      "says": {
+        "defines": "state as a projection of events"
+      }
+    },
+    {
+      "id": "fv-d63",
+      "source": "verus-guide",
+      "quote": "Verification is static: Verus adds no run-time checks, but instead uses computer-aided theorem proving to statically verify that executable Rust code will always satisfy some user-provided specifications for all possible executions of the code.",
+      "says": {
+        "covers": "pre- and postconditions on functions, proved before the program runs",
+        "by": "verification conditions",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d64",
+      "source": "verus-guide",
+      "quote": "Verification is static: Verus adds no run-time checks, but instead uses computer-aided theorem proving to statically verify that executable Rust code will always satisfy some user-provided specifications for all possible executions of the code.",
+      "says": {
+        "covers": "proofs about states of unbounded size",
+        "by": "verification conditions",
+        "is": true
+      }
+    },
+    {
+      "id": "fv-d65",
+      "source": "verus-guide",
+      "quote": "generate small, simple verification conditions that an SMT solver like Z3 can solve efficiently,",
+      "says": {
+        "adopted": "verification conditions",
+        "in": "Verus"
+      }
+    },
+    {
+      "id": "fv-d66",
+      "source": "verus-guide",
+      "quote": "generate small, simple verification conditions that an SMT solver like Z3 can solve efficiently,",
+      "says": {
+        "adopted": "smt solving",
+        "in": "Verus"
+      }
+    },
+    {
+      "id": "fv-d67",
+      "source": "verus-guide",
+      "quote": "provide a mathematical language for expressing proofs",
+      "says": {
+        "needs": "proof steps written by the user",
+        "by": "verification conditions"
+      }
+    },
+    {
+      "id": "fv-d68",
+      "source": "dijkstra-ewd303",
+      "quote": "The first moral of the story is that program testing can be used very effectively to show the presence of bugs but never to show their absence.",
+      "says": {
+        "covers": "a proof that a goal has no answer for any value",
+        "by": "program testing",
+        "is": false
+      }
+    },
+    {
+      "id": "fv-d69",
+      "source": "dijkstra-ewd303",
+      "quote": "As long as we regard the mechanism as a black box, the only thing we can do is subject it to all possible inputs and check whether it produces the correct outputs. But for the kind of mechanisms we are considering this is absolutely out of the question.",
+      "says": {
+        "needs": "an input space small enough to try every input",
+        "by": "program testing"
+      }
+    },
+    {
+      "id": "fv-d71",
+      "source": "dijkstra-ewd340",
+      "quote": "program testing can be a very effective way to show the presence of bugs, but is hopelessly inadequate for showing their absence.",
+      "says": {
+        "covers": "a proof that a goal has no answer for any value",
+        "by": "program testing",
+        "is": false
+      }
+    }
+  ]
+}

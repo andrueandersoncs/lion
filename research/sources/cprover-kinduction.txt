@@ -1,0 +1,256 @@
+Quick Links
+Daniel Kroening
+SMT Lists/Sets/Maps
+Google groups:
+Announcements
+Support
+Tool Download
+CBMC
+JBMC
+EBMC
+Book on Decision Procedures
+Get the 2nd edition!
+Model Checking
+Get the 2nd edition!
+Legals
+Privacy policy
+SV Group Home
+Software Verification
+Hardware Verification
+Software Verification Using k -Induction
+Extended version of SAS paper
+K-Boogie tool and benchmarks
+K-Inductor tool and benchmarks
+Extended version of SAS paper with appendix, and technical report
+Here is an extended version of the SAS 2011 paper, including proofs .
+There is a reference to a technical report on split-case k -induction, available here .
+K-Boogie tool and benchmarks
+Download and installation
+Running K-Boogie on a simple example
+Verifying bubble sort with weaker invariants
+Benchmarks used in the SAS paper
+Download and installation
+We provide our extension K-Boogie of the Boogie verification back-end.
+Our extension is provided in this archive . The archive contains Boogie
+binaries modified to use the k-induction rule instead of the normal
+Boogie loop rule, as well as a corresponding altered version of Dafny .
+The source code of our modifications is provided in form of a patch
+against SVN version 60898 of Boogie.
+K-Boogie is only supported under
+Windows.
+To run K-Boogie , first unpack the above archive. Then
+download version 2.15 of the Z3
+SMT solver (not that it is important to download this specific version). Copy all files contained in the bin directory of the Z3 installation into the k-boogie/Binaries
+directory. Then you must either add the k-boogie/Binaries directory to your PATH ,
+or explicitly invoke the tool from this directory.
+K-Boogie can then be invoked just like Boogie (see the Boogie website for further
+information). k -Induction is switched on using the command-line option
+/kInduction:<k> , where <k> >= 0
+is
+the default
+value to be used for loop unwinding.
+To specify the unwinding depth on a per-loop basis (overriding the
+default <k> specified using the /kInduction
+switch), the
+directive kUnwind <k>;
+can be used within Boogie programs:
+while (true)
+invariant !IsHeld(mutex);
+kUnwind 1;
+{
+// ...
+}
+For questions about K-Boogie contact alastair.donaldson@comlab.ox.ac.uk or philipp.ruemmer@it.uu.se.
+Running K-Boogie on a simple example
+Consider the following simple Boogie procedure, which is similar to the running example used in the SAS
+paper:
+procedure Rotate(N : int) returns (x : int)
+&nbsp ensures x == 0;
+{
+&nbsp var a : int, b : int, c : int, i : int, temp : int;
+&nbsp a := 1;
+&nbsp b := 2;
+&nbsp c := 3;
+&nbsp x := 0;
+&nbsp i := 0;
+&nbsp while(i < N) {
+&nbsp&nbsp assert(a != b);
+&nbsp&nbsp temp := a;
+&nbsp&nbsp a := b;
+&nbsp&nbsp b := c;
+&nbsp&nbsp c := temp;
+&nbsp&nbsp i := i+1;
+&nbsp }
+}
+Standard Boogie cannot verify this program correct without any loop invariant being supplied. This
+is demonstrated by running K-Boogie on the example
+without k-induction:
+Boogie.exe Rotation.bpl
+Boogie program verifier version 2.0.0.0, Copyright (c) 2003-2010, Microsoft.
+Rotation.bpl(15,5): Error BP5001: This assertion might not hold.
+Execution trace:
+&nbsp Rotation.bpl(7,5): anon0
+&nbsp Rotation.bpl(14,3): anon2_LoopHead
+&nbsp Rotation.bpl(15,5): anon2_LoopBody
+Boogie program verifier finished with 0 verified, 1 error
+However, the program can be verified without any additional invariants if
+k -induction is used, with k =3:
+Boogie.exe /kInduction:3 Rotation.bpl
+Boogie program verifier version 2.0.0.0, Copyright (c) 2003-2010, Microsoft.
+Boogie program verifier finished with 1 verified, 0 errors
+Verification does not succeed with smaller values of k .
+Verifying bubble sort with weaker invariants
+The rotation example is contrived to illustrate the strengths of k -induction.
+We now turn to a more realistic example, an implementation of bubble sort provided with
+the Boogie distribution. This is availalbe from the archive of benchmarks below, as
+Bubble.bpl
+First, we see that the original Boogie program can be verified without k -induction,
+as sufficient invariants are supplied:
+Boogie.exe Bubble.bpl
+Boogie program verifier version 2.0.0.0, Copyright (c) 2003-2010, Microsoft.
+Boogie program verifier finished with 1 verified, 0 errors
+If we comment out the following invariant at line 54:
+invariant (forall i, j: int :: 0 <= i && i < j && j < N ==> perm[i] != perm[j]);
+we see that Boogie cannot directly verify the example:
+Boogie.exe Bubble.bpl
+Boogie program verifier version 2.0.0.0, Copyright (c) 2003-2010, Microsoft.
+Bubble.bpl(61,7): Error BP5003: A postcondition might not hold on this return path.
+Bubble.bpl(30,3): Related location: This is the postcondition that might not hold.
+Execution trace:
+&nbsp Bubble.bpl(36,5): anon0
+&nbsp Bubble.bpl(37,3): anon9_LoopHead
+&nbsp Bubble.bpl(37,3): anon9_LoopDone
+&nbsp Bubble.bpl(46,3): anon10_LoopHead
+&nbsp Bubble.bpl(59,7): anon10_LoopBody
+&nbsp Bubble.bpl(61,7): anon11_Then
+Bubble.bpl(72,7): Error BP5004: This loop invariant might not hold on entry.
+Execution trace:
+&nbsp Bubble.bpl(36,5): anon0
+&nbsp Bubble.bpl(37,3): anon9_LoopHead
+&nbsp Bubble.bpl(37,3): anon9_LoopDone
+&nbsp Bubble.bpl(46,3): anon10_LoopHead
+&nbsp Bubble.bpl(59,7): anon10_LoopBody
+&nbsp Bubble.bpl(60,5): anon11_Else
+Boogie program verifier finished with 0 verified, 2 errors
+However, if 1-induction is used, verification succeeds:
+Boogie.exe Bubble.bpl /kInduction:1
+Boogie program verifier version 2.0.0.0, Copyright (c) 2003-2010, Microsoft.
+Boogie program verifier finished with 1 verified, 0 errors
+This demonstrates the usefulness of k -induction in the verification of general-purpose
+examples.
+Benchmarks used in the SAS paper
+The K-Boogie benchmarks
+used in
+our paper are derived from test-cases and benchmarks shipped with the
+standard version of Boogie.
+K-Boogie is applied to each benchmark using command
+lines similar to those in the above examples, except that the additional command-line argument
+/proc:<p&gt is used to analyse procedure <p&gt of a program in isolation.
+K-Inductor tool and benchmarks
+K-Inductor is a k -induction-based verifier for ANSI C programs, built on top of the
+CBMC tool.
+Download and installation
+Running K-Inductor on a simple example
+Split-case k -induction
+Benchmarks used in the SAS paper
+Download and installation
+K-Inductor is currently available for 64-bit x86 Linux platforms: kinductor-0.1-linux-x86-64.tar.gz . Versions for other platforms are available on request.
+K-Inductor uses MiniSat 2 as a back-end SAT solver. You do not need to download
+MiniSat; it is part of the kinductor executable.
+After downloading and unzipping the archive, put kinductor on your PATH and you are ready to go.
+You should also read the license .
+Running K-Inductor on a simple example
+Consider the following C variant of the rotation example:
+int rotate(int N)
+{
+&nbsp int a, b, c, x, i, temp;
+&nbsp a = 1;
+&nbsp b = 2;
+&nbsp c = 3;
+&nbsp x = 0;
+&nbsp for(i = 0; i < N; i++)
+&nbsp {
+&nbsp &nbsp __CPROVER_k_induction_hint(3,3,0,0);
+&nbsp &nbsp assert(a != b);
+&nbsp &nbsp temp = a;
+&nbsp &nbsp a = b;
+&nbsp &nbsp b = c;
+&nbsp &nbsp c = temp;
+&nbsp }
+&nbsp assert(x == 0);
+}
+The statement __CPROVER_k_induction_hint(3,3,0,0) tells K-Inductor how k -induction
+should be applied to the closest loop containing the statement. It has no executable effect. The first two parameters specify the
+minimum and maximum values of k to be tried; the third specifies the amount by which k should be incremented if verification is
+unsuccessful (here this is zero, since the minimum and maximum values are the same). The final parameter is related to a work-in-progress addition,
+and should currently always be set to zero. If no hint is provided for a given loop, a default hint __CPROVER_k_induction_hint(0,0,1,0) is
+used.
+We run K-Inductor on this example, assuming that it is in file example.c , as follows:
+kinductor --function rotate example.c
+This generates the following output (which has been trimmed a bit):
+Type-checking example
+Generating GOTO Program
+Generic Property Instrumentation
+Cutting loop headed at line 11 with k = 3
+Cutting complete!
+The program does not have any loops, so BMC will be applied.
+Starting Bounded Model Checking
+size of program expression: 103 assignments
+simple slicing removed 34 assignments
+Generated 5 VCC(s), 1 remaining after simplification
+Passing problem to propositional reduction
+Running propositional reduction
+Solving with MiniSAT2 without simplifier
+1568 variables, 4614 clauses
+SAT checker: negated claim is UNSATISFIABLE, i.e., holds
+Runtime decision procedure: 0.018s
+VERIFICATION SUCCESSFUL
+Thus k =3 is sufficient to verify correctness of this example. To
+see that k =2 is not sufficient, change
+__CPROVER_k_induction_hint(3,3,0,0) to:
+__CPROVER_k_induction_hint(2,2,0,0)
+Split-case k -induction
+By default, K-Inductor
+applies the combined-case k -induction method described in the SAS
+paper. It also supports split-case k -induction, which, as
+discussed in the submission, is less powerful. To try split-case
+k -induction on the above example, do:
+kinductor --function rotate example.c --split-case
+You should find that verification fails, no matter how large a value of k is used. (Technically, setting k to be larger than the maximum possible
+integer should allow verification to succeed, but this is clearly infeasible.)
+If the line assert(x == 0) is commented out, then split-case k -induction can verify the example using k =3. The reasons for this
+are discussed in the SAS paper.
+Benchmarks used in the SAS paper
+In the SAS paper, we apply K-Inductor to a set of DMA processing benchmarks for the
+Cell BE processor, taken from the IBM Cell
+SDK .
+The benchmarks were also studied in previous work in a TACAS
+2010 paper, in which further details can be found.
+For this purpose, K-Inductor is embedded in the Scratch tool, which automatically instruments programs
+involving DMA operations with assertions and auxiliary variables to check
+for races.
+To run the benchmarks, please download Scratch : scratch-1.0-linux-x86-64.tar.gz
+and put the scratch executable on your PATH
+(please note that you can do this without having downloaded the stand-alone
+version of K-Inductor
+described above.
+You can download an archive of
+benchmarks , or browse the benchmarks
+online .
+Inside each benchmark folder are two scripts, run_combined
+and run_split , which apply Scratch using combined- or split-case k -induction
+respectively.
+In each benchmark, you will see many lines of the form:
+INVARIANT(assert(phi));
+These are pre-processed away to nothing when combined-case
+k -induction is used. With split-case k -induction, they are
+replaced with the enclosed assertion. We demonstrate that combined-case
+k -induction is stronger than split-case k -induction by the
+fact that, removing any of these invariants, causes the split-case approach
+to fail.
+Also, there are many lines of the form:
+AUXILIARY(x);
+Once again, these are pre-processed away when the combined-case method is
+used. With the split-case method, these statements are necessary to
+manipulate auxiliary variables associated with strengthening assertions
+provided via the INVARIANT construct.

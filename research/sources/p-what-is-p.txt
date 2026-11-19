@@ -1,0 +1,149 @@
+Skip to content
+P
+What is P?
+Initializing search
+P on Github
+Home
+What is P?
+Getting Started
+Tutorials
+Advanced
+Language Manual
+Case Studies
+Publications
+Contributing
+P
+P on Github
+Home
+What is P?
+What is P?
+Table of contents
+The P Framework
+1. P Language — Specifications & Design
+2. PeasyAI — AI-Assisted Code Generation
+3. P-Checker — Formal Verification
+4. PObserve — Runtime Monitoring & Conformance
+Getting Started
+Getting Started
+Installing P
+PeasyAI - AI for P
+Peasy - IDE for P
+Using P Compiler and Checker
+Tutorials
+Tutorials
+Outline
+Client Server
+Two Phase Commit
+Espresso Machine
+Failure Detector
+Single Decree Paxos
+Timer, Failure, and Shared Memory
+Advanced
+Advanced
+P Semantics
+Liveness Specifications
+Program Structure
+Project File
+Debugging Error Traces
+PEx (Exhaustive Checking)
+PObserve: Runtime Monitoring
+PObserve: Runtime Monitoring
+Overview
+Getting Started
+Package Setup
+Writing a Log Parser
+JUnit Integration
+CLI Integration
+Example: Lock Server
+Example: Lock Server
+Overview
+With PObserve JUnit
+With PObserve CLI
+PVerifier: Formal Proofs
+PVerifier: Formal Proofs
+Announcement
+Outline
+Installation
+Using PVerifier
+Pure Functions
+Init Conditions
+Specifications
+Lemmas and Proofs
+Example: Two Phase Commit
+Language Manual
+Language Manual
+P Program (Outline)
+P DataTypes
+P Events
+P State Machines
+P Monitors
+P Functions
+P Expressions
+P Statements
+P Module System
+P Test cases
+P Foreign Interface
+Case Studies
+Publications
+Publications
+Papers
+Videos
+Contributing
+Contributing
+Building from Source
+What is P?
+Distributed systems are notoriously hard to get right. Programmers must reason about numerous control paths resulting from the myriad interleaving of events, messages, and failures. Subtle errors creep in easily, most control paths remain untested, and serious bugs can lie dormant for months or even years after deployment.
+The P Approach
+The P programming framework addresses these challenges by providing a unified framework for modeling, specifying, testing, verifying, and monitoring complex distributed systems — from design all the way through production.
+The P Framework
+The P framework provides an end-to-end pipeline for formally modeling, verifying, and monitoring distributed systems. The key components are:
+1. P Language — Specifications & Design
+The process begins with a high-level design document describing the distributed system's protocol logic, along with correctness specifications (safety and liveness properties) that the system must satisfy.
+P provides a high-level state machine based programming language to formally model and specify distributed systems. Programmers capture their system design as communicating state machines — which is how developers generally think about protocol logic. P is more of a programming language than a mathematical modelling language, making it easier to:
+Create formal models that are close to the implementation (sufficiently detailed)
+Maintain models as the system design evolves
+Specify and check both safety and liveness specifications (global invariants)
+Models, Specifications, and Model Checking Scenarios
+A quick primer:
+Specification — says what the system should do (correctness properties)
+Model — captures the details of how the system does it
+Model checking scenario — provides the finite non-deterministic test-harness under which the model checker verifies that the model satisfies its specifications
+The underlying model of computation is communicating state machines (or actors ). See the formal semantics paper or the informal semantics overview for details.
+2. PeasyAI — AI-Assisted Code Generation
+PeasyAI accelerates P development by automatically generating P program models and specification monitors from design documents.
+Generation
+Generates types, state machines, safety specs, and test drivers from plain-text design documents using ensemble generation (best-of-N candidate selection)
+Auto-Fix Pipeline
+Iteratively resolves compilation errors and PChecker failures, with human-in-the-loop fallback when automated fixing is insufficient
+RAG-Enhanced
+1,200+ indexed P code examples improve generation quality through retrieval-augmented generation
+IDE Integration
+Integrates with Cursor and Claude Code via MCP, providing 27 tools and 14 resources
+3. P-Checker — Formal Verification
+P provides backend analysis engines to systematically explore behaviors of the system model — resulting from interleaving of messages and failures — and check that the model satisfies the desired correctness specifications.
+Finding Deep Bugs
+The P checker employs search prioritization heuristics to efficiently uncover deep bugs — bugs that require complex interleaving of events and have a very low probability of occurrence in real-world testing. On finding a bug, the checker provides a reproducible error-trace for debugging. Once all checks pass, the P model is validated for correctness.
+Beyond the default checker, P provides additional analysis backends:
+Engine
+Approach
+Guarantee
+PSym
+Symbolic execution
+Sound exploration of all possible behaviors
+PEx
+Exhaustive model checking
+Complete state space coverage
+PVerifier
+Deductive verification
+Mathematical proof of correctness
+4. PObserve — Runtime Monitoring & Conformance
+PObserve bridges the gap between design-time verification and runtime behavior. It validates service logs and execution traces from the running system against the same P specification monitors that were verified during formal verification.
+Log Parsing
+Parses service logs and sequences events without requiring additional instrumentation
+Conformance Checking
+Feeds events through P specification monitors to check global conformance and identify violations
+PObserve ensures that the implementation conforms to the high-level design in deployment — extending formal verification guarantees from design time into production.
+Back to top
+Copyright &copy; 2026 P Developers
+Made with
+Material for MkDocs

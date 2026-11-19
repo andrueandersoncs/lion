@@ -1,0 +1,430 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "research/probes/fv-*.json"
+   ],
+   [
+    "quote",
+    "Lion programs run for the formal verification research: a bank account and its rule that it is never overdrawn"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119120000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l1"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "Adding this fact breaks an invariant, so nothing changed."
+   ],
+   [
+    "quote",
+    {
+     "lion": "invariants",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l2"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "[\"number/lessThan\",[\"some\",\"?b\",[\"balance\",\"a\",\"?b\"]],0] failed: Expected number at [0]"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a proof that every change keeps an invariant",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l3"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "Unsafe goal [\"number/lessThan\",\"?balance\",0]: ?balance must first be bound by a relation, \"=\", \"in\", or \"schema/fits?\"."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a proof that a goal has no answer for any value",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l4"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "Unsafe goal [\"=\",\"?y\",[\"number/add\",\"?x\",1]]: ?x must first be bound by a relation, \"=\", \"in\", or \"schema/fits?\"."
+   ],
+   [
+    "quote",
+    {
+     "lion": "values that satisfy constraints over unbound variables",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l5"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "Unsafe goal [\"schema/fits?\",\"?x\",[\"schema/anyOf\",1,2,3]]: ?x must first be bound by a relation, \"=\", \"in\", or \"schema/fits?\"."
+   ],
+   [
+    "quote",
+    {
+     "lion": "every value a schema allows, up to a size",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l6"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "computes a new value in its head while recursing, which may never finish."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules that follow states they compute, without a bound",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l7"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "\"sequences checked\": 5460,"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a check of every sequence of changes up to a bound",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l8"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "\"sequences checked\": 5460,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "sequences of up to 6 commands a Lion program checked",
+     "n": 5460
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l9"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "\"shortest way to the first\": ["
+   ],
+   [
+    "quote",
+    {
+     "lion": "the shortest sequence of changes that breaks a rule",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l10"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "\"would withdrawing 3 overdraw a?\": ["
+   ],
+   [
+    "quote",
+    {
+     "lion": "adding facts for the duration of a goal",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l11"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {\"a\":\"a\",\"n\":3,\"m\":4,\"kind\":\"deposited\"}"
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules about a change, comparing before and after",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l12"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "\"states reached\": 13,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "states rules reached from an empty account in a scope of balances 0 to 6",
+     "n": 13
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l13"
+   ],
+   [
+    "quote",
+    "lion-logic-forms"
+   ],
+   [
+    "quote",
+    "Adds a query assertion the database keeps: the goal must have no answers (\"none\") or at least one (\"some\")."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules about what must eventually happen",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l14"
+   ],
+   [
+    "quote",
+    "lion-logic-forms"
+   ],
+   [
+    "quote",
+    "every fact, retract, and rule form is checked against every invariant once it has made all of its changes"
+   ],
+   [
+    "quote",
+    {
+     "lion": "invariants",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l17"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {\"a\":\"a\",\"b\":-3}"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a counterexample written as a test to rerun",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "lead",
+   [
+    "quote",
+    "fv-lion-today"
+   ],
+   [
+    "quote",
+    "Find what Lion can check about a model today: invariants, hypothetical changes, searches over states, and questions over every value"
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "pursues",
+   [
+    "quote",
+    "fv-lion-today"
+   ],
+   [
+    "quote",
+    {
+     "lion has": "a proof that every change keeps an invariant"
+    }
+   ]
+  ],
+  [
+   "pursues",
+   [
+    "quote",
+    "fv-lion-today"
+   ],
+   [
+    "quote",
+    {
+     "lion has": "a check of every sequence of changes up to a bound"
+    }
+   ]
+  ],
+  [
+   "pursues",
+   [
+    "quote",
+    "fv-lion-today"
+   ],
+   [
+    "quote",
+    {
+     "lion has": "values that satisfy constraints over unbound variables"
+    }
+   ]
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "fv-lion-today"
+   ],
+   27
+  ]
+ ],
+ "recorded"
+]

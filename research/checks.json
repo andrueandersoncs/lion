@@ -209,5 +209,40 @@
   "Which figures are not written in the words quoted?": [
     "query",
     ["unquoted", "?claim", "?field", "?value"]
+  ],
+  "Formal verification: verdicts": [
+    "query",
+    [
+      "and",
+      ["weighed_in", "?candidate", "formal-verification"],
+      ["verdict", "?candidate", "?verdict"]
+    ],
+    {
+      "order": "candidate"
+    }
+  ],
+  "Formal verification: what each idea builds on": [
+    "query",
+    ["builds_on", "?candidate", "?builds_on", "?condition"]
+  ],
+  "Formal verification: what Alchemy gives that Lion lacks": [
+    "find",
+    "?f",
+    ["alchemy_gap", "?f"]
+  ],
+  "Formal verification: what each idea's techniques need": [
+    "query",
+    ["fv_needs", "?candidate", "?condition", "?technique"]
+  ],
+  "Formal verification: caveats": [
+    "query",
+    ["fv_caveat", "?candidate", "?feature", "?technique"]
+  ],
+  "Formal verification: when to build each idea": [
+    "query",
+    ["build_level", "?candidate", "?level"],
+    {
+      "order": ["level", "candidate"]
+    }
   ]
 }

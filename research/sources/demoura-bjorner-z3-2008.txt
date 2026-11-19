@@ -1,0 +1,170 @@
+Research
+Publications
+Code, datasets and models
+Artificial intelligence
+Audio & acoustics
+Computer vision
+Graphics & multimedia
+Human-computer interaction
+Human language technologies
+Search & information retrieval
+Data platforms and analytics
+Hardware & devices
+Programming languages & software engineering
+Quantum computing
+Security, privacy & cryptography
+Systems & networking
+Algorithms
+Mathematics
+Ecology & environment
+Economics
+Medical, health & genomics
+Social sciences
+Technology for emerging markets
+Academic programs
+Events & academic conferences
+Microsoft Research Forum
+Microsoft Research Blog
+Microsoft Research Podcast
+Microsoft Research Stories
+About Microsoft Research
+Careers & internships
+People
+News & awards
+AI for Science
+Asia-Pacific
+Cambridge
+Catalyst Lab
+India
+Montreal
+New England
+New York City
+Redmond
+Register: Research Forum
+Microsoft Security
+Azure
+Dynamics 365
+Microsoft 365
+Microsoft Teams
+Windows 365
+Microsoft AI
+Azure Space
+Mixed reality
+Microsoft HoloLens
+Microsoft Viva
+Quantum computing
+Sustainability
+Education
+Automotive
+Financial services
+Government
+Healthcare
+Manufacturing
+Retail
+Find a partner
+Become a partner
+Partner Network
+Microsoft Marketplace
+Software companies
+Blog
+Microsoft Advertising
+Developer Center
+Documentation
+Events
+Licensing
+Microsoft Learn
+Microsoft Research
+View Sitemap
+Z3: an efficient SMT solver
+Leonardo de Moura
+,
+Nikolaj Bjørner
+Tools and Algorithms for Construction and Analysis of Systems
+| March 2008
+Published by Springer, Berlin, Heidelberg
+PDF | Publication
+Download BibTex
+Satisfiability Modulo Theories (SMT) problem is a decision problem for logical first order formulas with respect to combinations of background theories such as: arithmetic, bit-vectors, arrays, and uninterpreted functions. Z3 is a new and efficient SMT Solver freely available from Microsoft Research. It is used in various software verification and analysis applications.
+Opens in a new tab
+Related Tools
+Z3 automated theorem prover
+May 31, 2018
+Z3 is a theorem prover from Microsoft Research. It is licensed under the MIT license.
+
+Z3 can be built using Visual Studio, a Makefile or using CMake. It provides bindings for several programming languages including .NET, C, C++, Java, OCaml, Web Assembly and Python.
+Access
+DOI
+Projects
+Z3
+Research Areas
+Programming languages and software engineering
+Follow us:
+Follow on X
+Like on Facebook
+Follow on LinkedIn
+Subscribe on Youtube
+Follow on Instagram
+Subscribe to our RSS feed
+Share this page:
+Share on X
+Share on Facebook
+Share on LinkedIn
+Share on Reddit
+Surface Laptop Ultra
+Surface Pro
+Surface Laptop
+Surface RTX Spark Dev Box
+Explore Copilot
+Explore Microsoft products
+Windows 11 apps
+Account profile
+Download Center
+Microsoft Store support
+Returns
+Order tracking
+Certified Refurbished
+Why buy from Microsoft Store
+Flexible Payments
+Microsoft in education
+Devices for education
+Microsoft Teams for Education
+Microsoft 365 Education
+How to buy for your school
+Educator training and development
+Deals for students and parents
+AI for education
+Microsoft AI
+Microsoft Security
+Dynamics 365
+Microsoft 365
+Microsoft Power Platform
+Microsoft Teams
+Microsoft Copilot
+Small Business
+Azure
+Microsoft Developer
+Microsoft Learn
+Support for AI marketplace apps
+Microsoft Tech Community
+Microsoft Marketplace
+Software companies
+Visual Studio
+Careers
+About Microsoft
+Company news
+Privacy at Microsoft
+Investors
+Diversity and inclusion
+Accessibility
+Sustainability
+Your Privacy Choices
+Consumer Health Privacy
+Sitemap
+Contact Microsoft
+Privacy
+Manage cookies
+Terms of use
+Trademarks
+Safety & eco
+Recycling
+About our ads

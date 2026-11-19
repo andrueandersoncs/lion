@@ -1,0 +1,88 @@
+The Lean Language Reference
+The Lean Language Reference
+Table of Contents
+1. Introduction
+2. Elaboration and Compilation
+3. Interacting with Lean
+4. The Type System
+5. Source Files and Modules
+6. Namespaces and Sections
+7. Definitions
+8. Axioms
+9. Attributes
+10. Type Classes
+11. Coercions
+12. Run-Time Code
+13. Terms
+14. Tactic Proofs
+15. The Simplifier
+16. The grind tactic
+17. The vcgen tactic
+18. The mvcgen tactic
+19. Functors, Monads and do -Notation
+20. Basic Propositions
+21. Basic Types
+22. IO
+23. Iterators
+24. Notations and Macros
+25. Build Tools and Distribution
+26. Linters and Code Quality
+27. External Kernels
+Validating a Lean Proof
+Error Explanations
+Release Notes
+Supported Platforms
+Index
+Source Code
+Report Issues
+1. Introduction → The Lean Language Reference 🔗
+This is the Lean Language Reference .
+It is intended to be a comprehensive, precise description of Lean: a reference work in which Lean users can look up detailed information, rather than a tutorial intended for new users.
+For other documentation, please refer to the Lean documentation overview .
+This manual covers Lean version 4.36.0 .
+Lean is an interactive theorem prover based on dependent type theory, designed for use both in cutting-edge mathematics and in software verification.
+Lean's core type theory is expressive enough to capture very complicated mathematical objects, but simple enough to admit independent implementations, reducing the risk of bugs that affect soundness.
+The core type theory is implemented in a minimal kernel that does nothing other than check proof terms.
+This core theory and kernel are supported by advanced automation, realized in an expressive tactic language .
+Each tactic produces a term in the core type theory that is checked by the kernel, so bugs in tactics do not threaten the soundness of Lean as a whole.
+Along with many other parts of Lean, the tactic language is user-extensible, so it can be built up to meet the needs of a given formalization project.
+Tactics are written in Lean itself, and can be used immediately upon definition; rebuilding the prover or loading external modules is not required.
+Lean is also a pure functional programming language , with features such as a run-time system based on reference counting that can efficiently work with packed array structures, multi-threading, and monadic IO .
+As befits a programming language, Lean is primarily implemented in itself, including the language server, build tool, elaborator , and tactic system.
+This very book is written in Verso , a documentation authoring tool written in Lean.
+Familiarity with Lean's programming features is valuable even for users whose primary interest is in writing proofs, because Lean programs are used to implement new tactics and proof automation.
+Thus, this reference manual does not draw a barrier between the two aspects, but rather describes them together so they can shed light on one another.
+Contents
+1. Introduction
+2. Elaboration and Compilation
+3. Interacting with Lean
+4. The Type System
+5. Source Files and Modules
+6. Namespaces and Sections
+7. Definitions
+8. Axioms
+9. Attributes
+10. Type Classes
+11. Coercions
+12. Run-Time Code
+13. Terms
+14. Tactic Proofs
+15. The Simplifier
+16. The grind tactic
+17. The vcgen tactic
+18. The mvcgen tactic
+19. Functors, Monads and do -Notation
+20. Basic Propositions
+21. Basic Types
+22. IO
+23. Iterators
+24. Notations and Macros
+25. Build Tools and Distribution
+26. Linters and Code Quality
+27. External Kernels
+Validating a Lean Proof
+Error Explanations
+Release Notes
+Supported Platforms
+Index
+1. Introduction →

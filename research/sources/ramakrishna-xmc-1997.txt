@@ -1,0 +1,41 @@
+Efficient Model Checking Using Tabled Resolution
+Y. S. Ramakrishna, C. R. Ramakrishnan, I. V. Ramakrishnan, Scott A. Smolka, Terrance Swift, David S. Warren
+Abstract:
+XSB
+is a logic programming system developed at SUNY Stony Brook that extends
+Prolog-style SLD resolution with tabled resolution . The principal
+merits of this extension are that XSB terminates on programs having finite
+models, avoids redundant subcomputations, and computes the well-founded model
+of normal logic programs.
+In this paper, we demonstrate the feasibility of using XSB as a programmable
+fixed-point engine for implementing efficient local model checkers. In
+particular, we present XMC, an XSB-based local model checker for a CCS-like
+value-passing language and the alternation-free fragment of the modal
+mu-calculus. XMC is written in under 200 lines of XSB code, which constitute
+a declarative specification of CCS and the modal mu-calculus at the level of
+semantic equations.
+In order to gauge the performance of XMC as an algorithmic model checker, we
+conducted a series of benchmarking experiments designed to compare the
+performance of XMC with the local model checkers implemented in C/C++ in the
+Concurrency Factory
+and SPIN specification and verification environments.
+After applying certain newly developed logic-programming-based optimizations
+(along with some standard ones), XMC's performance became extremely competitive
+with that of the Factory and shows promise in its comparison with SPIN.
+Bibtex Entry:
+@inproceedings{RRRSSW:CAV97,
+author = {Y. S. Ramakrishna and C. R. Ramakrishnan and I. V. Ramakrishnan and Scott A. Smolka and Terrance Swift and David S. Warren},
+title = {Efficient Model Checking Using Tabled Resolution},
+booktitle = {Ninth International Conference on Computer-Aided Verification ({CAV})},
+series = {Lecture Notes in Computer Science},
+volume = {1254},
+publisher = {Springer},
+pages = {143--154},
+year = {1997}
+}
+Full Paper:
+[pdf]
+Home |
+Papers
+C. R. Ramakrishnan
+( cram@cs.sunysb.edu )

@@ -1,0 +1,224 @@
+TLA+ Tools
+
+
+Leslie Lamport 
+Last modified on 18 March 2022 
+
+
+
+
+
+
+
+
+Most users of TLA+ will run the TLA+ tools 
+from the TLA+
+Toolbox . How to download them and run them outside
+the Toolbox is explained 
+here .
+
+
+The Tools
+
+
+SANY Syntactic Analyzer
+
+
+[show] 
+
+
+
+A parser and syntax checker for TLA+ specifications. 
+
+It catches parsing errors and some semantic errors such as
+priming an expression containing primed variables. 
+
+It was written by Jean-Charles
+Gr�goire, David Jefferson, and Yuan Yu.
+
+
+TLC Model Checker
+
+
+[show] 
+
+
+
+A model checker and simulator for executable TLA+
+specifications, which include most specifications written by
+engineers. 
+
+It is an explicit-state model checker that can check both safety and
+liveness properties. For safety checking, TLC achieves an
+approximately linear speedup on modern large computers using 32 or
+more cores. It can further speed up model checking by running on
+a network of computers, and provides easy deployment on cloud
+systems. TLC was written by Yuan Yu and extended by Markus
+Kuppe.
+
+
+Apalache Model Checker
+
+
+[show] 
+
+
+Apalache is an alternative to
+TLC for checking TLA+ specifications. While TLC is an explicit-state
+model checker, Apalache is a symbolic model checker. 
+It checks safety for bounded executions and inductive invariants for
+unbounded executions, assuming that all data structures are finite. 
+The tool leverages the SMT solver Z3, from Microsoft Research.
+
+
+
+There are some tutorials on how to use it. The 
+
+Entry-level Tutorial 
+assumes no prior knowledge of TLA+ or PlusCal. 
+More tutorials are available on the 
+
+Tutorials Page .
+
+
+
+Apalache is still experimental, so be prepared to use the command-line
+and to help us discover bugs. TLA+ enthusiasts may find this model
+checker efficient, for example, when their spec contains many
+constraints over integers. The first version of Apalache was
+developed by Igor Konnov, Jure Kukovec and Thanh Hai Tran at TU Wien
+and Inria Nancy. Apalache is actively developed at Informal Systems
+by Shon Feder, Igor Konnov, Jure Kukovec, Gabriela Mafra, Rodrigo
+Otoni, and Thomas Pani.
+
+
+PlusCal Translator
+
+
+[show] 
+
+
+
+A translator from the 
+PlusCal 
+algorithm language to TLA+. 
+It was written by Keith Marzullo and the author of this web page.
+
+
+
+TLAPS Proof System
+
+
+[show] 
+
+
+
+
+A system for mechanically checking proofs written in TLA+, including
+proofs of the kinds of properties described 
+here . 
+
+
+It is being developed at the 
+Microsoft
+Research–Inria Joint Centre . 
+
+See 
+the TLAPS home page for more information. 
+
+The first version of TLAPS was written by Kaustuv Chaudhuri. 
+Improvements have been made by Damien Doligez, Stephan Merz, Hernán Vanzetto, Tomer Libal, Martin Riener, and Denis Cousineau.
+
+
+
+
+
+TLATeX
+Pretty-Printer 
+
+
+[show] 
+
+
+
+
+A program for typesetting TLA+ specifications. It is used by the
+Toolbox's Produce PDF Version command to generate and display a
+pdf file with a pretty-printed version of a specification. 
+Chapter 13 of 
+Specifying Systems 
+has some tips on formatting this version. 
+
+TLATeX can also be used outside the Toolbox to include TLA+ formulas
+and PlusCal code as part of a LaTeX document. 
+
+Click 
+here 
+to find out how to run TLATeX outside the Toolbox. Here are instructions for how to include TLA+
+formulas and PlusCal code in a LaTeX document. You will have to
+download the tlatex.sty 
+package file to use TLATeX with LaTeX.
+
+
+
+
+
+Documentation
+
+
+Except for the PlusCal translator and TLAPS, the tools are described
+in the book
+Specifying 
+Systems . 
+
+Documentation of the PlusCal translator 
+can be found here . 
+
+Some documentation of the TLAPS proof system can be
+found on its web site and in the 
+TLA+ 
+Hyperbook .
+
+
+
+The current versions of the language and tools differ somewhat from the ones
+described in the book. Most notably, language constructs for writing
+proofs have been added to TLA+, and a number of features have
+been added to TLC. All significant changes to the
+tools since the book was written are described in the
+document&thinsp; Current Versions of the
+TLA+ Tools , which contains a complete list of TLC command-line
+options. 
+
+Changes to the language are described in
+this web page . 
+
+
+
+
+
+
+
+
+
+Known bugs in the tools are reported on the TLA+
+Github 
+issues page . 
+Requests for additional features are also posted there. 
+
+Tell us about any problems or inadequacies you find with
+the tools. 
+
+But please remember that we are a small number of people
+trying to respond to the needs of an ever-growing number of users.
+
+
+
+
+
+
+
+
+
+
+Back

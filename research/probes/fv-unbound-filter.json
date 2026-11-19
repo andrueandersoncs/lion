@@ -1,0 +1,1 @@
+["find", "?balance", ["number/lessThan", "?balance", 0]]

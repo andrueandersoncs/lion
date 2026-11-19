@@ -1,0 +1,416 @@
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Abstract
+1 Introduction
+2 Architecture
+3 Techniques
+4 Portfolio
+5 Implementation
+6 Related Work
+7 Evaluation
+7.1 Setup
+7.2 Results
+8 Strengths and Limitations
+9 Conclusion
+References
+License: arXiv.org perpetual non-exclusive license
+arXiv:2502.13605v1 [cs.FL] 19 Feb 2025
+The rIC3 Hardware Model Checker
+Yuheng Su
+Affiliation: University of Chinese Academy of Sciences
+Affiliation: Institute of Software, Chinese Academy of Sciences
+  
+Qiusong Yang
+Affiliation: Institute of Software, Chinese Academy of Sciences
+  
+Yiwei Ci
+Affiliation: Institute of Software, Chinese Academy of Sciences
+  
+Tianjun Bu
+Affiliation: University of Chinese Academy of Sciences
+Affiliation: Institute of Software, Chinese Academy of Sciences
+  
+Ziyu Huang
+E-mail {qiusong,yiwei}@iscas.ac.cn
+E-mail butianjun24@mails.ucas.ac.cn
+E-mail fyy0007@bjfu.edu.cn
+Affiliation: Beijing Forestry University
+E-mail gipsyh.icu@gmail.com
+Abstract
+In this paper, we present rIC3, an efficient bit-level hardware model checker primarily based on the IC3 algorithm. It boasts a highly efficient implementation and integrates several recently proposed optimizations, such as the specifically optimized SAT solver, dynamically adjustment of generalization strategies, and the use of predicates with internal signals, among others. As a first-time participant in the Hardware Model Checking Competition, rIC3 was independently evaluated as the best-performing tool, not only in the bit-level track but also in the word-level bit-vector track through bit-blasting. Our experiments further demonstrate significant advancements in both efficiency and scalability. rIC3 can also serve as a backend for verifying industrial RTL designs using SymbiYosys. Additionally, the source code of rIC3 is highly modular, with the IC3 algorithm module being particularly concise, making it an academic platform that is easy to modify and extend.
+Keywords:
+Formal Verification Model Checking IC3/PDR.
+1 Introduction
+Model checking [ 19 , 20 ] is a powerful formal verification technique widely used in modern system design. Given a transition system and a property that describes the desired system behavior, it can efficiently and automatically detect bugs (violations of the property) or prove that the property holds.
+IC3 [ 14 ] , also known as PDR [ 22 ] , is a prominent SAT-based model checking algorithm widely used in hardware formal verification. It efficiently searches for inductive invariants without unrolling the model. IC3 is distinguished by its completeness in comparison to BMC [ 10 ] , its scalability compared to IMC [ 33 ] and K-Induction [ 38 ] . Recognized as a state-of-the-art algorithm, IC3 serves as the primary engine for numerous efficient model checkers [ 16 , 17 , 25 , 32 ] .
+IC3 has been successfully applied to the verification of industrial designs [ 23 ] . However, it still faces significant challenges due to the state space explosion problem. Therefore, improving the IC3 algorithm and developing more efficient tools to enhance scalability for verifying larger-scale hardware models remains a critical research direction. IC3ref [ 4 ] , the reference implementation of the IC3 algorithm developed by its inventor, serves as a baseline in many IC3-related studies [ 28 , 37 , 39 , 44 ] due to its efficiency and relatively simple codebase. However, it has not been updated in years, and its lack of recent advancements has led to a performance gap. ABC [ 16 ] provides a highly efficient implementation of the PDR algorithm. However, it is implemented in C and heavily relies on custom data structures, macros, and extensive use of raw pointers, which complicates modification and extension. Similarly, the IC3 implementation in nuXmv [ 17 ] delivers outstanding performance, but its source code is not open-sourced.
+In this paper, we introduce rIC3, an bit-level model checker primarily based on the IC3 algorithm. It integrates several optimizations proposed recently. The SAT solver within the IC3 engine is deeply optimized by reducing the number of variables decided through Cone of Influence (COI) analysis [ 41 ] . Furthermore, a more efficient data structure in VSIDS has been implemented to further reduce the solving time for IC3 queries. The tool also leverages CTG [ 26 ] and EXCTG [ 40 ] to achieve better generalization. Moreover, it employs a heuristic method that dynamically adjusts generalization strategies [ 40 ] to balance the trade-off between generalization quality and computational overhead. Furthermore, the use of internal signals [ 21 ] enables the derivation of more compact invariants.
+rIC3 was independently evaluated as the top-performing tool in both the bit-level track and the word-level bit-vector track (via bit-blasting) at the 2024 Hardware Model Checking Competition (HWMCC’24) [ 3 ] . Our experiments further highlight significant advancements in both efficiency and scalability. Additionally, rIC3 can be utilized as a backend for verifying industrial RTL designs with SymbiYosys. The source code of rIC3 is designed with high modularity, and its IC3 algorithm module is remarkably compact, comprising only around 1,700 lines of code. This makes rIC3 an excellent academic platform that is both easy to modify and extend.
+2 Architecture
+Figure 1: rIC3 Architecture and Verification Flow
+rIC3 is an efficient bit-level model checker primarily based on the IC3 algorithm, and it also incorporates a portfolio approach with the BMC and K-Induction algorithms. Fig. 1 shows the architecture and verification flow of rIC3.
+•
+Users provide the model to be verified and the desired properties to the rIC3 frontend, which then obtains the final result certificate from the checker. The certificate is either a proof that the model is safe or a concrete counterexample demonstrating that the model is unsafe.
+•
+The frontends in rIC3 support two widely used formats: AIGER [ 13 ] , which provides a bit-level representation of hardware, and Btor2 [ 35 ] , which uses a word-level bit-vector representation. Since rIC3 operates at the bit level, Btor2 models are bit-blasted into AIGER models using btor2aiger [ 2 ] .
+•
+The AIGER model is first preprocessed to obtain a more compact representation, which involves SAT sweeping [ 29 ] , rewriting [ 36 ] and refactoring [ 34 ] . This step is performed using ABC [ 16 ] . Subsequently, the model is transformed into TranSys, an intermediate representation of the Transition System, primarily involving CNF encoding. The CNF of TranSys is then further simplified using a SAT solver. Depending on the engine in use, an additional unrolling step may be required.
+•
+The engine in rIC3 integrates the IC3, BMC, and K-Induction algorithms, which can also operate in a portfolio mode. These engines formulate SAT problems and delegate them to backend SAT solvers, driving the model checking process based on the results returned. Once a final result is obtained, it is provided to the user along with the corresponding certificate.
+•
+The backend supports various SAT solvers, including GipSAT, which excels at solving the relatively simpler SAT problems generated by IC3, as well as CaDiCaL [ 11 ] and Kissat [ 12 ] , which are more suited for addressing the comparatively complex problems formulated by BMC and K-Induction.
+3 Techniques
+Since the BMC and K-Induction are relatively consistent across different model checkers, we focus on introducing the techniques used in the IC3 engine.
+•
+Specifically optimized SAT solver . The SAT solver in IC3 primarily focuses on solving the relative induction query F ∧ c ∧ T ∧ ¬ c ′ F\land c\land T\land\lnot c^{\prime} , where F F represents the frame, c c is a clause, and T T denotes the transition relation. We observed that these queries are relatively simple and are typically solved within milliseconds, exhibiting unique characteristics. Current IC3 implementations mainly rely on modern general-purpose SAT solvers, which offer excellent scalability. However, these solvers may not always be efficient for solving millisecond-level SAT problems and often fail to leverage the unique characteristics of these queries. We developed a novel lightweight SAT solver called GipSAT [ 41 ] , which is specifically optimized for the IC3 algorithm. We observed that the transition relation T T has a DAG (Directed Acyclic Graph) structure, meaning it is not necessary to decide and assign all variables during each solving process. GipSAT limits the variables decided and assigned during BCP (Boolean Constraint Propagation) by analyzing the COI (Cone of Influence) at each solving iteration, ensuring that the results remain unaffected. Furthermore, we noticed that the overhead of binary heap operations in the Variable State Independent Decaying Sum (VSIDS) heuristic is not negligible, especially given the simplicity of the queries and the logarithmic time complexity of binary heap operations. To mitigate this, GipSAT uses several buckets to maintain the VSIDS scores, achieving constant-time operations and reducing overhead. Additionally, GipSAT supports temporary clauses, eliminating the need for resetting the SAT solver between queries.
+•
+Better generalization with CTG and extended CTG . In IC3, the generalization process aims to expand a bad state to include additional unreachable states, thereby reducing the number of iterations. Standard generalization [ 15 ] achieves this by removing literals from a cube, effectively encompassing more unreachable states. CTG generalization [ 26 ] improves upon this approach by blocking counterexamples to generalization (CTG) when dropping literals fails to yield better generalization results. However, the results of CTG may sometimes still be suboptimal. This is because CTG only considers blocking the predecessors of the literal-dropped clause. If blocking these predecessors fails, it abandons further attempts to block the clause, even though the predecessors of the clause’s predecessors might still be blockable. To address this limitation, we propose EXCTG [ 40 ] , an extension of CTG. Similar to CTG, EXCTG attempts to block the predecessors when literal dropping fails. However, if blocking the predecessors also fails, EXCTG goes further by recursively attempting to block the predecessors of the predecessors, and so on. This iterative approach enables EXCTG to achieve improved generalization results.
+•
+Dynamic adjustment of generalization strategies . While CTG and EXCTG offer better generalization results, they also incur higher computational costs. The generalization strategies: Standard, CTG, and EXCTG, produce progressively better results but also come with increased computational overhead. Finding an appropriate balance between generalization quality and computational overhead is challenging with a static strategy. To address this, we introduce DynAMic (Dynamic Adjustment of MIC Strategies) [ 40 ] , which dynamically adjusts generalization strategies based on the difficulty of blocking bad states, as indicated by the number of failed attempts to block them. The more difficult a bad state is to block, the more effort is devoted to generalization. For states that are easy to block, it uses the lightweight standard strategy to reduce overhead. For more challenging states, it applies more effective generalization strategies, such as CTG or EXCTG, depending on the difficulty. This approach enhances scalability without sacrificing efficiency.
+•
+Predicate with internal signals . IC3 incrementally learns inductive invariants that over-approximate the set of reachable states. These invariants are represented in CNF as predicates over state variables. However, IC3 struggles with designs that lack a concise CNF invariant over state variables. To address this limitation, IC3-INN [ 21 ] extends the traditional IC3 approach by learning invariants based not only on state variables but also on internal signals within the design. This enhancement enables the derivation of significantly more compact invariants while maintaining the efficiency of the CNF representation.
+•
+Localization abstraction with constraints . Localization abstraction [ 43 ] is a method aimed at reducing the complexity of a verification instance by removing certain logic. Previous work [ 27 ] that utilized this method abstracts the transition relation by treating some registers as primary inputs and then refines the abstraction using counterexamples found by IC3. Similarly, rIC3 also takes this approach, but instead of the transition relation, it only focuses on constraints. Initially, it abstracts away all constraints to reduce the complexity. Then, it gradually adds back the constraints that cannot be ignored, based on the counterexamples.
+4 Portfolio
+Certain optimizations can significantly improve the solving efficiency of specific model-checking problems. However, achieving consistent performance improvements across all problems remains challenging, as some optimizations may even degrade performance for some other cases. For example, IC3-INN [ 21 ] excels at solving many previously intractable problems, especially SEC problems. However, its overall performance across the entire benchmark set decreases due to treating more variables as latches. Consequently, using a portfolio of configurations in parallel has emerged as a viable strategy to improve scalability. rIC3 includes a 16-thread parallel portfolio combining IC3, BMC, and K-Induction configurations, which is also the competition version. Specifically, it uses 11 threads for IC3 with different combinations of the techniques mentioned above, 4 threads for BMC with varying steps, and 1 thread for K-Induction.
+5 Implementation
+Table 1: Lines of Code (LOC) for Modules in rIC3
+Modules
+IC3
+BMC
+K-Induction
+TranSys
+GipSAT
+AIG-rs
+logic-form
+Total
+LOC
+1686
+115
+244
+739
+2293
+1654
+1297
+10571
+All algorithms in rIC3 are implemented in Rust, a modern programming language renowned for its emphasis on performance and security. We have open-sourced rIC3 at [ 7 ] . The implementation is designed to be concise while preserving the algorithm’s efficiency, and the codebase is highly modular. Table 1 provides statistics on the number of lines of code for various modules in rIC3.
+AIG-rs, a self-maintained AIG library, supports AIGER parsing, AIG simulation, and related functionalities. The logic-form library offers data structures for representing basic propositional logic expressions, such as Literal and Cube. Other modules have been introduced earlier. Notably, the IC3 engine demonstrates excellent performance, with its implementation being remarkably simple—comprising only about 1700 lines of code. This simplicity makes it an academic research platform for experimentation and enhancement.
+Furthermore, rIC3 is integrated as a backend for SymbiYosys (sby) 1 1
+1
+https://github.com/YosysHQ/sby/pull/313 , a front-end driver program for Yosys formal hardware verification flows. This integration enables rIC3 to serve as a backend for verifying industrial RTL designs.
+6 Related Work
+IC3 was originally introduced as a SAT-based bit-level model checking algorithm. Since its inception, numerous tools have been developed based on this foundational approach. IC3ref [ 4 ] , created by the algorithm’s inventor, stands out for its efficiency and relatively simple implementation, making it a baseline for many IC3-related studies [ 28 , 37 , 39 , 44 ] . The ABC framework [ 16 ] includes an implementation of the PDR algorithm [ 22 ] , while the nuXmv model checker [ 17 ] also integrates IC3. Additionally, SimpleCAR [ 30 ] implements the CAR algorithm [ 31 ] , which excels at bug detection, and Avy [ 42 ] combines sequence interpolants with IC3.
+The IC3 algorithm has also been extended to address word-level problems by leveraging SMT solvers. AVR [ 25 ] implements IC3sa [ 24 ] , combining IC3 with syntax-guided abstraction to enable scalable word-level model checking. Furthermore, Pono [ 32 ] supports both IC3sa and IC3ia [ 18 ] , which extends IC3 to modulo theories through implicit predicate abstraction.
+The Hardware Model Checking Competition (HWMCC) [ 3 ] has been instrumental in driving advancements in hardware model checkers. Submissions to the competition are typically executed in a 16-thread portfolio mode, prompting many model checkers to develop portfolio versions that integrate various configurations of IC3, BMC, and K-Induction engines. Examples include Superprove [ 9 ] for ABC, SuperCAR [ 8 ] for SimpleCAR, and Pavy [ 6 ] for Avy. AVR and Pono also have their own portfolio versions.
+rIC3 , like these tools, is used for hardware model checking. It incorporates several optimization techniques proposed in recent years to achieve better scalability, delivering superior performance compared to existing tools. It can also be used to verify industrial models through SymbiYosys. Moreover, it is implemented in the modern programming language Rust, featuring a modular and concise codebase, making it an excellent platform for academic research as well.
+7 Evaluation
+7.1 Setup
+We evaluated the following tools, all of which are the latest versions or the HWMCC’24 submission versions. The specific versions and configurations are detailed in our artifact [ 1 ] .
+•
+rIC3 [ 7 ] : rIC3-ic3 is a single-thread IC3 engine that utilizes the DynAMic heuristic method and the specifically optimized SAT solver. Internal signals and localization abstraction are excluded, as they do not enhance overall performance. rIC3-portfolio is the portfolio version of rIC3.
+•
+IC3ref [ 4 ] : A single-thread IC3 engine with CTG generalization.
+•
+ABC [ 16 ] : ABC-superprove [ 9 ] is the portfolio engine of ABC. ABC-pdr is the PDR engine using the configuration from ABC-superprove, which includes CTG and localization abstraction.
+•
+nuXmv [ 17 ] : We evaluated the IC3 engine in nuXmv, enhanced by a recently proposed heuristic optimization [ 44 ] , available at [ 5 ] . We refer to this as nuXmv-cav23.
+•
+AVR [ 25 ] : AVR-ic3sa is the IC3sa engine using the default configuration, and AVR-portfolio is the portfolio engine of AVR.
+•
+Pono [ 32 ] : Pono-portfolio is the portfolio engine submitted in HWMCC’24. Pono-ic3ia and Pono-ic3sa are engines implementing IC3ia and IC3sa, respectively, using the same configurations as in the HWMCC’24 submission.
+•
+Avy [ 42 ] : Avy is the IC3 engine integrated with interpolants, while Pavy [ 6 ] is the portfolio engine that combines Avy, PDR, and BMC.
+For the evaluation of single-thread engines, we utilized the complete benchmark suites from the bit-level track (AIGER format) and the word-level bit-vector track (Btor2 format) of the three most recent Hardware Model Checking Competitions (HWMCC’19, HWMCC’20, and HWMCC’24) [ 3 ] . The bit-level benchmarks were derived by bit-blasting the word-level bit-vector benchmarks. After removing duplicates, the combined suite comprised 840 unique cases, each available in both AIGER and Btor2 formats. For portfolio engines, due to limited computational resources, we restricted our evaluation to the HWMCC’24 benchmark, which included 319 cases.
+All single-thread configurations were tested under consistent resource constraints: 32 GB of RAM and a 3600-second time limit. For the portfolio engine, we followed the HWMCC resource limits, which provided 16 cores, 128 GB of RAM, and the same 3600-second time limit. The experiments were conducted on an AMD EPYC 7532 processor (2.4 GHz) running Ubuntu 24.10. To ensure reproducibility, we have made the source code and binary releases of all evaluated tools available, along with detailed experimental results in [ 1 ] . Additionally, to enhance confidence in the correctness of the results, all outputs from rIC3 were certified using Certifaiger [ 45 ] .
+7.2 Results
+Table 2: Number of solved, timed-out, and memory-out cases, PAR-2 score, number of uniquely solved cases, and fastest solved cases for various IC3 engines. The upper part shows the bit-level engines, and the lower part shows the word-level engines.
+Tools
+Solved(840)
+TO
+MO
+PAR-2
+Unique
+Best
+rIC3-ic3
+606
+225
+9
+2147.70
+61
+398
+nuXmv-cav23
+533
+302
+5
+2777.30
+8
+41
+ABC-pdr
+516
+320
+4
+2900.99
+1
+80
+Avy
+488
+350
+2
+3142.87
+29
+38
+IC3ref
+486
+353
+1
+3169.29
+1
+59
+AVR-ic3sa
+353
+481
+6
+4305.24
+22
+53
+Pono-ic3ia
+311
+518
+11
+4652.29
+1
+7
+Pono-ic3sa
+212
+614
+14
+5459.96
+0
+5
+Figure 2: The number of cases solved over time by various single-thread IC3 engines.
+Figure 3: The solving times (in seconds) comparisons between various IC3 engines.
+Table 3: The number of solved, timeout, and memory-out cases, the PAR-2 score, the number of uniquely solved cases, and the fastest solved cases for portfolio engines.
+Tools
+Solved(319)
+TO
+MO
+PAR-2
+Unique
+Best
+rIC3-portfolio
+245
+73
+1
+1809.74
+16
+171
+ABC-superprove
+226
+92
+1
+2197.01
+2
+43
+Pavy 2 2
+2
+Pavy results differ slightly from HWMCC’24, possibly the version we found [ 6 ] differs from the final submitted version.
+202
+116
+1
+2801.99
+0
+1
+AVR-portfolio
+181
+137
+1
+3220.23
+3
+22
+Pono-portfolio
+156
+163
+0
+3780.85
+1
+19
+Figure 4: The number of cases solved over time by various portfolio engines.
+Figure 5: The solving times (in seconds) comparisons between various portfolio engines.
+Table 2 , Figure 2 , and Figure 3 present the results of various IC3 engines. The data clearly demonstrate that rIC3 significantly outperforms other engines in terms of scalability. Specifically, rIC3 solves 73 more cases than nuXmv-cav23 and 90 more cases than ABC-pdr. Additionally, rIC3 uniquely solves 61 cases. Both the scatter plot and the PAR-2 score further highlight rIC3’s efficiency, as it solves the vast majority of cases faster than the other engines and achieves the best performance in 398 cases. The results for the portfolio engines are presented in Table 3 , Figure 4 , and Figure 5 . It is also evident that the portfolio engine of rIC3 maintains a competitive advantage over the other engines.
+To evaluate the effectiveness of the techniques employed, we conducted ablation experiments, as detailed in Table 4 . The default configuration, referred to as rIC3-ic3, incorporates DynAMic and GipSAT but does not utilize internal signals or localization abstraction. To assess the impact of each optimization, we experimented with several variations: replacing GipSAT with Minisat (rIC3-ic3-ms), disabling DynAMic and using CTG (rIC3-ic3-ctg), and enabling internal signals (rIC3-ic3-inn) and localization abstraction (rIC3-ic3-la). The results indicate that disabling either DynaMic or GipSAT led to a reduction in the number of solved cases. Moreover, while enabling internal signals or localization abstraction caused some performance degradation, these configurations uniquely solved certain cases that other setups could not address.
+Table 4: The number of solved, timeout, and memory-out cases, the PAR-2 score, and the number of uniquely solved cases for various configurations.
+Tools
+Solved(840)
+TO
+MO
+PAR-2
+Unique
+rIC3-ic3
+606
+225
+9
+2147.70
+13
+rIC3-ic3-ms
+564
+275
+1
+2492.34
+1
+rIC3-ic3-ctg
+590
+242
+8
+2254.30
+6
+rIC3-ic3-inn
+564
+274
+2
+2447.95
+12
+rIC3-ic3-la
+605
+226
+9
+2173.03
+25
+8 Strengths and Limitations
+As a bit-level model checker, rIC3 demonstrates significant performance advancements, outperforming not only other bit-level checkers but also those leveraging word-level information. Its implementation is highly modular, with the IC3 algorithm module being particularly concise. However, due to its lack of utilization of word-level information, rIC3 is relatively inefficient in handling cases involving arithmetic logic. Moreover, it currently cannot solve bit-vector problems involving arrays, as bit-blasting an array model can lead to an explosion. Additionally, as shown in Table 2 , AVR and Avy uniquely solved many cases that rIC3 could not, as their algorithms differ substantially from the original IC3 algorithm. Therefore, incorporating more algorithm variants into rIC3’s portfolio engine could further enhance its performance.
+9 Conclusion
+In this paper, we introduce rIC3, a novel hardware model checker. Both the HWMCC’24 results and our experimental evaluations highlight its significant advancements over existing tools. rIC3 can also function as a backend for verifying industrial RTL designs using SymbiYosys. Furthermore, the source code of its IC3 algorithm module is highly concise, making rIC3 an ideal academic platform that is easy to modify and extend. Looking ahead, we plan to enhance rIC3 by incorporating word-level information to further boost its performance and to enable support for solving word-level problems involving arrays.
+References
+[1]
+Artifact. https://github.com/gipsyh/rIC3-CAV25
+[2]
+btor2aiger tool. https://github.com/hwmcc/btor2tools
+[3]
+Hardware model checking competition. https://hwmcc.github.io
+[4]
+Ic3ref. https://github.com/arbrad/IC3ref
+[5]
+nuxmv artifact. https://github.com/youyusama/i-Good_Lemmas_MC.git
+[6]
+Pavy. https://github.com/TechnionFV/hwmcc24_submission
+[7]
+ric3. https://github.com/gipsyh/rIC3
+[8]
+Supercar. https://github.com/lijwen2748/hwmcc24
+[9]
+Superprove. https://github.com/sterin/super-prove-build
+[10]
+Biere, A., Cimatti, A., Clarke, E.M., Fujita, M., Zhu, Y.: Symbolic model checking using SAT procedures instead of bdds. In: Irwin, M.J. (ed.) Proceedings of the 36th Conference on Design Automation, New Orleans, LA, USA, June 21-25, 1999. pp. 317–320. ACM Press (1999). https://doi.org/10.1145/309847.309942
+[11]
+Biere, A., Faller, T., Fazekas, K., Fleury, M., Froleyks, N., Pollitt, F.: Cadical 2.0. In: Gurfinkel, A., Ganesh, V. (eds.) Computer Aided Verification - 36th International Conference, CAV 2024, Montreal, QC, Canada, July 24-27, 2024, Proceedings, Part I. Lecture Notes in Computer Science, vol. 14681, pp. 133–152. Springer (2024). https://doi.org/10.1007/978-3-031-65627-9_7
+[12]
+Biere, A., Faller, T., Fazekas, K., Fleury, M., Froleyks, N., Pollitt, F.: CaDiCaL, Gimsatul, IsaSAT and Kissat entering the SAT Competition 2024. In: Heule, M., Iser, M., Järvisalo, M., Suda, M. (eds.) Proc. of SAT Competition 2024 – Solver, Benchmark and Proof Checker Descriptions. Department of Computer Science Report Series B, vol. B-2024-1, pp. 8–10. University of Helsinki (2024)
+[13]
+Biere, A., Heljanko, K., Wieringa, S.: AIGER 1.9 and beyond. Tech. Rep. 11/2, Institute for Formal Models and Verification, Johannes Kepler University, Altenbergerstr. 69, 4040 Linz, Austria (2011), https://fmv.jku.at/papers/BiereHeljankoWieringa-FMV-TR-11-2.pdf
+[14]
+Bradley, A.R.: Sat-based model checking without unrolling. In: Jhala, R., Schmidt, D.A. (eds.) Verification, Model Checking, and Abstract Interpretation - 12th International Conference, VMCAI 2011, Austin, TX, USA, January 23-25, 2011. Proceedings. Lecture Notes in Computer Science, vol. 6538, pp. 70–87. Springer (2011). https://doi.org/10.1007/978-3-642-18275-4_7
+[15]
+Bradley, A.R., Manna, Z.: Checking safety by inductive generalization of counterexamples to induction. In: Formal Methods in Computer-Aided Design, 7th International Conference, FMCAD 2007, Austin, Texas, USA, November 11-14, 2007, Proceedings. pp. 173–180. IEEE Computer Society (2007). https://doi.org/10.1109/FAMCAD.2007.15
+[16]
+Brayton, R.K., Mishchenko, A.: ABC: an academic industrial-strength verification tool. In: Touili, T., Cook, B., Jackson, P.B. (eds.) Computer Aided Verification, 22nd International Conference, CAV 2010, Edinburgh, UK, July 15-19, 2010. Proceedings. Lecture Notes in Computer Science, vol. 6174, pp. 24–40. Springer (2010). https://doi.org/10.1007/978-3-642-14295-6_5
+[17]
+Cavada, R., Cimatti, A., Dorigatti, M., Griggio, A., Mariotti, A., Micheli, A., Mover, S., Roveri, M., Tonetta, S.: The nuxmv symbolic model checker. In: Biere, A., Bloem, R. (eds.) Computer Aided Verification - 26th International Conference, CAV 2014, Held as Part of the Vienna Summer of Logic, VSL 2014, Vienna, Austria, July 18-22, 2014. Proceedings. Lecture Notes in Computer Science, vol. 8559, pp. 334–342. Springer (2014). https://doi.org/10.1007/978-3-319-08867-9_22
+[18]
+Cimatti, A., Griggio, A., Mover, S., Tonetta, S.: IC3 modulo theories via implicit predicate abstraction. In: Ábrahám, E., Havelund, K. (eds.) Tools and Algorithms for the Construction and Analysis of Systems - 20th International Conference, TACAS 2014, Held as Part of the European Joint Conferences on Theory and Practice of Software, ETAPS 2014, Grenoble, France, April 5-13, 2014. Proceedings. Lecture Notes in Computer Science, vol. 8413, pp. 46–61. Springer (2014). https://doi.org/10.1007/978-3-642-54862-8_4
+[19]
+Clarke, E.M., Grumberg, O., Kroening, D., Peled, D.A., Veith, H.: Model checking, 2nd Edition. MIT Press (2018), https://mitpress.mit.edu/books/model-checking-second-edition
+[20]
+Clarke, E.M., Henzinger, T.A., Veith, H., Bloem, R.: Handbook of Model Checking. Springer Publishing Company, Incorporated, 1st edn. (2018). https://doi.org/10.1007/978-3-319-10575-8
+[21]
+Dureja, R., Gurfinkel, A., Ivrii, A., Vizel, Y.: IC3 with internal signals. In: Formal Methods in Computer Aided Design, FMCAD 2021, New Haven, CT, USA, October 19-22, 2021. pp. 63–71. IEEE (2021). https://doi.org/10.34727/2021/ISBN.978-3-85448-046-4_14
+[22]
+Eén, N., Mishchenko, A., Brayton, R.K.: Efficient implementation of property directed reachability. In: Bjesse, P., Slobodová, A. (eds.) International Conference on Formal Methods in Computer-Aided Design, FMCAD ’11, Austin, TX, USA, October 30 - November 02, 2011. pp. 125–134. FMCAD Inc. (2011), http://dl.acm.org/citation.cfm?id=2157675
+[23]
+Goel, A., Sakallah, K.A.: Empirical evaluation of ic3-based model checking techniques on verilog RTL designs. In: Teich, J., Fummi, F. (eds.) Design, Automation & Test in Europe Conference & Exhibition, DATE 2019, Florence, Italy, March 25-29, 2019. pp. 618–621. IEEE (2019). https://doi.org/10.23919/DATE.2019.8715289
+[24]
+Goel, A., Sakallah, K.A.: Model checking of verilog RTL using IC3 with syntax-guided abstraction. In: Badger, J.M., Rozier, K.Y. (eds.) NASA Formal Methods - 11th International Symposium, NFM 2019, Houston, TX, USA, May 7-9, 2019, Proceedings. Lecture Notes in Computer Science, vol. 11460, pp. 166–185. Springer (2019). https://doi.org/10.1007/978-3-030-20652-9_11
+[25]
+Goel, A., Sakallah, K.A.: AVR: abstractly verifying reachability. In: Biere, A., Parker, D. (eds.) Tools and Algorithms for the Construction and Analysis of Systems - 26th International Conference, TACAS 2020, Held as Part of the European Joint Conferences on Theory and Practice of Software, ETAPS 2020, Dublin, Ireland, April 25-30, 2020, Proceedings, Part I. Lecture Notes in Computer Science, vol. 12078, pp. 413–422. Springer (2020). https://doi.org/10.1007/978-3-030-45190-5_23
+[26]
+Hassan, Z., Bradley, A.R., Somenzi, F.: Better generalization in IC3. In: Formal Methods in Computer-Aided Design, FMCAD 2013, Portland, OR, USA, October 20-23, 2013. pp. 157–164. IEEE (2013), https://ieeexplore.ieee.org/document/6679405/
+[27]
+Ho, Y.S., Mishchenko, A., Brayton, R., Een, N.: Enhancing pdr/ic3 with localization abstraction. In: Proceedings of the 26th International Workshop on Logic and Synthesis (IWLS) (2017), https://people.eecs.berkeley.edu/~alanmi/publications/2017/iwls17_pdr.pdf
+[28]
+Hu, G., Tang, J., Yu, C., Zhang, W., Zhang, H.: Deepic3: Guiding IC3 algorithms by graph neural network clause prediction. In: Proceedings of the 29th Asia and South Pacific Design Automation Conference, ASPDAC 2024, Incheon, Korea, January 22-25, 2024. pp. 262–268. IEEE (2024). https://doi.org/10.1109/ASP-DAC58780.2024.10473807
+[29]
+Kuehlmann, A., Paruthi, V., Krohm, F., Ganai, M.K.: Robust boolean reasoning for equivalence checking and functional property verification. IEEE Trans. Comput. Aided Des. Integr. Circuits Syst. 21 (12), 1377–1394 (2002). https://doi.org/10.1109/TCAD.2002.804386
+[30]
+Li, J., Dureja, R., Pu, G., Rozier, K.Y., Vardi, M.Y.: Simplecar: An efficient bug-finding tool based on approximate reachability. In: Chockler, H., Weissenbacher, G. (eds.) Computer Aided Verification - 30th International Conference, CAV 2018, Held as Part of the Federated Logic Conference, FloC 2018, Oxford, UK, July 14-17, 2018, Proceedings, Part II. Lecture Notes in Computer Science, vol. 10982, pp. 37–44. Springer (2018). https://doi.org/10.1007/978-3-319-96142-2_5
+[31]
+Li, J., Zhu, S., Zhang, Y., Pu, G., Vardi, M.Y.: Safety model checking with complementary approximations. In: Parameswaran, S. (ed.) 2017 IEEE/ACM International Conference on Computer-Aided Design, ICCAD 2017, Irvine, CA, USA, November 13-16, 2017. pp. 95–100. IEEE (2017). https://doi.org/10.1109/ICCAD.2017.8203765
+[32]
+Mann, M., Irfan, A., Lonsing, F., Yang, Y., Zhang, H., Brown, K., Gupta, A., Barrett, C.W.: Pono: A flexible and extensible smt-based model checker. In: Silva, A., Leino, K.R.M. (eds.) Computer Aided Verification - 33rd International Conference, CAV 2021, Virtual Event, July 20-23, 2021, Proceedings, Part II. Lecture Notes in Computer Science, vol. 12760, pp. 461–474. Springer (2021). https://doi.org/10.1007/978-3-030-81688-9_22
+[33]
+McMillan, K.L.: Interpolation and sat-based model checking. In: Jr., W.A.H., Somenzi, F. (eds.) Computer Aided Verification, 15th International Conference, CAV 2003, Boulder, CO, USA, July 8-12, 2003, Proceedings. Lecture Notes in Computer Science, vol. 2725, pp. 1–13. Springer (2003). https://doi.org/10.1007/978-3-540-45069-6_1
+[34]
+Mishchenko, A., Chatterjee, S., Brayton, R.K.: Dag-aware AIG rewriting a fresh look at combinational logic synthesis. In: Sentovich, E. (ed.) Proceedings of the 43rd Design Automation Conference, DAC 2006, San Francisco, CA, USA, July 24-28, 2006. pp. 532–535. ACM (2006). https://doi.org/10.1145/1146909.1147048
+[35]
+Niemetz, A., Preiner, M., Wolf, C., Biere, A.: Btor2 , BtorMC and Boolector 3.0. In: Chockler, H., Weissenbacher, G. (eds.) Computer Aided Verification - 30th International Conference, CAV 2018, Held as Part of the Federated Logic Conference, FloC 2018, Oxford, UK, July 14-17, 2018, Proceedings, Part I. Lecture Notes in Computer Science, vol. 10981, pp. 587–595. Springer (2018). https://doi.org/10.1007/978-3-319-96145-3_32
+[36]
+Riener, H., Lee, S., Mishchenko, A., Micheli, G.D.: Boolean rewriting strikes back: Reconvergence-driven windowing meets resynthesis. In: 27th Asia and South Pacific Design Automation Conference, ASP-DAC 2022, Taipei, Taiwan, January 17-20, 2022. pp. 395–402. IEEE (2022). https://doi.org/10.1109/ASP-DAC52403.2022.9712526
+[37]
+Seufert, T., Scholl, C., Chandrasekharan, A., Reimer, S., Welp, T.: Making PROGRESS in property directed reachability. In: Methods and Description Languages for Modelling and Verification of Circuits and Systems, MBMV 2022, 25th Workshop, Virtual Event, Germany, February 17-18, 2022. pp. 1–2. VDE/IEEE (2022), https://ieeexplore.ieee.org/document/9788579
+[38]
+Sheeran, M., Singh, S., Stålmarck, G.: Checking safety properties using induction and a sat-solver. In: Jr., W.A.H., Johnson, S.D. (eds.) Formal Methods in Computer-Aided Design, Third International Conference, FMCAD 2000, Austin, Texas, USA, November 1-3, 2000, Proceedings. Lecture Notes in Computer Science, vol. 1954, pp. 108–125. Springer (2000). https://doi.org/10.1007/3-540-40922-X_8
+[39]
+Su, Y., Yang, Q., Ci, Y.: Predicting lemmas in generalization of IC3. In: De, V. (ed.) Proceedings of the 61st ACM/IEEE Design Automation Conference, DAC 2024, San Francisco, CA, USA, June 23-27, 2024. pp. 208:1–208:6. ACM (2024). https://doi.org/10.1145/3649329.3655970
+[40]
+Su, Y., Yang, Q., Ci, Y., Huang, Z.: Extended ctg generalization and dynamic adjustment of generalization strategies in ic3 (2025), https://arxiv.org/abs/2501.02480
+[41]
+Su, Y., Yang, Q., Ci, Y., Li, Y., Bu, T., Huang, Z.: Deeply Optimizing the SAT Solver for the IC3 Algorithm (1 2025). https://doi.org/10.6084/m9.figshare.28315184.v1
+[42]
+Vizel, Y., Gurfinkel, A.: Interpolating property directed reachability. In: Biere, A., Bloem, R. (eds.) Computer Aided Verification - 26th International Conference, CAV 2014, Held as Part of the Vienna Summer of Logic, VSL 2014, Vienna, Austria, July 18-22, 2014. Proceedings. Lecture Notes in Computer Science, vol. 8559, pp. 260–276. Springer (2014). https://doi.org/10.1007/978-3-319-08867-9_17
+[43]
+Wang, D., Ho, P., Long, J., Kukula, J.H., Zhu, Y., Ma, H.T., Damiano, R.F.: Formal property verification by abstraction refinement with formal, simulation and hybrid engines. In: Proceedings of the 38th Design Automation Conference, DAC 2001, Las Vegas, NV, USA, June 18-22, 2001. pp. 35–40. ACM (2001). https://doi.org/10.1145/378239.378260
+[44]
+Xia, Y., Becchi, A., Cimatti, A., Griggio, A., Li, J., Pu, G.: Searching for i-good lemmas to accelerate safety model checking. In: Enea, C., Lal, A. (eds.) Computer Aided Verification - 35th International Conference, CAV 2023, Paris, France, July 17-22, 2023, Proceedings, Part II. Lecture Notes in Computer Science, vol. 13965, pp. 288–308. Springer (2023). https://doi.org/10.1007/978-3-031-37703-7_14
+[45]
+Yu, E., Froleyks, N., Biere, A., Heljanko, K.: Towards compositional hardware model checking certification. In: Nadel, A., Rozier, K.Y. (eds.) Formal Methods in Computer-Aided Design, FMCAD 2023, Ames, IA, USA, October 24-27, 2023. pp. 1–11. IEEE (2023). https://doi.org/10.34727/2023/ISBN.978-3-85448-060-0_12
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" ( ) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

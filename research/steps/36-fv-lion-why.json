@@ -1,0 +1,113 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-explain-results"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/how-to/explain-results.html"
+   ],
+   [
+    "quote",
+    "Lion how-to: explain results"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l15"
+   ],
+   [
+    "quote",
+    "lion-explain-results"
+   ],
+   [
+    "quote",
+    "Every check, evaluated as it stands, is true, so anyone can work the arithmetic again"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a proof a small checker can recheck",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-l16"
+   ],
+   [
+    "quote",
+    "lion-probes-fv"
+   ],
+   [
+    "quote",
+    "failed: Expected number at [0]"
+   ],
+   [
+    "quote",
+    {
+     "lion": "running a program's own code on symbolic values",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-a80"
+   ],
+   [
+    "quote",
+    "bjorner-programming-z3"
+   ],
+   [
+    "quote",
+    "The formula fml is valid. It is true for all values of integers x , y , z , array A ,"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a way to compare what two predicates accept",
+     "by": "smt solving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "lion-explain-results"
+   ],
+   [
+    "quote",
+    "fv-lion-today"
+   ],
+   32
+  ]
+ ],
+ "recorded"
+]

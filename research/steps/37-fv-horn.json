@@ -1,0 +1,2116 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "bjorner-horn-solvers-2015"
+   ],
+   [
+    "quote",
+    "https://doi.org/10.1007/978-3-319-23534-9_2"
+   ],
+   [
+    "quote",
+    "Horn Clause Solvers for Program Verification"
+   ],
+   [
+    "quote",
+    "Bjørner, Gurfinkel, McMillan and Rybalchenko"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "bjorner-horn-vtsa-2014"
+   ],
+   [
+    "quote",
+    "https://resources.mpi-inf.mpg.de/departments/rg1/conferences/vtsa14/slides/horn.html"
+   ],
+   [
+    "quote",
+    "Software Model Checking with Horn Clauses"
+   ],
+   [
+    "quote",
+    "Bjørner (with Gurfinkel, McMillan and Rybalchenko), VTSA Summer School 2014"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "rybalchenko-horn-2014"
+   ],
+   [
+    "quote",
+    "https://ar5iv.labs.arxiv.org/html/1405.7739"
+   ],
+   [
+    "quote",
+    "(Quantified) Horn Constraint Solving for Program Verification and Synthesis"
+   ],
+   [
+    "quote",
+    "Rybalchenko"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "z3-guide-fixedpoints"
+   ],
+   [
+    "quote",
+    "https://microsoft.github.io/z3guide/docs/fixedpoints/intro"
+   ],
+   [
+    "quote",
+    "Z3 Guide: FixedPoints, Introduction"
+   ],
+   [
+    "quote",
+    "Microsoft Research"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "z3-guide-datalog"
+   ],
+   [
+    "quote",
+    "https://microsoft.github.io/z3guide/docs/fixedpoints/basicdatalog"
+   ],
+   [
+    "quote",
+    "Z3 Guide: Basic Datalog"
+   ],
+   [
+    "quote",
+    "Microsoft Research"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "z3-guide-spacer"
+   ],
+   [
+    "quote",
+    "https://microsoft.github.io/z3guide/docs/fixedpoints/engineforpdr"
+   ],
+   [
+    "quote",
+    "Z3 Guide: Generalized PDR with SPACER"
+   ],
+   [
+    "quote",
+    "Microsoft Research"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "z3-guide-horn-syntax"
+   ],
+   [
+    "quote",
+    "https://microsoft.github.io/z3guide/docs/fixedpoints/syntax"
+   ],
+   [
+    "quote",
+    "Z3 Guide: FixedPoints Syntax"
+   ],
+   [
+    "quote",
+    "Microsoft Research"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "komuravelli-spacer-2014"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/1405.4028"
+   ],
+   [
+    "quote",
+    "SMT-based Model Checking for Recursive Programs"
+   ],
+   [
+    "quote",
+    "Komuravelli, Gurfinkel and Chaki"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20140525
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "seahorn-site"
+   ],
+   [
+    "quote",
+    "https://seahorn.github.io/"
+   ],
+   [
+    "quote",
+    "SeaHorn: A fully automated analysis framework for LLVM-based languages"
+   ],
+   [
+    "quote",
+    "SeaHorn project (Gurfinkel, Navas et al.)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "bradley-ic3-2011"
+   ],
+   [
+    "quote",
+    "https://doi.org/10.1007/978-3-642-18275-4_7"
+   ],
+   [
+    "quote",
+    "SAT-Based Model Checking without Unrolling"
+   ],
+   [
+    "quote",
+    "Bradley"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20110123
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "su-ic3-lemmas-2024"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2411.12749"
+   ],
+   [
+    "quote",
+    "Predicting Lemmas in Generalization of IC3"
+   ],
+   [
+    "quote",
+    "Su, Yang and Ci"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    20241104
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "su-ric3-2025"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2502.13605v1"
+   ],
+   [
+    "quote",
+    "The rIC3 Hardware Model Checker"
+   ],
+   [
+    "quote",
+    "Su, Yang, Ci, Bu and Huang"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20250219
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "ramakrishna-xmc-1997"
+   ],
+   [
+    "quote",
+    "https://www3.cs.stonybrook.edu/~cram/Papers/RRRSSW_CAV97/index.html"
+   ],
+   [
+    "quote",
+    "Efficient Model Checking Using Tabled Resolution"
+   ],
+   [
+    "quote",
+    "Ramakrishna, Ramakrishnan, Ramakrishnan, Smolka, Swift and Warren"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "swift-warren-xsb-2012"
+   ],
+   [
+    "quote",
+    "https://ar5iv.labs.arxiv.org/html/1012.5123"
+   ],
+   [
+    "quote",
+    "XSB: Extending Prolog with Tabled Logic Programming"
+   ],
+   [
+    "quote",
+    "Swift and Warren"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "swi-prolog-clpfd"
+   ],
+   [
+    "quote",
+    "https://www.swi-prolog.org/man/clpfd.html"
+   ],
+   [
+    "quote",
+    "library(clpfd): CLP(FD): Constraint Logic Programming over Finite Domains"
+   ],
+   [
+    "quote",
+    "SWI-Prolog (Triska)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "swi-prolog-clpqr"
+   ],
+   [
+    "quote",
+    "https://www.swi-prolog.org/pldoc/man?section=clpqr"
+   ],
+   [
+    "quote",
+    "library(clpqr): Constraint Logic Programming over Rationals and Reals"
+   ],
+   [
+    "quote",
+    "SWI-Prolog (Holzbaur, De Koninck)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "wikipedia-clp"
+   ],
+   [
+    "quote",
+    "https://en.wikipedia.org/wiki/Constraint_logic_programming"
+   ],
+   [
+    "quote",
+    "Constraint logic programming"
+   ],
+   [
+    "quote",
+    "Wikipedia"
+   ],
+   [
+    "quote",
+    "tertiary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "kanellakis-kuper-revesz-1992"
+   ],
+   [
+    "quote",
+    "https://cs.brown.edu/research/pubs/techreports/reports/CS-92-50.html"
+   ],
+   [
+    "quote",
+    "Constraint Query Languages"
+   ],
+   [
+    "quote",
+    "Kanellakis, Kuper and Revesz (Brown University CS-92-50)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "kanellakis-goldin-1994"
+   ],
+   [
+    "quote",
+    "https://cs.brown.edu/research/pubs/techreports/reports/CS-94-31.html"
+   ],
+   [
+    "quote",
+    "Constraint Programming and Database Query Languages"
+   ],
+   [
+    "quote",
+    "Kanellakis and Goldin (Brown University CS-94-31)"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b1"
+   ],
+   [
+    "quote",
+    "rybalchenko-horn-2014"
+   ],
+   [
+    "quote",
+    "Here we rely on second order existential quantifier to model the search for a safe (forward-)inductive invariant."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "constrained horn clauses",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b2"
+   ],
+   [
+    "quote",
+    "rybalchenko-horn-2014"
+   ],
+   [
+    "quote",
+    "Any model of 𝑖𝑛𝑣 \\mathit{inv} is such an invariant."
+   ],
+   [
+    "quote",
+    {
+     "defines": "a solution of constrained horn clauses"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b3"
+   ],
+   [
+    "quote",
+    "rybalchenko-horn-2014"
+   ],
+   [
+    "quote",
+    "To prove program termination, i.e., absence of infinite sequences of states that start in an initial state and follow the transition relation, we can resort to the following constraint."
+   ],
+   [
+    "quote",
+    {
+     "covers": "rules about what must eventually happen",
+     "by": "constrained horn clauses",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b4"
+   ],
+   [
+    "quote",
+    "rybalchenko-horn-2014"
+   ],
+   [
+    "quote",
+    "a logical separation of concerns between constraint generation (also known as generation of proof obligations) and constraint solving (also known as proof discovery), reuse of solvers across different verifications tasks"
+   ],
+   [
+    "quote",
+    {
+     "covers": "one solver reused across verification tasks",
+     "by": "constrained horn clauses",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b5"
+   ],
+   [
+    "quote",
+    "rybalchenko-horn-2014"
+   ],
+   [
+    "quote",
+    "the HSF solver and its extensions [ 9 , 4 , 6 ] is implemented using ideas of blending meta-logic programming and constraint logic programming"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "constraint logic programming",
+     "in": "HSF"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b6"
+   ],
+   [
+    "quote",
+    "bjorner-horn-vtsa-2014"
+   ],
+   [
+    "quote",
+    "Succeed if fixedpoint where each clause checks."
+   ],
+   [
+    "quote",
+    {
+     "covers": "invariants found automatically",
+     "by": "houdini",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b7"
+   ],
+   [
+    "quote",
+    "bjorner-horn-vtsa-2014"
+   ],
+   [
+    "quote",
+    "Introduced in Datalog to emulate top-down using bottom-up evalution."
+   ],
+   [
+    "quote",
+    {
+     "defines": "magic sets"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b8"
+   ],
+   [
+    "quote",
+    "bjorner-horn-vtsa-2014"
+   ],
+   [
+    "quote",
+    "e.g., if assertion is wrong, there is a finite counter-example."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a counterexample whenever one exists",
+     "by": "constrained horn clauses",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b9"
+   ],
+   [
+    "quote",
+    "bjorner-horn-vtsa-2014"
+   ],
+   [
+    "quote",
+    "Claim : SAT is generally not r.e."
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "constrained horn clauses",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b10"
+   ],
+   [
+    "quote",
+    "bjorner-horn-vtsa-2014"
+   ],
+   [
+    "quote",
+    "Bounds for finite domains given by Datalog query complexity"
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "bottom-up datalog",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b11"
+   ],
+   [
+    "quote",
+    "bjorner-horn-vtsa-2014"
+   ],
+   [
+    "quote",
+    "Tabling in Datalog/Prolog: memoize answers [ 42 ] ."
+   ],
+   [
+    "quote",
+    {
+     "defines": "tabled logic programming"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b12"
+   ],
+   [
+    "quote",
+    "z3-guide-fixedpoints"
+   ],
+   [
+    "quote",
+    "Z3 contains an extension called muZ for reasoning about Constrained Horn Clauses and Datalog programs."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "constrained horn clauses",
+     "in": "Z3"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b13"
+   ],
+   [
+    "quote",
+    "z3-guide-fixedpoints"
+   ],
+   [
+    "quote",
+    "Datalog programs are special cases of Horn Clauses where the domains of variables is finite,"
+   ],
+   [
+    "quote",
+    {
+     "needs": "a finite domain",
+     "by": "bottom-up datalog"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b14"
+   ],
+   [
+    "quote",
+    "z3-guide-fixedpoints"
+   ],
+   [
+    "quote",
+    "The IC3 engine for Constrained Horn Clauses is now based on advances in SPACER ."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "ic3/pdr",
+     "in": "Z3"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b15"
+   ],
+   [
+    "quote",
+    "z3-guide-datalog"
+   ],
+   [
+    "quote",
+    "The default fixed-point engine is a bottom-up Datalog engine."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "bottom-up datalog",
+     "in": "Z3"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b16"
+   ],
+   [
+    "quote",
+    "z3-guide-datalog"
+   ],
+   [
+    "quote",
+    "It is used for tracking the rule in derivation proofs."
+   ],
+   [
+    "quote",
+    {
+     "covers": "why provenance",
+     "by": "bottom-up datalog",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b17"
+   ],
+   [
+    "quote",
+    "z3-guide-spacer"
+   ],
+   [
+    "quote",
+    "The systems may be infinite state."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs about states of unbounded size",
+     "by": "ic3/pdr",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b18"
+   ],
+   [
+    "quote",
+    "z3-guide-spacer"
+   ],
+   [
+    "quote",
+    "The following examples also serve a purpose of showing how software model checking problems (of safety properties) can be embedded into Horn clauses and solved using PDR."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "ic3/pdr",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b19"
+   ],
+   [
+    "quote",
+    "z3-guide-horn-syntax"
+   ],
+   [
+    "quote",
+    "Many problems about program safety can be reduced to Constrained Horn clause satisfiability, where constraints are modulo theories (typically of arithmetic)."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a solver",
+     "by": "constrained horn clauses"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b20"
+   ],
+   [
+    "quote",
+    "z3-guide-horn-syntax"
+   ],
+   [
+    "quote",
+    "The repository of Horn clause benchmarks in SMT-LIB2 contains more than 10,000 samples taken from different benchmarks and different encodings of the same benchmarks."
+   ],
+   [
+    "quote",
+    {
+     "result": "constrained horn clauses",
+     "measure": "horn clause benchmarks in the smt-lib2 repository",
+     "bound": "at least",
+     "count": 10000
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b21"
+   ],
+   [
+    "quote",
+    "z3-guide-horn-syntax"
+   ],
+   [
+    "quote",
+    "An assertion is Horn if it is an implication; the head of the implication is either a formula using only interpreted functions, or it is an uninterpreted predicate; the body of the implication is a formula in negation normal form where the uninterpreted predicates occur positively."
+   ],
+   [
+    "quote",
+    {
+     "defines": "constrained horn clauses"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b22"
+   ],
+   [
+    "quote",
+    "komuravelli-spacer-2014"
+   ],
+   [
+    "quote",
+    "We show that for programs and properties over a decidable theory, the algorithm is guaranteed to find a counterexample, if one exists."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a decidable theory",
+     "by": "ic3/pdr"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b23"
+   ],
+   [
+    "quote",
+    "komuravelli-spacer-2014"
+   ],
+   [
+    "quote",
+    "We show that for programs and properties over a decidable theory, the algorithm is guaranteed to find a counterexample, if one exists."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a counterexample whenever one exists",
+     "by": "ic3/pdr",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b24"
+   ],
+   [
+    "quote",
+    "komuravelli-spacer-2014"
+   ],
+   [
+    "quote",
+    "while being a co-semidecision procedure for programs over decidable theories"
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "ic3/pdr",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b25"
+   ],
+   [
+    "quote",
+    "komuravelli-spacer-2014"
+   ],
+   [
+    "quote",
+    "it is possible to analyze bounded executions using an oracle for Satisfiability Modulo Theories (SMT)"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of every sequence of changes up to a bound",
+     "by": "smt solving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b26"
+   ],
+   [
+    "quote",
+    "komuravelli-spacer-2014"
+   ],
+   [
+    "quote",
+    "The reduction to BMC ensures that the algorithms are guaranteed to find a counterexample."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a counterexample whenever one exists",
+     "by": "bounded model checking",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b27"
+   ],
+   [
+    "quote",
+    "komuravelli-spacer-2014"
+   ],
+   [
+    "quote",
+    "We have implemented RecMC as part of our tool Spacer using the framework of Z3 [ 17 ] and evaluated it on 799 benchmarks from SV-COMP [ 37 ] ."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "ic3/pdr",
+     "in": "Spacer"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b28"
+   ],
+   [
+    "quote",
+    "komuravelli-spacer-2014"
+   ],
+   [
+    "quote",
+    "It converts C programs to the Horn-SMT format of Z3, which corresponds to the logical program representation of Section 3 ."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "constrained horn clauses",
+     "in": "Spacer"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b29"
+   ],
+   [
+    "quote",
+    "seahorn-site"
+   ],
+   [
+    "quote",
+    "Takes as input the optimized LLVM bitcode and emits verification condition as Constrained Horn Clauses (CHC)."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "constrained horn clauses",
+     "in": "SeaHorn"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b30"
+   ],
+   [
+    "quote",
+    "seahorn-site"
+   ],
+   [
+    "quote",
+    "Takes as input the optimized LLVM bitcode and emits verification condition as Constrained Horn Clauses (CHC)."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "verification conditions",
+     "in": "SeaHorn"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b31"
+   ],
+   [
+    "quote",
+    "seahorn-site"
+   ],
+   [
+    "quote",
+    "Currently, SeaHorn employs several SMT-based model checking engines based on PDR/IC3."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "ic3/pdr",
+     "in": "SeaHorn"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b32"
+   ],
+   [
+    "quote",
+    "su-ic3-lemmas-2024"
+   ],
+   [
+    "quote",
+    "To verify a safety property, IC3 endeavors to compute an inductive invariant."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "ic3/pdr",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b33"
+   ],
+   [
+    "quote",
+    "su-ic3-lemmas-2024"
+   ],
+   [
+    "quote",
+    "indicating that an inductive invariant has been reached and the system being verified satisfies the designated safety property, or when a real counterexample is found."
+   ],
+   [
+    "quote",
+    {
+     "covers": "invariants found automatically",
+     "by": "ic3/pdr",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b34"
+   ],
+   [
+    "quote",
+    "su-ic3-lemmas-2024"
+   ],
+   [
+    "quote",
+    "IC3 is a SAT-based safety model checking algorithm, which only needs to unroll the system at most once ( Bradley, 2011 ) ."
+   ],
+   [
+    "quote",
+    {
+     "defines": "ic3/pdr"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b35"
+   ],
+   [
+    "quote",
+    "su-ic3-lemmas-2024"
+   ],
+   [
+    "quote",
+    "because we can find a counterexample to induction (CTI) that starting from F i ∧ c F_{i}\\land c and transitioning outside of the lemma c c"
+   ],
+   [
+    "quote",
+    {
+     "covers": "states that break an induction step but may be unreachable",
+     "by": "ic3/pdr",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b36"
+   ],
+   [
+    "quote",
+    "su-ic3-lemmas-2024"
+   ],
+   [
+    "quote",
+    "because we can find a counterexample to induction (CTI) that starting from F i ∧ c F_{i}\\land c and transitioning outside of the lemma c c"
+   ],
+   [
+    "quote",
+    {
+     "defines": "counterexample to induction"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b37"
+   ],
+   [
+    "quote",
+    "su-ic3-lemmas-2024"
+   ],
+   [
+    "quote",
+    "Given an unsafe state represented as a boolean cube, the inductive generalization procedure aims to expand it as much as possible to include additional unreachable states."
+   ],
+   [
+    "quote",
+    {
+     "defines": "inductive generalization"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b38"
+   ],
+   [
+    "quote",
+    "su-ic3-lemmas-2024"
+   ],
+   [
+    "quote",
+    "In comparison to other symbolic algorithms, IC3 stands out for its completeness compared to BMC and scalability compared to IMC and BDD approaches."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that every change keeps an invariant",
+     "by": "bounded model checking",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b39"
+   ],
+   [
+    "quote",
+    "su-ric3-2025"
+   ],
+   [
+    "quote",
+    "It efficiently searches for inductive invariants without unrolling the model."
+   ],
+   [
+    "quote",
+    {
+     "covers": "invariants found automatically",
+     "by": "ic3/pdr",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b40"
+   ],
+   [
+    "quote",
+    "su-ric3-2025"
+   ],
+   [
+    "quote",
+    "Additionally, to enhance confidence in the correctness of the results, all outputs from rIC3 were certified using Certifaiger [ 45 ] ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof a small checker can recheck",
+     "by": "ic3/pdr",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b41"
+   ],
+   [
+    "quote",
+    "su-ric3-2025"
+   ],
+   [
+    "quote",
+    "Additionally, to enhance confidence in the correctness of the results, all outputs from rIC3 were certified using Certifaiger [ 45 ] ."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "proof certificates",
+     "in": "rIC3"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b42"
+   ],
+   [
+    "quote",
+    "su-ric3-2025"
+   ],
+   [
+    "quote",
+    "rIC3 was independently evaluated as the top-performing tool in both the bit-level track and the word-level bit-vector track (via bit-blasting) at the 2024 Hardware Model Checking Competition (HWMCC’24) [ 3 ] ."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "ic3/pdr",
+     "in": "rIC3"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b43"
+   ],
+   [
+    "quote",
+    "su-ric3-2025"
+   ],
+   [
+    "quote",
+    "its IC3 algorithm module is remarkably compact, comprising only around 1,700 lines of code."
+   ],
+   [
+    "quote",
+    {
+     "result": "ic3/pdr",
+     "measure": "lines of code in rIC3's IC3 module",
+     "bound": "about",
+     "count": 1700
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b44"
+   ],
+   [
+    "quote",
+    "ramakrishna-xmc-1997"
+   ],
+   [
+    "quote",
+    "we present XMC, an XSB-based local model checker for a CCS-like value-passing language and the alternation-free fragment of the modal mu-calculus."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "tabled logic programming",
+     "in": "XMC"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b45"
+   ],
+   [
+    "quote",
+    "ramakrishna-xmc-1997"
+   ],
+   [
+    "quote",
+    "XMC is written in under 200 lines of XSB code"
+   ],
+   [
+    "quote",
+    {
+     "result": "tabled logic programming",
+     "measure": "lines of XSB code in XMC",
+     "bound": "up to",
+     "count": 200
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b46"
+   ],
+   [
+    "quote",
+    "ramakrishna-xmc-1997"
+   ],
+   [
+    "quote",
+    "The principal merits of this extension are that XSB terminates on programs having finite models, avoids redundant subcomputations, and computes the well-founded model of normal logic programs."
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "tabled logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b47"
+   ],
+   [
+    "quote",
+    "ramakrishna-xmc-1997"
+   ],
+   [
+    "quote",
+    "The principal merits of this extension are that XSB terminates on programs having finite models, avoids redundant subcomputations, and computes the well-founded model of normal logic programs."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a finite model",
+     "by": "tabled logic programming"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b48"
+   ],
+   [
+    "quote",
+    "ramakrishna-xmc-1997"
+   ],
+   [
+    "quote",
+    "we demonstrate the feasibility of using XSB as a programmable fixed-point engine for implementing efficient local model checkers."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of every reachable state of a finite system",
+     "by": "tabled logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b49"
+   ],
+   [
+    "quote",
+    "swift-warren-xsb-2012"
+   ],
+   [
+    "quote",
+    "tabling ensures termination of programs with the bounded term-size property"
+   ],
+   [
+    "quote",
+    {
+     "needs": "the bounded term-size property",
+     "by": "tabled logic programming"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b50"
+   ],
+   [
+    "quote",
+    "swift-warren-xsb-2012"
+   ],
+   [
+    "quote",
+    "However, the search for an SLD proof may not terminate, even when P P is a datalog program."
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "sld resolution",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b51"
+   ],
+   [
+    "quote",
+    "swift-warren-xsb-2012"
+   ],
+   [
+    "quote",
+    "The properties of termination and optimal complexity have made TLP useful to explore state spaces in applications from program analysis to process and temporal logics."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of every reachable state of a finite system",
+     "by": "tabled logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b52"
+   ],
+   [
+    "quote",
+    "swift-warren-xsb-2012"
+   ],
+   [
+    "quote",
+    "When an attributed (constrained) variable V A V_{A} is part of a tabled subgoal or a derived answer, V A V_{A} is copied into the table along with its attributes"
+   ],
+   [
+    "quote",
+    {
+     "covers": "facts that stand for infinitely many tuples",
+     "by": "tabled logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b53"
+   ],
+   [
+    "quote",
+    "swi-prolog-clpfd"
+   ],
+   [
+    "quote",
+    "CLP(FD) lets us reason about integers in a way that honors the relational nature of Prolog."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "constraint logic programming",
+     "in": "SWI-Prolog"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b54"
+   ],
+   [
+    "quote",
+    "swi-prolog-clpfd"
+   ],
+   [
+    "quote",
+    "Constraints can be used in all directions , also if one or more of their arguments are only partially instantiated."
+   ],
+   [
+    "quote",
+    {
+     "covers": "values that satisfy constraints over unbound variables",
+     "by": "constraint logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b55"
+   ],
+   [
+    "quote",
+    "swi-prolog-clpfd"
+   ],
+   [
+    "quote",
+    "In general though, it is necessary to label all variables to obtain ground solutions."
+   ],
+   [
+    "quote",
+    {
+     "covers": "values that satisfy constraints over unbound variables",
+     "by": "constraint propagation",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b56"
+   ],
+   [
+    "quote",
+    "swi-prolog-clpfd"
+   ],
+   [
+    "quote",
+    "The domain of each variable in Vars must be finite."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a finite domain",
+     "by": "constraint logic programming"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b57"
+   ],
+   [
+    "quote",
+    "swi-prolog-clpfd"
+   ],
+   [
+    "quote",
+    "Moreover, since all CLP(FD) constraints always terminate , placing them earlier can at most improve , never worsen, the termination properties of your programs."
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "constraint propagation",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b58"
+   ],
+   [
+    "quote",
+    "swi-prolog-clpfd"
+   ],
+   [
+    "quote",
+    "In each case above, and as for all pure programs, the residual program is declaratively equivalent to the original query."
+   ],
+   [
+    "quote",
+    {
+     "defines": "residual goals"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b59"
+   ],
+   [
+    "quote",
+    "swi-prolog-clpqr"
+   ],
+   [
+    "quote",
+    "Succeeds if Constraint is necessarily true within the current constraint store. This means that adding the negation of the constraint to the store results in failure."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that a goal has no answer for any value",
+     "by": "constraint logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b60"
+   ],
+   [
+    "quote",
+    "wikipedia-clp"
+   ],
+   [
+    "quote",
+    "In practice, satisfiability of the constraint store may be checked using an incomplete algorithm, which does not always detect inconsistency."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that a goal has no answer for any value",
+     "by": "constraint propagation",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b61"
+   ],
+   [
+    "quote",
+    "wikipedia-clp"
+   ],
+   [
+    "quote",
+    "A labeling literal over a set of variables enforces a satisfiability check of the constraints over these variables."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a proof that a goal has no answer for any value",
+     "by": "constraint logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b62"
+   ],
+   [
+    "quote",
+    "wikipedia-clp"
+   ],
+   [
+    "quote",
+    "In other words, the goal is proved for all variable evaluations that satisfy these constraints."
+   ],
+   [
+    "quote",
+    {
+     "covers": "values that satisfy constraints over unbound variables",
+     "by": "constraint logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b63"
+   ],
+   [
+    "quote",
+    "wikipedia-clp"
+   ],
+   [
+    "quote",
+    "In particular, finding all consequences of a program in the standard top-down and depth-first manner may not terminate while the bottom-up evaluation strategy terminates."
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "bottom-up datalog",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b64"
+   ],
+   [
+    "quote",
+    "wikipedia-clp"
+   ],
+   [
+    "quote",
+    "In particular, finding all consequences of a program in the standard top-down and depth-first manner may not terminate while the bottom-up evaluation strategy terminates."
+   ],
+   [
+    "quote",
+    {
+     "covers": "guaranteed termination",
+     "by": "sld resolution",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b65"
+   ],
+   [
+    "quote",
+    "wikipedia-clp"
+   ],
+   [
+    "quote",
+    "This drawback can be overcome by checking for entailment facts that are to be added to the current set of consequences."
+   ],
+   [
+    "quote",
+    {
+     "needs": "an entailment check on each new fact",
+     "by": "constraint databases"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b66"
+   ],
+   [
+    "quote",
+    "kanellakis-kuper-revesz-1992"
+   ],
+   [
+    "quote",
+    "We investigate the relationship between programming with constraints and database query languages."
+   ],
+   [
+    "quote",
+    {
+     "defines": "constraint databases"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b67"
+   ],
+   [
+    "quote",
+    "kanellakis-kuper-revesz-1992"
+   ],
+   [
+    "quote",
+    "The key intuition is that the generalization of a ground fact, or tuple, is a conjunction of constraints over a small number of variables."
+   ],
+   [
+    "quote",
+    {
+     "covers": "facts that stand for infinitely many tuples",
+     "by": "constraint databases",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b68"
+   ],
+   [
+    "quote",
+    "kanellakis-kuper-revesz-1992"
+   ],
+   [
+    "quote",
+    "For the analysis, we use quantifier elimination techniques from logic and the concept of data complexity from database theory."
+   ],
+   [
+    "quote",
+    {
+     "needs": "quantifier elimination for the constraint class",
+     "by": "constraint databases"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b69"
+   ],
+   [
+    "quote",
+    "kanellakis-goldin-1994"
+   ],
+   [
+    "quote",
+    "but with the additional requirements of data efficient, set-at-a-time, and bottom-up evaluation."
+   ],
+   [
+    "quote",
+    {
+     "needs": "bottom-up, set-at-a-time evaluation",
+     "by": "constraint databases"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b70"
+   ],
+   [
+    "quote",
+    "kanellakis-goldin-1994"
+   ],
+   [
+    "quote",
+    "The generalization must preserve various language properties of the relational data model, e.g., the calculus/algebra equivalence, and have time complexity polynomial in the size of the data."
+   ],
+   [
+    "quote",
+    {
+     "covers": "decidable query answering",
+     "by": "constraint databases",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "fv-b71"
+   ],
+   [
+    "quote",
+    "kanellakis-goldin-1994"
+   ],
+   [
+    "quote",
+    "The principal idea is that: ``the k-tuple (or record) data type can be generalized by a conjunction of quantifier-free constraints over k variables''."
+   ],
+   [
+    "quote",
+    {
+     "covers": "facts that stand for infinitely many tuples",
+     "by": "constraint databases",
+     "is": true
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

@@ -1,0 +1,70 @@
+Skip to main content
+Z3 Guide SMTLIB Tutorial Programming Z3 Playground
+GitHub
+Search
+Logic
+Introduction
+Basic Commands
+Propositional Logic
+Uninterpreted Functions and Constants
+Quantifiers
+Lambdas
+Recursive Functions
+Conclusion
+Theories
+Strategies
+Optimization
+FixedPoints
+Introduction
+Basic Datalog
+Generalized PDR with SPACER
+Syntax
+FixedPoints
+Basic Datalog
+On this page
+Basic Datalog
+The default fixed-point engine is a bottom-up Datalog engine. It works with finite relations and uses finite table representations as hash tables as the default way to represent finite relations.
+Relations, rules and queries ​
+The first example illustrates how to declare relations, rules and how to pose queries.
+Run
+The example illustrates some of the basic constructs.
+(declare-rel a ())
+declares a 0-ary relation a.
+(rule (=> b a))
+Create the rule that a follows from b. In general you can create a rule with multiple premises and a name using the format
+(rule (=> (and b c) a) name)
+The name is optional. It is used for tracking the rule in derivation proofs. Continuing with the example, a is false unless b is established.
+(query a)
+Asks if relation a can be derived. The rules so far say that a follows if b is established and that b follows if c is established. But nothing establishes c and b is also not established, so a cannot be derived.
+(rule c)
+Now it is the case that a can be derived.
+Relations with arguments ​
+Relations can take arguments. We illustrate relations with arguments using edges and paths in a graph.
+Run
+The example uses the declaration
+(declare-var a s)
+to instrument the fixed-point engine that a should be treated as a variable appearing in rules.
+Edit this page
+Previous
+Introduction
+Next
+Generalized PDR with SPACER
+Relations, rules and queries
+Relations with arguments
+More Z3
+Programming Z3 in Python
+Z3 on GitHub
+Acknowledgments
+Z3 Material
+API
+Slides
+Wiki
+Stay Connected
+GitHub
+Twitter
+RiSE @ MSR
+Legal
+Privacy & Cookies
+Terms of Use
+Trademarks
+72e37427 | z3-solver 5.0.0 | Copyright © 2026 Microsoft Corporation.

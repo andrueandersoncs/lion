@@ -1,0 +1,261 @@
+Skip to content
+Explore Topics
+Architecture and Hardware
+Artificial Intelligence and Machine Learning
+Computer History
+Computing Applications
+Computing Profession
+Data and Information
+Education
+HCI
+Philosophy of Computing
+Security and Privacy
+Society
+Software Engineering and Programming Languages
+Systems and Networking
+Theory
+Latest Issue
+Latest Issue
+December 2025 , Vol. 68 No. 12
+Previous Issue
+November 2025 , Vol. 68 No. 11
+Explore the archive
+Search
+Open Membership Navigation
+Settings
+Sign Out
+Sign In
+Join ACM
+Topics
+Architecture and Hardware
+Artificial Intelligence and Machine Learning
+Computer History
+Computing Applications
+Computing Profession
+Data and Information
+Education
+HCI
+Philosophy of Computing
+Security and Privacy
+Society
+Software Engineering and Programming Languages
+Systems and Networking
+Theory
+Sections
+Research and Advances
+Opinion
+Practice
+News
+Research Highlights
+Careers
+Magazine
+Latest Issue
+Magazine Archive
+Editorial Staff and Board
+Submit an Article
+Alerts & Feeds
+Author Guidelines
+CACM Web Account
+Membership in ACM includes a subscription to Communications of the ACM (CACM), the computing industry's most trusted source for staying connected to the world of advanced computing.
+Sign In
+Sign Up
+Communications of the ACM
+About Us
+Frequently Asked Questions
+Contact Us
+Follow Us
+CACM on Twitter
+CACM on Reddit
+CACM on LinkedIn
+Practice
+Software Engineering and Programming Languages
+Systems Correctness Practices at Amazon Web Services
+Leveraging formal and semi-formal methods.
+By Marc Brooker and Ankush Desai
+Posted May 29 2025
+Share
+Twitter
+Reddit
+Hacker News
+Download PDF
+Join the Discussion
+View in the ACM Digital Library
+The P Programming Language
+Lightweight Formal Methods
+Fault Injection as a Service
+Metastability and Emergent System Behavior
+Formal Proof
+Benefits Beyond Correctness
+Challenges and Opportunities for the Future
+Conclusion
+References
+Footnotes
+Amazon Web Services (AWS) strives to deliver reliable services that customers can trust completely. This requires maintaining the highest standards of security, durability, integrity, and availability—with systems correctness serving as the cornerstone for achieving these priorities. An April 2015 article published in Communications of the ACM , titled “How Amazon Web Services Uses Formal Methods,” highlighted the approach for ensuring the correctness of critical services that have since become among the most widely used by AWS customers. 21
+Central to this approach was TLA+, 14 a formal specification language developed by Leslie Lamport. Our experience at AWS with TLA+ revealed two significant advantages of applying formal methods in practice. First, we could identify and eliminate subtle bugs early in development—bugs that would have eluded traditional approaches such as testing. Second, we gained the deep understanding and confidence needed to implement aggressive performance optimizations while maintaining systems correctness.
+Moreover, 15 years ago, AWS’s software testing practice relied primarily on build-time unit testing, often against mocks, and limited deployment-time integration testing. Since then, we have significantly evolved our correctness practices, integrating both formal and semi-formal approaches into the development process. As AWS has grown, formal methods have become increasingly valuable—not only for ensuring correctness but also for performance improvements, particularly in verifying the correctness of both low- and high-level optimizations. This systematic approach toward systems correctness has become a force multiplier at AWS’s scale, enabling faster development cycles through improved developer velocity while delivering more cost-effective services to customers.
+This article surveys the portfolio of formal methods used across AWS to deliver complex services with high confidence in its correctness. We consider an umbrella definition of formal methods that encompasses these rigorous techniques—from traditional formal approaches (such as theorem proving, 7 , 10 deductive verification, 18 and model checking 8 , 14 ) to more lightweight semi-formal approaches (such as property-based testing, 6 , 19 fuzzing, 9 and runtime monitoring 11 ).
+The P Programming Language
+As the use of formal methods was expanded beyond the initial teams at AWS in the early 2010s, we discovered that many engineers struggled to learn and become productive with TLA+. This difficulty seemed to stem from TLA+’s defining feature: It is a high-level, abstract language that more closely resembles mathematics than the imperative programming languages most developers are familiar with. While this mathematical nature is a significant strength of TLA+, and we continue to agree with Lamport’s views on the benefits of mathematical thinking, 15 we also sought a language that would allow us to model check (and later prove) key aspects of systems design while being more approachable to programmers.
+We found this balance in the P programming language. 8 P is a state-machine-based language for modeling and analysis of distributed systems. Using P, developers model their system designs as communicating state machines, a mental model familiar to Amazon’s developer population—most of whom develop systems based on microservices and service-oriented architectures (SOAs). P has been developed at AWS since 2019 and is maintained as a strategic open source project. 22 Teams across AWS that build some of its flagship products—from storage (for example, Amazon S3, EBS), to databases (for example, Amazon DynamoDB, MemoryDB, Aurora), to compute (for example, EC2, IoT)—have been using P to reason about the correctness of their system designs.
+For example, P was used in migrating Simple Storage Service (S3) from eventual to strong read-after-write consistency. 1 A key component of S3 is its index subsystem, an object metadata store that enables fast data lookups. To achieve strong consistency, the S3 team had to make several nontrivial changes to the S3 index protocol stack. 25 Because these changes were difficult to get right at S3 scale, and the team wanted to deliver strong consistency with high confidence in correctness, they used P to formally model and validate the protocol design. P helped eliminate several design-level bugs early in the development process and allowed the team to deliver risky optimizations with confidence, as they could be validated using model checking.
+In 2023, the P team at AWS built PObserve, which provides a new tool for validating the correctness of distributed systems both during testing and in production. With PObserve, we take structured logs from the execution of distributed systems and validate post hoc that they match behaviors allowed by the formal P specification of the system. This allows for bridging the gap between the P specification of the system design and the production implementation (typically in languages like Rust or Java). While there are significant benefits from verifying protocols at design time, runtime monitoring of the same properties for the implementation makes the investment in formal specification much more valuable and addresses classic concerns with the deployment of formal methods in practice (that is, connecting design-time validation with system implementation).
+Lightweight Formal Methods
+Another way that AWS has brought formal methods closer to its engineering teams is through the adoption of lightweight formal methods .
+Property-based testing. The most notable single example of leveraging lightweight formal methods is in Amazon S3’s ShardStore, where the team used property-based testing throughout the development cycle both to test correctness and to speed up development (described in detail by Bornholt, et al. 4 ). The key idea in their approach was combining property-based testing with developer-provided correctness specifications, coverage-guided fuzzing (an approach where the distribution of inputs is guided by code coverage metrics), failure injection (where hardware and other system failures are simulated during testing), and minimization (where counterexamples are automatically reduced to aid human-guided debugging).
+Deterministic simulation. Another lightweight method widely used at AWS is deterministic simulation testing, in which a distributed system is executed on a single-threaded simulator with control over all sources of randomness, such as thread scheduling, timing, and message delivery order. Tests are then written for particular failure or success scenarios, such as the failure of a participant at a particular stage in a distributed protocol. The nondeterminism in the system is controlled by the test framework, allowing developers to specify orderings they believe are interesting (such as ones that have caused bugs in the past). The scheduler in the testing framework can also be extended for fuzzing of orderings or exploring all possible orderings to be tested.
+Deterministic simulation testing moves testing of system properties, like behavior under delay and failure, closer to build time instead of integration testing. This accelerates development and provides for more complete behavioral coverage during testing. Some of the work done at AWS on build-time testing of thread ordering and systems failures has been open sourced as part of the shuttle a and turmoil b projects.
+Continuous fuzzing or random test-input generation. Continuous fuzzing, especially coverage-guided scalable test-input generation, is also effective for testing systems correctness at integration time. During the development of Amazon Aurora’s data-sharding feature (Aurora Limitless Database 3 ), for example, we made extensive use of fuzzing to test two key properties of the system. First, by fuzzing SQL queries (and entire transactions), we validated that the logic partitioning SQL execution over shards is correct. Large volumes of random SQL schemas, datasets, and queries are synthesized and run through the engines under test, and the results compared with an oracle based on the non-sharded version of the engine (as well as other approaches to validation, like those pioneered by SQLancer 23 ).
+Fuzzing, combined with fault-injection testing, is also useful for testing other aspects of database correctness such as atomicity, consistency, and isolation. In database testing, transactions are automatically generated, their correct behavior is defined using a formally specified correctness oracle, and then all possible interleaving of transactions and statements within the transaction is executed against the system under test. We also use post hoc validation of properties such as isolation (following approaches such as Elle 13 ).
+Fault Injection as a Service
+In early 2021, AWS launched Fault Injection Service (FIS) 2 with the goal of making testing based on fault injection accessible to a wide range of AWS customers. FIS allows customers to inject simulated faults, from API errors to I/O pauses and failed instances, into test or production deployments of their infrastructure on AWS. Injecting faults allows customers to validate that the resiliency mechanisms they have built into their architectures (such as failovers and health checks) actually improve availability and do not introduce correctness problems. Fault-injection testing based on FIS is widely used by AWS customers and internally within Amazon. For example, Amazon.com ran 733 FIS-based fault-injection experiments in preparation for Prime Day 2024.
+In 2014, Yuan et al. found that 92% of catastrophic failures in tested distributed systems were triggered by incorrect handling of nonfatal errors. Many distributed-systems practitioners who were told about this research were surprised the percentage was not higher. Happy-case catastrophic failures are rare simply because the happy case of systems is executed often, tested better (both implicitly and explicitly), and is significantly simpler than the error cases. Fault-injection testing and FIS make it much easier for practitioners to test the behavior of their systems under faults and failures, closing the gap between happy-case and error-case bug density.
+While fault injection is not considered a formal method, it can be combined with formal specifications. Defining the expected behavior using a formal specification, and then comparing results during and after fault injection to the specified behavior, allows for catching a lot more bugs than simply checking for errors in metrics and logs (or having a human look and say, “Yup, that looks about right”).
+Metastability and Emergent System Behavior
+Over the past decade, there has been an emerging interest in a particular class of systems failure: those where some triggering event (like an overload or a cache emptying) causes a distributed system to enter a state where it does not recover without intervention (such as reducing load below normal). This class of failures, dubbed metastable failures , 5 is one of the most important contributors to unavailability in cloud systems. The figure, adapted from Bronson et al., 5 illustrates a common type of metastable behavior: Load increases on the system are initially met with increasing goodput, followed by saturation, followed by congestion and goodput dropping to zero (or near zero). From there, the system cannot return to healthy state by slightly reducing load. Instead, it must follow the dotted line and may not recover until load is significantly reduced. This type of behavior is present even in simple systems. For example, it can be triggered in most systems with timeout-and-retry client logic.
+Figure. Metastable system behavior under load.
+Traditional formal approaches to modeling distributed systems typically focus on safety (nothing bad happens) and liveness (something good eventually happens), but metastable failures remind us that systems have a variety of behaviors that cannot be neatly categorized this way. We have increasingly turned to discrete-event simulation to understand the emergent behavior of systems, investing both in custom-built systems simulations and tooling that allow the use of existing system models (built in languages such as TLA+ and P) to simulate system behavior. Extending exhaustive model checkers, like TLA+’s TLC with probabilistic simulations, also allows for the generation of statistical results such as posterior latency distributions, making model checking useful for tasks such as understanding the achievability of latency service-level agreements (SLAs).
+Formal Proof
+In some cases, the formal methods enumerated so far in this article are not sufficient. For critical security boundaries such as authorization and virtualization, for example, proofs of correctness can be both desirable and worth the significant investment needed to create them.
+In 2023, AWS introduced the Cedar authorization policy language for writing policies that specify fine-grained permissions. Cedar was designed for automated reasoning and formal proof. 12 , 24 The language was designed to be well-suited for proof, and the implementation was built in the verification-aware programming language Dafny. Using Dafny, the team was able to prove that the implementation satisfies a variety of security properties. This type of proof goes beyond testing. It is a proof in the mathematical sense. The team also applied a differential testing approach using the Dafny code as a correctness oracle to verify the correctness of the production-ready Rust implementation. Publishing the Dafny code and test procedures as open source, along with the Cedar implementation, allows Cedar users to check the team’s work on correctness.
+Another example is the Firecracker virtual machine monitor (VMM). Firecracker uses a low-level protocol called virtio to expose emulated hardware devices (such as a network card or solid-state drive) to guest kernels running inside the VM. This emulated device is a critical security boundary because it is the most complex interaction between the untrusted guest and trusted host. The Firecracker team used a tool called Kani 20 that can reason formally about Rust code to prove key properties of this security boundary. Again, proof here goes beyond testing and ensures that the critical properties of this boundary are held no matter what the guest attempts to do.
+Proofs around the behaviors of programs are an important part of AWS’s software correctness program, so we support development on tools such as Kani, Dafny, 18 and Lean, 16 and the underlying tools—such as satisfiability modulo theory (SMT) solvers—that power them.
+The ability to use formal models and specifications—for model-checking systems at design time, for validating in-production behavior using runtime monitoring by serving as a correctness oracle, for simulating emergent systems behavior, and for building proofs of critical properties—allows AWS to amortize the engineering effort of developing these specifications over a larger amount of business and customer value.
+Benefits Beyond Correctness
+Finally, as discussed in the aforementioned 2015 paper, formal methods are a crucial part of safely improving the performance of cloud systems. Modeling a key commit protocol for the Aurora relational database engine in P and TLA+ allowed us to identify an opportunity to reduce the cost of distributed commits from 2 to 1.5 network roundtrips without sacrificing any safety properties. These kinds of stories are usual for teams that adopt formal methods, driven by at least two different dynamics.
+First, the act of deeply thinking about and formally writing down distributed protocols forces a structured way of thinking that leads to deeper insights about the structure of protocols and the problem to be solved. Second, having the ability to formally check (and, in some cases, prove) that proposed design optimizations are correct allows naturally conservative distributed-systems engineers to be bolder in their protocol design choices without increasing risk and boosting the developer velocity toward delivering reliable services.
+These productivity and cost benefits are limited not only to high-level design optimizations but also to low-level code that normally gets ignored. In one example, the AWS team identified optimizations to the implementation of the Rivest-Shamir-Adleman (RSA) public-key encryption scheme on our ARM-based Graviton 2 processor, which could improve throughput by up to 94%. 17
+Using the HOL Light interactive theorem prover, the team was able to prove the correctness of these optimizations. Given the high percentage of cloud CPU cycles spent on cryptography, this type of optimization can significantly reduce infrastructure costs and aid sustainability while at the same time improving customer-visible performance.
+Challenges and Opportunities for the Future
+Despite significant success in scaling formal and semi-formal testing methods across AWS over the past 15 years, several challenges persist, particularly in industrial adoption of formal methods. The primary barriers for formal methods tools include their steep learning curve and the specialized domain expertise required. Additionally, many of these tools remain academic in nature and lack user-friendly interfaces.
+Even well-established semi-formal approaches face adoption challenges. For example, deterministic simulation, a key distributed-systems testing technique used successfully at AWS and in projects like FoundationDB, remains unfamiliar to many experienced distributed-systems developers joining AWS. Similar gaps exist in the adoption of other proven methodologies, such as fault-injection testing, property-based testing, and fuzzing. The challenge is educating distributed-systems developers about these testing methods and tools, teaching the art of rigorous thinking.
+The education gap begins at the academic level, where even basic formal reasoning approaches are rarely taught, making it difficult for graduates from top institutions to adopt these tools. Although formal methods and automated reasoning are crucial for industry applications, they continue to be viewed as niche fields. We anticipate that increased industry adoption of formal methods and automated reasoning will attract more talent to this domain.
+Metastability and other emergent properties of large-scale systems represent another critical research area facing similar awareness challenges. Common practices that lead to metastable system behavior, such as “retry N times on timeout,” continue to be widely recommended despite their known issues. Current tools and techniques for understanding emergent system behavior are still in their early stages, making system stability modeling expensive and complex. Ongoing research in this area holds promising potential for advancement.
+Looking ahead, we believe large language models and AI assistants will significantly help address the adoption challenges of formal methods in practice. Just as AI-assisted unit testing has gained popularity, these tools are expected soon to help developers create formal models and specifications, making these advanced techniques more accessible to the broader developer community.
+Conclusion
+Building reliable and secure software requires a range of approaches to reason about systems correctness. Alongside industry-standard testing methods (such as unit and integration testing), AWS has adopted model checking, fuzzing, property-based testing, fault-injection testing, deterministic simulation, event-based simulation, and runtime validation of execution traces. Formal methods have been an important part of the development process—perhaps most importantly, formal specifications as test oracles that provide the correct answers for many of AWS’s testing practices. Correctness testing and formal methods remain key areas of investment at AWS, accelerated by the excellent returns seen on investments in these areas already.
+References
+References
+1. Amazon S3 now delivers strong read-after-write consistency automatically for all applications . Amazon Web Services ( 2020 ); https://tinyurl.com/25mwxugm
+2. Announcing general availability of AWS Fault Injection Simulator, a fully managed service to run controlled experiments . Amazon Web Services ( 2021 ); https://tinyurl.com/yhnr9nuj
+3. Announcing Amazon Aurora Limitless Database . Amazon Web Services ( 2023 ); https://tinyurl.com/28hwdrm8
+4. Bornholt , J. et al. Using lightweight formal methods to validate a key-value storage node in Amazon S3 . In Proceedings of the ACM SIGOPS 28th Symp. on Operating Systems Principles ( 2021 ), 836 – 850 ; https://tinyurl.com/2yczbl4s
+5. Bronson , N. , Aghayev , A. , Charapko , A. , and Zhu , T. Metastable failures in distributed systems . In Proceedings of the Workshop on Hot Topics in Operating Systems ( 2021 ), 221 – 227 ; https://tinyurl.com/2cqouvlf
+6. Claessen , K. and Hughes , J. QuickCheck: A lightweight tool for random testing of Haskell programs . In Proceedings of the 5th ACM SIGPLAN Intern. Conf. Functional Programming ( 2000 ), 268 – 279 ; https://tinyurl.com/22jtuvwg
+7. de Moura , L. and Ullrich , S. The Lean 4 theorem prover and programming language . In Proceedings of the 28th Intern. Conf. on Automated Deduction 12699 of Lecture Notes in Computer Science . Springer ( 2021 ), 625 – 635 ; https://tinyurl.com/2b4l5f34
+8. Desai , A. et al. P: Safe asynchronous event-driven programming . ACM SIGPLAN Notices 48 , 6 ( 2013 ), 321 – 332 ; https://tinyurl.com/2xh2f8xl
+9. Fioraldi , A. , Maier , D. , Eißfeldt , H. , and Heuse , M. AFL++: Combining incremental steps of fuzzing research . In Proceedings of the 14th Usenix Workshop on Offensive Technologies ( 2020 ); https://tinyurl.com/27bwujn5
+10. Harrison , J. HOL Light: An overview . In Proceedings of the 22nd Intern. Conf. Theorem Proving in Higher Order Logics , S. Berghofer , T. Nipkow , C. Urban , and M. Wenzel, (Eds.) 60–66, volume 5674 of Lecture Notes in Computer Science . Springer-Verlag ( 2009 ); https://tinyurl.com/2a8w2qqn
+11. Havelund , K. and Rosu , G. Runtime verification—17 years later . In Proceedings of the 18th Intern. Conf. Ed. , C. Colombo and M. Leucker, 3–17, volume 11237 of Lecture Notes in Computer Science . Springer ( 2019 ); https://tinyurl.com/2dnmzw9a
+12. Hicks , M. How we built Cedar with automated reasoning and differential testing . Amazon Science ( 2023 ); https://www.amazon.science/blog/how-we-built-cedar-with-automated-reasoning-and-differential-testing
+13. Kingsbury , K. and Alvaro , P. Elle: Inferring isolation anomalies from experimental observations . In Proceedings of the VLDB Endowment 14 , 3 ( 2020 ), 268 – 280 ; https://tinyurl.com/225tvnkh
+14. Lamport , L. Specifying Systems: The TLA+ Language and Tools for Hardware and Software Engineers . Addison-Wesley Professional ( 2002 ).
+15. Lamport , L. Who builds a house without drawing blueprints? Commun. ACM 58 , 4 ( 2015 ), 38 – 41 ; https://tinyurl.com/28vfkctc
+16. Lean Prover Community . Lean 4 . GitHub ( 2024 ); https://tinyurl.com/2yyzdba9
+17. Lee , J. , Becker , H. , and Harrison , J. Formal verification makes RSA faster—and faster to deploy . Amazon Science ( 2024 ); https://www.amazon.science/blog/formal-verification-makes-rsa-faster-and-faster-to-deploy
+18. Leino , K.R.M. Dafny: an automatic program verifier for functional correctness . In Proceedings of the 16th Intern. Conf. on Logic for Programming, Artificial Intelligence, and Reasoning . Springer-Verlag ( 2010 ), 348 - 370 ; https://tinyurl.com/25bsake7
+19. MacIver , D.R. et al. Hypothesis: A new approach to property-based testing . J. Open Source Software 4 , 43 ( 2019 ), 1891 ; https://tinyurl.com/239azs4n
+20. Monteiro , F. and Roy , P. Using Kani to validate security boundaries in AWS Firecracker . Technical report , Amazon Web Services ( 2023 ); https://tinyurl.com/2cf6dub8
+21. Newcombe , C. et al. How Amazon Web Services uses formal methods . Commun. ACM 58 , 4 ( 2015 ), 66 – 73 ; https://tinyurl.com/2au9fctm
+22. P Team . P: A programming language for formal specification of distributed systems ( 2024 ); https://github.com/p-org/P
+23. Rigger , M. and Su , Z. Testing database engines via pivoted query synthesis . In Proceedings of the 14th Usenix Symp. on Operating Systems Design and Implementation , Article 38 ( 2020 ), 667 – 682 ; https://tinyurl.com/2da6rn2e
+24. Rungta , N. Trillions of formally verified authorizations a day! Splash keynote ( 2024 ); https://tinyurl.com/24ufvhff
+25. Vogels , W. Diving deep on S3 consistency . All Things Distributed ; https://tinyurl.com/2xo4xelw
+Footnotes
+a https://tinyurl.com/23k9s8rx
+b https://tinyurl.com/2xnanynf
+About the Authors
+Marc Brooker is a distinguished engineer at Amazon Web Services, Seattle, WA, USA.
+Ankush Desai is a principal applied scientist at Amazon Web Services, Seattle, WA, USA.
+Share
+Twitter
+Reddit
+Hacker News
+Download PDF
+Print
+Join the Discussion
+Submit an Article to CACM
+CACM welcomes unsolicited submissions on topics of relevance and value to the computing community.
+You Just Read
+Systems Correctness Practices at Amazon Web Services
+View in the ACM Digital Library
+This work is licensed under Creative Commons Attribution International 4.0 License .
+© 2025 Copyright held by the owner/author(s).
+DOI
+10.1145/3729175
+June 2025 Issue
+Vol. 68 No. 6
+Pages: 38-42
+Table of Contents
+Related Reading
+Practice
+Velocity in Software Engineering
+Computing Applications
+News
+The State of Quantum Computing
+Architecture and Hardware
+Research and Advances
+How Amazon Web Services Uses Formal Methods
+Architecture and Hardware
+Research and Advances
+Crowdsourcing Systems on the World-Wide Web
+Computing Applications
+Advertisement
+Advertisement
+Join the Discussion (0)
+Become a Member or Sign In to Post a Comment
+Sign In
+Sign Up
+The Latest from CACM
+Explore More
+BLOG@CACM Nov 26 2025
+We Need to Teach the ‘Inuit’ Mindset to Young Computing Engineers
+Oscar M. Bonastre
+Architecture and Hardware
+BLOG@CACM Nov 25 2025
+AI to the Rescue of the World’s Reservoirs Filling Up Fast with Sediment
+Sanchit Minocha and Faisal Hossain
+Architecture and Hardware
+News Nov 25 2025
+Patching Vulnerabilities in AI Chips
+David Geer
+Architecture and Hardware
+Shape the Future of Computing
+ACM encourages its members to take a direct hand in shaping the future of the association. There are more ways than ever to get involved.
+Get Involved
+Communications of the ACM (CACM) is now a fully Open Access publication.
+By opening CACM to the world, we hope to increase engagement among the broader computer science community and encourage non-members to discover the rich resources ACM has to offer.
+Learn More
+CACM on Twitter
+CACM on Reddit
+CACM on LinkedIn
+Topics
+Architecture and Hardware
+Artificial Intelligence and Machine Learning
+Computer History
+Computing Applications
+Computing Profession
+Data and Information
+Education
+HCI
+Philosophy of Computing
+Security and Privacy
+Society
+Software Engineering and Programming Languages
+Systems and Networking
+Theory
+Magazine
+Latest Issue
+Magazine Archive
+Editorial Staff and Board
+Submit an Article
+Alerts & Feeds
+Author Guidelines
+Communications of the ACM
+About Us
+Frequently Asked Questions
+Contact Us
+For Advertisers
+Join ACM
+&copy; 2025 Communications of the ACM. All Rights Reserved.
+Cookie Notice
+Privacy Policy

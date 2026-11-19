@@ -1,0 +1,21 @@
+[
+  "begin",
+  ["relation", "event", ["account", "n", "kind"]],
+  [
+    "invariant",
+    [
+      "and",
+      ["event", "?a", "?n", "closed"],
+      ["event", "?a", "?m", "?kind"],
+      ["number/greaterThan", "?m", "?n"]
+    ],
+    { "assert": "none" }
+  ],
+  [
+    "fact",
+    ["event", "a", 1, "opened"],
+    ["event", "a", 2, "deposited"],
+    ["event", "a", 3, "closed"]
+  ],
+  ["fact", ["event", "a", 4, "deposited"]]
+]

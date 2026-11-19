@@ -1,0 +1,39 @@
+sam (@samgoodwin89) on X, 1:02 AM · Nov 19, 2026, and the replies in his thread, as shown at https://x.com/samgoodwin89/status/2123295778345202158
+
+Just merged Alchemy's "formal verification" feature built on the Z3 sat solver. I am shocked at how well this worked.
+
+Specify "invariants" as predicate functions across your domain model and Alchemy can now "prove" it is correct.
+
+Instead of writing tests for each case you can think of (although of course you should do that too), one test can verify the model implementation never violates the invariants.
+
+Run the tests to see a report of what was proven and how far and wide a simulator searched.
+
+A mix of proof checking and simulation gives you a high baseline of confidence in correctness without tests.
+
+Change one line of code to introduce a mistake and it is immediately flagged as a violated variant.
+
+Rules can span aggregates. A relation says what holds between two instances, and it is proved across every command and decision that writes to either one.
+
+When a rule breaks, you get the shortest sequence that breaks it, written as a test for your Agent to includes in your test suites.
+
+PR:
+feat(domain): Verify proves and searches a model's rules by sam-goodwin · Pull Request #3260
+
+Image in the post: Account.aggregate.ts
+export class Account extends Domain.Aggregate("Account", {
+  id: AccountId,
+  state: AccountState,
+  invariants: {
+    NeverOverdrawn: (account) =>
+      account._tag !== "Open" || account.balance >= 0,
+    WithinDailyLimit: (account) =>
+      account._tag !== "Open" || account.today.withdrawn <= DAILY_LIMIT,
+  },
+  transitions: {
+    AClosedAccountStaysClosed: ({ before, after }) =>
+      before._tag !== "Closed" || after._tag === "Closed",
+  },
+  commands: [OpenAccount, DepositMoney, WithdrawMoney, CloseAccount],
+  decide: { ... },
+  evolve: { ... },
+}) {}

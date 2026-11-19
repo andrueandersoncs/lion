@@ -1,0 +1,869 @@
+Lion programs run for research with @lionlang/cli 0.13.1 built at commit 6e9cb59 (core 0.14.1), 2026-11-19.
+
+== program fv-invariant-runtime.json
+[
+  "begin",
+  ["relation", "account", ["id", "status", "balance"], { "key": "id" }],
+  [
+    "invariant",
+    [
+      "and",
+      ["account", "?id", "open", "?balance"],
+      ["number/lessThan", "?balance", 0]
+    ],
+    { "assert": "none" }
+  ],
+  ["fact", ["account", "a", "open", 10]],
+  [
+    "define",
+    "withdraw",
+    ["lambda", ["balance", "amount"], ["number/subtract", "balance", "amount"]]
+  ],
+  ["fact", ["account", "a", "open", ["withdraw", 10, 4]]],
+  ["query", ["account", "?id", "?status", "?balance"]],
+  ["fact", ["account", "a", "open", ["withdraw", 6, 9]]]
+]
+== gives
+
+ERROR
+  Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"id":"a","balance":-3}: ["and",["account","?id","open","?balance"],["number/lessThan","?balance",0]].
+
+== program fv-assuming-step.json
+[
+  "begin",
+  ["relation", "account", ["id", "status", "balance"], { "key": "id" }],
+  [
+    "invariant",
+    [
+      "and",
+      ["account", "?id", "open", "?balance"],
+      ["number/lessThan", "?balance", 0]
+    ],
+    { "assert": "none" }
+  ],
+  ["fact", ["account", "a", "open", 2]],
+  {
+    "would withdrawing 3 overdraw a?": [
+      "assuming",
+      ["fact", ["account", "a", "open", -1]],
+      [
+        "find",
+        "?id",
+        [
+          "and",
+          ["account", "?id", "open", "?balance"],
+          ["number/lessThan", "?balance", 0]
+        ]
+      ]
+    ],
+    "is a still as it was?": [
+      "query",
+      ["account", "?id", "?status", "?balance"]
+    ]
+  }
+]
+== gives
+{
+  "would withdrawing 3 overdraw a?": [
+    "a"
+  ],
+  "is a still as it was?": [
+    {
+      "id": "a",
+      "status": "open",
+      "balance": 2
+    }
+  ]
+}
+
+== program fv-transition-log.json
+[
+  "begin",
+  ["relation", "event", ["account", "n", "kind"]],
+  [
+    "invariant",
+    [
+      "and",
+      ["event", "?a", "?n", "closed"],
+      ["event", "?a", "?m", "?kind"],
+      ["number/greaterThan", "?m", "?n"]
+    ],
+    { "assert": "none" }
+  ],
+  [
+    "fact",
+    ["event", "a", 1, "opened"],
+    ["event", "a", 2, "deposited"],
+    ["event", "a", 3, "closed"]
+  ],
+  ["fact", ["event", "a", 4, "deposited"]]
+]
+== gives
+
+ERROR
+  Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"a":"a","n":3,"m":4,"kind":"deposited"}: ["and",["event","?a","?n","closed"],["event","?a","?m","?kind"],["number/greaterThan","?m","?n"]].
+
+== program fv-counterexample-program.json
+[
+  "begin",
+  ["define", "found", ["quote", [{ "kind": "withdraw", "amount": 3 }]]],
+  [
+    "define",
+    "setup",
+    [
+      "quote",
+      [
+        ["relation", "event", ["account", "n", "kind", "amount"]],
+        ["relation", "delta", ["account", "n", "amount"]],
+        [
+          "rule",
+          ["delta", "?a", "?n", "?x"],
+          ["event", "?a", "?n", "deposit", "?x"]
+        ],
+        [
+          "rule",
+          ["delta", "?a", "?n", ["number/subtract", 0, "?x"]],
+          ["event", "?a", "?n", "withdraw", "?x"]
+        ],
+        ["relation", "balance", ["account", "amount"]],
+        [
+          "rule",
+          ["balance", "?a", ["aggregate/sum", "?d"]],
+          ["delta", "?a", "?_", "?d"]
+        ],
+        [
+          "invariant",
+          ["and", ["balance", "?a", "?b"], ["number/lessThan", "?b", 0]],
+          { "assert": "none" }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "test",
+    [
+      "array/concat",
+      ["array/make", "begin"],
+      "setup",
+      [
+        "array/map",
+        "found",
+        [
+          "lambda",
+          ["e"],
+          [
+            "array/make",
+            "fact",
+            [
+              "array/make",
+              "event",
+              "a",
+              1,
+              ["object/get", "e", "kind"],
+              ["object/get", "e", "amount"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["eval", "test"]
+]
+== gives
+
+ERROR
+  Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"a":"a","b":-3}: ["and",["balance","?a","?b"],["number/lessThan","?b",0]].
+
+== program fv-unbound-filter.json
+["find", "?balance", ["number/lessThan", "?balance", 0]]
+== gives
+
+ERROR
+  Unsafe goal ["number/lessThan","?balance",0]: ?balance must first be bound by a relation, "=", "in", or "schema/fits?".
+
+== program fv-solve-for.json
+["find", "?x", ["and", ["=", "?y", ["number/add", "?x", 1]], ["=", "?y", 3]]]
+== gives
+
+ERROR
+  Unsafe goal ["=","?y",["number/add","?x",1]]: ?x must first be bound by a relation, "=", "in", or "schema/fits?".
+
+== program fv-unknown-arithmetic.json
+[
+  "begin",
+  ["relation", "account", ["id"]],
+  ["relation", "balance", ["account", "amount"], { "key": "account" }],
+  ["fact", ["account", "a"]],
+  ["rule", ["exists", ["?b"], ["balance", "?a", "?b"]], ["account", "?a"]],
+  ["define", "held", ["query", ["balance", "?account", "?amount"]]],
+  [
+    "define",
+    "overdrawn",
+    [
+      "query",
+      [
+        "and",
+        ["balance", "?account", "?amount"],
+        ["number/lessThan", "?amount", 0]
+      ]
+    ]
+  ],
+  { "held": "held", "overdrawn": "overdrawn" }
+]
+== gives
+
+ERROR
+  ["number/lessThan",["some","?b",["balance","a","?b"]],0] failed: Expected number at [0]
+
+== program fv-schema-values.json
+["find", "?x", ["schema/fits?", "?x", ["schema/anyOf", 1, 2, 3]]]
+== gives
+
+ERROR
+  Unsafe goal ["schema/fits?","?x",["schema/anyOf",1,2,3]]: ?x must first be bound by a relation, "=", "in", or "schema/fits?".
+
+== program fv-explore-refused.json
+[
+  "begin",
+  ["relation", "amounts", ["value"]],
+  ["relation", "reach", ["balance"]],
+  ["fact", ["amounts", 3], ["amounts", 5]],
+  ["fact", ["reach", 0]],
+  [
+    "rule",
+    ["reach", ["number/add", "?b", "?a"]],
+    ["reach", "?b"],
+    ["amounts", "?a"]
+  ],
+  ["query", ["reach", "?balance"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["reach",["number/add","?b","?a"]],["reach","?b"],["amounts","?a"]] computes a new value in its head while recursing, which may never finish. Compute the value in a non-recursive rule, or aggregate it with aggregate/min, aggregate/max, aggregate/shortest, or aggregate/union.
+
+== program fv-explore-rules.json
+[
+  "begin",
+  ["relation", "balances", ["value"]],
+  ["relation", "amounts", ["value"]],
+  [
+    "fact",
+    ["balances", 0],
+    ["balances", 1],
+    ["balances", 2],
+    ["balances", 3],
+    ["balances", 4],
+    ["balances", 5],
+    ["balances", 6]
+  ],
+  ["fact", ["amounts", 1], ["amounts", 2], ["amounts", 3]],
+  [
+    "define",
+    "deposit",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": ["number/add", ["object/get", "state", "balance"], "amount"]
+      }
+    ]
+  ],
+  [
+    "define",
+    "withdraw",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": [
+          "number/subtract",
+          ["object/get", "state", "balance"],
+          "amount"
+        ]
+      }
+    ]
+  ],
+  ["relation", "state", ["state"]],
+  [
+    "rule",
+    ["state", { "status": "open", "balance": "?b" }],
+    ["balances", "?b"]
+  ],
+  ["relation", "step", ["from", "command", "to"]],
+  [
+    "rule",
+    ["step", "?s", { "deposit": "?a" }, ["deposit", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"]
+  ],
+  [
+    "rule",
+    ["step", "?s", { "withdraw": "?a" }, ["withdraw", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"]
+  ],
+  ["relation", "reach", ["state"]],
+  ["fact", ["reach", { "status": "open", "balance": 0 }]],
+  ["rule", ["reach", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  ["relation", "edge", ["from", "to"]],
+  ["rule", ["edge", "?s", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  [
+    "define",
+    "bad",
+    [
+      "find",
+      "?s",
+      [
+        "and",
+        ["reach", "?s"],
+        ["number/lessThan", ["object/get", "?s", "balance"], 0]
+      ]
+    ]
+  ],
+  {
+    "states reached": ["array/length", ["find", "?s", ["reach", "?s"]]],
+    "states that break the invariant": "bad",
+    "shortest way to the first": [
+      "query",
+      [
+        "graph/shortestPath",
+        "edge",
+        { "status": "open", "balance": 0 },
+        ["array/head", "bad"],
+        "?steps",
+        "?path"
+      ]
+    ],
+    "why it is reached": ["why", ["reach", ["array/head", "bad"]]]
+  }
+]
+== gives
+{
+  "states reached": 13,
+  "states that break the invariant": [
+    {
+      "status": "open",
+      "balance": -3
+    },
+    {
+      "status": "open",
+      "balance": -2
+    },
+    {
+      "status": "open",
+      "balance": -1
+    }
+  ],
+  "shortest way to the first": [
+    {
+      "steps": 1,
+      "path": [
+        {
+          "status": "open",
+          "balance": 0
+        },
+        {
+          "status": "open",
+          "balance": -3
+        }
+      ]
+    }
+  ],
+  "why it is reached": {
+    "fact": [
+      "reach",
+      {
+        "status": "open",
+        "balance": -3
+      }
+    ],
+    "rule": [
+      "rule",
+      [
+        "reach",
+        "?t"
+      ],
+      [
+        "reach",
+        "?s"
+      ],
+      [
+        "step",
+        "?s",
+        "?_",
+        "?t"
+      ]
+    ],
+    "because": [
+      {
+        "fact": [
+          "reach",
+          {
+            "status": "open",
+            "balance": 0
+          }
+        ],
+        "given": true
+      },
+      {
+        "fact": [
+          "step",
+          {
+            "status": "open",
+            "balance": 0
+          },
+          {
+            "withdraw": 3
+          },
+          {
+            "status": "open",
+            "balance": -3
+          }
+        ],
+        "rule": [
+          "rule",
+          [
+            "step",
+            "?s",
+            {
+              "withdraw": "?a"
+            },
+            {
+              "status": [
+                "object/get",
+                "?s",
+                "status"
+              ],
+              "balance": [
+                "number/subtract",
+                [
+                  "object/get",
+                  "?s",
+                  "balance"
+                ],
+                "?a"
+              ]
+            }
+          ],
+          [
+            "state",
+            "?s"
+          ],
+          [
+            "amounts",
+            "?a"
+          ]
+        ],
+        "because": [
+          {
+            "fact": [
+              "state",
+              {
+                "status": "open",
+                "balance": 0
+              }
+            ],
+            "rule": [
+              "rule",
+              [
+                "state",
+                {
+                  "status": "open",
+                  "balance": "?b"
+                }
+              ],
+              [
+                "balances",
+                "?b"
+              ]
+            ],
+            "because": [
+              {
+                "fact": [
+                  "balances",
+                  0
+                ],
+                "given": true
+              }
+            ]
+          },
+          {
+            "fact": [
+              "amounts",
+              3
+            ],
+            "given": true
+          }
+        ]
+      }
+    ]
+  }
+}
+
+== program fv-explore-careful.json
+[
+  "begin",
+  ["relation", "balances", ["value"]],
+  ["relation", "amounts", ["value"]],
+  [
+    "fact",
+    ["balances", 0],
+    ["balances", 1],
+    ["balances", 2],
+    ["balances", 3],
+    ["balances", 4],
+    ["balances", 5],
+    ["balances", 6]
+  ],
+  ["fact", ["amounts", 1], ["amounts", 2], ["amounts", 3]],
+  [
+    "define",
+    "deposit",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": ["number/add", ["object/get", "state", "balance"], "amount"]
+      }
+    ]
+  ],
+  [
+    "define",
+    "withdraw",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": [
+          "number/subtract",
+          ["object/get", "state", "balance"],
+          "amount"
+        ]
+      }
+    ]
+  ],
+  ["relation", "state", ["state"]],
+  [
+    "rule",
+    ["state", { "status": "open", "balance": "?b" }],
+    ["balances", "?b"]
+  ],
+  ["relation", "step", ["from", "command", "to"]],
+  [
+    "rule",
+    ["step", "?s", { "deposit": "?a" }, ["deposit", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"]
+  ],
+  [
+    "rule",
+    ["step", "?s", { "withdraw": "?a" }, ["withdraw", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"],
+    ["number/greaterThanOrEqualTo", ["object/get", "?s", "balance"], "?a"]
+  ],
+  ["relation", "reach", ["state"]],
+  ["fact", ["reach", { "status": "open", "balance": 0 }]],
+  ["rule", ["reach", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  ["relation", "edge", ["from", "to"]],
+  ["rule", ["edge", "?s", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  [
+    "define",
+    "bad",
+    [
+      "find",
+      "?s",
+      [
+        "and",
+        ["reach", "?s"],
+        ["number/lessThan", ["object/get", "?s", "balance"], 0]
+      ]
+    ]
+  ],
+  {
+    "states reached": ["array/length", ["find", "?s", ["reach", "?s"]]],
+    "states that break the invariant": "bad",
+    "states reached outside the scope, not followed further": [
+      "find",
+      "?t",
+      ["and", ["reach", "?t"], ["not", ["state", "?t"]]]
+    ]
+  }
+]
+== gives
+{
+  "states reached": 10,
+  "states that break the invariant": [],
+  "states reached outside the scope, not followed further": [
+    {
+      "status": "open",
+      "balance": 7
+    },
+    {
+      "status": "open",
+      "balance": 8
+    },
+    {
+      "status": "open",
+      "balance": 9
+    }
+  ]
+}
+
+== program fv-explore-code.json
+[
+  "begin",
+  [
+    "define",
+    "commands",
+    [
+      "quote",
+      [
+        { "deposit": 2 },
+        { "withdraw": 1 },
+        { "withdraw": 3 },
+        { "close": true }
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careful",
+    [
+      "lambda",
+      ["s", "c"],
+      [
+        "cond",
+        [["string/equals?", ["object/get", "s", "status"], "closed"], "s"],
+        [
+          ["object/get", "c", "deposit"],
+          {
+            "status": "open",
+            "balance": [
+              "number/add",
+              ["object/get", "s", "balance"],
+              ["object/get", "c", "deposit"]
+            ]
+          }
+        ],
+        [
+          ["object/get", "c", "withdraw"],
+          [
+            "cond",
+            [
+              [
+                "number/lessThan",
+                ["object/get", "s", "balance"],
+                ["object/get", "c", "withdraw"]
+              ],
+              "s"
+            ],
+            [
+              "else",
+              {
+                "status": "open",
+                "balance": [
+                  "number/subtract",
+                  ["object/get", "s", "balance"],
+                  ["object/get", "c", "withdraw"]
+                ]
+              }
+            ]
+          ]
+        ],
+        [
+          "else",
+          { "status": "closed", "balance": ["object/get", "s", "balance"] }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careless",
+    [
+      "lambda",
+      ["s", "c"],
+      [
+        "cond",
+        [["string/equals?", ["object/get", "s", "status"], "closed"], "s"],
+        [
+          ["object/get", "c", "deposit"],
+          {
+            "status": "open",
+            "balance": [
+              "number/add",
+              ["object/get", "s", "balance"],
+              ["object/get", "c", "deposit"]
+            ]
+          }
+        ],
+        [
+          ["object/get", "c", "withdraw"],
+          {
+            "status": "open",
+            "balance": [
+              "number/subtract",
+              ["object/get", "s", "balance"],
+              ["object/get", "c", "withdraw"]
+            ]
+          }
+        ],
+        [
+          "else",
+          { "status": "closed", "balance": ["object/get", "s", "balance"] }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "neverOverdrawn",
+    [
+      "lambda",
+      ["s"],
+      [
+        "boolean/or",
+        ["string/equals?", ["object/get", "s", "status"], "closed"],
+        ["number/greaterThanOrEqualTo", ["object/get", "s", "balance"], 0]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "explore",
+    [
+      "lambda",
+      ["step", "ok", "level", "depth", "seen"],
+      [
+        "cond",
+        [
+          ["number/equals?", "depth", 0],
+          { "sequences checked": "seen", "breaks": null }
+        ],
+        [
+          "else",
+          [
+            "begin",
+            [
+              "define",
+              "next",
+              [
+                "array/flat-map",
+                "level",
+                [
+                  "lambda",
+                  ["p"],
+                  [
+                    "array/map",
+                    "commands",
+                    [
+                      "lambda",
+                      ["c"],
+                      {
+                        "state": ["step", ["object/get", "p", "state"], "c"],
+                        "trace": [
+                          "array/concat",
+                          ["object/get", "p", "trace"],
+                          ["array/make", "c"]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "define",
+              "broken",
+              [
+                "find",
+                "?p",
+                [
+                  "and",
+                  ["in", "?p", "next"],
+                  ["boolean/not", ["ok", ["object/get", "?p", "state"]]]
+                ]
+              ]
+            ],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["array/length", "broken"], 0],
+                {
+                  "sequences checked": [
+                    "number/add",
+                    "seen",
+                    ["array/length", "next"]
+                  ],
+                  "breaks": ["array/head", "broken"]
+                }
+              ],
+              [
+                "else",
+                [
+                  "explore",
+                  "step",
+                  "ok",
+                  "next",
+                  ["number/subtract", "depth", 1],
+                  ["number/add", "seen", ["array/length", "next"]]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "start",
+    ["array/make", { "state": { "status": "open", "balance": 0 }, "trace": [] }]
+  ],
+  {
+    "careful withdrawal, every sequence of up to 6 commands": [
+      "explore",
+      "careful",
+      "neverOverdrawn",
+      "start",
+      6,
+      0
+    ],
+    "careless withdrawal": [
+      "explore",
+      "careless",
+      "neverOverdrawn",
+      "start",
+      6,
+      0
+    ]
+  }
+]
+== gives
+{
+  "careful withdrawal, every sequence of up to 6 commands": {
+    "sequences checked": 5460,
+    "breaks": null
+  },
+  "careless withdrawal": {
+    "sequences checked": 4,
+    "breaks": {
+      "state": {
+        "status": "open",
+        "balance": -3
+      },
+      "trace": [
+        {
+          "withdraw": 3
+        }
+      ]
+    }
+  }
+}

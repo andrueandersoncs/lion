@@ -1,0 +1,1453 @@
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Abstract
+1 Introduction
+2 Overview
+3 Preliminaries
+4 Model Checking Recursive Programs
+Main Loop .
+Bounded safety .
+Soundness and Complexity .
+5 Model Based Projection
+Model Based Projection ( ( MBP ) ) .
+MBP for Linear Rational Arithmetic .
+Bounded Safety with MBP .
+6 Implementation and Experiments
+7 Related Work
+8 Conclusion
+References
+0.A Divergence of GPDR for Bounded Call-Stack
+0.B Soundness of RecMC and BndSafety (Proof of Theorem )
+0.C Termination of BndSafety (Proof of Theorem )
+0.D Complexity of RecMC for Boolean Programs (Proof of Theorem )
+0.E BndSafety with MBP (Proof of Theorem )
+0.F LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} is an MBP (Proof of Lemma )
+0.G Model Based Projection for Linear Integer Arithmetic
+License: arXiv.org perpetual non-exclusive license
+arXiv:1405.4028v2 [cs.LO] 25 May 2014
+\DeclareCaptionType
+copyrightbox
+SMT-based Model Checking for
+Recursive Programs
+Thanks: This paper is originally published by Springer-Verlag as part of the
+proceedings of CAV 2014. The final publication is available at
+link.springer.com.
+Anvesh Komuravelli
+  
+Arie Gurfinkel
+  
+Sagar Chaki
+Affiliation: Carnegie Mellon University, Pittsburgh,
+PA, USA
+Abstract
+We present an SMT-based symbolic model checking algorithm for safety
+verification of recursive programs.
+The algorithm is modular and analyzes procedures individually.
+Unlike other SMT-based approaches, it maintains both
+over- and under-approximations of procedure
+summaries. Under-approximations are used to analyze procedure calls without
+inlining. Over-approximations are used to block
+infeasible counterexamples and detect convergence to a proof.
+We show that for programs and properties over a decidable theory, the algorithm
+is guaranteed to find a counterexample, if one exists. However, efficiency
+depends on an oracle for quantifier elimination (QE). For Boolean Programs, the algorithm is a polynomial decision
+procedure, matching the worst-case bounds of the best BDD-based
+algorithms.
+For Linear Arithmetic (integers and rationals), we give an efficient
+instantiation of the algorithm by applying QE lazily . We use
+existing interpolation techniques to over-approximate QE and
+introduce Model Based Projection to under-approximate QE.
+Empirical evaluation on SV-COMP benchmarks shows that our algorithm
+improves significantly on the state-of-the-art.
+1 Introduction
+We are interested in the problem of safety of recursive programs, i.e. , deciding whether an assertion always holds. The first step in Software
+Model Checking is to approximate the input program by a program model where the
+program operations are terms in a first-order theory 𝒟 \mathcal{D} . Many program models
+exist today, e.g., Boolean Programs [ 6 ] of SLAM [ 5 ] ,
+Goto programs of CBMC [ 14 ] , BoogiePL of
+Boogie [ 7 ] , and, indirectly, internal representations of many
+tools such as UFO [ 1 ] , HSF [ 21 ] , etc. Given a
+safety property and a program model over 𝒟 \mathcal{D} , it is possible to analyze bounded
+executions using an oracle for Satisfiability Modulo Theories (SMT) for
+𝒟 \mathcal{D} . However, in the presence of unbounded recursion, safety is undecidable in
+general. Throughout this paper, we assume that procedures cannot be passed as
+parameters.
+There exist several program models where safety is efficiently
+decidable 1 1
+1
+This is no longer true when we allow procedures as
+parameters [ 12 ] . , e.g., Boolean Programs with unbounded recursion and
+the unbounded use of stack [ 35 , 6 ] . The general observation behind
+these algorithms is that one can summarize the input-output behavior of a
+procedure. A summary of a procedure is an input-output relation describing what
+is currently known about its behavior. Thus, a summary can be used to analyze a
+procedure call without inlining or analyzing the body of the
+callee [ 11 , 36 ] . For a Boolean Program, the number of states is
+finite and hence, a summary can only be updated finitely many times. This
+observation led to a number of efficient algorithms that are polynomial in the
+number of states, e.g., the RHS framework [ 35 ] , recursive
+state machines [ 4 ] , and symbolic BDD-based algorithms of
+Bebop [ 6 ] and Moped [ 19 ] . When safety is
+undecidable (e.g., when 𝒟 \mathcal{D} is Linear Rational Arithmetic (LRA) or Linear Integer
+Arithmetic (LIA)), several existing software
+model checkers work by iteratively obtaining Boolean Program abstractions using
+Predicate Abstraction [ 13 , 5 ] . In this paper, we are interested in an
+alternative algorithm that works directly on the original program model without
+an explicit step of Boolean abstraction. Despite the undecidability, we are
+interested in an algorithm that is guaranteed to find a counterexample to
+safety, if one exists.
+Several algorithms have been recently proposed for verifying recursive
+programs without predicate abstraction. Notable examples are
+Whale [ 2 ] , HSF [ 21 ] , GPDR [ 27 ] ,
+Ultimate Automizer [ 24 , 25 ] and Duality [ 32 ] .
+With the exception of GPDR, these algorithms are
+based on a combination of Bounded Model Checking (BMC) [ 8 ] and
+Craig Interpolation [ 16 ] . First, they use an SMT-solver to check for a bounded
+counterexample, where the bound is on the depth of the call stack ( i.e. , the number of nested procedure calls). Second, they use (tree)
+interpolation to over-approximate procedure summaries. This is
+repeated with increasing values of the bound until a counterexample is found or the
+approximate summaries are inductive. The reduction to BMC ensures that
+the algorithms are guaranteed to find a counterexample. However, the size of the
+SMT instance grows exponentially with the bound on the call-stack ( i.e. , linear in the size of
+the call tree). Therefore, for Boolean Programs, these algorithms are at least
+worst-case exponential in the number of states.
+On the other hand, GPDR follows the approach of IC3 [ 9 ] by solving
+BMC incrementally without unrolling the call-graph. Interpolation is used to
+over-approximate summaries and caching is used to indirectly
+under-approximate them.
+For some configurations, GPDR is worst-case polynomial for Boolean Programs. However, even for LRA, GPDR
+might fail to find a counterexample.
+2 2
+2
+See appendix for an example.
+In this paper, we introduce RecMC , the first SMT-based algorithm for model
+checking safety of recursive programs that is worst-case polynomial (in the
+number of states) for Boolean Programs while being a co-semidecision procedure
+for programs over decidable theories (see Section 4 ). Our main
+insight is to maintain not only over-approximations of procedure summaries
+(which we call summary facts ), but also their under-approximations (which
+we call reachability facts ). While summary facts are used to block
+spurious counterexamples, reachability facts are used to analyze a procedure
+call without inlining or analyzing the body of the callee. Our use of
+reachability facts is similar to that of summary edges of the
+RHS [ 35 ] algorithm. This explains our complexity result for Boolean
+Programs. However, our summary facts make an important difference. While the use of
+summary facts is an interesting heuristic for Boolean Programs that does not
+improve the worst-case complexity, it is crucial for richer theories.
+Almost every step of RecMC results in existential quantification of variables.
+RecMC tries to eliminate these variables, as otherwise, they would accumulate
+and the size of an inferred reachability fact, for example, grows exponentially
+in the bound on the call-stack. But, a naïve use of quantifier elimination
+(QE) is expensive. Instead, we develop an alternative approach that
+under-approximates QE. However, obtaining arbitrary under-approximations can
+lead to divergence of the algorithm. We introduce the concept of Model
+Based Projection (MBP), for covering ∃ x ¯ ⋅ φ ⁡ ( x ¯ , y ¯ ) \exists\overline{x}\cdot\varphi(\overline{x},\overline{y}) by finitely-many quantifier-free
+under-approximations obtained using models of φ ⁡ ( x ¯ , y ¯ ) \varphi(\overline{x},\overline{y}) . We
+developed efficient MBPs (see Section 5 ) for Linear Arithmetic
+based on the QE methods by Loos-Weispfenning [ 30 ] for LRA and
+Cooper [ 15 ] for LIA. We use MBP to under-approximate reachability facts
+in RecMC . In the best case, only a partial under-approximation is needed and
+a complete quantifier elimination can be avoided.
+We have implemented RecMC as part of our tool Spacer using the framework of
+Z3 [ 17 ] and evaluated it on 799 benchmarks
+from SV-COMP [ 37 ] . Spacer significantly
+outperforms the implementation of GPDR in Z3 (see Section 6 ).
+In summary, our contributions are: (a) an efficient
+SMT-based algorithm for model checking recursive programs, that
+analyzes procedures individually using under- and over-approximations
+of procedure summaries, (b) MBP functions
+for under-approximating quantifier elimination for LRA and LIA,
+(c) a new, complete algorithm for Boolean Programs,
+with complexity polynomial in the number of states, similar to the
+best known method [ 6 ] , and (d) an implementation and
+an empirical evaluation of the approach.
+2 Overview
+Figure 1 : Flow of the algorithm RecMC to check if M ⊧ φ 𝑠𝑎𝑓𝑒 M\models\varphi_{\mathit{safe}} .
+In this section, we give an overview of RecMC and illustrate it on
+an example. Let 𝒜 \mathcal{A} be a recursive program. For simplicity of presentation, assume no loops,
+no global variables and that arguments are passed by reference. Let
+P ⁡ ( v ¯ ) ∈ 𝒜 P(\overline{v})\in\mathcal{A} be a procedure with parameters v ¯ \overline{v}
+and let v ¯ 0 \overline{v}_{0} be fresh variables not appearing in P P with | v ¯ | = | v ¯ 0 | |\overline{v}|=|\overline{v}_{0}| . A safety property for
+P P is an assertion φ ⁡ ( v ¯ 0 , v ¯ ) \varphi(\overline{v}_{0},\overline{v}) . We say that P P satisfies
+φ \varphi , denoted P ⁡ ( v ¯ ) ⊧ φ ⁡ ( v ¯ 0 , v ¯ ) P(\overline{v})\models\varphi(\overline{v}_{0},\overline{v}) , iff the Hoare-triple
+{ v ¯ = v ¯ 0 } P ( v ¯ ) { φ ( v ¯ 0 , v ¯ ) } \{{\overline{v}=\overline{v}_{0}}\}~{P(\overline{v})}~\{{\varphi(\overline{v}_{0},\overline{v})}\}
+is valid. Note that every Hoare-triple corresponds to a safety property in this
+sense, as shown by Clarke [ 11 ] , using a Rule of Adaptation .
+Given a safety property φ \varphi and a natural number n ≥ 0 n\geq 0 , the problem of
+bounded safety is to determine whether all executions of P P
+using a call-stack bounded by n n satisfy φ \varphi . We use P ( v ¯ ) ⊧ n φ ( v ¯ 0 , v ¯ ) P(\overline{v})\models_{n}\varphi(\overline{v}_{0},\overline{v}) to denote bounded safety.
+The key steps of RecMC are shown in Fig. 1 . RecMC decides
+safety for the main procedure M M of 𝒜 \mathcal{A} .
+RecMC maintains two assertion maps ρ \rho and σ \sigma .
+The reachability map ρ \rho maps each procedure P ⁡ ( v ¯ ) ∈ 𝒜 P(\overline{v})\in\mathcal{A} to
+a set of assertions over v ¯ 0 ∪ v ¯ \overline{v}_{0}\cup\overline{v} that under-approximate
+its behavior. Similarly, the summary map σ \sigma maps a procedure P P to
+a set of assertions that over-approximate its behavior. Given P P , the maps are
+partitioned according to the bound on the call-stack. That is, if
+δ ⁡ ( v ¯ 0 , v ¯ ) ∈ ρ ⁡ ( P , n ) \delta(\overline{v}_{0},\overline{v})\in\rho(P,n) for n ≥ 0 n\geq 0 , then for every
+model m m of δ \delta ,
+there is an execution of P P that begins in m ⁡ ( v ¯ 0 ) m(\overline{v}_{0}) and ends in m ⁡ ( v ¯ ) m(\overline{v}) ,
+using a call-stack bounded by n n . Similarly, if δ ⁡ ( v ¯ 0 , v ¯ ) ∈ σ ⁡ ( P , n ) \delta(\overline{v}_{0},\overline{v})\in\sigma(P,n) , then P ( v ¯ ) ⊧ n δ ( v ¯ 0 , v ¯ ) P(\overline{v})\models_{n}\delta(\overline{v}_{0},\overline{v}) .
+RecMC alternates between two steps: ( A ) deciding
+bounded safety (that also updates ρ \rho and σ \sigma maps) and ( B )
+checking whether the current proof of bounded safety is inductive
+( i.e. , independent of the bound). It terminates when a counterexample or a
+proof is found.
+Figure 2 : Flow of the algorithm BndSafety to check P ⊧ b φ P\models_{b}\varphi .
+Bounded safety, P ⊧ b φ P\models_{b}\varphi , is decided using BndSafety shown in
+Fig. 2 . Step 1 checks
+whether φ \varphi is falsified by current reachability facts in ρ \rho of
+the callees of P P . If so, it infers a new reachability fact
+for P P at bound b b witnessing the falsification of φ \varphi . Step 2
+checks whether φ \varphi is satisfied using current summary
+facts in σ \sigma of the callees. If so, it infers a new summary fact for
+P P at bound b b witnessing the satisfaction of φ \varphi . If
+the prior two steps fail, there is a potential counterexample π \pi in
+P P with a call to some procedure R R such that the
+reachability facts of R R are too strong to witness π \pi , but the
+summary facts of R R are too weak to block it. Step 3 updates ρ \rho and
+σ \sigma by creating (and recursively deciding) a new bounded
+safety problem for R R at bound b − 1 b-1 .
+We conclude this section with an illustration of RecMC on the program
+in Fig. 3 (adapted from [ 11 ] ).
+The program has 3 procedures: the main procedure M , and
+procedures T and D . M calls T and
+D . T modifies its argument t and calls
+itself recursively. D decrements its argument d . Let the
+property be φ = m 0 ≥ 2 ​ m + 4 \varphi=m_{0}\geq 2m+4 .
+Figure 3 : A recursive program with 3 procedures.
+Figure 4 : A run of BndSafety on program in
+Fig. 3 and a bound 1 on the stack depth. Numbers in
+bold refer to the steps in Fig. 2 .
+The first iteration of RecMC is trivial. The bound n = 0 n=0 and since
+M has no call-free executions it vacuously satisfies any
+bounded safety property. Fig. 4 shows the four
+iterations of BndSafety for the second iteration of RecMC where n = 1 n=1 . For
+this bound, the maps ρ \rho and σ \sigma are initially empty. The first
+iteration of BndSafety finds a potential counterexample path in M and
+the approximation for D is updated with a new reachability fact: d = d 0 − 1 d=d_{0}-1 . In the second iteration,
+the approximation for T is updated. Note that the two calls to
+D are “jumped over” using the reachability fact for
+D computed in the first iteration. The new summary fact for T is: t 0 ≥ 2 ​ t t_{0}\geq 2t . In the third iteration, the approximation for D is updated again, now with a
+summary fact d ≤ d 0 − 1 d\leq d_{0}-1 . Finally, the summary facts for
+T and D at bound 0 0 are sufficient to establish bounded safety
+at n = 1 n=1 . At this point, the summary map σ \sigma is:
+σ ⁡ ( M , 1 ) \displaystyle\sigma(\texttt{M},1)
+= { m 0 ≥ 2 m + 4 } \displaystyle=\{m_{0}\geq 2m+4\}
+σ ⁡ ( T , 0 ) \displaystyle\sigma(\texttt{T},0)
+= { t 0 ≥ 2 t } \displaystyle=\{t_{0}\geq 2t\}
+σ ⁡ ( D , 0 ) \displaystyle\sigma(\texttt{D},0)
+= { d ≤ d 0 − 1 } \displaystyle=\{d\leq d_{0}-1\}
+Ignoring the bounds, σ \sigma is inductive. For example, we can prove that the
+body of T satisfies t 0 ≥ 2 ​ t t_{0}\geq 2t , assuming that the calls do. Thus,
+step B of RecMC succeeds and the algorithm terminates declaring the program
+SAFE. In the rest of the paper, we show how to automate RecMC using an
+SMT-oracle.
+3 Preliminaries
+Consider a first-order language with equality and let 𝒮 \mathcal{S} be its signature, i.e. , the set of
+non-logical function and predicate symbols (including equality). An 𝒮 \mathcal{S} - structure I I consists of a domain of
+interpretation, denoted | I | |I| , and assigns elements of | I | |I| to variables, and
+functions and predicates on | I | |I| to the symbols of 𝒮 \mathcal{S} . Let φ \varphi be
+a formula. We assume the usual definition of satisfaction of φ \varphi by
+I I , denoted I ⊧ φ I\models\varphi . I I is called a model of φ \varphi iff
+I ⊧ φ I\models\varphi and this can be extended to a set of formulas. A
+first-order 𝒮 \mathcal{S} - theory 𝑇ℎ \mathit{Th} is a set of deductively closed
+𝒮 \mathcal{S} -sentences. I I satisfies φ \varphi modulo 𝑇ℎ \mathit{Th} , denoted I ⊧ 𝑇ℎ φ I\models_{\mathit{Th}}\varphi , iff I ⊧ 𝑇ℎ ∪ { φ } I\models\mathit{Th}\cup\{\varphi\} . φ \varphi is
+valid modulo 𝑇ℎ \mathit{Th} , denoted ⊧ 𝑇ℎ φ \models_{\mathit{Th}}\varphi , iff every model of
+𝑇ℎ \mathit{Th} is also a model of φ \varphi .
+Let I I be an 𝒮 \mathcal{S} -structure and w ¯ \overline{w} be a list of fresh
+function/predicate symbols not in 𝒮 \mathcal{S} . A ( 𝒮 ∪ w ¯ ) (\mathcal{S}\cup\overline{w}) -structure
+J J is called an expansion of I I to w ¯ \overline{w} iff | J | = | I | |J|=|I| and J J
+agrees with I I on the assignments to all variables and the symbols of 𝒮 \mathcal{S} . We use the
+notation I { w ¯ ↦ u ¯ } {I}\{{\overline{w}}\mapsto{\overline{u}}\} to denote the expansion of I I to
+w ¯ \overline{w} that assigns the function/predicate u i u_{i} to the symbol w i w_{i} .
+For an 𝒮 \mathcal{S} -sentence φ \varphi , we
+write I ⁡ ( φ ) I(\varphi) to denote the truth value of φ \varphi under I I . For a
+formula φ ⁡ ( x ¯ ) \varphi(\overline{x}) with free variables x ¯ \overline{x} , we overload the
+notation I ⁡ ( φ ) I(\varphi) to mean { a ¯ ∈ | I | | x ¯ | ∣ I { x ¯ ↦ a ¯ } ⊧ φ } \{\overline{a}\in|I|^{|\overline{x}|}\mid{I}\{{\overline{x}}\mapsto{\overline{a}}\}\models\varphi\} . For simplicity of presentation, we sometimes identify the
+truth value true with | I | |I| and false with ∅ \emptyset .
+We assume that programs do not have internal procedures and that procedures
+cannot be passed as parameters. Furthermore, without loss of generality, we
+assume that programs do not have loops or global variables. In the following, we
+define programs using a logical representation, as opposed to giving a
+concrete syntax.
+A program 𝒜 \mathcal{A} is a finite list of procedures with a designated
+main procedure M M where the program begins. A procedure P P is a
+tuple ⟨ ι ¯ P , o ¯ P , Σ P , ℓ ¯ P , β P ⟩ \langle\overline{\iota}_{P},\overline{o}_{P},\Sigma_{P},\overline{\ell}_{P},\beta_{P}\rangle ,
+where
+(a) ι ¯ P \overline{\iota}_{P} is the finite list of variables denoting the input
+values of the parameters,
+(b) o ¯ P \overline{o}_{P} is the finite list of variables denoting the output
+values of the parameters,
+(c) Σ P \Sigma_{P} is a fresh predicate symbol of arity | ι ¯ P | + | o ¯ P | |\overline{\iota}_{P}|+|\overline{o}_{P}| ,
+(d) ℓ ¯ P \overline{\ell}_{P} is the finite list of local variables, and
+(e) β P \beta_{P} is a quantifier-free sentence over the signature
+( 𝒮 ∪ { Σ Q ∣ Q ∈ 𝒜 } ∪ ι ¯ P ∪ o ¯ P ∪ ℓ ¯ P ) (\mathcal{S}\cup\{\Sigma_{Q}\mid Q\in\mathcal{A}\}\cup\overline{\iota}_{P}\cup\overline{o}_{P}\cup\overline{\ell}_{P}) in which a predicate symbol Σ Q \Sigma_{Q} appears only positively.
+We use v ¯ P \overline{v}_{P} to denote ι ¯ P ∪ o ¯ P \overline{\iota}_{P}\cup\overline{o}_{P} .
+Intuitively, for a
+procedure P P , Σ P \Sigma_{P} is used to denote its semantics and β P \beta_{P} encodes
+its body using the predicate symbol Σ Q \Sigma_{Q} for a call to the procedure Q Q .
+We require that a predicate symbol Σ Q \Sigma_{Q} appears only positively in
+β P \beta_{P} to ensure a fixed-point characterization of the semantics as shown
+later on. For example, for the signature 𝒮 = ⟨ 0 , 𝑆𝑢𝑐𝑐 , − , + , ≤ , > , = ⟩ \mathcal{S}=\langle 0,\mathit{Succ},-,+,\leq,>,=\rangle , the program in Fig. 3 is
+represented as ⟨ M , T , D ⟩ \langle M,T,D\rangle with M = ⟨ m 0 , m , Σ M , ⟨ ℓ 0 , ℓ 1 ⟩ , β M ⟩ M=\langle m_{0},m,\Sigma_{M},\langle\ell_{0},\ell_{1}\rangle,\beta_{M}\rangle , T = ⟨ t 0 , t , Σ T , ⟨ ℓ 0 , ℓ 1 ⟩ , β T ⟩ T=\langle t_{0},t,\Sigma_{T},\langle\ell_{0},\ell_{1}\rangle,\beta_{T}\rangle and D = ⟨ d 0 , d , Σ D , ∅ , β D ⟩ D=\langle d_{0},d,\Sigma_{D},\emptyset,\beta_{D}\rangle , where
+β M = Σ T ​ ( m 0 , ℓ 0 ) ∧ Σ D ​ ( ℓ 0 , ℓ 1 ) ∧ Σ D ​ ( ℓ 1 , m ) β D = ( d = d 0 − 1 ) \displaystyle\beta_{M}=\Sigma_{T}(m_{0},\ell_{0})\land\Sigma_{D}(\ell_{0},\ell_{1})\land\Sigma_{D}(\ell_{1},m)\qquad\beta_{D}=(d=d_{0}-1)
+(1)
+β T = ( t 0 ≤ 0 ∧ t 0 = t ) ∨ ( t 0 > 0 ∧ ℓ 0 = t 0 − 2 ∧ Σ T ​ ( ℓ 0 , ℓ 1 ) ∧ t = ℓ 1 + 1 ) \displaystyle\beta_{T}=\left(t_{0}\leq 0\land t_{0}=t\right)~\lor~\left(t_{0}>0\land\ell_{0}=t_{0}-2\land\Sigma_{T}(\ell_{0},\ell_{1})\land t=\ell_{1}+1\right)
+Here, we abbreviate 𝑆𝑢𝑐𝑐 i ​ ( 0 ) \mathit{Succ}^{i}(0) by i i and ( m 0 , t 0 , d 0 ) (m_{0},t_{0},d_{0}) and
+( m , t , d ) (m,t,d) denote the input and the output values of the parameters of the
+original program, respectively. For a procedure P P , let 𝑃𝑎𝑡ℎ𝑠 ⁡ ( P ) \mathit{Paths}({P}) denote the
+set of all prime-implicants of β P \beta_{P} . Intuitively, each element of
+𝑃𝑎𝑡ℎ𝑠 ⁡ ( P ) \mathit{Paths}({P}) encodes a path in the procedure.
+Let 𝒜 = ⟨ P 0 , … , P n ⟩ \mathcal{A}=\langle P_{0},\dots,P_{n}\rangle be a program and I I be an
+𝒮 \mathcal{S} -structure. Let X ¯ \overline{X} be a list of length n n such that each X i X_{i}
+is either (i) a truth value if | v ¯ P i | = 0 |\overline{v}_{P_{i}}|=0 , or (ii) a subset of
+| I | | v ¯ P i | |I|^{|\overline{v}_{P_{i}}|} if | v ¯ P i | ≥ 1 |\overline{v}_{P_{i}}|\geq 1 . Let J ⁡ ( I , X ¯ ) J(I,\overline{X}) denote
+the expansion I { Σ P 0 ↦ X 0 } … { Σ P n ↦ X n } {{I}\{{\Sigma_{P_{0}}}\mapsto{X_{0}}\}\dots}\{{\Sigma_{P_{n}}}\mapsto{X_{n}}\} .
+The semantics of a procedure P i P_{i} given I I , denoted ⟦ P i ⟧ I \llbracket{P_{i}}\rrbracket_{I} ,
+characterizes all the terminating executions of P i P_{i} and is defined as follows.
+⟨ ⟦ P 0 ⟧ I , … , ⟦ P n ⟧ I ⟩ \langle\llbracket{P_{0}}\rrbracket_{I},\dots,\llbracket{P_{n}}\rrbracket_{I}\rangle is the (pointwise) least
+X ¯ \overline{X} such that for all Q ∈ 𝒜 Q\in\mathcal{A} , J ⁡ ( I , X ¯ ) ⊧ ∀ v ¯ Q ∪ ℓ ¯ Q ⋅ ( β Q ⇒ Σ Q ​ ( v ¯ Q ) ) J(I,\overline{X})\models\forall\overline{v}_{Q}\cup\overline{\ell}_{Q}\cdot(\beta_{Q}\Rightarrow\Sigma_{Q}(\overline{v}_{Q})) . This
+has a well-known least fixed-point characterization [ 11 ] .
+For a bound b ≥ 0 b\geq 0 on the call-stack, the bounded semantics of a
+procedure P i P_{i} given I I , denoted ⟦ P i ⟧ I b \llbracket{P_{i}}\rrbracket^{b}_{I} , characterizes all the
+executions using a stack of depth bounded by b b and is defined by induction on
+b b :
+⟦ P i ⟧ I 0 = J ⁡ ( I , ⟨ ∅ , … , ∅ ⟩ ) ​ ( ∃ ℓ ¯ P i ⋅ β P i ) , \displaystyle\llbracket{P_{i}}\rrbracket^{0}_{I}=J(I,\langle\emptyset,\dots,\emptyset\rangle)(\exists\overline{\ell}_{P_{i}}\cdot\beta_{P_{i}}),
+⟦ P i ⟧ I b = J ⁡ ( I , ⟨ ⟦ P 0 ⟧ I b − 1 , … , ⟦ P n ⟧ I b − 1 ⟩ ) ​ ( ∃ ℓ ¯ P i ⋅ β P i ) \displaystyle\quad\llbracket{P_{i}}\rrbracket^{b}_{I}=J(I,\langle\llbracket{P_{0}}\rrbracket^{b-1}_{I},\dots,\llbracket{P_{n}}\rrbracket^{b-1}_{I}\rangle)(\exists\overline{\ell}_{P_{i}}\cdot\beta_{P_{i}})
+An environment is a function that maps a predicate symbol Σ P \Sigma_{P} to a
+formula over v ¯ P \overline{v}_{P} . Given a formula τ \tau and an environment E E ,
+we abuse the notation ⟦ ⋅ ⟧ \llbracket{\cdot}\rrbracket and write ⟦ τ ⟧ E \llbracket{\tau}\rrbracket_{E} for the formula
+obtained by instantiating every predicate symbol Σ P \Sigma_{P} by E ⁡ ( Σ P ) E(\Sigma_{P}) in τ \tau .
+Let 𝑇ℎ \mathit{Th} be an 𝒮 \mathcal{S} -theory. A safety property for a procedure P ∈ 𝒜 P\in\mathcal{A} is a formula over
+v ¯ P \overline{v}_{P} . P P satisfies a safety property φ \varphi w.r.t 𝑇ℎ \mathit{Th} ,
+denoted P ⊧ 𝑇ℎ φ P\models_{\mathit{Th}}\varphi , iff for all models I I of 𝑇ℎ \mathit{Th} , ⟦ P ⟧ I ⊆ I ⁡ ( φ ) \llbracket{P}\rrbracket_{I}\subseteq I(\varphi) .
+A safety property ψ \psi of the program 𝒜 \mathcal{A} is a safety property of
+its main procedure. A safety proof for ψ ⁡ ( v ¯ M ) \psi(\overline{v}_{M}) is an
+environment Π \Pi that is both safe and inductive:
+⊧ 𝑇ℎ ⟦ ∀ x ¯ ⋅ Σ M ( x ¯ ) ⇒ ψ ( x ¯ ) ⟧ Π , \displaystyle\models_{\mathit{Th}}\llbracket{\forall\overline{x}\cdot\Sigma_{M}(\overline{x})\Rightarrow\psi(\overline{x})}\rrbracket_{\Pi},
+∀ P ∈ 𝒜 ⋅ ⊧ 𝑇ℎ ⟦ ∀ v ¯ P ∪ ℓ ¯ P ⋅ ( β P ⇒ Σ P ( v ¯ P ) ) ⟧ Π \displaystyle\quad\forall P\in\mathcal{A}\cdot\models_{\mathit{Th}}\llbracket{\forall\overline{v}_{P}\cup\overline{\ell}_{P}\cdot(\beta_{P}\Rightarrow\Sigma_{P}(\overline{v}_{P}))}\rrbracket_{\Pi}
+Given a formula φ ⁡ ( v ¯ P ) \varphi(\overline{v}_{P}) and b ≥ 0 b\geq 0 , a procedure P P
+satisfies bounded safety w.r.t 𝑇ℎ \mathit{Th} , denoted P ⊧ b , 𝑇ℎ φ P\models_{b,\mathit{Th}}\varphi , iff for all
+models I I of 𝑇ℎ \mathit{Th} , ⟦ P ⟧ I b ⊆ I ⁡ ( φ ) \llbracket{P}\rrbracket^{b}_{I}\subseteq I(\varphi) . In this case, we
+also call φ \varphi a summary fact for ⟨ P , b ⟩ \langle P,b\rangle . We call
+φ \varphi a reachability fact for ⟨ P , b ⟩ \langle P,b\rangle iff I ⁡ ( φ ) ⊆ ⟦ P ⟧ I b I(\varphi)\subseteq\llbracket{P}\rrbracket^{b}_{I} , for all models I I of 𝑇ℎ \mathit{Th} . Intuitively,
+summary facts and reachability facts for ⟨ P , b ⟩ \langle P,b\rangle ,
+respectively, over- and under-approximate ⟦ P ⟧ I b \llbracket{P}\rrbracket^{b}_{I} for every model I I of
+𝑇ℎ \mathit{Th} .
+A bounded assertion map maps a procedure P P and a natural number b ≥ 0 b\geq 0 to a set of formulas over v ¯ P \overline{v}_{P} . Given a
+bounded assertion map m m and b ≥ 0 b\geq 0 , we define two special environments
+U m b U_{m}^{b} and O m b O_{m}^{b} as follows.
+U m b : Σ P ↦ ⋁ { δ ∈ m ⁡ ( P , b ′ ) ∣ b ′ ≤ b } \displaystyle U_{m}^{b}:\Sigma_{P}\mapsto\bigvee\{\delta\in m(P,b^{\prime})\mid b^{\prime}\leq b\}
+O m b : Σ P ↦ ⋀ { δ ∈ m ⁡ ( P , b ′ ) ∣ b ′ ≥ b } \displaystyle\quad\quad O_{m}^{b}:\Sigma_{P}\mapsto\bigwedge\{\delta\in m(P,b^{\prime})\mid b^{\prime}\geq b\}
+We use U m b U_{m}^{b} and O m b O_{m}^{b} to under- and over-approximate the bounded semantics.
+For convenience, let U m − 1 U_{m}^{-1} and O m − 1 O_{m}^{-1} be environments that map every
+symbol to ⊥ \bot .
+4 Model Checking Recursive Programs
+In this section, we present our algorithm RecMC ​ ( 𝒜 , φ 𝑠𝑎𝑓𝑒 ) \textsc{RecMC}(\mathcal{A},\varphi_{\mathit{safe}}) that determines whether a program 𝒜 \mathcal{A} satisfies a
+safety property φ 𝑠𝑎𝑓𝑒 \varphi_{\mathit{safe}} . Let 𝒮 \mathcal{S} be the signature of the
+first-order language under consideration and assume a fixed 𝒮 \mathcal{S} -theory 𝑇ℎ \mathit{Th} .
+To avoid clutter, we drop the subscript 𝑇ℎ \mathit{Th} from
+the notation ⊧ 𝑇ℎ \models_{\mathit{Th}} and ⊧ b , 𝑇ℎ \models_{b,\mathit{Th}} . We also establish the soundness and complexity of RecMC . An
+efficient instantiation of RecMC to Linear Arithmetic is presented in
+Section 5 .
+RecMC ( 𝒜 , φ 𝑠𝑎𝑓𝑒 ) (\mathcal{A},\varphi_{\mathit{safe}})
+1
+n ← 0 ; ρ ← ∅ ; σ ← ∅ n\leftarrow 0\mathbin{;}\rho\leftarrow\emptyset\mathbin{;}\sigma\leftarrow\emptyset
+2
+while true do
+      
+3
+𝑟𝑒𝑠 , ρ , σ ← BndSafety ​ ( 𝒜 , φ 𝑠𝑎𝑓𝑒 , n , ρ , σ ) \mathit{res},\rho,\sigma\leftarrow\textsc{BndSafety}(\mathcal{A},\varphi_{\mathit{safe}},n,\rho,\sigma)
+      
+4
+if res is UNSAFE then
+            
+5
+return UNSAFE, ρ \rho
+       else
+            
+6
+𝑖𝑛𝑑 , σ ← CheckInductive ​ ( 𝒜 , σ , n ) \mathit{ind},\sigma\leftarrow\textsc{CheckInductive}(\mathcal{A},\sigma,n)
+7
+if ind then
+                  
+8
+return SAFE, σ \sigma
+            
+9
+n ← n + 1 n\leftarrow n+1
+CheckInductive ( 𝒜 \mathcal{A} , σ \sigma , n n )
+1
+𝑖𝑛𝑑 ← 𝑡𝑟𝑢𝑒 \mathit{ind}\leftarrow\mathit{true}
+2
+foreach P ∈ 𝒜 P\in\mathcal{A} do
+      
+3
+foreach δ ∈ σ ⁡ ( P , n ) \delta\in\sigma(P,n) do
+            
+4
+if ⊧ ⟦ β P ⟧ σ n ⇒ δ \models\llbracket{\beta_{P}}\rrbracket_{\sigma}^{n}\Rightarrow\delta then
+                  
+5
+σ ← σ ∪ ( ⟨ P , n + 1 ⟩ ↦ δ ) \sigma\leftarrow\sigma\cup(\langle P,n+1\rangle\mapsto\delta)
+             else
+                  
+6
+𝑖𝑛𝑑 ← 𝑓𝑎𝑙𝑠𝑒 \mathit{ind}\leftarrow\mathit{false}
+7
+return ( ind , σ ) (\text{\emph{ind}},\sigma)
+Figure 5 : Pseudo-code of RecMC .
+Main Loop .
+RecMC maintains two bounded
+assertion maps ρ \rho and σ \sigma for reachability and summary facts,
+respectively. For brevity, for a first-order formula τ \tau , we write
+⟦ τ ⟧ ρ b \llbracket{\tau}\rrbracket_{\rho}^{b} and ⟦ τ ⟧ σ b \llbracket{\tau}\rrbracket_{\sigma}^{b} to denote
+⟦ τ ⟧ U ρ b \llbracket{\tau}\rrbracket_{U_{\rho}^{b}} and ⟦ τ ⟧ O σ b \llbracket{\tau}\rrbracket_{O_{\sigma}^{b}} ,
+respectively, where the environments U ρ b U_{\rho}^{b} and O σ b O_{\sigma}^{b} are
+as defined in Section 3 . Intuitively,
+⟦ τ ⟧ ρ b \llbracket{\tau}\rrbracket_{\rho}^{b} and ⟦ τ ⟧ σ b \llbracket{\tau}\rrbracket_{\sigma}^{b} , respectively, under-
+and over-approximate τ \tau using ρ \rho and σ \sigma .
+The pseudo-code of the main loop of RecMC (corresponding to the flow
+diagram in Fig. 1 ) is shown in Fig. 5 .
+RecMC follows an iterative deepening strategy. In each
+iteration, BndSafety (described below) checks whether all
+executions of 𝒜 \mathcal{A} satisfy φ 𝑠𝑎𝑓𝑒 \varphi_{\mathit{safe}} for a bound n ≥ 0 n\geq 0 on the call-stack, i.e. , if M ⊧ n φ 𝑠𝑎𝑓𝑒 M\models_{n}\varphi_{\mathit{safe}} .
+BndSafety also updates the maps ρ \rho and σ \sigma . Whenever BndSafety returns
+𝑈𝑁𝑆𝐴𝐹𝐸 \mathit{UNSAFE} , the reachability facts in ρ \rho are sufficient to
+construct a counterexample and the loop terminates. Whenever
+BndSafety returns 𝑆𝐴𝐹𝐸 \mathit{SAFE} , the summary facts in σ \sigma
+are sufficient to prove the absence of a counterexample for the
+current bound n n on the call-stack. In this case, if σ \sigma is also
+inductive, as determined by CheckInductive , O σ n O_{\sigma}^{n} is a
+safety proof and the loop terminates. Otherwise, the bound on the
+call-stack is incremented and a new iteration of the loop begins. Note that, as
+a side-effect of CheckInductive , some
+summary facts are propagated to the bound n + 1 n+1 . This is similar to
+push generalization in IC3 [ 9 ] .
+{ ⟨ M , ¬ φ safe , n ⟩ } | ρ 𝐼𝑛𝑖𝑡 | σ 𝐼𝑛𝑖𝑡 left=Init
+​ 𝒬 ∥ ρ ∥ σ ⟨ P , φ , b ⟩ ∈ 𝒬 ⊧ ⟦ β P ⟧ σ b − 1 ⇒ ¬ φ 𝒬 ∖ { ⟨ P , η , c ⟩ | c ≤ b , ⊧ ⟦ Σ P ⟧ σ c ∧ ψ ⇒ ¬ η } ∥ ρ ∥ σ ∪ { ⟨ P , b ⟩ ↦ ψ } left=Sum \frac{}{{\{\langle{M},{\neg\varphi_{\text{\emph{safe}}}},{n}\rangle\}}\parallel{\rho_{\mathit{Init}}}\parallel{\sigma_{\mathit{Init}}}}\quad\textsc{left=Init}\\
+\frac{{\mathcal{Q}}\parallel{\rho}\parallel{\sigma}\quad\langle{P},{\varphi},{b}\rangle\in\mathcal{Q}\quad\models\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1}\Rightarrow\neg\varphi}{{\mathcal{Q}\setminus\{\langle{P},{\eta},{c}\rangle~|~c\leq b,\models\llbracket{\Sigma_{P}}\rrbracket_{\sigma}^{c}\land\psi\Rightarrow\neg\eta\}}\parallel{\rho}\parallel{\sigma\cup\{\langle P,b\rangle\mapsto\psi\}}}\quad\textsc{left=Sum}
+where ​ ψ = Itp ​ ( ⟦ β P ⟧ σ b − 1 , ¬ φ ) \textnormal{where}~\psi=\textsc{Itp}(\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1},\neg\varphi)
+𝒬 ∥ ρ ∥ σ ⟨ P , φ , b ⟩ ∈ 𝒬 π ∈ 𝑃𝑎𝑡ℎ𝑠 ( P ) ⊧̸ ⟦ π ⟧ ρ b − 1 ⇒ ¬ φ 𝒬 ∖ { ⟨ P , η , c ⟩ | c ≥ b , ⊧̸ ψ ⇒ ¬ η } ∥ ρ ∪ { ⟨ P , b ⟩ ↦ ψ } ∥ σ left=Reach \frac{{\mathcal{Q}}\parallel{\rho}\parallel{\sigma}\quad\langle{P},{\varphi},{b}\rangle\in\mathcal{Q}\quad\pi\in\mathit{Paths}({P})\quad\not\models\llbracket{\pi}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi}{{\mathcal{Q}\setminus\{\langle{P},{\eta},{c}\rangle~|~c\geq b,\not\models\psi\Rightarrow\neg\eta\}}\parallel{\rho\cup\{\langle P,b\rangle\mapsto\psi\}}\parallel{\sigma}}\quad\textsc{left=Reach}
+where ​ ψ = ∃ ℓ ¯ P ⋅ ⟦ π ⟧ ρ b − 1 \textnormal{where}~\psi=\exists\overline{\ell}_{P}\cdot\llbracket{\pi}\rrbracket_{\rho}^{b-1}
+𝒬 ∥ ρ ∥ σ ⟨ P , φ , b ⟩ ∈ 𝒬 ⊧ ⟦ β P ⟧ ρ b − 1 ⇒ ¬ φ π ∈ 𝑃𝑎𝑡ℎ𝑠 ( P ) π = π u ∧ Σ R ( a ¯ ) ∧ π v ⊧ ⟦ π u ⟧ σ b − 1 ∧ ⟦ Σ R ( a ¯ ) ⟧ ρ b − 1 ∧ ⟦ π v ⟧ ρ b − 1 ⇒ ¬ φ ⊧̸ ⟦ π u ⟧ σ b − 1 ∧ ⟦ Σ R ( a ¯ ) ⟧ σ b − 1 ∧ ⟦ π v ⟧ ρ b − 1 ⇒ ¬ φ 𝒬 ∪ { ⟨ R , ψ , b − 1 ⟩ } | ρ | σ left=Query \frac{{\mathcal{Q}}\parallel{\rho}\parallel{\sigma}\quad\langle{P},{\varphi},{b}\rangle\in\mathcal{Q}\quad\models\llbracket{\beta_{P}}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi\quad\pi\in\mathit{Paths}({P})\quad\quad\pi=\pi_{u}\land\Sigma_{R}(\overline{a})\land\pi_{v}\quad\models\llbracket{\pi_{u}}\rrbracket_{\sigma}^{b-1}\land\llbracket{\Sigma_{R}(\overline{a})}\rrbracket_{\rho}^{b-1}\land\llbracket{\pi_{v}}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi\quad\not\models\llbracket{\pi_{u}}\rrbracket_{\sigma}^{b-1}\land\llbracket{\Sigma_{R}(\overline{a})}\rrbracket_{\sigma}^{b-1}\land\llbracket{\pi_{v}}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi}{{\mathcal{Q}\cup\{\langle{R},{\psi},{b-1}\rangle\}}\parallel{\rho}\parallel{\sigma}}\quad\textsc{left=Query}
+where ​ { ψ = ( ∃ ( v ¯ P ∪ ℓ ¯ P ) ∖ a ¯ ⋅ ⟦ π u ⟧ σ b − 1 ∧ ⟦ π v ⟧ ρ b − 1 ∧ φ ) [ a ¯ ← v ¯ R ] for all ​ ⟨ R , η , b − 1 ⟩ ∈ 𝒬 , ⊧ ψ ⇒ ¬ η \textnormal{where}~\begin{cases}\psi=\left(\exists\left(\overline{v}_{P}\cup\overline{\ell}_{P}\right)\setminus\overline{a}\cdot\llbracket{\pi_{u}}\rrbracket_{\sigma}^{b-1}\land\llbracket{\pi_{v}}\rrbracket_{\rho}^{b-1}\land\varphi\right)[\overline{a}\leftarrow\overline{v}_{R}]\\
+\textnormal{for all }\langle{R},{\eta},{b-1}\rangle\in\mathcal{Q},\models\psi\Rightarrow\neg\eta\end{cases}
+∅ ∥ ρ ∥ σ ⊧̸ ⟦ Σ M ⟧ ρ n ⇒ φ safe UNSAFE left=Unsafe ​ ∅ ∥ ρ ∥ σ ⊧ ⟦ Σ M ⟧ σ n ⇒ φ safe SAFE left=Safe \frac{{\emptyset}\parallel{\rho}\parallel{\sigma}\quad\not\models\llbracket{\Sigma_{M}}\rrbracket_{\rho}^{n}\Rightarrow\varphi_{\text{\emph{safe}}}}{\text{\emph{UNSAFE}}}\quad\textsc{left=Unsafe}\par\frac{{\emptyset}\parallel{\rho}\parallel{\sigma}\quad\models\llbracket{\Sigma_{M}}\rrbracket_{\sigma}^{n}\Rightarrow\varphi_{\text{\emph{safe}}}}{\text{\emph{SAFE}}}\quad\textsc{left=Safe}
+Figure 6 : Rules defining BndSafety ​ ( 𝒜 , φ 𝑠𝑎𝑓𝑒 , n , ρ 𝐼𝑛𝑖𝑡 , σ 𝐼𝑛𝑖𝑡 ) \textsc{BndSafety}(\mathcal{A},\varphi_{\mathit{safe}},n,\rho_{\mathit{Init}},\sigma_{\mathit{Init}}) .
+Bounded safety .
+We describe the routine
+BndSafety ​ ( 𝒜 , φ 𝑠𝑎𝑓𝑒 , n , ρ 𝐼𝑛𝑖𝑡 , σ 𝐼𝑛𝑖𝑡 ) \textsc{BndSafety}(\mathcal{A},\varphi_{\mathit{safe}},n,\rho_{\mathit{Init}},\sigma_{\mathit{Init}}) as an abstract
+transition system [ 33 ] defined by the inference rules
+shown in Fig. 6 . Here, n n is the current bound on the
+call-stack and ρ 𝐼𝑛𝑖𝑡 \rho_{\mathit{Init}} and σ 𝐼𝑛𝑖𝑡 \sigma_{\mathit{Init}} are the maps of reachability and summary
+facts input to the routine. A state of BndSafety is a triple 𝒬 | ρ | σ {\mathcal{Q}}\parallel{\rho}\parallel{\sigma} , where ρ \rho and σ \sigma are the current maps and
+𝒬 \mathcal{Q} is a set of triples ⟨ P , φ , b ⟩ \langle P,\varphi,b\rangle for a procedure
+P P , a formula φ \varphi over v ¯ P \overline{v}_{P} , and a number b ≥ 0 b\geq 0 .
+A triple ⟨ P , φ , b ⟩ ∈ 𝒬 \langle P,\varphi,b\rangle\in\mathcal{Q} is called a bounded
+reachability query and asks whether P ⊧̸ ¬ b ⁡ φ P\not\models_{b}\neg\varphi , i.e. , whether
+there is an execution in P P using a call-stack bounded by b b where the values
+of v ¯ P \overline{v}_{P} satisfy φ \varphi .
+BndSafety starts with a single query ⟨ M , ¬ φ 𝑠𝑎𝑓𝑒 , n ⟩ \langle M,\neg\varphi_{\mathit{safe}},n\rangle and initializes the maps of
+reachability and summary facts (rule Init ). It checks whether M ⊧ n φ 𝑠𝑎𝑓𝑒 M\models_{n}\varphi_{\mathit{safe}} by inferring new summary and reachability
+facts to answer existing queries (rules Sum and Reach ) and generating new queries
+(rule Query ). When there are no queries left to answer, i.e. , 𝒬 \mathcal{Q} is
+empty, it terminates with a result of either 𝑈𝑁𝑆𝐴𝐹𝐸 \mathit{UNSAFE} or 𝑆𝐴𝐹𝐸 \mathit{SAFE} (rules
+Unsafe and Safe ).
+Sum infers a new summary fact when a query
+⟨ P , φ , b ⟩ \langle P,\varphi,b\rangle can be answered negatively. In this
+case, there is an over-approximation of the bounded semantics of P P at b b , obtained using
+the summary facts of callees at bound b − 1 b-1 , that is unsatisfiable with
+φ \varphi . That is, ⊧ ⟦ β P ⟧ σ b − 1 ⇒ ¬ φ \models\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1}\Rightarrow\neg\varphi . The inference of the new fact is by
+interpolation [ 16 ] (denoted by Itp in the
+side-condition of the rule). Thus, the new summary fact ψ \psi is a
+formula over v ¯ P \overline{v}_{P} such that ⊧ ( ⟦ β P ⟧ σ b − 1 ⇒ ψ ⁡ ( v ¯ P ) ) ∧ ( ψ ⁡ ( v ¯ P ) ⇒ ¬ φ ) \models\left(\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1}\Rightarrow\psi(\overline{v}_{P})\right)~\land~(\psi(\overline{v}_{P})\Rightarrow\neg\varphi) .
+Note that ψ \psi over-approximates the bounded semantics of P P at b b . Every
+query ⟨ P , η , c ⟩ ∈ 𝒬 \langle P,\eta,c\rangle\in\mathcal{Q} such that η \eta is unsatisfiable
+with the updated environment O σ c ​ ( Σ P ) O^{c}_{\sigma}(\Sigma_{P}) is immediately answered and
+removed.
+Reach infers a new reachability fact when a query
+⟨ P , φ , b ⟩ \langle P,\varphi,b\rangle can be answered positively. In this case,
+there is an under-approximation of the bounded semantics of P P at b b , obtained
+using the reachability facts of callees at bound b − 1 b-1 , that is satisfiable
+with φ \varphi . That is, ⊧̸ ⟦ β P ⟧ ρ b − 1 ⇒ ¬ φ \not\models\llbracket{\beta_{P}}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi . In particular, there exists a path π \pi in
+𝑃𝑎𝑡ℎ𝑠 ⁡ ( P ) \mathit{Paths}(P) such that ⊧̸ ⟦ π ⟧ ρ b − 1 ⇒ ¬ φ \not\models\llbracket{\pi}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi . The new reachability fact ψ \psi is obtained by choosing such a
+π \pi non-deterministically and existentially quantifying all local variables
+from ⟦ π ⟧ ρ b − 1 \llbracket{\pi}\rrbracket_{\rho}^{b-1} . Note that ψ \psi under-approximates the bounded
+semantics of P P at b b . Every query ⟨ P , η , c ⟩ ∈ 𝒬 \langle P,\eta,c\rangle\in\mathcal{Q} such
+that η \eta is satisfiable with the updated environment U ρ c ​ ( Σ P ) U^{c}_{\rho}(\Sigma_{P}) is
+immediately answered and removed.
+Query creates a new query when a query ⟨ P , φ , b ⟩ \langle P,\varphi,b\rangle cannot be answered using current ρ \rho and σ \sigma . In
+this case, the current over-approximation of the bounded semantics of P P at b b
+is satisfiable with φ \varphi while its current under-approximation is
+unsatisfiable with
+φ \varphi . That is, ⊧̸ ⟦ β P ⟧ σ b − 1 ⇒ ¬ φ \not\models\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1}\Rightarrow\neg\varphi and
+⊧ ⟦ β P ⟧ ρ b − 1 ⇒ ¬ φ \models\llbracket{\beta_{P}}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi . In particular, there exists
+a path π \pi in 𝑃𝑎𝑡ℎ𝑠 ⁡ ( P ) \mathit{Paths}(P) such that ⊧̸ ⟦ π ⟧ σ b − 1 ⇒ ¬ φ \not\models\llbracket{\pi}\rrbracket_{\sigma}^{b-1}\Rightarrow\neg\varphi and ⊧ ⟦ π ⟧ ρ b − 1 ⇒ ¬ φ \models\llbracket{\pi}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi .
+Intuitively, π \pi is a potential counterexample path that needs to be checked for
+feasibility. Such a π \pi is chosen non-deterministically. π \pi is guaranteed
+to have a call Σ R ​ ( a ¯ ) \Sigma_{R}(\overline{a}) to a procedure R R such that the
+under-approximation ⟦ Σ R ​ ( a ¯ ) ⟧ ρ b − 1 \llbracket{\Sigma_{R}(\overline{a})}\rrbracket_{\rho}^{b-1} is too strong to witness π \pi but the
+over-approximation ⟦ Σ R ​ ( a ¯ ) ⟧ σ b − 1 \llbracket{\Sigma_{R}(\overline{a})}\rrbracket_{\sigma}^{b-1} is too weak to block it. That is, π \pi can be
+partitioned into a prefix π u \pi_{u} , a call Σ R ​ ( a ¯ ) \Sigma_{R}(\overline{a}) to R R , and a
+suffix π v \pi_{v} such that the following hold:
+⊧ ⟦ Σ R ​ ( a ¯ ) ⟧ ρ b − 1 \displaystyle\models\llbracket{\Sigma_{R}(\overline{a})}\rrbracket_{\rho}^{b-1}
+⇒ ( ( ⟦ π u ⟧ σ b − 1 ∧ ⟦ π v ⟧ ρ b − 1 ) ⇒ ¬ φ ) \displaystyle\Rightarrow\left((\llbracket{\pi_{u}}\rrbracket_{\sigma}^{b-1}\land\llbracket{\pi_{v}}\rrbracket_{\rho}^{b-1})\Rightarrow\neg\varphi\right)
+⊧̸ ⟦ Σ R ​ ( a ¯ ) ⟧ σ b − 1 \displaystyle\not\models\llbracket{\Sigma_{R}(\overline{a})}\rrbracket_{\sigma}^{b-1}
+⇒ ( ( ⟦ π u ⟧ σ b − 1 ∧ ⟦ π v ⟧ ρ b − 1 ) ⇒ ¬ φ ) \displaystyle\Rightarrow\left((\llbracket{\pi_{u}}\rrbracket_{\sigma}^{b-1}\land\llbracket{\pi_{v}}\rrbracket_{\rho}^{b-1})\Rightarrow\neg\varphi\right)
+Note that the prefix π u \pi_{u} and the suffix π v \pi_{v} are over- and
+under-approximated, respectively.
+A new query ⟨ R , ψ , b − 1 ⟩ \langle R,\psi,b-1\rangle is created where ψ \psi is obtained by
+existentially quantifying all variables from ⟦ π u ⟧ σ b − 1 ∧ ⟦ π v ⟧ ρ b − 1 ∧ φ \llbracket{\pi_{u}}\rrbracket_{\sigma}^{b-1}\land\llbracket{\pi_{v}}\rrbracket_{\rho}^{b-1}\land\varphi except the arguments a ¯ \overline{a} of the
+call, and renaming appropriately. If the new query is answered
+negatively (using Sum ), all executions along π \pi where the values of
+v ¯ P ∪ ℓ ¯ P \overline{v}_{P}\cup\overline{\ell}_{P} satisfy ⟦ π v ⟧ ρ b − 1 \llbracket{\pi_{v}}\rrbracket_{\rho}^{b-1} are spurious counterexamples.
+An additional side-condition requires that ψ \psi “does not overlap”
+with η \eta for any other query ⟨ R , η , b − 1 ⟩ \langle R,\eta,b-1\rangle in 𝒬 \mathcal{Q} .
+This is necessary for termination of BndSafety (Theorem 4.2 ). In practice, the side-condition is
+trivially satisfied by always applying the rule to ⟨ P , φ , b ⟩ \langle P,\varphi,b\rangle with the smallest b b .
+π i \pi_{i}
+⟦ π i ⟧ ρ 0 \llbracket{\pi_{i}}\rrbracket_{\rho}^{0}
+⟦ π i ⟧ σ 0 \llbracket{\pi_{i}}\rrbracket_{\sigma}^{0}
+i = 1 i=1
+Σ T ​ ( m 0 , ℓ 0 ) \Sigma_{T}(m_{0},\ell_{0})
+⊥ \bot
+⊤ \top
+i = 2 i=2
+Σ D ​ ( ℓ 0 , ℓ 1 ) \Sigma_{D}(\ell_{0},\ell_{1})
+ℓ 1 = ℓ 0 − 1 \ell_{1}=\ell_{0}-1
+⊤ \top
+i = 3 i=3
+Σ D ​ ( ℓ 1 , m ) \Sigma_{D}(\ell_{1},m)
+m = ℓ 1 − 1 m=\ell_{1}-1
+⊤ \top
+Figure 7 : Approximations of the only path π \pi of the procedure M M in
+Fig. 3 .
+For example, consider the program in Fig. 3 represented
+by ( 1 ) and the query ⟨ M , φ , 1 ⟩ \langle M,\varphi,1\rangle where
+φ ≡ m 0 < 2 ​ m + 4 \varphi\equiv m_{0}<2m+4 . Let σ = ∅ \sigma=\emptyset , ρ ( D , 0 ) = { d = d 0 − 1 } \rho(D,0)=\{d=d_{0}-1\} and ρ ⁡ ( T , 0 ) = ∅ \rho(T,0)=\emptyset . Let π = ( Σ T ​ ( m 0 , ℓ 0 ) ∧ Σ D ​ ( ℓ 0 , ℓ 1 ) ∧ Σ D ​ ( ℓ 1 , m ) ) \pi=(\Sigma_{T}(m_{0},\ell_{0})\land\Sigma_{D}(\ell_{0},\ell_{1})\land\Sigma_{D}(\ell_{1},m)) denote the only path in the
+procedure M M . Fig. 7 shows ⟦ π i ⟧ ρ 0 \llbracket{\pi_{i}}\rrbracket_{\rho}^{0} and
+⟦ π i ⟧ σ 0 \llbracket{\pi_{i}}\rrbracket_{\sigma}^{0} for each conjunct π i \pi_{i} of π \pi . As the figure shows,
+⟦ π ⟧ σ 0 \llbracket{\pi}\rrbracket_{\sigma}^{0} is satisfiable with φ \varphi , witnessed by the execution e ≡ ⟨ m 0 = 3 , ℓ 0 = 3 , ℓ 1 = 2 , m = 1 ⟩ e\equiv\langle m_{0}=3,\ell_{0}=3,\ell_{1}=2,m=1\rangle . Note that this execution
+also satisfies ⟦ π 2 ∧ π 3 ⟧ ρ 0 \llbracket{\pi_{2}\land\pi_{3}}\rrbracket_{\rho}^{0} . But,
+⟦ π 1 ⟧ ρ 0 \llbracket{\pi_{1}}\rrbracket_{\rho}^{0} is too strong to witness it, where π 1 \pi_{1} is the call
+Σ T ​ ( m 0 , ℓ 0 ) \Sigma_{T}(m_{0},\ell_{0}) . To create a new query for T T , we first existentially quantify
+all variables other than the arguments m 0 m_{0} and ℓ 0 \ell_{0} from π 2 ∧ π 3 ∧ φ \pi_{2}\land\pi_{3}\land\varphi , obtaining m 0 < 2 ​ ℓ 0 m_{0}<2\ell_{0} . Renaming the arguments by the
+parameters of T T results in the new query ⟨ T , t 0 < 2 ​ t , 0 ⟩ \langle T,t_{0}<2t,0\rangle . Further
+iterations of BndSafety would answer this query negatively making the execution
+e e spurious. Note that this would also make all other executions where the
+values to ⟨ m 0 , ℓ 0 , ℓ 1 , m ⟩ \langle m_{0},\ell_{0},\ell_{1},m\rangle satisfy
+⟦ π 2 ∧ π 3 ⟧ ρ 0 \llbracket{\pi_{2}\land\pi_{3}}\rrbracket_{\rho}^{0} spurious.
+Soundness and Complexity .
+Soundness of RecMC follows from that of
+BndSafety , which can be shown by a case analysis on the
+inference rules 3 3
+3
+Proofs of all of the theorems are in the
+Appendix. .
+Theorem 4.1
+BndSafety and RecMC are sound.
+BndSafety is complete relative to an oracle for satisfiability modulo
+𝑇ℎ \mathit{Th} . Even though the number of reachable states of a procedure is unbounded
+in general, the number of reachability facts inferred by BndSafety is finite.
+This is because a reachability fact corresponds to a path (see Reach )
+and given a bound on the call-stack, the number of such facts is bounded. This
+further bounds the number of queries that can be created.
+Theorem 4.2
+Given an oracle for 𝑇ℎ \mathit{Th} , BndSafety ​ ( 𝒜 , φ , n , ∅ , ∅ ) \textsc{BndSafety}(\mathcal{A},\varphi,n,\emptyset,\emptyset) terminates.
+As a corollary of Theorem 4.2 , RecMC is a
+co-semidecision procedure for safety, i.e. , RecMC is guaranteed to
+find a counterexample if one exists. In contrast, the closest related algorithm
+GPDR [ 27 ] is not a co-semidecision procedure (see Appendix).
+Finally, for Boolean Programs RecMC is a complete decision
+procedure. Unlike the general case, the number of reachable states of a Boolean
+Program, and hence the number of reachability facts, is finite and independent
+of the bound on the call-stack. Let N = | 𝒜 | N=|\mathcal{A}| and k = max ⁡ { | v ¯ P | ∣ P ∈ 𝒜 } k=\max\{|\overline{v}_{P}|\mid P\in\mathcal{A}\} .
+Theorem 4.3
+Let 𝒜 \mathcal{A} be a Boolean Program. Then RecMC ​ ( 𝒜 , φ ) \textsc{RecMC}(\mathcal{A},\varphi) terminates in
+O ⁡ ( N 2 ⋅ 2 2 ​ k ) O(N^{2}\cdot 2^{2k}) -many applications of the rules in
+Fig. 6 .
+Note that due to the iterative deepening strategy of RecMC , the
+complexity is quadratic in the number of procedures (and not linear as in [ 6 ] ).
+In contrast, other SMT-based algorithms, such as Whale [ 2 ] ,
+are worst-case exponential in the number of states of a Boolean Program.
+In summary, RecMC checks safety of a recursive program by inferring
+the necessary under- and over-approximations of procedure semantics
+and using them to analyze procedures individually.
+5 Model Based Projection
+RecMC , as presented in Section 4 , can be used as-is,
+when 𝑇ℎ \mathit{Th} is Linear Arithmetic. But, note that the rules Reach
+and Query introduce existential quantifiers in reachability
+facts and queries. Unless eliminated, these quantifiers accumulate and
+the size of the formulas grows exponentially in the bound on the
+call-stack.
+Using quantifier elimination (QE) to eliminate the quantifiers is expensive.
+Instead, we suggest an alternative
+approach that under-approximates existential quantification with
+quantifier-free formulas lazily and efficiently. We first introduce
+a model-based under-approximation of QE, which we call a Model Based Projection
+(MBP). Second, we give an efficient (linear in the size of formulas
+involved) MBP procedure for Linear Rational Arithmetic (LRA). Due to
+space limitations, MBP for Linear Integer Arithmetic (LIA) is described in the
+Appendix. Finally, we show a modified version of BndSafety
+that uses MBP instead of existential quantification and show that it
+is sound and terminating.
+Model Based Projection ( ( MBP ) ) .
+Let λ ⁡ ( y ¯ ) \lambda(\overline{y}) be the existentially quantified formula
+∃ x ¯ ⋅ λ m ​ ( x ¯ , y ¯ ) \exists\overline{x}\cdot\lambda_{m}(\overline{x},\overline{y}) where λ m \lambda_{m} is quantifier free. A function Proj λ \textnormal{\emph{Proj}}_{\lambda}
+from models (modulo 𝑇ℎ \mathit{Th} ) of λ m \lambda_{m} to quantifier-free formulas over y ¯ \overline{y} is a Model Based
+Projection (for λ \lambda ) iff it has a finite image, λ ≡ ⋁ M ⊧ λ m Proj λ ​ ( M ) \lambda\equiv\bigvee_{M\models\lambda_{m}}\textnormal{\emph{Proj}}_{\lambda}(M) , and for every model M M of λ m \lambda_{m} , M ⊧ Proj λ ​ ( M ) M\models\textnormal{\emph{Proj}}_{\lambda}(M) .
+In other words, Proj λ \textnormal{\emph{Proj}}_{\lambda} covers the space of all models of λ m ​ ( x ¯ , y ¯ ) \lambda_{m}(\overline{x},\overline{y}) by a finite
+set of quantifier-free formulas over y ¯ \overline{y} . MBP exists for any theory
+that admits quantifier elimination, because one can first obtain an equivalent
+quantifier-free formula and map every model to it.
+MBP for Linear Rational Arithmetic .
+We begin with a brief
+overview of Loos-Weispfenning (LW) method [ 30 ] for quantifier elimination in LRA.
+We borrow our presentation from Nipkow [ 34 ] to which we refer the
+reader for more details. Let λ ⁡ ( y ¯ ) = ∃ x ¯ ⋅ λ m ​ ( x ¯ , y ¯ ) \lambda(\overline{y})=\exists\overline{x}\cdot\lambda_{m}(\overline{x},\overline{y}) as above. Without loss of generality, assume that x ¯ \overline{x}
+is singleton, λ m \lambda_{m} is in Negation Normal Form, and x x only
+appears in the literals of the form ℓ < x \ell<x , x < u x<u , and x = e x=e ,
+where ℓ \ell , u u , and e e are x x -free. Let lits ​ ( λ ) \text{\emph{lits}}({\lambda}) denote
+the literals of λ \lambda . The LW-method states that
+∃ x ⋅ λ m ​ ( x ) ≡ ( ⋁ ( x = e ) ∈ lits ​ ( λ ) λ m ​ [ e ] ∨ ⋁ ( ℓ < x ) ∈ lits ​ ( λ ) λ m ​ [ ℓ + ϵ ] ∨ λ m ​ [ − ∞ ] ) \exists x\cdot\lambda_{m}(x)~\equiv~\left(\bigvee_{(x=e)\in\text{\emph{lits}}({\lambda})}\lambda_{m}[e]~\lor~\bigvee_{(\ell<x)\in\text{\emph{lits}}({\lambda})}\lambda_{m}[\ell+\epsilon]~\lor~~\lambda_{m}[-\infty]\right)
+(2)
+where λ m ​ [ ⋅ ] \lambda_{m}[\cdot] denotes a virtual substitution for the literals containing x x .
+Intuitively, λ m ​ [ e ] \lambda_{m}[e] covers the case when a literal ( x = e ) (x=e) is true.
+Otherwise, the set of ℓ \ell ’s in the literals ( ℓ < x ) (\ell<x) identify intervals
+in which x x can lie which are covered by the remaining substitutions.
+We omit the details of the substitution and instead
+illustrate it on an example. Let λ m \lambda_{m} be ( x = e ∧ ϕ 1 ) ∨ ( ℓ < x ∧ x < u ) ∨ ( x < u ∧ ϕ 2 ) (x=e\land\phi_{1})\lor(\ell<x\land x<u)\lor(x<u\land\phi_{2}) , where
+ℓ , e , u , ϕ 1 , ϕ 2 \ell,e,u,\phi_{1},\phi_{2} are x x -free. Then,
+∃ x ⋅ λ m ​ ( x ) \displaystyle\exists x\cdot\lambda_{m}(x)
+≡ λ m ​ [ e ] ∨ λ m ​ [ ℓ + ϵ ] ∨ λ m ​ [ − ∞ ] \displaystyle\equiv\lambda_{m}[e]\lor\lambda_{m}[\ell+\epsilon]\lor\lambda_{m}[-\infty]
+≡ ( ϕ 1 ∨ ( ℓ < e ∧ e < u ) ∨ ( e < u ∧ ϕ 2 ) ) ∨ ( ℓ < u ∨ ( ℓ < u ∧ ϕ 2 ) ) ∨ ϕ 2 \displaystyle\equiv\big(\phi_{1}\lor\left(\ell<e\land e<u\right)\lor\left(e<u\land\phi_{2}\right)\big)\lor\big(\ell<u\lor(\ell<u\land\phi_{2})\big)\lor\phi_{2}
+≡ ϕ 1 ∨ ( ℓ < u ) ∨ ϕ 2 \displaystyle\equiv\phi_{1}\lor(\ell<u)\lor\phi_{2}
+We now define an MBP LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} for LRA as a map from models
+of λ m \lambda_{m} to disjuncts in ( 2 ). Given M ⊧ λ m M\models\lambda_{m} , LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} picks a disjunct that covers M M
+based on values of the literals of the form x = e x=e and ℓ < x \ell<x in M M . Ties are
+broken by a syntactic ordering on terms (e.g., when M ⊧ ℓ ′ = ℓ M\models\ell^{\prime}=\ell for two literals ℓ < x \ell<x and ℓ ′ < x \ell^{\prime}<x ).
+LRAProj λ ​ ( M ) = { λ m ​ [ e ] , if ​ ( x = e ) ∈ lits ​ ( λ ) ∧ M ⊧ x = e λ m ​ [ ℓ + ϵ ] , else if ​ ( ℓ < x ) ∈ lits ​ ( λ ) ∧ M ⊧ ℓ < x ∧ ∀ ( ℓ ′ < x ) ∈ lits ​ ( λ ) ⋅ M ⊧ ( ( ℓ ′ < x ) ⇒ ( ℓ ′ ≤ ℓ ) ) λ m ​ [ − ∞ ] , otherwise \textnormal{\emph{LRAProj}}_{\lambda}(M)=\begin{cases}\lambda_{m}[e],&\text{if }(x=e)\in\text{\emph{lits}}({\lambda})\land M\models x=e\\
+\lambda_{m}[\ell+\epsilon],&\text{else if }(\ell<x)\in\text{\emph{lits}}({\lambda})\land M\models\ell<x\land\\
+&\forall(\ell^{\prime}<x)\in\text{\emph{lits}}({\lambda})\cdot M\models\left((\ell^{\prime}<x)\Rightarrow(\ell^{\prime}\leq\ell)\right)\\
+\lambda_{m}[-\infty],&\text{otherwise}\end{cases}
+Theorem 5.1
+LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} is a Model Based Projection.
+Note that LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} is linear in the size of
+λ \lambda . An MBP for LIA can be defined similarly (see Appendix) based on
+Cooper’s method [ 15 ] .
+Bounded Safety with MBP .
+Intuitively, each quantifier-free
+formula in the image of Proj λ \textnormal{\emph{Proj}}_{\lambda} under-approximates λ \lambda . As
+above, we use λ m \lambda_{m} for the quantifier-free matrix of λ \lambda . We modify
+the side-condition ψ = λ \psi=\lambda of Reach and Query to use
+quantifier-free under-approximations as follows: (i) for Reach ,
+the new side-condition is ψ = Proj λ ​ ( M ) \psi=\textnormal{\emph{Proj}}_{\lambda}(M) where M ⊧ λ m ∧ φ M\models\lambda_{m}\land\varphi , (ii) for Query , the new side-condition
+is ψ = Proj λ ​ ( M ) \psi=\textnormal{\emph{Proj}}_{\lambda}(M) where M ⊧ λ m ∧ ⟦ Σ R ​ ( a ) ⟧ σ b − 1 M\models\lambda_{m}\land\llbracket{\Sigma_{R}(a)}\rrbracket^{b-1}_{\sigma} .
+Note that to avoid redundant applications of the rules, we require M M to satisfy a formula
+stronger than λ m \lambda_{m} .
+Intuitively, (i) ensures that the newly inferred reachability fact answers the
+current query and (ii) ensures that the new query cannot be immediately answered
+by known facts. In both cases, the required model M M can be obtained as a side-effect
+of discharging the premises of the rules. Soundness of BndSafety is unaffected and
+termination of BndSafety follows from the image-finiteness of Proj λ \textnormal{\emph{Proj}}_{\lambda} .
+Theorem 5.2
+Assuming an oracle and an MBP for 𝑇ℎ \mathit{Th} , BndSafety is sound and terminating
+with the modified rules.
+Thus, BndSafety with a linear-time MBP (such as LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} ) keeps the
+size of the formulas small by efficiently inferring only the necessary
+under-approximations of the quantified formulas.
+6 Implementation and Experiments
+We have implemented RecMC for analyzing C programs as part of
+the tool Spacer . The back-end is based on Z3 [ 18 ] which is used
+for SMT-solving and interpolation. It supports propositional logic,
+linear arithmetic, and bit-vectors (via bit-blasting). The front-end
+is based on UFO [ 3 ] . It converts C programs to
+the Horn-SMT format of Z3, which corresponds to the logical program
+representation of Section 3 . The
+implementation and benchmarks are available
+online 4 4
+4
+http://www.cs.cmu.edu/~akomurav/projects/spacer/home.html . .
+We evaluated Spacer on two sets of benchmarks. The first set contains
+2,908 Boolean Programs obtained from the SLAM
+toolkit 5 5
+5
+https://svn.sosy-lab.org/software/sv-benchmarks/trunk/clauses/BOOL/slam.zip . The second
+contains 799 C programs from the Software Verification
+Competition (SVCOMP) 2014 [ 37 ] . We call this set Svcomp-1 . We also
+evaluated on two variants of Svcomp-1 , which we call Svcomp-2 and
+Svcomp-3 , obtained by factoring out parts of the program into
+procedures and introducing more modularity. We compared Spacer against the
+implementation of GPDR in Z3. We used a time limit of 30 minutes and a memory
+limit of 16GB, on an Ubuntu machine with a 2.2 GHz AMD Opteron(TM) Processor 6174
+and 516GB RAM. The results are summarized in Fig. 8 .
+Since there are programs verified by only one of the tools,
+Fig. 8 also reports the number of programs verified
+by at least one, i.e. , the Virtual Best Solver (VBS).
+Slam
+Svcomp-1
+Svcomp-2
+Svcomp-3
+SAFE
+UNSAFE
+SAFE
+UNSAFE
+SAFE
+UNSAFE
+SAFE
+UNSAFE
+Spacer
+1,721
+985
+249
+509
+213
+497
+234
+482
+Z3
+1,722
+997
+245
+509
+208
+493
+234
+477
+VBS
+1,727
+998
+252
+509
+225
+500
+240
+482
+Figure 8 : Number of programs verified by Spacer , Z3 and the Virtual Best Solver.
+Boolean Program Benchmarks. On most of the SLAM benchmarks, the runtimes of Spacer and Z3 are
+similar (within 2 minutes). We then evaluated on a Boolean Program
+from [ 6 ] in which the size of the call-tree grows exponentially in the number of
+procedures. As Fig. 9(a) shows, Spacer handles the increasing
+complexity in the example significantly better than Z3.
+(a)
+(b)
+Figure 9 : Spacer vs. Z3 for (a) Bebop example and (b) Svcomp-1 benchmarks.
+(a)
+(b)
+Figure 10 : Spacer vs. Z3 for the benchmarks (a) Svcomp-2 and (b)
+Svcomp-3 .
+SVCOMP 2014 Benchmarks.
+Fig. 9(b) , 10(a)
+and 10(b) show the scatter plots for Svcomp-1 ,
+Svcomp-2 and Svcomp-3 benchmarks. A diamond indicates a
+time-out and a star indicates a mem-out. The plots show that
+Spacer is significantly better on most of the programs. This shows the
+practical advantage of the approximations and MBP of RecMC .
+7 Related Work
+There is a large body of work on interprocedural program analysis. It
+was pointed out early on that verification of recursive programs is
+reducible to the computation of a fixed-point over relations (called
+summaries ) representing the input-output behavior of each
+procedure [ 11 , 36 ] . Such procedure summaries are called
+partial correctness relations in [ 11 ] , and are part
+of the functional approach of [ 36 ] . Reps, Horwitz, and
+Sagiv [ 35 ] showed that for a large class of finite
+interprocedural dataflow problems the summaries can be computed in time
+polynomial in the number of facts and procedures. Ball and
+Rajamani [ 6 ] adapted the RHS algorithm to the verification of
+Boolean Programs.
+Following the SLAM project, other software model checkers – such as
+blast [ 26 ] and magic [ 10 ] –
+also implemented the CEGAR loop with predicate abstraction. None used
+under-approximations of procedure semantics as we do.
+Recently, several SMT-based algorithms have been proposed for safety
+verification of recursive programs, including
+Whale [ 2 ] , HSF [ 21 ] ,
+Duality [ 32 ] , Ultimate
+Automizer [ 24 ] , and
+Corral [ 29 ] . While these algorithms have been
+developed independently, they share a similar structure. They use
+SMT-solvers to look for counterexamples and interpolation to
+over-approximate summaries.
+Corral is an exception, which relies on user input and heuristics to supply
+the summaries. The algorithms differ in the SMT encoding and the
+heuristics used. However, in the worst-case, they completely unroll the
+call graph into a tree.
+The work closest to ours is Generalized Property Driven Reachability
+(GPDR) of Hoder and Bjørner [ 27 ] . GPDR extends the hardware
+model checking algorithm IC3 of Bradley [ 9 ] to SMT-supported
+theories and recursive programs. Unlike RecMC , GPDR does not
+maintain reachability facts. In the context of
+Fig. 6 , this means that ρ \rho is always empty and
+there is no Reach rule. Instead, the Query rule is
+modified to use a model M M that satisfies the premises (instead of our
+use of the path π \pi when creating a query). Furthermore, the answers to the queries are
+cached. In the context of Boolean Programs, this ensures that every
+query is asked at most once (and either cached or blocked by a summary
+fact). Since there are only finitely many
+models, the algorithm always terminates. However, in the case of Linear
+Arithmetic, a formula can have infinitely many models and GPDR might
+end up applying the Query rule indefinitely. In contrast,
+RecMC creates only finitely many queries for a given bound on the call-stack
+and is guaranteed to find a counterexample if one exists.
+Combination of over- and under-approximations for analysis of
+procedural programs has also been explored
+in [ 23 , 20 ] . However, our notion of an
+under-approximation is very
+different. Both [ 23 , 20 ]
+under-approximate summaries by must transitions . A must
+transition is a pair of formulas ⟨ φ , ψ ⟩ \langle\varphi,\psi\rangle that
+under-approximates the summary of a procedure P P iff for every state that
+satisfies φ \varphi , P P has an execution that ends in a state
+satisfying ψ \psi . In contrast, our reachability facts are similar to
+summary edges of RHS [ 35 ] . A reachability fact is a
+single formula φ \varphi such that every satisfying assignment to
+φ \varphi captures a terminating execution of P P .
+8 Conclusion
+We presented RecMC , a new SMT-based algorithm for model checking
+safety properties of recursive programs. For programs and properties
+over decidable theories, RecMC is guaranteed to find a counterexample
+if one exists. To our knowledge, this is the first SMT-based algorithm
+with such a guarantee while being polynomial for Boolean Programs. The
+key idea is to use a combination of under- and over-approximations of
+the semantics of procedures, avoiding re-exploration of parts of the
+state-space. We described an efficient instantiation of RecMC for
+Linear Arithmetic (over rationals and integers) by introducing
+Model-Based Projection to under-approximate the expensive
+quantifier elimination. We have implemented it in our tool
+Spacer and shown empirical evidence that it significantly improves
+on the state-of-the-art.
+In the future, we would like to explore extensions to other
+theories. Of particular interest are the theory EUF of uninterpreted
+functions with equality and the theory of arrays. The challenge is to
+deal with the lack of quantifier elimination. Another direction of interest is
+to combine RecMC with Proof-based
+Abstraction [ 31 , 22 , 28 ] to explore a combination of the
+approximations of procedure semantics with transition-relation abstraction.
+Acknowledgment
+We thank Edmund M. Clarke and Nikolaj Bjørner for many helpful
+discussions. Our definition of MBP is based on the idea of projected
+implicants co-developed with Nikolaj. We thank Cesare Tinelli and the
+anonymous reviewers for insightful comments. This research was
+sponsored by the National Science Foundation grants no. DMS1068829,
+CNS0926181 and CNS0931985, the GSRC under contract no. 1041377, the
+Semiconductor Research Corporation under contract no. 2005TJ1366, the
+Office of Naval Research under award no. N000141010188 and the
+CMU-Portugal Program. This material is based upon work funded and
+supported by the Department of Defense under Contract
+No. FA8721-05-C-0003 with Carnegie Mellon University for the operation
+of the Software Engineering Institute, a federally funded research and
+development center.
+Any opinions, findings and conclusions or recommendations
+expressed in this material are those of the author(s) and do not
+necessarily reflect the views of the United States Department of
+Defense.
+This material has been approved for public release and unlimited
+distribution.
+DM-0000973.
+References
+[1]
+A. Albarghouthi, A. Gurfinkel, and M. Chechik.
+From Under-Approximations to Over-Approximations and Back.
+In TACAS , 2012.
+[2]
+A. Albarghouthi, A. Gurfinkel, and M. Chechik.
+Whale: An Interpolation-Based Algorithm for Inter-procedural
+Verification.
+In VMCAI , pages 39–55, 2012.
+[3]
+A. Albarghouthi, A. Gurfinkel, Y. Li, S. Chaki, and M. Chechik.
+UFO: Verification with Interpolants and Abstract Interpretation -
+(Competition Contribution).
+In TACAS , 2013.
+[4]
+R. Alur, M. Benedikt, K. Etessami, P. Godefroid, T. Reps, and M. Yannakakis.
+Analysis of Recursive State Machines.
+TOPLAS , 27(4):786–818, 2005.
+[5]
+T. Ball, R. Majumdar, T. Millstein, and S. K. Rajamani.
+Automatic Predicate Abstraction of C Programs.
+SIGPLAN Not. , 36(5):203–213, 2001.
+[6]
+T. Ball and S. K. Rajamani.
+Bebop: A Symbolic Model Checker for Boolean Programs.
+In SPIN , pages 113–130, 2000.
+[7]
+M. Barnett, B.-Y. E. Chang, R. DeLine, B. Jacobs, and K. R. M. Leino.
+Boogie: A Modular Reusable Verifier for Object-Oriented Programs.
+In FMCO , pages 364–387, 2005.
+[8]
+A. Biere, A. Cimatti, E. M. Clarke, O. Strichman, and Y. Zhu.
+Bounded Model Checking.
+Advances in Computers , 58:117–148, 2003.
+[9]
+A. R. Bradley.
+SAT-Based Model Checking without Unrolling.
+In VMCAI , 2011.
+[10]
+S. Chaki, E. M. Clarke, A. Groce, S. Jha, and H. Veith.
+Modular Verification of Software Components in C.
+IEEE Trans. Software Eng. , 30(6):388–402, 2004.
+[11]
+E. M. Clarke.
+Program Invariants as Fixed Points.
+Computing , 21(4):273–294, 1979.
+[12]
+E. M. Clarke.
+Programming Language Constructs for Which It Is Impossible To Obtain
+Good Hoare Axiom Systems.
+JACM , 26(1):129–147, 1979.
+[13]
+E. M. Clarke, O. Grumberg, S. Jha, Y. Lu, and H. Veith.
+Counterexample-Guided Abstraction Refinement.
+In CAV , 2000.
+[14]
+E. M. Clarke, D. Kroening, and F. Lerda.
+A Tool for Checking ANSI-C Programs.
+In TACAS , 2004.
+[15]
+D. C. Cooper.
+Theorem Proving in Arithmetic without Multiplication.
+Machine Intelligence , pages 91–100, 1972.
+[16]
+W. Craig.
+Three uses of the Herbrand-Gentzen theorem in relating model theory
+and proof theory.
+Symbolic Logic , 22(3):269–285, 1957.
+[17]
+L. De Moura and N. Bjørner.
+Z3: An Efficient SMT Solver.
+In TACAS , 2008.
+[18]
+L. M. de Moura and N. Bjørner.
+Z3: An Efficient SMT Solver.
+In C. R. Ramakrishnan and J. Rehof, editors, TACAS , volume 4963
+of Lecture Notes in Computer Science , pages 337–340. Springer, 2008.
+[19]
+J. Esparza, D. Hansel, P. Rossmanith, and S. Schwoon.
+Efficient Algorithms for Model Checking Pushdown Systems.
+In CAV , CAV ’00, pages 232–247, 2000.
+[20]
+P. Godefroid, A. V. Nori, S. K. Rajamani, and S. Tetali.
+Compositional May-Must Program Analysis: Unleashing the Power of
+Alternation.
+In POPL , pages 43–56, 2010.
+[21]
+S. Grebenshchikov, N. P. Lopes, C. Popeea, and A. Rybalchenko.
+Synthesizing Software Verifiers from Proof Rules.
+In PLDI , pages 405–416, 2012.
+[22]
+A. Gupta, M. K. Ganai, Z. Yang, and P. Ashar.
+Iterative Abstraction using SAT-based BMC with Proof Analysis.
+In ICCAD , pages 416–423, 2003.
+[23]
+A. Gurfinkel, O. Wei, and M. Chechik.
+Model checking recursive programs with exact predicate abstraction.
+In S. D. Cha, J.-Y. Choi, M. Kim, I. Lee, and M. Viswanathan,
+editors, ATVA , volume 5311 of Lecture Notes in Computer Science ,
+pages 95–110. Springer, 2008.
+[24]
+M. Heizmann, J. Christ, D. Dietsch, E. Ermis, J. Hoenicke, M. Lindenmann,
+A. Nutz, C. Schilling, and A. Podelski.
+Ultimate Automizer with SMTInterpol - (Competition Contribution).
+In N. Piterman and S. A. Smolka, editors, TACAS , volume 7795 of
+Lecture Notes in Computer Science , pages 641–643. Springer, 2013.
+[25]
+M. Heizmann, J. Hoenicke, and A. Podelski.
+Nested Interpolants.
+SIGPLAN Not. , 45(1)(1):471–482, 2010.
+[26]
+T. A. Henzinger, R. Jhala, R. Majumdar, and G. Sutre.
+Lazy abstraction.
+In Proc. of POPL , pages 58–70, 2002.
+[27]
+K. Hoder and N. Bjørner.
+Generalized Property Directed Reachability.
+In SAT , 2012.
+[28]
+A. Komuravelli, A. Gurfinkel, S. Chaki, and E. M. Clarke.
+Automated Abstraction in SMT-based Unbounded Software Model
+Checking.
+In CAV , pages 846–862, 2013.
+[29]
+A. Lal, S. Qadeer, and S. K. Lahiri.
+A solver for reachability modulo theories.
+In P. Madhusudan and S. A. Seshia, editors, CAV , volume 7358 of
+Lecture Notes in Computer Science , pages 427–443. Springer, 2012.
+[30]
+R. Loos and V. Weispfenning.
+Applying Linear Quantifier Elimination.
+Computing , 36(5):450–462, 1993.
+[31]
+K. L. McMillan and N. Amla.
+Automatic Abstraction without Counterexamples.
+In TACAS , 2003.
+[32]
+K. L. McMillan and A. Rybalchenko.
+Solving Constrained Horn Clauses using Interpolation.
+Technical Report MSR-TR-2013-6, Microsoft Research, 2013.
+[33]
+R. Nieuwenhuis, A. Oliveras, and C. Tinelli.
+Solving SAT and SAT Modulo Theories: From an abstract
+Davis–Putnam–Logemann–Loveland procedure to DPLL( T ).
+J. ACM , 53(6):937–977, 2006.
+[34]
+T. Nipkow.
+Linear Quantifier Elimination.
+J. Autom. Reason. , 45(2):189–212, 2010.
+[35]
+T. W. Reps, S. Horwitz, and S. Sagiv.
+Precise Interprocedural Dataflow Analysis via Graph Reachability.
+In POPL , pages 49–61, 1995.
+[36]
+M. Sharir and A. Pnueli.
+Program Flow Analysis: Theory and Applications , chapter
+“Two Approaches to Interprocedural Data Flow Analysis”, pages 189–233.
+Prentice-Hall, 1981.
+[37]
+Software Verification Competition.
+TACAS, 2014.
+http://sv-comp.sosy-lab.org .
+Appendix 0.A Divergence of GPDR for Bounded Call-Stack
+Consider the program ⟨ ⟨ M , L , G ⟩ , M ⟩ \langle\langle M,L,G\rangle,M\rangle with
+M = ⟨ y 0 , y , Σ M , ⟨ x , n ⟩ , β M ⟩ M=\langle y_{0},y,\Sigma_{M},\langle x,n\rangle,\beta_{M}\rangle ,
+L = ⟨ n , ⟨ x , y , i ⟩ , Σ L , ⟨ x 0 , y 0 , i 0 ⟩ , β L ⟩ L=\langle n,\langle x,y,i\rangle,\Sigma_{L},\langle x_{0},y_{0},i_{0}\rangle,\beta_{L}\rangle ,
+G = ⟨ x 0 , x 1 , Σ G , ∅ , β G ⟩ G=\langle x_{0},x_{1},\Sigma_{G},\emptyset,\beta_{G}\rangle , where
+β M \displaystyle\beta_{M}
+= Σ L ​ ( x , y 0 , n , n ) ∧ Σ G ​ ( x , y ) ∧ n > 0 \displaystyle=\Sigma_{L}(x,y_{0},n,n)\land\Sigma_{G}(x,y)\land n>0
+β L \displaystyle\beta_{L}
+= ( i = 0 ∧ x = 0 ∧ y = 0 ) ∨ \displaystyle=\left(i=0\land x=0\land y=0\right)\lor
+( Σ L ​ ( x 0 , y 0 , i 0 , n ) ∧ x = x 0 + 1 ∧ y = y 0 + 1 ∧ i = i 0 + 1 ∧ i > 0 ) \displaystyle\quad\left(\Sigma_{L}(x_{0},y_{0},i_{0},n)\land x=x_{0}+1\land y=y_{0}+1\land i=i_{0}+1\land i>0\right)
+β G \displaystyle\beta_{G}
+= ( x = x 0 + 1 ) \displaystyle=(x=x_{0}+1)
+The GPDR [ 27 ] algorithm can be shown to diverge when checking M ⊧ 2 y 0 ≤ y M\models_{2}y_{0}\leq y , for e.g., by inferring the diverging sequence of over-approximations of ⟦ L ⟧ 1 \llbracket{L}\rrbracket^{1} :
+( x < 2 ⇒ y ≤ 1 ) , ( x < 3 ⇒ y ≤ 2 ) , … (x<2\Rightarrow y\leq 1),(x<3\Rightarrow y\leq 2),\dots
+We also observed this behavior experimentally (Z3 revision
+d548c51 at http://z3.codeplex.com ). The Horn-SMT file
+for the example is available at
+http://www.cs.cmu.edu/~akomurav/projects/spacer/gpdr_diverging.smt2 . \text{\url{http://www.cs.cmu.edu/~akomurav/projects/spacer/gpdr_diverging.smt2}}.
+Appendix 0.B Soundness of RecMC and BndSafety (Proof of Theorem 4.1 )
+We first restate the theorem.
+Theorem 0.B.1
+RecMC and BndSafety are sound.
+Proof
+We only show the soundness of BndSafety ; the soundness of RecMC easily
+follows. In particular, for
+BndSafety ​ ( M , φ 𝑠𝑎𝑓𝑒 , n , ∅ , ∅ ) \textsc{BndSafety}(M,\varphi_{\mathit{safe}},n,\emptyset,\emptyset) we show the
+following:
+1.
+if the premises of Unsafe hold, M ⊧̸ n φ 𝑠𝑎𝑓𝑒 M\not\models_{n}\varphi_{\mathit{safe}} , and
+2.
+if the premises of Safe hold, M ⊧ n φ 𝑠𝑎𝑓𝑒 M\models_{n}\varphi_{\mathit{safe}} .
+It suffices to show that the environments U ρ b U_{\rho}^{b} and O σ b O_{\sigma}^{b} ,
+respectively, under- and over-approximate the bounded semantics of the
+procedures, for every 0 ≤ b ≤ n 0\leq b\leq n . In particular, we show that the following is an
+invariant of BndSafety : for every model I I of the background theory 𝑇ℎ \mathit{Th} ,
+for every Q ∈ 𝒜 Q\in\mathcal{A} and b ∈ [ 0 , n ] b\in[0,n] ,
+I ⁡ ( U ρ b ​ ( Σ Q ) ) ⊆ ⟦ Q ⟧ I b ⊆ I ⁡ ( O σ b ​ ( Σ Q ) ) . I(U_{\rho}^{b}(\Sigma_{Q}))\subseteq\llbracket{Q}\rrbracket_{I}^{b}\subseteq I(O_{\sigma}^{b}(\Sigma_{Q})).
+(3)
+Initially, ρ \rho and σ \sigma are empty and the invariant holds trivially.
+BndSafety updates σ \sigma and ρ \rho in the rules Sum and
+Reach , respectively. We show that these rules
+preserve ( 3 ). We only show the case of
+Sum . The case of Reach is similar.
+Let ⟨ P , φ , b ⟩ ∈ 𝒬 \langle P,\varphi,b\rangle\in\mathcal{Q} be such that
+Sum is applicable, i.e. , ⊧ ⟦ β P ⟧ σ b − 1 ⇒ ¬ φ \models\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1}\Rightarrow\neg\varphi . Let ψ = Itp ​ ( ⟦ β P ⟧ σ b − 1 , ¬ φ ) \psi=\textsc{Itp}(\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1},\neg\varphi) . Note that φ \varphi , and hence ψ \psi , does not depend on
+the local variables ℓ ¯ P \overline{\ell}_{P} . Hence, we know that
+⊧ ( ∃ ℓ ¯ P ⋅ ⟦ β P ⟧ σ b − 1 ) ⇒ ψ . \models\left(\exists\overline{\ell}_{P}\cdot\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1}\right)\Rightarrow\psi.
+(4)
+The case of b = 0 b=0 is easy and we will skip it.
+Let I I be an arbitrary model of 𝑇ℎ \mathit{Th} . Assume
+that ( 3 ) holds at b − 1 b-1 before applying the rule. In
+particular, assume that for all Q ∈ 𝒜 Q\in\mathcal{A} , ⟦ Q ⟧ I b − 1 ⊆ I ⁡ ( O σ b − 1 ​ ( Σ Q ) ) \llbracket{Q}\rrbracket_{I}^{b-1}\subseteq I(O_{\sigma}^{b-1}(\Sigma_{Q})) .
+We will first show that the new summary fact ψ \psi over-approximates
+⟦ P ⟧ I b \llbracket{P}\rrbracket_{I}^{b} . Let J ⁡ ( I , X ¯ ) J(I,\overline{X}) be an expansion of I I as defined in
+Section 3 .
+⟦ P ⟧ I b \displaystyle\llbracket{P}\rrbracket_{I}^{b}
+= J ⁡ ( I , ⟨ ⟦ P 0 ⟧ I b − 1 , … , ⟦ P n ⟧ I b − 1 ⟩ ) ​ ( ∃ ℓ ¯ P i ⋅ β P i ) \displaystyle=J(I,\langle\llbracket{P_{0}}\rrbracket^{b-1}_{I},\dots,\llbracket{P_{n}}\rrbracket^{b-1}_{I}\rangle)(\exists\overline{\ell}_{P_{i}}\cdot\beta_{P_{i}})
+= J ⁡ ( I , ⟨ I ⁡ ( O σ b − 1 ​ ( Σ P 0 ) ) , … , I ⁡ ( O σ b − 1 ​ ( Σ P n ) ) ⟩ ) ​ ( ∃ ℓ ¯ P i ⋅ β P i ) \displaystyle=J(I,\langle I(O_{\sigma}^{b-1}(\Sigma_{P_{0}})),\dots,I(O_{\sigma}^{b-1}(\Sigma_{P_{n}}))\rangle)(\exists\overline{\ell}_{P_{i}}\cdot\beta_{P_{i}})
+( hypothesis ) \displaystyle(\text{hypothesis})
+= I ⁡ ( ⟦ ∃ ℓ ¯ P ⋅ β P ⟧ O σ b − 1 ) \displaystyle=I(\llbracket{\exists\overline{\ell}_{P}\cdot\beta_{P}}\rrbracket_{O^{b-1}_{\sigma}})
+( O σ b − 1 is FO-definable ) \displaystyle(\text{$O^{b-1}_{\sigma}$ is FO-definable})
+= I ⁡ ( ∃ ℓ ¯ P ⋅ ⟦ β P ⟧ O σ b − 1 ) \displaystyle=I(\exists\overline{\ell}_{P}\cdot\llbracket{\beta_{P}}\rrbracket_{O^{b-1}_{\sigma}})
+( logic ) \displaystyle(\text{logic})
+= I ⁡ ( ∃ ℓ ¯ P ⋅ ⟦ β P ⟧ σ b − 1 ) \displaystyle=I(\exists\overline{\ell}_{P}\cdot\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1})
+( notation ) \displaystyle(\text{notation})
+⊆ I ⁡ ( ψ ) \displaystyle\subseteq I(\psi)
+( from ( 4 ) ) \displaystyle(\text{from (\ref{eq:bndsafety-itp})})
+Next, we show that the invariant continues to hold. The map of summary facts is
+updated to σ ′ = σ ∪ { ⟨ P , b ⟩ ↦ ψ } \sigma^{\prime}=\sigma\cup\{\langle P,b\rangle\mapsto\psi\} . Now,
+σ ′ \sigma^{\prime} differs from σ \sigma only for the procedure P P and every bound in
+[ 0 , b ] [0,b] . Let b ′ ∈ [ 0 , b ] b^{\prime}\in[0,b] be arbitrary. Since ( 3 ) was
+true before applying Sum , we know that ⟦ P ⟧ I b ′ ⊆ I ⁡ ( O σ b ′ ​ ( Σ P ) ) \llbracket{P}\rrbracket_{I}^{b^{\prime}}\subseteq I(O_{\sigma}^{b^{\prime}}(\Sigma_{P})) . As ⟦ P ⟧ I b ′ ⊆ ⟦ P ⟧ I b ⊆ I ⁡ ( ψ ) \llbracket{P}\rrbracket_{I}^{b^{\prime}}\subseteq\llbracket{P}\rrbracket_{I}^{b}\subseteq I(\psi) , it follows that ⟦ P ⟧ I b ′ ⊆ I ⁡ ( O σ b ′ ​ ( Σ P ) ) ∩ I ⁡ ( ψ ) ⊆ I ⁡ ( O σ b ′ ​ ( Σ P ) ∧ ψ ) = I ⁡ ( O σ ′ b ′ ​ ( Σ P ) ) \llbracket{P}\rrbracket_{I}^{b^{\prime}}\subseteq I(O_{\sigma}^{b^{\prime}}(\Sigma_{P}))\cap I(\psi)\subseteq I(O_{\sigma}^{b^{\prime}}(\Sigma_{P})\land\psi)=I(O_{\sigma^{\prime}}^{b^{\prime}}(\Sigma_{P})) .
+∎
+Appendix 0.C Termination of BndSafety (Proof of Theorem 4.2 )
+We first restate the theorem:
+Theorem 0.C.2
+Given an oracle for 𝑇ℎ \mathit{Th} , BndSafety ​ ( 𝒜 , φ , n , ∅ , ∅ ) \textsc{BndSafety}(\mathcal{A},\varphi,n,\emptyset,\emptyset) terminates.
+We begin with showing some useful lemmas. Let p p be the maximum number of paths
+in P ∈ 𝒜 P\in\mathcal{A} , c c be the maximum number of procedure calls along any path in
+𝒜 \mathcal{A} , N N be the number of procedures in 𝒜 \mathcal{A} and assume an oracle for SAT
+modulo 𝑇ℎ \mathit{Th} .
+The following lemma shows that when a query is removed from 𝒬 \mathcal{Q} , it is
+actually answered. The proof is immediate from the definitions of O σ b O_{\sigma}^{b}
+and U ρ b U_{\rho}^{b} given in Section 3 .
+Lemma 1 (Answered Queries)
+Whenever BndSafety removes a query from 𝒬 \mathcal{Q} , it is answered using the
+known summary and reachability facts. In particular, let
+Sum or Reach be applied to ⟨ P , φ , b ⟩ \langle P,\varphi,b\rangle .
+Then, for every ⟨ P , η , b ⟩ ∈ 𝒬 \langle P,\eta,b\rangle\in\mathcal{Q} removed from 𝒬 \mathcal{Q} by
+the rule,
+1.
+after Sum is applied, ⊧ ⟦ Σ P ⟧ σ b ⇒ ¬ η \models\llbracket{\Sigma_{P}}\rrbracket_{\sigma}^{b}\Rightarrow\neg\eta ,
+and
+2.
+after Reach is applied, ⊧̸ ⟦ Σ P ⟧ ρ b ⇒ ¬ η \not\models\llbracket{\Sigma_{P}}\rrbracket_{\rho}^{b}\Rightarrow\neg\eta .
+Next, we show that new facts need to be inferred to answer queries remaining in
+𝒬 \mathcal{Q} .
+Lemma 2 (Pending Queries)
+𝒬 \mathcal{Q} only has the queries which
+cannot be immediately answered by ρ \rho or σ \sigma , i.e., as long as ⟨ P , η , ℓ ⟩ \langle P,\eta,\ell\rangle is in 𝒬 \mathcal{Q} , the following
+are invariant across iterations of BndSafety .
+1.
+⊧̸ ⟦ Σ P ⟧ σ ℓ ⇒ ¬ η \not\models\llbracket{\Sigma_{P}}\rrbracket_{\sigma}^{\ell}\Rightarrow\neg\eta , and
+2.
+⊧ ⟦ Σ P ⟧ ρ ℓ ⇒ ¬ η \models\llbracket{\Sigma_{P}}\rrbracket_{\rho}^{\ell}\Rightarrow\neg\eta .
+Proof
+We first show that the invariants hold when a query is newly created by Query . Let P P , η \eta and ℓ \ell be, respectively, R R , ψ [ a ¯ ← v ¯ R ] \psi[\overline{a}\leftarrow\overline{v}_{R}] and b − 1 b-1 , as in the conclusion of the rule.
+The last-but-one premise of Query is
+⊧ ⟦ π u ⟧ σ b − 1 ∧ ⟦ Σ R ​ ( a ¯ ) ⟧ ρ b − 1 ∧ ⟦ π v ⟧ ρ b − 1 ⇒ ¬ φ \models\llbracket{\pi_{u}}\rrbracket_{\sigma}^{b-1}\land\llbracket{\Sigma_{R}(\overline{a})}\rrbracket_{\rho}^{b-1}\land\llbracket{\pi_{v}}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi
+which implies that
+⊧ ⟦ Σ R ​ ( a ¯ ) ⟧ ρ b − 1 ⇒ ¬ ( ⟦ π u ⟧ σ b − 1 ∧ ⟦ π v ⟧ ρ b − 1 ∧ φ ) . \models\llbracket{\Sigma_{R}(\overline{a})}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\left(\llbracket{\pi_{u}}\rrbracket_{\sigma}^{b-1}\land\llbracket{\pi_{v}}\rrbracket_{\rho}^{b-1}\land\varphi\right).
+The variables not in common, viz. , ( v ¯ P ∪ ℓ ¯ P ) ∖ a ¯ (\overline{v}_{P}\cup\overline{\ell}_{P})\setminus\overline{a} , can be universally quantified from the right hand side resulting in
+⊧ ⟦ Σ R ⟧ ρ b − 1 ⇒ ¬ η \models\llbracket{\Sigma_{R}}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\eta . Similarly, ⊧̸ ⟦ Σ R ⟧ σ b − 1 ⇒ ¬ η \not\models\llbracket{\Sigma_{R}}\rrbracket_{\sigma}^{b-1}\Rightarrow\neg\eta follows from the last premise of
+the rule. Next, we show that Sum and Reach preserve the
+invariants.
+Let Sum answer a query ⟨ P , φ , ℓ ⟩ \langle P,\varphi,\ell\rangle with a new
+summary fact ψ \psi and let the updated map of summary facts be σ ′ = σ ∪ { ⟨ P , ℓ ⟩ ↦ ψ } \sigma^{\prime}=\sigma\cup\{\langle P,\ell\rangle\mapsto\psi\} . Now, consider ⟨ P , η , ℓ ′ ⟩ ∈ 𝒬 \langle P,\eta,\ell^{\prime}\rangle\in\mathcal{Q} after the application of the rule. If ℓ ′ > ℓ \ell^{\prime}>\ell , O σ ′ ℓ ′ = O σ ℓ ′ O^{\ell^{\prime}}_{\sigma^{\prime}}=O^{\ell^{\prime}}_{\sigma} and the invariant continues to
+hold. So, assume ℓ ′ ≤ ℓ \ell^{\prime}\leq\ell . From the conclusion of Sum , we have
+⊧̸ ⟦ Σ P ⟧ σ ℓ ′ ∧ ψ ⇒ ¬ η \not\models\llbracket{\Sigma_{P}}\rrbracket^{\ell^{\prime}}_{\sigma}\land\psi\Rightarrow\neg\eta . Now,
+⟦ Σ P ⟧ σ ′ ℓ ′ = ⟦ Σ P ⟧ σ ℓ ′ ∧ ψ \llbracket{\Sigma_{P}}\rrbracket^{\ell^{\prime}}_{\sigma^{\prime}}=\llbracket{\Sigma_{P}}\rrbracket^{\ell^{\prime}}_{\sigma}\land\psi . So,
+the invariant continues to hold.
+Similarly, let Reach answer a query ⟨ P , φ , ℓ ⟩ \langle P,\varphi,\ell\rangle
+with a new reachability fact ψ \psi and let the updated map of reachability
+facts be ρ ′ = ρ ∪ { ψ ↦ ⟨ P , ℓ ⟩ } \rho^{\prime}=\rho\cup\{\psi\mapsto\langle P,\ell\rangle\} . Now,
+consider ⟨ P , η , ℓ ′ ⟩ ∈ 𝒬 \langle P,\eta,\ell^{\prime}\rangle\in\mathcal{Q} after the application of
+the rule. If ℓ ′ < ℓ \ell^{\prime}<\ell , U ρ ′ ℓ ′ = U ρ ℓ ′ U^{\ell^{\prime}}_{\rho^{\prime}}=U^{\ell^{\prime}}_{\rho} and the
+invariant continues to hold. So, assume ℓ ′ ≥ ℓ \ell^{\prime}\geq\ell . From the conclusion
+of Reach , we have ⊧ ψ ⇒ ¬ η \models\psi\Rightarrow\neg\eta . Assuming the
+invariant holds before the rule application, we also have ⊧ ⟦ Σ P ⟧ ρ ℓ ′ ⇒ ¬ η \models\llbracket{\Sigma_{P}}\rrbracket_{\rho}^{\ell^{\prime}}\Rightarrow\neg\eta . Therefore, we have ⊧ ⟦ Σ P ⟧ ρ ℓ ′ ∨ ψ ⇒ ¬ η \models\llbracket{\Sigma_{P}}\rrbracket_{\rho}^{\ell^{\prime}}\lor\psi\Rightarrow\neg\eta . Now,
+⟦ Σ P ⟧ ρ ′ ℓ ′ = ⟦ Σ P ⟧ ρ ℓ ′ ∨ ψ \llbracket{\Sigma_{P}}\rrbracket^{\ell^{\prime}}_{\rho^{\prime}}=\llbracket{\Sigma_{P}}\rrbracket^{\ell^{\prime}}_{\rho}\lor\psi . So, the
+invariant continues to hold.
+∎
+The next few lemmas show that the rules of the algorithm cannot be applied
+indefinitely, leading to a termination argument. Let N N be the number of
+procedures in the program, p p be the maximum number of paths in a procedure,
+c c be the maximum number of procedure calls along any path in 𝒜 \mathcal{A} and n n be
+the current bound on the call-stack.
+Lemma 3 (Finite Reach Facts)
+The environment U ρ b U^{b}_{\rho} is updated for a given predicate symbol Σ P \Sigma_{P} and
+a bound b b on the call-stack only O ⁡ ( N b ⋅ p b + 1 ) O(N^{b}\cdot p^{b+1}) -many times.
+Proof
+The environment U ρ b U^{b}_{\rho} can be updated for Σ P \Sigma_{P} and b b whenever a
+reachability fact is inferred for P P at a bound b ′ ≤ b b^{\prime}\leq b . Now, a reachability
+fact is obtained per path (after eliminating the local variables) of a
+procedure, using the currently known reachability facts about the callees.
+Moreover, Lemmas 1 and 2 imply that no
+reachability fact is inferred twice. This is because whenever a query is
+answered using Reach , the query could not have been answered using
+already existing reachability facts and a new reachability fact is inferred.
+This gives the following recurrence 𝑅𝑒𝑎𝑐ℎ ⁡ ( b ) \mathit{Reach}(b) for the number of
+updates to U ρ b U^{b}_{\rho} for a given Σ P \Sigma_{P} :
+𝑅𝑒𝑎𝑐ℎ ⁡ ( b ) = { p , b = 0 ( p ⋅ N + 1 ) ⋅ 𝑅𝑒𝑎𝑐ℎ ⁡ ( b − 1 ) , b > 0 . \mathit{Reach}(b)=\begin{cases}p,&b=0\\
+(p\cdot N+1)\cdot\mathit{Reach}(b-1),&b>0.\end{cases}
+In words, for b = 0 b=0 , the number of updates is given by the number of
+reachability facts that can be inferred, which is bounded by the number of paths
+p p in the procedure P P . For b > 0 b>0 , the environment U ρ b − 1 U^{b-1}_{\rho} is updated
+when a reachability fact is learnt at b b or at a bound smaller than b b . The
+latter is simply 𝑅𝑒𝑎𝑐ℎ ⁡ ( b − 1 ) \mathit{Reach}(b-1) . For the former, a new reachability fact
+is inferred at b b along a path whenever U ρ b − 1 U^{b-1}_{\rho} changes for a callee.
+For N N procedures and p p paths, this is given by ( p ⋅ N ⋅ 𝑅𝑒𝑎𝑐ℎ ⁡ ( b − 1 ) ) (p\cdot N\cdot\mathit{Reach}(b-1)) .
+This gives us 𝑅𝑒𝑎𝑐ℎ ⁡ ( b ) = O ⁡ ( N b ⋅ p b + 1 ) \mathit{Reach}(b)=O(N^{b}\cdot p^{b+1}) .
+∎
+Lemma 4 (Finite Queries)
+For ⟨ P , φ , b ⟩ ∈ 𝒬 \langle{P},{\varphi},{b}\rangle\in\mathcal{Q} , Query is applicable only
+O ⁡ ( c ⋅ N b ⋅ p b + 1 ) O(c\cdot N^{b}\cdot p^{b+1}) -many times.
+Proof
+First, assume that the environments U ρ b − 1 U^{b-1}_{\rho} and O σ b − 1 O^{b-1}_{\sigma} are
+fixed. The number of possible queries that can be created for a given path of
+P P is bounded by the number of ways the path can be divided into a prefix, a
+procedure call, and a suffix. This is bounded by c c , the maximum number of
+calls along the path. For p p paths, this is bounded by c ⋅ p c\cdot p .
+Consider a path π \pi and its division, and let a query be created for a callee
+R R along π \pi . Now, while the query is still in 𝒬 \mathcal{Q} , updates to the
+environments O σ b − 1 O^{b-1}_{\sigma} and U ρ b − 1 U^{b-1}_{\rho} do not result in a new query
+for R R for the same division along π \pi . This is because, the new query would
+overlap with the existing one and this is disallowed by the second
+side-condition of Query .
+Suppose that the new query is answered by Sum . With the updated map of
+summary facts, the last premise of Query can be shown to fail for the
+current division of π \pi . If O σ b − 1 O^{b-1}_{\sigma} is updated, the last premise
+continues to fail. So, a new query can be created for the same prefix and suffix
+along π \pi only if U ρ b − 1 U^{b-1}_{\rho} is updated for some callee along π \pi . The
+other possibility is that the query is answered by Reach which updates
+U ρ b − 1 U^{b-1}_{\rho} as well.
+Thus, for a given path, and a given division of it into prefix and suffix, the
+number of queries that can be created is bounded by the number of updates to
+U ρ b − 1 U^{b-1}_{\rho} which is ( N ⋅ 𝑅𝑒𝑎𝑐ℎ ⁡ ( b − 1 ) ) (N\cdot\mathit{Reach}(b-1)) . Here, 𝑅𝑒𝑎𝑐ℎ \mathit{Reach}
+is as in Lemma 3 . So, the number of
+times Query is applicable for a given query ⟨ P , φ , b ⟩ \langle{P},{\varphi},{b}\rangle is
+O ⁡ ( p ⋅ c ⋅ N ⋅ 𝑅𝑒𝑎𝑐ℎ ⁡ ( b − 1 ) ) O(p\cdot c\cdot N\cdot\mathit{Reach}(b-1)) . As 𝑅𝑒𝑎𝑐ℎ ⁡ ( b ) = N b ⋅ p b + 1 \mathit{Reach}(b)=N^{b}\cdot p^{b+1} , we obtain the bound O ⁡ ( c ⋅ N b ⋅ p b + 1 ) O(c\cdot N^{b}\cdot p^{b+1}) .
+∎
+Lemma 5 (Progress)
+As long as 𝒬 \mathcal{Q} is non-empty in BndSafety , either Sum ,
+Reach or Query is always applicable.
+Proof
+First, we show that for every query in 𝒬 \mathcal{Q} , either of the three rules is
+applicable, without the second side-condition in Query .
+Let ⟨ P , φ , b ⟩ ∈ 𝒬 \langle P,\varphi,b\rangle\in\mathcal{Q} .
+If ⊧ ⟦ β P ⟧ σ b − 1 ⇒ ¬ φ \models\llbracket{\beta_{P}}\rrbracket_{\sigma}^{b-1}\Rightarrow\neg\varphi , then Sum is applicable. Otherwise, there exists
+a path π ∈ 𝑃𝑎𝑡ℎ𝑠 ⁡ ( P ) \pi\in\mathit{Paths}({P}) such that ⟦ π ⟧ σ b − 1 \llbracket{\pi}\rrbracket_{\sigma}^{b-1} is satisfiable with
+φ \varphi , i.e. , ⊧̸ ⟦ π ⟧ σ b − 1 ⇒ ¬ φ \not\models\llbracket{\pi}\rrbracket_{\sigma}^{b-1}\Rightarrow\neg\varphi . Now, if
+⟦ π ⟧ ρ b − 1 \llbracket{\pi}\rrbracket_{\rho}^{b-1} is also satisfiable with φ \varphi , i.e. , ⊧̸ ⟦ π ⟧ ρ b − 1 ⇒ ¬ φ \not\models\llbracket{\pi}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi , Reach is applicable. Otherwise,
+⊧ ⟦ π ⟧ ρ b − 1 ⇒ ¬ φ \models\llbracket{\pi}\rrbracket_{\rho}^{b-1}\Rightarrow\neg\varphi . Note that this can only happen if
+b > 0 b>0 , as otherwise, there will not be any procedure calls along π \pi and
+⟦ π ⟧ σ b − 1 \llbracket{\pi}\rrbracket_{\sigma}^{b-1} and ⟦ π ⟧ ρ b − 1 \llbracket{\pi}\rrbracket_{\rho}^{b-1} would be equivalent.
+Let π = π 0 ∧ π 1 ∧ … ​ π l \pi=\pi_{0}\land\pi_{1}\land\dots\pi_{l} for some finite l l . Then, ⟦ π ⟧ σ b − 1 \llbracket{\pi}\rrbracket_{\sigma}^{b-1} is
+obtained by taking the conjunction of the formulas
+⟨ ⟦ π 0 ⟧ σ b − 1 , ⟦ π 1 ⟧ σ b − 1 , … ⟩ . \langle\llbracket{\pi_{0}}\rrbracket_{\sigma}^{b-1},\llbracket{\pi_{1}}\rrbracket_{\sigma}^{b-1},\dots\rangle.
+Similarly, ⟦ π ⟧ ρ b − 1 \llbracket{\pi}\rrbracket_{\rho}^{b-1} is obtained by taking the conjunction of the
+formulas
+⟨ ⟦ π 0 ⟧ ρ b − 1 , ⟦ π 1 ⟧ ρ b − 1 , … ⟩ . \langle\llbracket{\pi_{0}}\rrbracket_{\rho}^{b-1},\llbracket{\pi_{1}}\rrbracket_{\rho}^{b-1},\dots\rangle.
+From Theorem 4.1 , we can think of obtaining the latter sequence of
+formulas by conjoining ⟦ π i ⟧ ρ b − 1 \llbracket{\pi_{i}}\rrbracket_{\rho}^{b-1} to ⟦ π i ⟧ σ b − 1 \llbracket{\pi_{i}}\rrbracket_{\sigma}^{b-1}
+for every i i . When this is done backwards for decreasing values of i i , an intermediate sequence looks like
+⟨ ⟦ π 0 ⟧ σ b − 1 , … , ⟦ π j − 1 ⟧ σ b − 1 , ⟦ π j ⟧ ρ b − 1 ​ … ⟩ . \langle\llbracket{\pi_{0}}\rrbracket_{\sigma}^{b-1},\dots,\llbracket{\pi_{j-1}}\rrbracket_{\sigma}^{b-1},\llbracket{\pi_{j}}\rrbracket_{\rho}^{b-1}\dots\rangle.
+As ⟦ π ⟧ ρ b − 1 \llbracket{\pi}\rrbracket_{\rho}^{b-1} is unsatisfiable with φ \varphi , there
+exists a maximal j j such that the conjunction of constraints in such an
+intermediate sequence are unsatisfiable with φ \varphi . Moreover, π j \pi_{j} must be
+a literal of the form Σ R ​ ( a ¯ ) \Sigma_{R}(\overline{a}) as otherwise, ⟦ π j ⟧ σ b − 1 = ⟦ π j ⟧ ρ b − 1 \llbracket{\pi_{j}}\rrbracket_{\sigma}^{b-1}=\llbracket{\pi_{j}}\rrbracket_{\rho}^{b-1} violating the maximality condition on j j .
+Thus, all premises of Query hold and the rule is applicable.
+Now, the second side-condition in Query can be trivially satisfied by
+always choosing a query in 𝒬 \mathcal{Q} with the smallest bound for the next rule to
+apply. This is because, if ⟨ R , η , b − 1 ⟩ \langle{R},{\eta},{b-1}\rangle is the newly created query, there
+is no other query in 𝒬 \mathcal{Q} for R R and b − 1 b-1 .
+∎
+Lemmas 4 and 5 imply that every query in
+𝒬 \mathcal{Q} is eventually answered by Sum or Reach , as shown
+below.
+Lemma 6 (Eventual Answer)
+Every ⟨ P , φ , b ⟩ ∈ 𝒬 \langle{P},{\varphi},{b}\rangle\in\mathcal{Q} is eventually answered by Sum or
+Reach , in O ⁡ ( b ⋅ c b ⋅ ( N ​ p ) O ⁡ ( b 2 ) ) O(b\cdot c^{b}\cdot(Np)^{O(b^{2})}) applications
+of the rules.
+Proof
+Firstly, to answer any given query in 𝒬 \mathcal{Q} , Lemma 4 guarantees that the algorithm can only
+create finitely many queries. Lemma 5 guarantees that some rule
+is always applicable, as long as 𝒬 \mathcal{Q} is non-empty. Thus, when Query cannot be applied for
+any query in 𝒬 \mathcal{Q} , either Sum or Reach must be
+applicable for some query. Thus, eventually, all queries are answered.
+The total number of rule applications to answer ⟨ P , φ , b ⟩ \langle{P},{\varphi},{b}\rangle is then linear in
+the cumulative number of applications of Query , which has the following recurrence:
+T ⁡ ( b ) = { Q ⁡ ( 0 ) , b = 0 Q ​ ( b ) ​ ( 1 + T ​ ( b − 1 ) ) , b > 0 . T(b)=\begin{cases}Q(0),&b=0\\
+Q(b)(1+T(b-1)),&b>0.\end{cases}
+where Q ⁡ ( b ) Q(b) denotes the number of applications of Query for a
+fixed query in 𝒬 \mathcal{Q} at bound b b .
+From Lemma 4 , Q ⁡ ( b ) = O ⁡ ( c ⋅ N b ⋅ p b + 1 ) Q(b)=O(c\cdot N^{b}\cdot p^{b+1}) . This gives us
+T ⁡ ( b ) = O ⁡ ( b ⋅ c b ⋅ ( N ​ p ) O ⁡ ( b 2 ) ) T(b)=O(b\cdot c^{b}\cdot(Np)^{O(b^{2})}) .
+∎
+Main Proof. Follows immediately from
+Lemma 6 .
+∎
+Appendix 0.D Complexity of RecMC for Boolean Programs (Proof of Theorem 4.3 )
+We first restate the theorem:
+Theorem 0.D.3
+Let 𝒜 \mathcal{A} be a Boolean Program. Then RecMC ​ ( 𝒜 , φ ) \textsc{RecMC}(\mathcal{A},\varphi) terminates in
+O ⁡ ( N 2 ⋅ 2 2 ​ k ) O(N^{2}\cdot 2^{2k}) -many applications of the rules in
+Fig. 6 .
+Proof
+First, assume a bound n n on the call-stack. The number of queries that can be
+created for a procedure at any given bound is
+O ⁡ ( 2 k ) O(2^{k}) , the number of possible valuations of the parameters (note that
+Query disallows overlapping queries to be present simultaneously in
+𝒬 \mathcal{Q} ). For N N procedures and n n possible values of the bound, the
+complexity of BndSafety ​ ( 𝒜 , φ , n , ∅ , ∅ ) \textsc{BndSafety}(\mathcal{A},\varphi,n,\emptyset,\emptyset) , for a Boolean
+Program, is O ⁡ ( N ⋅ 2 k ⋅ n ) O(N\cdot 2^{k}\cdot n) .
+Now, the total number of summary facts that can be inferred for a procedure is
+also bounded by O ⁡ ( 2 k ) O(2^{k}) . As O σ b O_{\sigma}^{b} is monotonic in b b , the number
+of iterations of RecMC is bounded by O ⁡ ( N ⋅ 2 k ) O(N\cdot 2^{k}) , the cumulative number of states
+of all procedures. Thus, we obtain the complexity of RecMC as O ⁡ ( N 2 ⋅ 2 2 ​ k ) O(N^{2}\cdot 2^{2k}) .
+∎
+Appendix 0.E BndSafety with MBP (Proof of Theorem 5.2 )
+Here, we show that BndSafety with MBP is sound and terminating.
+First of all, in presence of MBP, Sum is unaffected and a reachability fact
+inferred by Reach is only strengthened. Thus, soundness of BndSafety (Theorem 4.1 ) is preserved.
+Then, it is easy to show that the modified side-conditions to Reach and
+Query preserve Lemmas 1 and 2 and
+we skip the proof.
+Then, we will show that the finite-image property of an MBP preserves
+the finiteness of the number of reachability facts inferred and the number of
+queries generated by the algorithm.
+Let d d be the size of the image of an MBP.
+In the proof of Lemma 3 , the recurrence relation has an
+extra factor of d d . The rest of the proof of finiteness of the number of reachability
+facts remains the same. Similarly, in the proof of Lemma 4 , the number of
+times Query can be applied along a path for a fixed division and fixed
+environments O σ b − 1 O^{b-1}_{\sigma} and U ρ b − 1 U^{b-1}_{\rho} increases by
+a factor of d d . Again, the rest of the proof of finiteness of the number of
+queries generated remains the same. That is, Lemmas 3
+and 4 , and hence, Lemma 6 , are
+preserved with scaled up complexity bounds.
+Note that Theorem 5 is unaffected by under-approximations.
+Together, we have that Theorem 4.2 is preserved, with a scaled up
+complexity bound.
+∎
+Appendix 0.F LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} is an MBP (Proof of Lemma 5.1 )
+First, we restate the theorem:
+Theorem 0.F.4
+LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} is a Model Based Projection.
+Proof
+By definition, LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} has a finite image, as there are only
+finitely many disjuncts in ( 2 ). Thus, it suffices to
+show that for every M ⊧ λ m M\models\lambda_{m} , M ⊧ LRAProj λ ​ ( M ) M\models\textnormal{\emph{LRAProj}}_{\lambda}(M) .
+Each disjunct in the LW decomposition ( 2 ) is obtained by a virtual
+substitution of
+the literals in λ m \lambda_{m} containing x x . As in Section 5 , we
+assume that λ m \lambda_{m} is in NNF with the only literals containing x x of the
+form ( x = e ) (x=e) , ( ℓ < x ) (\ell<x) or ( x < u ) (x<u) for x x -free terms e e , ℓ \ell and u u .
+Let 𝑆𝑢𝑏 t \mathit{Sub}_{t} denote the virtual substitution map of literals when t t is either e e ,
+ℓ + ϵ \ell+\epsilon or − ∞ -\infty . The LW method [ 30 ] defines:
+𝑆𝑢𝑏 e ( x = e ) = ⊤ , 𝑆𝑢𝑏 e ( ℓ < x ) = ( ℓ < e ) , 𝑆𝑢𝑏 e ( x < u ) = ( e < u ) \displaystyle\mathit{Sub}_{e}(x=e)=\top,\mathit{Sub}_{e}(\ell<x)=(\ell<e),\mathit{Sub}_{e}(x<u)=(e<u)
+(5)
+𝑆𝑢𝑏 ℓ + ϵ ( x = e ) = ⊥ , 𝑆𝑢𝑏 ℓ + ϵ ( ℓ ′ < x ) = ( ℓ ′ ≤ ℓ ) , 𝑆𝑢𝑏 ℓ + ϵ ( x < u ) = ( ℓ < u ) \displaystyle\mathit{Sub}_{\ell+\epsilon}(x=e)=\bot,\mathit{Sub}_{\ell+\epsilon}(\ell^{\prime}<x)=(\ell^{\prime}\leq\ell),\mathit{Sub}_{\ell+\epsilon}(x<u)=(\ell<u)
+(6)
+𝑆𝑢𝑏 − ∞ ( x = e ) = ⊥ , 𝑆𝑢𝑏 − ∞ ( ℓ < x ) = ⊥ , 𝑆𝑢𝑏 − ∞ ( x < u ) = ⊤ \displaystyle\mathit{Sub}_{-\infty}(x=e)=\bot,\mathit{Sub}_{-\infty}(\ell<x)=\bot,\mathit{Sub}_{-\infty}(x<u)=\top
+(7)
+Let M ⊧ λ m M\models\lambda_{m} and LRAProj λ ​ ( M ) = λ m ​ [ t ] \textnormal{\emph{LRAProj}}_{\lambda}(M)=\lambda_{m}[t] where t t is
+either e e or ℓ + ϵ \ell+\epsilon or − ∞ -\infty .
+As λ m \lambda_{m} is in NNF, it suffices to show that
+for every literal μ \mu of λ m \lambda_{m} containing x x , the following holds:
+M ⊧ ( μ ⇒ 𝑆𝑢𝑏 t ​ ( μ ) ) M\models(\mu\Rightarrow\mathit{Sub}_{t}(\mu))
+(8)
+We consider the different possibilities of t t below. For a term η \eta , let
+M ⁡ [ η ] M[\eta] denote the value of η \eta in M M .
+Case t = e t=e . In this case, we know that M ⊧ x = e M\models x=e .
+Now, for a literal ℓ < x \ell<x ,
+M [ ℓ < x ] \displaystyle M[\ell<x]
+⇒ M ⁡ [ ℓ ] < M ⁡ [ x ] \displaystyle\Rightarrow M[\ell]<M[x]
+= M ⁡ [ ℓ ] < M ⁡ [ e ] \displaystyle=M[\ell]<M[e]
+= M [ ℓ < e ] \displaystyle=M[\ell<e]
+= M ⁡ [ Sub t ​ ( ℓ < x ) ] \displaystyle=M[\text{\emph{Sub}}_{t}({\ell<x})]
+{ Sub t ( ℓ < x ) = ( ℓ < e ) } . \displaystyle\{\text{\emph{Sub}}_{t}({\ell<x})=(\ell<e)\}.
+Similarly, literals of the form x < u x<u and x = e ′ x=e^{\prime} can be considered.
+Case t = ℓ + ϵ t=\ell+\epsilon . In this case, we know that M [ ℓ < x ] M[\ell<x] is
+true, i.e. , M ⁡ [ ℓ ] < M ⁡ [ x ] M[\ell]<M[x] and whenever M [ ℓ ′ < x ] M[\ell^{\prime}<x] is true, M [ ℓ ′ ≤ ℓ ] M[\ell^{\prime}\leq\ell] is also true.
+Now, for a literal ℓ ′ < x \ell^{\prime}<x ,
+M [ ℓ ′ < x ] \displaystyle M[\ell^{\prime}<x]
+⇒ M [ ℓ ′ ≤ ℓ ] \displaystyle\Rightarrow M[\ell^{\prime}\leq\ell]
+= M ⁡ [ Sub t ​ ( ℓ ′ < x ) ] \displaystyle=M[\text{\emph{Sub}}_{t}({\ell^{\prime}<x})]
+{ Sub t ( ℓ ′ < x ) = ( ℓ ′ ≤ ℓ ) } . \displaystyle\{\text{\emph{Sub}}_{t}({\ell^{\prime}<x})=(\ell^{\prime}\leq\ell)\}.
+For a literal x < u x<u ,
+M [ x < u ] \displaystyle M[x<u]
+⇒ M ⁡ [ x ] < M ⁡ [ u ] \displaystyle\Rightarrow M[x]<M[u]
+⇒ M ⁡ [ ℓ ] < M ⁡ [ u ] \displaystyle\Rightarrow M[\ell]<M[u]
+{ M [ ℓ ] < M [ x ] } \displaystyle\{M[\ell]<M[x]\}
+⇒ M [ ℓ < u ] \displaystyle\Rightarrow M[\ell<u]
+= M ⁡ [ Sub t ​ ( x < u ) ] \displaystyle=M[\text{\emph{Sub}}_{t}({x<u})]
+{ Sub t ( x < u ) = ( ℓ < u ) } \displaystyle\{\text{\emph{Sub}}_{t}({x<u})=(\ell<u)\}
+For a literal x = e x=e , ( 8 ) vacuously holds as
+M [ x = e ] M[x=e] is false.
+Case t = − ∞ t=-\infty . In this case, we know that M [ x = e ] M[x=e] and M [ ℓ < x ] M[\ell<x]
+are false for every literal of the form x = e x=e and ℓ < x \ell<x . So, for such literals
+( 8 ) vacuously holds. For
+a literal x < u x<u , Sub t ( x < u ) = ⊤ \text{\emph{Sub}}_{t}({x<u})=\top and hence, ( 8 )
+holds again.
+∎
+Appendix 0.G Model Based Projection for Linear Integer Arithmetic
+In this section, we present our MBP 𝐿𝐼𝐴𝑃𝑟𝑜𝑗 λ \mathit{LIAProj}_{\lambda} for LIA. It
+is based on Cooper’s method for Quantifier Elimination
+procedure [ 15 ] . Let λ ⁡ ( y ¯ ) = ∃ x ⋅ λ m ​ ( x , y ¯ ) \lambda(\overline{y})=\exists x\cdot\lambda_{m}(x,\overline{y}) , where λ m \lambda_{m} is quantifier free and in
+negation normal form. Without loss of generality, let the only
+literals containing x x be the form ℓ < x \ell<x , x < u x<u , x = e x=e or
+( d ∣ ± x + w ) (d\mid\pm x+w) , where a | b a\mid b denotes that a a divides
+b b , the terms ℓ \ell , u u , e e and w w are x x -free, and d ∈ ℤ ∖ { 0 } d\in\mathbb{Z}\setminus\{0\} . Let E = { e ∣ ( x = e ) ∈ lits ​ ( λ m ) } E=\{e\mid(x=e)\in\text{\emph{lits}}({\lambda_{m}})\} be the set of equality terms of x x and L = { ℓ ∣ ( ℓ < x ) ∈ lits ​ ( λ m ) } L=\{\ell\mid(\ell<x)\in\text{\emph{lits}}({\lambda_{m}})\} be the set of
+lower-bounds of x x . Then, by Cooper’s method,
+∃ x ⋅ λ m ​ ( x , y ¯ ) ≡ ⋁ ( x = e ) ∈ lits ​ ( λ ) λ m ​ [ e ] ∨ ⋁ ( ℓ < x ) ∈ lits ​ ( λ ) ( ⋁ i = 0 D − 1 λ m ​ [ ℓ + 1 + i ] ) ∨ ⋁ i = 0 D − 1 λ m − ∞ ​ [ i ] . \exists x\cdot\lambda_{m}(x,\overline{y})\equiv\bigvee_{(x=e)\in\text{\emph{lits}}({\lambda})}\lambda_{m}[e]\lor\bigvee_{(\ell<x)\in\text{\emph{lits}}({\lambda})}\left(\bigvee_{i=0}^{D-1}\lambda_{m}[\ell+1+i]\right)\lor\bigvee_{i=0}^{D-1}\lambda_{m}^{-\infty}[i].
+(9)
+where D D is the least common multiple of all the divisors in the
+divisibility literals of λ m \lambda_{m} , [ ⋅ ] [\cdot] denotes a substitution for x x
+and λ m − ∞ \lambda_{m}^{-\infty} is
+obtained from λ m \lambda_{m} by substituting all non-divisibility literals
+as follows:
+( ℓ < x ) \displaystyle(\ell<x)
+↦ ⁣ ⊥ \displaystyle\mapsto\bot
+( x < u ) \displaystyle(x<u)
+↦ ⁣ ⊤ \displaystyle\mapsto\top
+( x = e ) \displaystyle(x=e)
+↦ ⁣ ⊥ \displaystyle\mapsto\bot
+(10)
+Intuitively, the disjunction partitions the space of the possible values of x x .
+A disjunct for ( x = e ) (x=e) covers the case when x x is equal to an equality term.
+Otherwise, the lower-bounds identify various intervals in which x x can be
+present. The disjuncts for ( ℓ < x ) (\ell<x) cover the case when x x satisfies a
+lower-bound, and the last disjunct is for the case when x x is smaller than all
+lower-bounds. The disjunction over the possible values of i i covers the
+different ways in which the divisibility literals can be satisfied.
+Model-based projection 𝐿𝐼𝐴𝑃𝑟𝑜𝑗 λ \mathit{LIAProj}_{\lambda} is defined as follows,
+conflicts are resolved by some arbitrary, but fixed, syntactic
+ordering on terms:
+𝐿𝐼𝐴𝑃𝑟𝑜𝑗 λ ​ ( M ) = { λ m ​ [ e ] , if ​ x = e ∈ lits ​ ( λ ) ∧ M ⊧ ( x = e ) λ m ​ [ ℓ + 1 + i ℓ ] , else if ​ ( ℓ < x ) ∈ lits ​ ( λ ) ∧ M ⊧ ( ℓ < x ) ∧ ∀ ( ℓ ′ < x ) ∈ lits ​ ( λ ) ⋅ ( M ⊧ ( ( ℓ ′ < x ) ⇒ ( ℓ ′ ≤ ℓ ) ) ) λ m − ∞ ​ [ i − ∞ ] , otherwise \mathit{LIAProj}_{\lambda}(M)=\begin{cases}\lambda_{m}[e],&\text{if }x=e\in\text{\emph{lits}}({\lambda})\land M\models(x=e)\\
+\lambda_{m}[\ell+1+i_{\ell}],&\text{else if }(\ell<x)\in\text{\emph{lits}}({\lambda})\land M\models(\ell<x)\land\\
+&\forall(\ell^{\prime}<x)\in\text{\emph{lits}}({\lambda})\cdot\left(M\models((\ell^{\prime}<x)\Rightarrow(\ell^{\prime}\leq\ell))\right)\\
+\lambda_{m}^{-\infty}[i_{-\infty}],&\text{otherwise}\end{cases}
+(11)
+where i ℓ = M ⁡ [ x − ( ℓ + 1 ) ] mod D i_{\ell}=M[x-(\ell+1)]\bmod D , i − ∞ = M ⁡ [ x ] mod D i_{-\infty}=M[x]\bmod D , and M ⁡ [ x ] M[x] is the value of x x in M M .
+The following lemma shows that 𝐿𝐼𝐴𝑃𝑟𝑜𝑗 λ \mathit{LIAProj}_{\lambda} is indeed a model based
+projection. The proof is similar to that of LRAProj λ \textnormal{\emph{LRAProj}}_{\lambda} .
+Lemma 7
+𝐿𝐼𝐴𝑃𝑟𝑜𝑗 λ \mathit{LIAProj}_{\lambda} is a Model-Based Projection.
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" ( ) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

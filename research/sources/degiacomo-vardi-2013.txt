@@ -1,0 +1,331 @@
+Conferences
+Future Conferences
+Past Conferences
+Proceedings
+IJCAI 2026 Proceedings
+All Proceedings
+Awards
+Trustees/officers
+Current trustees
+Trustees Elect
+IJCAI Secretariat
+IJCAI Sponsorship and Publicity Officers
+IJCAI Team
+Local Arrangements Chairs
+Former Trustees serving on the Executive Committee
+Other Former Officers
+AI Journal
+About
+About IJCAI
+Documents
+Contact Information
+Proceedings
+IJCAI 2026 Proceedings
+All Proceedings
+Proceedings
+›
+IJCAI 2013
+Linear Temporal Logic and Linear Dynamic Logic on Finite Traces
+Giuseppe De Giacomo , Moshe Y. Vardi
+PDF Download
+Bib BibTeX
+“” Cite
+Proceedings of the Twenty-Third International Joint Conference on Artificial Intelligence .
+Pages 854-859.
+&copy; 2013 International Joint Conferences on Artificial Intelligence
+Abstract
+In this paper we look into the assumption of interpreting LTL over finite traces. In particular we show that LTLf, i.e., LTL under this assumption, is less expressive than what might appear at first sight, and that at essentially no computational cost one can make a significant increase in expressiveness while maintaining the same intuitiveness of LTLf. Indeed, we propose a logic, LDLf for Linear Dynamic Logic over finite traces, which borrows the syntax from Propositional Dynamic Logic PDL, but is interpreted over finite traces. Satisfiability, validity and logical implication (as well as model checking) for LDLf are PSPACE-complete as for LTLf (and LTL).
+References (47)
+Full text
+Cite
+Data
+R. Armoni, L. Fix, A. Flaisher, R. Gerth, B. Ginsburg, T. Kanza, A. Landver, S. Mador-Haim, E. Singerman, A. Tiemeyer, M. Y. Vardi, and Y. Zbar. The forspec tempo- ral logic: A new temporal property-specification language. In TACAS, 2002.
+F. Bacchus and F. Kabanza. Planning for temporally extended goals. In AAAI, 1996.
+F. Bacchus and F. Kabanza. Using temporal logics to express search control knowledge for planning. Artif. Intell., 116(1- 2):123-191, 2000.
+C. Baier and J.-P. Katoen. Principles of Model Checking. MIT Press, 2008.
+M. Bienvenu, C. Fritz, and S. A. McIlraith. Planning with qualitative temporal preferences. In KR, 2006.
+M. Bienvenu, C. Fritz, and S. A. McIlraith. Specifying and computing preferred plans. Artif. Intell., 175(7-8):1308-1345, 2011.
+R. Bloem, A. Cimatti, I. Pill, M. Roveri, and S. Semprini. Sym- bolic implementation of alternating automata. Implementation and Application of Automata, LNCS 4094, 2006.
+J. A. Brzozowski and E. L. Leiss. On equations for regular languages, finite automata, and sequential networks. Theor. Comput. Sci., 10:19-35, 1980.
+J. R. Büchi. Weak second-order arithmetic and finite automata. Zeit. Math. Logik. Grund. Math., 6:66-92, 1960.
+T. Bylander. The computational complexity of propositional STRIPS planning. Artif. Intell., 69(1-2):165-204, 1994.
+D. Calvanese, G. De Giacomo, and M. Y. Vardi. Reasoning about actions and planning in LTL action theories. In KR, 2002.
+A. K. Chandra, D. C. Kozen, and L. J. Stockmeyer. Alterna- tion. Journal of the ACM (JACM), 28(1), Jan. 1981.
+G. De Giacomo and M. Y. Vardi. Automata-theoretic approach to planning for temporally extended goals. In ECP, 1999.
+V. Diekert and P. Gastin. First-order definable languages. In Logic and automata: history and perspectives. Amsterdam University Press, 2008.
+C. Eisner and D. Fisman. A practical introduction to PSL. Springer-Verlag New York Inc, 2006.
+C. C. Elgot. Decision problems of finite automata design and related arithmetics. Trans. Amer. Math. Soc., 98:21-52, 1961.
+R. Fagin, J. Halpern, Y. Moses, and M. Y. Vardi. Reasoning about Knowledge. MIT Press, 1995.
+P. Felli, G. De Giacomo, and A. Lomuscio. Synthesizing agent protocols from LTL specifications against multiple partially- observable environments. In KR, 2012.
+M. J. Fischer and R. E. Ladner. Propositional dynamic logic of regular programs. J. Comput. Syst. Sci., 18:194-211, 1979.
+A. Gabaldon. Precondition control and the progression algo- rithm. In KR, 2004.
+D. M. Gabbay, A. Pnueli, S. Shelah, and J. Stavi. On the tem- poral analysis of fairness. In POPL, 1980.
+D. Harel. Dynamic logic. In Handbook of Philosophical Logic, D. Reidel Publishing Company, 1984.
+D. Harel, D. Kozen, and J. Tiuryn. Dynamic Logic. MIT Press, 2000.
+J. E. Hopcroft and J. D. Ullman. Introduction to automata theory, languages, and computation. Addison-Wesley, 1979.
+H. Kamp. On tense logic and the theory of order. PhD thesis, UCLA, 1968.
+B. Khoussainov and A. Nerode. Automata theory and its ap- plications. Birkhauser, 2001.
+E. L. Leiss. Succint representation of regular languages by boolean automata. Theor. Comput. Sci., 13:323-330, 1981.
+H. J. Levesque, R. Reiter, Y. Lesperance, F. Lin, and R. Scherl. GOLOG: A logic programming language for dynamic do- mains. J. of Logic Programming, 31:59-84, 1997.
+J. McCarthy and P. J. Hayes. Some philosophical problems from the standpoint of aritificial intelligence. Machine Intelli- gence, 4:463-502, 1969.
+R. McNaughton and S. Papert. Counter-Free Automata. MIT Press, 1971.
+F. Patrizi, N. Lipovetzky, G. D. Giacomo, and H. Geffner. Computing infinite plans for LTL goals using a classical plan- ner. In IJCAI, 2011. IJCAI
+M. Pešić, D. Bošnački, and W. van der Aalst. Enacting declar- ative languages using LTL: avoiding errors and improving per- formance. Model Checking Software, 2010.
+A. Pnueli. The temporal logic of programs. In FOCS, 1977.
+A. Pnueli, O. Lichtenstein, and L. Zuck. The Glory of The Past. Logics of Programs: Brooklyn, June 17-19, 1985, 193:194, 1985.
+A. Pnueli and R. Rosner. On the synthesis of a reactive module. In POPL, 1989.
+R. Reiter. Knowledge in Action: Logical Foundations for Specifying and Implementing Dynamical Systems. MIT Press, 2001.
+A. P. Sistla and E. M. Clarke. The complexity of propositional linear temporal logics. J. ACM, 32(3):733-749, July 1985.
+S. Sohrabi, J. A. Baier, and S. A. McIlraith. Preferred expla- nations: Theory and generation via planning. In AAAI, 2011.
+L. J. Stockmeyer and A. Meyer. Cosmological lower bound on the circuit complexity of a small problem in logic. J. ACM, 49(6):753-784, 2002.
+W. Thomas. Star-free regular sets of ω-sequences. Information and Control, 42(2):148-156, 1979.
+W. Thomas. Languages, Automata, and Logic. Handbook of formal languages: beyond words, 1997.
+B. Trakhtenbrot. Finite automata and monadic second order logic. Siberian Math. J, 3:101-131, 1962. Russian; English translation in: AMS Transl. 59 (1966), 23-55.
+W. M. P. van der Aalst, M. Pešić, and H. Schonenberg. Declar- ative workflows: Balancing between flexibility and support. Computer Science -Research and Development, Mar. 2009.
+M. Y. Vardi. The rise and fall of linear time logic In 2nd Int'l Symp. on Games, Automata, Logics and Formal Verification, 2011.
+M. Y. Vardi. An automata-theoretic approach to linear tem- poral logic. In Logics for Concurrency: Structure versus Au- tomata, LNCS 1043, 1996.
+T. Wilke. Classifying discrete temporal properties. STACS,1999.
+P. Wolper. Temporal logic can be more expressive. Information and Control, 56(1/2):72-99, 1983.
+References were extracted automatically from the PDF and may contain errors.
+Full text extracted automatically from the PDF; figures, tables and equations may differ. The PDF is the version of record.
+1 Introduction
+Several research areas of AI have been attracted by the simplicity and naturalness of Linear Time Logic (LTL) [33] for temporal specification of the course of actions of an agent or a system of agents [17]. In particular in reasoning about actions and planning, LTL is often used as a specification mechanism for temporally extended goals [2; 13; 11; 31; 18], for constraints on plans [2; 3; 20], and for expressing preferences and soft constraints [5; 6; 38].
+Quite often, especially in the context of temporal constraints and preferences, LTL formulas are used to express properties or constraints on finite traces of actions/states; in fact, this can be done even if the standard semantics of LTL is defined on infinite traces [33]. Similarly, in the area of Business Process Specification and Verification [43; 32], variants of LTL are used to specify processes declaratively, but these variants are interpreted over finite traces. Yet, there has been little discussion in the AI literature about the differences arising from interpreting LTL over finite or infinite traces.
+In this paper we look into case where LTL is interpreted over finite traces. In particular we show that LTL, in this case, is less expressive than what might appear at first sight, and that at essentially no cost one can make a significant increase in expressiveness while maintaining the same intuitiveness of LTL interpreted over finite traces.
+Specifically, we recall that LTL interpreted over finite traces has the expressive power of First Order Logic (FOL) over fi- Moshe Y. Vardi Rice University, Houston, TX, USA vardi@cs.rice.edu nite ordered traces and that of star-free regular expressions [14; 30; 34; 46]. We also notice that Monadic Second Order Logic (MSO) over finite ordered traces is expressively equivalent to regular expressions and finite-state automata [9; 16; 42]. In other words, regular expressions and finite-state automata properly subsume LTL over finite traces.
+This observation raises the question of why one restricts oneself to LTL over finite traces instead of adopting a more expressive formalism such as regular expressions or finite state automata. We believe that one key obstacle is that regular expressions and finite-state automata are perceived as too procedural and possibly low level to be an attractive specification formalisms. We propose here an extension of LTL over finite traces that has the same expressive power as MSO over finite traces, while retaining the declarative nature and intuitive appeal of LTL. Our logic, is called LDLf for Linear Dynamic Logic over finite traces. It is an adaptation of LDL, introduced in [44], which is interpreted over infinite traces. Both LDL and LDLf borrows the syntax from Propositional Dynamic Logic (PDL) [19], but are interpreted over traces.
+We show how to immediately capture an LTL formula as an equivalent LDLf formula, as well as how to capture a regular expression or finite-state automata-based specification as an LDLf formula. We then show that LDLf shares the same computational characteristics of LTL [45]. In particular, satisfiability, validity and logical implication (as well as model checking) are PSPACE-complete (with potential exponentiality depending only on the formula in the case of model checking). To do so we resort to a polynomial translation of LDLf formulas into alternating automata on finite traces [8; 12; 27], whose emptiness problem is known to be PSPACEcomplete [12]. The reduction actually gives us a practical algorithm for reasoning in LDLf . Such an algorithm can be implemented using symbolic representation, see, e.g.,[7], and thus promises to be quite scalable in practice, though we leave this for further research.
+2 Linear Time Logic on Finite Traces (LTLf)
+Linear Temporal Logic (LTL) over infinite traces was originally proposed in Computer Science as a specification language for concurrent programs [33]. The variant of LTL interpreted over finite traces that we consider is that of [5; 20; 32; 43; 46], called here LTLf . Such a logic uses the same syntax as that of the original LTL. Namely, formulas of LTLf are built from a set P of propositional symbols and are closed under the boolean connectives, the unary temporal operator ◦ (next-time) and the binary temporal operator U (until):
+Formula not decoded
+with A ∈ P.
+Intuitively, ◦ϕ says that ϕ holds at the next instant, ϕ1 U ϕ2 says that at some future instant ϕ1 will hold and until that point ϕ2 holds. Common abbreviations are also used, including the ones listed below.
+Standard boolean abbreviations, such as true, false, ∨ (or) and → (implies).
+Last, which stands for ¬◦true, and denotes the last instant of the sequence. Notice that in LTL over infinite traces Last, which in that case is equivalent to ◦false is indeed always false. When interpreted on finite traces however it becomes true exactly at the last instant of the sequence.
+✸ϕ which stands for true U ϕ, and says that ϕ will eventually hold before the last instant (included).
+✷ϕ, which stands for ¬✸¬ϕ, and says that from the current instant till the last instant ϕ will always hold.
+The semantics of LTLf is given in terms of LTf - interpretations, i.e., interpretations over a finite traces denoting a finite sequence of consecutive instants of time. LTf - interpretations are represented here as finite words π over the alphabet of 2P , i.e., as alphabet we have all the possible propositional interpretations of the propositional symbols in P. We use the following notation. We denote the length of a trace π as length(π). We denote the positions, i.e. instants, on the trace as π(i) with 0 ≤ i ≤ last, where last = length(π) - 1 is the last element of the trace. We denote by π(i, j) the segment (i.e., the subword) obtained from π starting from position i and terminating in positon j, 0 ≤ i ≤ j ≤ last .
+Given an LTf -interpretation π, we inductively define when an LTLf formula ϕ is true at an instant i (for 0 ≤ i ≤ last), in symbols π, i |= ϕ, as follows:
+π, i |= A, for A ∈ P iff A ∈ π(i).
+π, i |= ¬ϕ iff π, i ̸|= ϕ.
+π, i |= ϕ1 ∧ϕ2 iff π, i |= ϕ1 and π, i |= ϕ2.
+π, i |= ◦ϕ iff i < last and π, i+1 |= ϕ.
+π, i |= ϕ1 U ϕ2 iff for some j such that i ≤ j ≤ last, we have that π, j |= ϕ2 and for all k, i ≤ k < j, we have that π, k |= ϕ1.
+A formula ϕ is true in π, in notation π |= ϕ, if π, 0 |= ϕ. A formula ϕ is satisfiable if it is true in some LTf -interpretation, and is valid, if it is true in every LTf -interpretation. A formula ϕ logically implies a formula ϕ′ , in notation ϕ |= ϕ′ if for every LTf -interpretation π we have that π |= ϕ implies π |= ϕ′ . Notice that satiability, validity and logical implication are all immediately mutually reducible to each other.
+Theorem 1. [37] Satisfiability, validity, and logical implication for LTLf formulas are PSPACE-complete.
+Proof. PSPACE membership follows from PSPACE completeness of LTL on infinite traces [37]. Indeed, it is easy to reduce LTLf satisfiability into LTL (on infinite traces) satisfiability as follows: (i) introduce a proposition "Tail"; (ii) require that Tail holds at 0 (Tail); (iii) require that Tail stays true until it fails and then stay failed (Tail U ✷¬Tail); (iv) translate the LTLf formula into an LTL formulas as follows:
+t(P) ↦→P
+t(¬ϕ) ↦→¬t(ϕ)
+t(ϕ1 ∧ϕ2) ↦→ t(ϕ1) ∧ t(ϕ2)
+t(◦ϕ) ↦→◦(Tail ∧ t(ϕ))
+t(ϕ1 U ϕ2) ↦→ (ϕ1)U(Tail ∧ t(ϕ))
+PSPACE-hardness can be obtained adapting the original hardness proof for LTL on infinite trace in [37]. Here, however, we show it by observing that we can easily reduce (propositional) STRIPS planning, which is PSPACE-complete [10] into LTLf satisfiability. The basic idea is to capture in LTLf runs over the planning domain (the plan itself is a good run). We can do this as follows. For each operator/action A ∈ Act with precondition ϕ and effects ∧F∈Add(A) F ∧ ∧F∈Del(A) ¬F we generate the following LTLf formulas: (i) ✷(◦A→ϕ): that is, always if next action A as occurred (denoted by a proposition A) then now ϕ must be true; (ii) ✷(◦A→◦(∧F∈Add(A) F ∧ ∧F∈Del(A) ¬F)), that is, when A as occurs, its effects are true; (iii) ✷(◦A→ ∧F̸∈Add(A)∪Del(A) (F ≡ ◦F)), that is, everything that is not in the add or delete list of A remains unchanged, this is the so called the frame axiom [29]. We then say that at every step one and only one action is executed: ✷((∨A∈Act A) ∧ (∧Ai,Aj∈Act,Ai̸=Aj Ai → ¬Aj)). We encode the initial situation, described with a set of propositions Init that are initially true, as the formula (that holds at the beginning of the sequence): ∧F∈Init F ∧ ∧F̸∈Init ¬F. Finally, given a goal ϕg we require it to eventually hold: ✸ϕg. Then a plan exists iff the conjunction of all above formula is satisfiable. Indeed if it satisfiable there exists a sequence where eventually ϕg is true and such sequence is a run over the planning domain.
+Notice that in the proof above we encoded STRIPS effects in LTLf , but it is equally easy to encode successor state axioms of the situation calculus (in the propositional case and instantiated to single actions) [36]. For the successor state axiom F (do(A, s)) ≡ ϕ+(s) ∨ (F (s) ∧ ¬ϕ-(s)) we have:
+Formula not decoded
+However, precondition axioms Poss(A, s) ≡ ϕA(s) can only be captured in the part that says that if A happens then its precondition must be true:
+Formula not decoded
+The part that says that if the precondition ϕA holds that action A is possible cannot be expressed in linear time formalisms since they talk about the runs that actually happen not the one that are possible. See, e.g., the discussion in [11].
+While, as hinted above, LTLf is able to capture the runs of an arbitray transition system by expressing formulas about the current state and the next, when we consider more sophisticated temporal properties, LTLf on finite traces presents us with some surprises. To see this, let us look at some classical LTL formulas and their meaning on finite traces.
+"Safety": ✷ϕ means that always till the end of the trace ϕ holds.
+"Liveness": ✸ϕ means that eventually before the end of the trace ϕ holds. By the way, the term "liveness" is not fully appropriate, since often the class of the liveness properties is mathematically characterized exactly as that of those properties that cannot be checked within any finite length run. Refer, e.g., to Chapter 3 of [4] for details.
+"Response": ✷✸ϕ means that for any point in the trace there is a point later in the trace where ϕ holds. But this is equivalent to say that the last point in the trace satisfies ϕ, i.e., it is equivalent to ✸(Last ∧ ϕ). Notice that this meaning is completely different from the meaning on infinite traces and cannot be considered a "fairness" property as "response" is in the infinite case.
+"Persistence": ✸✷ϕ means that there exists a point in the trace such that from then on till the end of the trace ϕ holds. But again this is equivalent to say that the last point in the trace satisfies ϕ, i.e., it is equivalent to ✸(Last ∧ ϕ).
+In other words, no direct nesting of eventually and always connectives is meaningful in LTLf . In contrast, in LTL of infinite traces alternation of eventually and always have different meaning up to three level of nesting, see, e.g., Chapter 5 of [4] for details. Obviously, if we nest eventually and always indirectly, through boolean connectives, we do get interesting properties. For example, ✷(ψ→✸ϕ) does have an interesting meaning also for finite traces: always, before the end of the trace, if ψ holds then later ϕ holds.
+3 LTLf to FOL
+Next we show how to translate LTLf into first-order logic (FOL) over finite linear order sequences 1 . Specifically, we consider a first-order language that is formed by the two binary predicates succ and < (which we use in the usual infix notation) plus equality, a unary predicate for each symbol in P and two constants 0 and last . Then we restrict our interest to finite linear ordered FOL interpretation, which are FOL interpretations of the form I = (∆I , ·I ), where the domain is ∆I = {0, . . . , n} with n ∈ IN, and the interpretation function ·I interprets binary predicates and constants in a fixed way:
+succI = {(i, i + 1) | i ∈ {0, . . . , n - 1}},
+<I = {(i, j) | i, j ∈ {0, . . . , n} and i < j},
+=I = {(i, i) | i ∈ {0, . . . , n}},
+0I = 0 and lastI = n.
+In fact, succ, =, 0 and last can all be defined in terms of <. Specifically:
+succ(x, y) .= (x < y) ∧¬∃z.x < z < y;
+x = y .= ∀z.x < z ≡ y < z;
+0 can be defined as that x such that ¬∃y.succ(y, x), and last as that x such that ¬∃y.succ(x, y).
+For convenience we keep these symbols in the language. Also we use the usual abbreviation x ≤ y for x < y ∨ x = y.
+1 More precisely monadic first-order logic on finite linearly ordered domains, sometimes denoted as FO[<].
+In spite of the obvious notational differences, it is easy to see that finite linear ordered FOL interpretations and LTf -interpretations are isomorphic. Indeed, given an LTf - interpretation π we define the corresponding finite FOL interpretation I = (∆I , ·I ) as follows: ∆I = {0, . . . , last} (with last = length(π) - 1); with the obvious predefined predicates and constants interpretation, and, for each A ∈ P, its interpretation is AI = {i | A ∈ π(i)}. Conversely, given a finite linear ordered FOL interpretation I = (∆I , ·I ), with ∆I = {0, . . . , n}, we define the corresponding LTf - interpretation π as follows: length(π) = n + 1; and for each position 0 ≤ i ≤ last, with last = n, we have π(i) = {A | i ∈ AI }.
+We can then use a translation function fol (ϕ, x) that given an LTLf formula ϕ and a variable x returns a corresponding FOL formula open in x. We define fol() by induction on the structure of the LTLf formula:
+fol(A, x) = A(x)
+fol(¬ϕ, x) = ¬fol(ϕ, x)
+fol(ϕ∧ϕ′ , x) = fol(ϕ, x) ∧ fol(ϕ′ , x)
+fol(◦ϕ, x) = ∃y.succ(x, y) ∧ fol(ϕ, y)
+fol(ϕU ϕ′ , x) = ∃y.x ≤ y ≤ last ∧fol(ϕ′ , y)∧∀z.x ≤ z < y → fol (ϕ, z)
+Theorem 2. Given an LTf -interpretation π and a corresponding finite linear ordered FOL interpretation I, we have
+Formula not decoded
+where [x/i] stands for a variable assignment that assigns to the free variable x of fol (ϕ, x) the value i.
+Formula not decoded
+In fact also the converse reduction holds, indeed we have: Theorem 3 ([21] 2 ). LTLf has exactly the same expressive power of FOL.
+4 Regular Temporal Specifications (REf)
+We now introduce regular languages, concretely represented as regular expressions or finite state automata [24; 26], as a form of temporal specification over finite traces. In particular we focus on regular expressions.
+We consider as alphabet the set propositional interpretations 2P over the propositional symbols P. Then REf expressions are defined as follows: ϱ ::= ∅ | P | ϱ1 + ϱ2 | ϱ1; ϱ2 | ϱ∗ , where P ∈ 2P and ∅ denotes the empty language. We denote by L(ϱ) the language recognized by a REf expression ϱ (L(∅)) = ∅). In fact, it is convenient to introduce some syntactic sugar and redefine REf as follows:
+Formula not decoded
+where φ is a propositional formula that is an abbreviation for the union of all the propositional interpretations that satisfy φ, that is φ = ∑P|=φ P (∅ is now abbreviated by false).
+2 Specifically, this result is a direct consequence of Theorem 2.2 in [21] on "discrete complete models", which include finite sequences. That theorem strengthen an analogous one in [25] by avoiding the use of past operators.
+Notice that we interpret these expressions (with or without abbreviations) over the same kind of LTf -interpretations used for LTLf . Namely, we say that a REf expression is satisfied by an LTf -interpretation π if π ∈ L(ϱ), we say that ϱ is true at instant i if π(i, last) ∈ L(ϱ), we say that ϱ is satisfied beween i, j if π(i, j) ∈ L(ϱ).
+Here are some interesting properties that can be expressed using REf as a temporal property specification mechanism.
+"Safety": ϕ∗ , which is equivalent to ✷φ, and means that always, until the end of the trace, ϕ holds.
+"Liveness": true ∗ ; ϕ; true ∗ , which is equivalent to the LTLf formula ✸ϕ, and means that eventually before the end of the trace ϕ holds.
+"Conditional response": true ∗ ; (¬ψ+ true∗ ; ϕ), which is equivalent to ✷(ψ→✸ϕ), and means that always before the end of the trace if ψ holds then later ϕ holds.
+"Ordered occurrence": true ∗ ; ϕ1; true ∗ ; ϕ2; true ∗ that says ϕ1 and ϕ2 will both happen in order.
+"Alternating sequence": (ψ; ϕ)∗ that means that ψ and ϕ, not necessarily disjoint, alternate for the whole sequence starting with ψ and ending with ϕ.
+"Pair sequence": (true; true)∗ that means that the sequence is of even length.
+"Eventually on an even path ϕ": (true; true)∗ ; ϕ; true ∗ , i.e., we can constrain the path fulfilling the eventuality to satisfy some structural (regular) properties, in particular in this case that of (true; true)∗ .
+The latter three formulas cannot be expressed in LTLf . More generally, the capability of requiring regular structural properties on paths, is exactly what is missing from LTLf , as noted in [47].
+Next, we consider monadic second-order logic MSO over bounded ordered sequences, see e.g., Chapter 2 of [26]. This is a strict extension of the FOL language introduced above, where we add the possibility of writing formulas of the form ∀X.ϕ and ∃X.ϕ where X is a monadic (i.e., unary) predicate variable and ϕ may include atoms whose predicate is such variable. Binary predicates and constants remain exactly those introduced above for FOL. The following classical result clarifies the relationship between REf and MSO, see e.g., [41] or Chapter 2 of [26].
+Theorem 4 ([9; 16; 42]). REf has exactly the same expressive power of MSO.
+Notice that MSO is strictly more expressive that FOL on finite ordered sequences.
+Theorem 5 ([40]). The expressive power of FOL over finite ordered sequences is strictly less than that of MSO.
+Recalling Theorem 3, this immediately implies that:
+Theorem 6. REf is strictly more expressive than LTLf .
+In fact this theorem can be refined by isolating which sort of REf expressions correspond to LTLf . These are the socalled star-free regular expressions (aka, counter-free regular languages) [30], which are the regular expressions obtained as follows:
+Formula not decoded
+where ϱ stands for the complement of ϱ, i.e., L(ϱ) = (2P )∗/L(ϱ). Star-free regular expressions are strictly less espressive then REf since they do not allow for unrestrictedly expressing properties involving the Keene star ∗, which appears implicitly only to generate the universal language used in complementation.
+Note, however, that several REf expressions involving ∗ can be rewritten by using complementation instead, including, it turns out, all the ones that correspond to LTLf properties.
+Here are some examples of REf expressions, which are indeed star-free.
+(2P )∗ = true ∗ is in fact star-free, as it can be expressed as false
+true ∗ ; φ; true ∗ is star-free, as true ∗ is star-free.
+φ∗ for a propositional φ is also star-free, as it is equivalent to true ∗ ; ¬φ; true ∗ .
+A classical result on star-free regular expression is that:
+Theorem 7 ([30]). Star-free REf have exactly the same expressive power of FOL.
+Hence, by Theorem 3, we get the following result, see [14; 34; 46].
+Theorem 8. LTLf has exactly the same expressive power of star-free REf .
+5 Linear-time Dynamic Logic (LDLf)
+As we have seen above, LTLf is strictly less expressive that REf . On the other hand, REf is often consider too low level as a formalism for expressing temporal specifications. For example, REf expressions miss a direct construct for negation, for conjunction, and so forth (to see these limiting factors, one can try to encode in REf the STRIPS domain or the successor state axioms coded in LTLf in Section 2). So it is natural to look for a formalism that merges the declarativeness and convenience of LTLf with the expressive power of REf . This need is considered compelling also from a practical point of view. Indeed, industrial linear time specification languages, such as Intel ForSpec [1] and the standard PSL (Property Specification Language) [15], enhance LTL (on infinite strings) with forms of specifications based on regular expressions.
+It may be tempting to simply add directly complementation and intersection to REf , but it is known that such extensions result in very high complexity; in particular, the nonemptiness problem (corresponding to satisfiability in our setting) for star-free regular expressions in nonelementary, which means that the complexity cannot be bounded by any fixed-height stack of exponentials [39].
+Here we follow another approach and propose a temporal logic that merges LTLf with REf in a very natural way. The logic is called LDLf , Linear Dynamic Logic of Finite Traces, and adopts exactly the syntax of the well-know logic of programs PDL, Propositional Dynamic Logic, [19; 22; 23], but whose semantics is given in terms of finite traces. This logic is an adaptation of LDL, introduced in [44], which, like LTL, is interpreted over infinite traces.
+Formally, LDLf formulas are built as follows:
+Formula not decoded
+where A denotes an atomic proposition in P; φ denotes a propositional formulas over the atomic propositions in P; ρ denotes path expressions, which are REf expressions over propositional formulas φ, with the addition of the test construct ϕ? typical of PDL; and ϕ stand for LDLf formulas built by applying boolean connectives and the modal connectives 〈ρ〉ϕ. Tests are used to insert into the execution path checks for satisfaction of additional LDLf formulas. We use the usual boolean abbreviations as well as the abbreviation [ρ]ϕ for ¬〈ρ〉¬ϕ.
+Intuitively, 〈ρ〉ϕ states that, from the current instant, there exists an execution satisfying the REf expression ρ such that its last instant satisfies ϕ. While [ρ]ϕ states that, from the current instant, all executions satisfying the REf expression ρ are such that their last instant satisfies ϕ.
+As for the semantics of LDLf , for an LTf -interpretation π, we inductively define when an LDLf formula ϕ is true at an instant i ∈ {0, . . . , last}, in symbols π, i |= ϕ, as follows:
+π, i |= A, for A ∈ P iff A ∈ π(i)
+π, i |= ¬ϕ iff π, i ̸|= ϕ
+π, i |= ϕ∧ϕ′ iff π, i |= ϕ and π, i |= ϕ′
+π, i |= 〈ρ〉ϕ iff for some j such that i ≤ j ≤ last, we have that (i, j) ∈ R(ρ, π) and π, j |= ϕ
+where the relation R(ρ, s) is defined inductively as follows:
+R(φ, s) = {(i, i +1) | π(i) |= φ} (φ propositional)
+R(ϕ?, s) = {(i, i) | π, i |= ϕ}
+R(ρ1 + ρ2, s) = R(ρ1, s) ∪ R(ρ2, s)
+R(ρ1; ρ2, s) = {(i, j) | exists k such that (i, k) ∈ R(ρ1, s) and (k, j) ∈ R(ρ2, s)}
+R(ρ∗ , s) = {(i, i)}∪{(i, j) | exists k such that (i, k) ∈ R(ρ, s) and (k, j) ∈ R(ρ∗ , s)}
+Theorem9. LTLf can be translated into LDLf in linear time.
+Proof. We prove the theorem constructively, by exhibiting a translation function f form LTLf to LDLf
+f (A) = A
+f (¬ϕ) = ¬f (ϕ)
+f (ϕ1 ∧ϕ2) = f (ϕ1) ∧ f (ϕ2)
+f (◦ϕ) = 〈true〉f (ϕ)
+f (ϕ1 U ϕ2) = 〈f(ϕ1)∗ 〉f (ϕ2)
+It is easy to see that for every LTf -interpretation π, we have π, i |= ϕ iff π, i |= f (ϕ).
+Theorem10. REf can be translated into LDLf in linear time.
+Proof. We prove the theorem constructively, by exhibiting a translation function g form REf to LDLf (here Last stands for [true]false ):
+Formula not decoded
+It is easy to see that π, i |= ϱ iff π(i, last) ∈ L(ϱ) iff for some i ≤ j ≤ last , we have that (i, j) ∈ R(ϱ, π) and π, j |= Last iff π, i |= 〈ϱ〉Last.
+The reverse direction also hold:
+Theorem 11. LDLf can be translated into REf .
+It is possible to translate LDLf directly into REf , via structural induction, but the direct translation is non-elementary, in general, since each occurrence of negation requires an exponential complementation construction. Below we demonstrate an elementary (doubly exponential) translation that proceeds via alternating automata.
+Theorems 10, 11, and 4, allow us to characterize the expressive power of LDLf .
+Theorem12. LDLf has exactly the same expressive power of MSO.
+For convenience we define an equivalent semantics for LDLf , which we call doubly-inductive semantics. Its main characteristic is that it looks only at the current instant and at the next, and this will come handy in the next section. Specifically, for an LTf -interpretation π, we inductively define when an LDLf formula ϕ is true at an instant i ∈ {0, . . . , last}, in symbols π, i |= ϕ, as follows:
+π, i |= A, for A ∈ P iff A ∈ π(i).
+π, i |= ¬ϕ iff π, i ̸|= ϕ
+π, i |= ϕ∧ϕ′ iff π, i |= ϕ and π, i |= ϕ′
+π, i |= 〈φ〉ϕ iff i < last and π(i) |= φ and π, i+1 |= ϕ (φ propositional)
+π, i |= 〈ψ?〉ϕ iff π, i |= ψ ∧ π, i |= ϕ
+π, i |= 〈ρ1 +ρ2〉ϕ iff π, i |= 〈ρ1〉ϕ∨ 〈ρ2〉ϕ
+π, i |= 〈ρ1; ρ2〉ϕ iff π, i |= 〈ρ1〉〈ρ2〉ϕ
+π, i |= 〈ρ∗ 〉ϕ iff π, i |= ϕ, or i < last and π, i |= 〈ρ〉〈ρ∗ 〉ϕ and ρ is not test-only.
+We say that ρ is test-only if it is a REf expression whose atoms are only tests ψ?.
+Theorem 13. The two semantics of LDLf are equivalent.
+Proof. By mutual induction on the structure of the LDLf formulas and the length of the LTf -interpretation.
+6 LDLf to AFW
+Next we show how to reason in LDLf . We do so by resorting to a direct translation of LDLf formulas to alternating automata on words (AFW) [8; 12; 27]. We follow here the notation of [45]. Formally, an AFW on the alphabet 2P is a tuple A = (2P ,Q, q0, δ, F), where Q is a finite nonempty set of states, q0 is the initial state, F is a set of accepting states, and δ is a transition function δ : Q× 2P → B+(Q), where B+(Q) is a set of positive boolean formulas whose atoms are states of Q. Given an input word a0, a1, . . . an-1, a run of an AFW is a tree (rather than a sequence) labelled by states of the AFW such that (i) the root is labelled by q0; (ii) if a node x at level i is labelled by a state q and δ(q, ai) = Θ, then either Θ is true or some P ⊆ Q satisfies Θ and x has a child for each element in P; (iii) the run is accepting if all leaves at depth n are labeled by states in F. Thus, a branch in an accepting run has to hit the true transition or hit an accepting state after reading all the input word a0, a1, . . . , an-1.
+Theorem 14 ([8; 12; 27]). AFW are exactly as expressive as REf .
+It should be noted that while the translation from REf to AFW is linear, the translation from AFW to REf is doubly exponential. In particular every AFW can be translated into a standard nondeterministic finite automaton (NFA) that is exponentially larger than the AFW. Such a translation can be done on-the-fly while checking for nonemptiness of the NFA which, in turn, can be done in NLOGSPACE. Hence, we get the following complexity characterization for nonemptiness (the existence of a word that leads to acceptance) of AFW's.
+Theorem 15 ([12]). Nonemptiness for AFW is PSPACEcomplete.
+We now show that we can associate with each LDLf formula ϕ an AFW Aϕ that accept exactly the traces that make ϕ true. The key idea in building the AFW Aϕ is to use "subformulas" as states of the automaton and generate suitable transitions that mimic the doubly-inductive-semantics of such formulas. Actually we need a generalization of the notion of subformulas, which is known as the Fisher-Ladner closure, first introduced in the context of PDL [19]. The Fisher-Ladner closure CLϕ of an LDLf formula ϕ is a set of LDLf formulas inductively defined as follows:
+ϕ ∈ CLϕ ¬ψ ∈ CLϕ if ψ ∈ CLϕ and ψ not of the form ¬ψ′ ϕ1 ∧ ϕ2 ∈ CLϕ implies ϕ1, ϕ2 ∈ CLϕ 〈ρ〉ϕ ∈ CLϕ implies ϕ ∈ CLϕ 〈φ〉ϕ ∈ CLϕ implies φ ∈ CLϕ (φ is propositional) 〈ψ?〉ϕ ∈ CLϕ implies ψ ∈ CLϕ 〈ρ1; ρ2〉ϕ ∈ CLϕ implies 〈ρ1〉〈ρ2〉ϕ ∈ CLϕ 〈ρ1 + ρ2〉ϕ ∈ CLϕ implies 〈ρ1〉ϕ, 〈ρ2〉ϕ ∈ CLϕ 〈ρ∗ 〉ϕ ∈ CLϕ implies 〈ρ〉〈ρ∗ 〉ϕ ∈ CLϕ
+Observe that the cardinality of CLϕ is linear in the size of ϕ.
+In order to proceed with the construction of the AFW Aϕ, we put LDLf formulas ϕ in negation normal form nnf (ϕ) by exploiting abbreviations and pushing negation inside as much as possible, leaving negations only in front of propositional symbols. Note that computing nnf (ϕ) can be done in linear time. So, in the following, we restrict our attention to LDLf formulas in negation normal form, i.e., LDLf formulas formed according to the following syntax:
+Formula not decoded
+We assume that all the formulas in CLϕ are in negation normal form as well. Also, for convenience, we assume to have a special proposition Last which denotes the last element of the trace. Note that Last can be defined as: Last ≡ [true]false.
+Then, we define the AFW Aϕ associated with an LDLf formula ϕ as Aϕ = (2P , CLϕ, ϕ, δ, {}) where (i) 2P is the alphabet, (ii) CLϕ is the the state set, (iii) ϕ is the initial state (iv) δ is the transition function defined as follows:
+Formula not decoded
+Formula not decoded
+Theorem 16. The state-size of Aϕ is linear in the size of ϕ.
+Proof. Immediate, by inspecting the construction of Aϕ.
+Theorem 17. Let ϕ be an LDLf formula and Aϕ the corresponding AFW. Then for every LTf interpretation π we have that π |= ϕ iff Aϕ accepts π.
+Proof. By induction on the length of the LTf interpretation π. We exploit the fact that the runs of Aϕ over π follow closely the doubly-inductive semantics of the LDL formula ϕ.
+By Theorems 11 and 14 , we get LDLf is exactly as expressive as REf and hence as MSO (cf. Theorem 12). Note that as the translation from LDLf to AFW is linear, and the translation from AFW to REf is doubly exponential, the translation from LDLf to REf is doubly exponential.
+From Theorems 15 and 17 we finally get a complexity characterization of reasoning in LDLf .
+Theorem 18. Satisfiability, validity, and logical implication for LDLf formulas are PSPACE-complete.
+Proof. By Theorem 17, satisfiability of an LDLf formula (to which validity and logical implication can be reduced) correspond to checking nonemptiness of the corresponding AFW, hence, by Theorems 15 and 16, we get the claim.
+7 Conclusion
+In this paper we have analyzed LTLf over finite traces, and devised a new logic LDLf , which shares the naturalness and same computational properties of LTLf , while being substantially more powerful. Although we do not detail it here, in LDLf it is also possible to capture finite executions of programs expressed (in propositional variant, e.g., on finite object domains, of) high-level AI programming languages such as GOLOG [28], which also are used to constraint finite sequences [6]. We have focused on satisfiability, validity and logical implication, but analogous results are immediate for model checking as well: both LTLf and LDLf are PSPACEcomplete with potential exponentiality depending only on the formula and not on the transition system be checked. As future work, we plan focus on automated synthesis [35], related to advanced forms of Planning in AI. Notice that, determinization, which is notoriously difficult step for synthesis in the infinite-trace setting, becomes doable in practice in the finite-trace setting. So, in principle, we can develop effective tools for unrestricted synthesis for LDLf .
+ACM
+APA
+BibTeX
+RIS
+Giuseppe De Giacomo, and Moshe Y. Vardi. 2013. Linear Temporal Logic and Linear Dynamic Logic on Finite Traces. In Proceedings of the Twenty-Third International Joint Conference on Artificial Intelligence, IJCAI-13 . IJCAI, 854–859. https://ijcai.org/proceedings/2013/132
+De Giacomo, G., & Vardi, M. Y. (2013). Linear Temporal Logic and Linear Dynamic Logic on Finite Traces. In Proceedings of the Twenty-Third International Joint Conference on Artificial Intelligence, IJCAI-13 (pp. 854–859). IJCAI. https://ijcai.org/proceedings/2013/132
+@inproceedings{ijcai2013p132,
+title = {Linear Temporal Logic and Linear Dynamic Logic on Finite Traces},
+author = {De Giacomo, Giuseppe and Vardi, Moshe Y.},
+booktitle = {Proceedings of the Twenty-Third International Joint Conference on
+Artificial Intelligence, {IJCAI-13}},
+publisher = {AAAI Press / International Joint Conferences on Artificial Intelligence},
+editor = {Francesca Rossi},
+pages = {854--859},
+year = {2013},
+month = {8},
+url = {https://ijcai.org/proceedings/2013/132},
+}
+TY - CPAPER
+TI - Linear Temporal Logic and Linear Dynamic Logic on Finite Traces
+AU - De Giacomo, Giuseppe
+AU - Vardi, Moshe Y.
+T2 - Proceedings of the Twenty-Third International Joint Conference on Artificial Intelligence, IJCAI-13
+PB - AAAI Press / International Joint Conferences on Artificial Intelligence
+PY - 2013
+SP - 854
+EP - 859
+UR - https://ijcai.org/proceedings/2013/132
+ER -
+Copy
+Copied
+Machine-readable versions of this paper, for tools and AI agents:
+Markdown — metadata, abstract, full text and references
+JSON — metadata and structured references
+BibTeX
+◀ Previous paper
+Next paper ▶
+Welcome
+Future Conferences
+AI Journal Division
+IJCAI Proceedings
+About IJCAI
+IJCAI Awards
+Conferences
+Future Conferences
+Past Conferences
+Proceedings
+IJCAI 2026 Proceedings
+All Proceedings
+Awards
+Trustees/officers
+Current trustees
+Trustees Elect
+IJCAI Secretariat
+IJCAI Sponsorship and Publicity Officers
+IJCAI Team
+Local Arrangements Chairs
+Former Trustees serving on the Executive Committee
+Other Former Officers
+AI Journal
+About
+About IJCAI
+Documents
+Contact Information
+Back to top
+Publication Ethics
+Privacy
+&copy; 2026 International Joint Conferences on Artificial Intelligence
