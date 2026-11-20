@@ -566,8 +566,8 @@ const WEIGHTS: readonly Mutation[] = [
   ),
   weighed(
     "two rows a key gets that differ where nothing merges both hold",
-    "    if (other !== tuple) {\n      const rule",
-    "    if (other !== other) {\n      const rule",
+    "    if (other !== tuple) {\n      problem = leastClash(",
+    "    if (other !== other) {\n      problem = leastClash(",
     ["src/logic/tests/keys.test.ts", ...MERGE_TESTS]
   ),
   weighed(
