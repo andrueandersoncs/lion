@@ -327,13 +327,14 @@ interface Run {
   readonly net: Map<string, Map<string, [Tuple, number]>>;
   /** The order of each rule among the group's. */
   readonly order: Map<CompiledRule, number>;
-  /** Why the run cannot go on, once a row breaks a key. */
-  problem: string | undefined;
   /** The relations the group's rules give rows of, by name. */
   readonly relations: Map<string, RelationInfo>;
   /** Answers that stopped inventing, with the level they invented at. */
   readonly retracting: (readonly [Entry, number])[];
-  /** A rule that gave each row of a keyed relation, for a message. */
+  /**
+   * The rule that gave each row of a keyed relation, for a message: of the
+   * rules that gave it, the one whose written form sorts first.
+   */
   readonly rules: Map<string, CompiledRule>;
   /** The heads that several rules of the group share. */
   readonly shared: Set<Atom>;
@@ -397,7 +398,6 @@ const runOf = (
     model,
     net: new Map(),
     order: new Map(stratum.rules.map((rule, at) => [rule, at])),
-    problem: undefined,
     relations,
     retracting: [],
     rules: new Map(),
@@ -751,19 +751,64 @@ const moved = (
   rows.set(key, [tuple, had + by]);
 };
 
-const keyMessage = (
-  relation: RelationInfo,
-  rule: CompiledRule | undefined,
-  tuple: Tuple,
-  other: Tuple
-) => {
-  const shown = originalName(relation.name);
+/** Two rows with one key that cannot both hold. */
+interface KeyClash {
+  /** The row a rule gave, and the rule. */
+  readonly derived: Tuple;
+  readonly held: Tuple;
+  readonly info: RelationInfo;
+  readonly rule: CompiledRule | undefined;
+}
+
+const keyMessage = ({ derived, held, info, rule }: KeyClash) => {
+  const shown = originalName(info.name);
   return (rule?.aggregates.length ?? 0) > 0
-    ? `"${shown}" is keyed by ${JSON.stringify(keyColumns(relation))}, but it would hold ${show([shown, ...tuple])} and ${show([shown, ...other])}, which differ in a column that does not merge.`
-    : `"${shown}" is keyed by ${JSON.stringify(keyColumns(relation))}, but ${show(rule?.source)} derived ${show([shown, ...tuple])} while ${show([shown, ...other])} holds.`;
+    ? `"${shown}" is keyed by ${JSON.stringify(keyColumns(info))}, but it would hold ${show([shown, ...derived])} and ${show([shown, ...held])}, which differ in a column that does not merge.`
+    : `"${shown}" is keyed by ${JSON.stringify(keyColumns(info))}, but ${show(rule?.source)} derived ${show([shown, ...derived])} while ${show([shown, ...held])} holds.`;
 };
 
 const ruleName = (relation: string, key: string) => `${relation}\u0000${key}`;
+
+/**
+ * Two rows of a relation with one key, told the same way whatever order
+ * they were found in: the row a rule gave is the one derived, and where
+ * rules gave both, or neither, the one that sorts later is.
+ */
+const clashOf = (run: Run, relation: string, a: Tuple, b: Tuple): KeyClash => {
+  const ruleOfRow = (tuple: Tuple) =>
+    run.rules.get(ruleName(relation, valueKey(tuple)));
+  const ruleA = ruleOfRow(a);
+  const ruleB = ruleOfRow(b);
+  const later =
+    (ruleA === undefined) === (ruleB === undefined)
+      ? compareValues(a, b) > 0
+      : ruleA !== undefined;
+  const [derived, held] = later ? [a, b] : [b, a];
+  return {
+    derived,
+    held,
+    info: run.relations.get(relation) as RelationInfo,
+    rule: later ? ruleA : ruleB,
+  };
+};
+
+/**
+ * Of two clashes, the one a run tells, so that what it tells does not
+ * depend on the order the rows were found in.
+ */
+const leastClash = (
+  a: KeyClash | undefined,
+  b: KeyClash | undefined
+): KeyClash | undefined => {
+  if (a === undefined || b === undefined) {
+    return a ?? b;
+  }
+  const order = compareValues(
+    [a.info.name, a.held, a.derived],
+    [b.info.name, b.held, b.derived]
+  );
+  return order <= 0 ? a : b;
+};
 
 /**
  * Says why a row that joined a keyed relation cannot stay: another row has
@@ -782,13 +827,13 @@ const keyProblem = (run: Run, relation: string, key: string) => {
     return;
   }
   const values = info.key.map((position) => tuple[position]);
+  let problem: KeyClash | undefined;
   for (const other of rows.lookup(info.key, values)) {
     if (other !== tuple) {
-      const rule = run.rules.get(ruleName(relation, key));
-      return keyMessage(info, rule, tuple, other);
+      problem = leastClash(problem, clashOf(run, relation, tuple, other));
     }
   }
-  return;
+  return problem;
 };
 
 /**
@@ -815,21 +860,27 @@ const weigh = (
   if (went !== 0) {
     moved(run, relation, key, tuple, went);
   }
-  if (went > 0 && run.fresh) {
-    run.problem ??= keyProblem(run, relation, key);
-  }
   return;
 };
 
-/** Remembers a rule that gave a row of a keyed relation. */
+/**
+ * Remembers a rule that gave a row of a keyed relation, keeping the one
+ * whose written form sorts first, so that a message about the row names
+ * the same rule whatever order the rules came in.
+ */
 const ruleFor = (
   run: Run,
   relation: string,
   key: string,
   rule: CompiledRule | undefined
 ) => {
-  if (rule !== undefined && run.relations.get(relation)?.key !== undefined) {
-    run.rules.set(ruleName(relation, key), rule);
+  if (rule === undefined || run.relations.get(relation)?.key === undefined) {
+    return;
+  }
+  const name = ruleName(relation, key);
+  const held = run.rules.get(name);
+  if (held === undefined || compareValues(rule.source, held.source) < 0) {
+    run.rules.set(name, rule);
   }
 };
 
@@ -1327,9 +1378,6 @@ const give = (run: Run, rule: CompiledRule, by: number): Sink => {
         } else {
           row(tuple, vars);
         }
-      }
-      if (run.problem !== undefined) {
-        return yield* logicError(run.problem);
       }
     });
 };
@@ -1891,12 +1939,6 @@ const join = (
     if (from < until) {
       place(run, entry, level);
       joining.push(entry);
-      // While a group is derived from nothing, a row that joins a keyed
-      // relation beside another with its key ends the run.
-      run.problem ??=
-        run.fresh && until === NEVER
-          ? keyProblem(run, entry.relation, entry.key)
-          : undefined;
     }
   }
   return joining;
@@ -1928,9 +1970,6 @@ const settleLevel = (run: Run, level: number, entries: readonly Entry[]) =>
     }
     yield* retract(run);
     const joining = join(run, level, moving);
-    if (run.problem !== undefined) {
-      return yield* logicError(run.problem);
-    }
     yield* count(run, joining, 1);
     relink(run);
     for (const [entry] of moving) {
@@ -2042,7 +2081,7 @@ const settle = (run: Run) =>
       });
       const level = least(dirty.keys());
       const stage = least(steps.keys());
-      const problem = run.problem ?? improving(run, level);
+      const problem = improving(run, level);
       if (problem !== undefined) {
         return yield* logicError(problem);
       }
@@ -2063,41 +2102,65 @@ const shows = (entry: Entry) => entry.placed && entry.until === NEVER;
 
 /** Why two rows with one key that could not be made one cannot both hold. */
 const clash = (run: Run) => {
+  let problem: KeyClash | undefined;
   for (const [entry, other] of run.clashes) {
     if (shows(entry) && shows(other)) {
-      const rule = (one: Entry) =>
-        run.rules.get(ruleName(one.relation, one.key));
-      const [derived, held] =
-        rule(entry) === undefined ? [other, entry] : [entry, other];
-      return keyMessage(
-        run.relations.get(entry.relation) as RelationInfo,
-        rule(derived),
-        derived.tuple,
-        held.tuple
+      problem = leastClash(
+        problem,
+        clashOf(run, entry.relation, entry.tuple, other.tuple)
       );
     }
   }
-  return;
+  return problem;
 };
 
 /**
+ * The rows a run checks against their key once it ends: every row of the
+ * group's keyed relations when it derived them from nothing, and otherwise
+ * the rows a change gave, since only those can stand beside another row
+ * with their key.
+ */
+const checked = (run: Run): Iterable<readonly [string, string]> =>
+  run.fresh
+    ? [...run.stratum.members].flatMap((relation) =>
+        run.relations.get(relation)?.key === undefined
+          ? []
+          : [...(run.model.relations.get(relation)?.keyed() ?? [])].map(
+              ([key]) => [relation, key] as const
+            )
+      )
+    : [...run.net].flatMap(([relation, rows]) =>
+        [...rows]
+          .filter(([, [, net]]) => net > 0)
+          .map(([key]) => [relation, key] as const)
+      );
+
+/**
  * Ends a run: returns what each relation gained and lost, and why the rows
- * that hold break a key, when they do. The run is complete either way, so
- * following the change back gives the rows and weights there were.
+ * that hold break a key, when they do: the least of the clashes among them,
+ * the same whether the group was derived from nothing or a change was
+ * followed through it. The run is complete either way, so following the
+ * change back gives the rows and weights there were.
  */
 const finish = (run: Run) => {
   const gained = new Map<string, TupleSet>();
   const lost = new Map<string, TupleSet>();
   let problem = clash(run);
+  for (const [relation, key] of checked(run)) {
+    problem = leastClash(problem, keyProblem(run, relation, key));
+  }
   for (const [relation, rows] of run.net) {
     for (const [key, [tuple, net]] of rows) {
-      problem ??= net > 0 ? keyProblem(run, relation, key) : undefined;
       if (net !== 0) {
         setOf(net > 0 ? gained : lost, relation).addKeyed(key, tuple);
       }
     }
   }
-  return { gained, lost, problem };
+  return {
+    gained,
+    lost,
+    problem: problem === undefined ? undefined : keyMessage(problem),
+  };
 };
 
 /**

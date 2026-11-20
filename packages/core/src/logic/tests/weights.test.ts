@@ -459,6 +459,33 @@ const given = {
   ),
 };
 
+/**
+ * Programs in which twins pass a keyed mother on and facts hold the mothers
+ * invented for two of them, which makes both given: each twin has two
+ * mothers the key cannot make one, which rules derived in an order that
+ * follows the facts' and the rules'.
+ */
+const clashing = Arbitrary.all({
+  keyed: element([true]),
+  start: Arbitrary.map(
+    Arbitrary.all([
+      Arbitrary.filter(Arbitrary.all([name, name]), ([a, b]) => a !== b),
+      Arbitrary.array(oneOf(kin, fact), { maxLength: 4 }),
+    ]),
+    ([[a, b], more]): Form[] => [
+      ["person", a],
+      ["person", b],
+      ["tall", ["some", "?m", ["mother", a, "?m"]]],
+      ["tall", ["some", "?m", ["mother", b, "?m"]]],
+      ["twin", a, b],
+      ...more,
+    ]
+  ),
+  ways: Arbitrary.map(program.ways, (ways) =>
+    [...new Set<Way>([...ways, "pass"])].sort()
+  ),
+});
+
 describe("rows with weights, held from a level", () => {
   it.effect.prop(
     "keep after any changes the rows, levels, and weights that deriving from nothing gives",
@@ -487,11 +514,13 @@ describe("rows with weights, held from a level", () => {
   // levels or weights, though a rule tests that two mothers differ and a
   // later rule makes them one. Each program is compared with its rules and
   // facts reversed, which puts the sooner equality rule first, and shuffled.
+  // Nor what a question says when a child has two mothers the key cannot
+  // make one: which two it names, and which one it says a rule derived.
   // The engine numbers the relations it keeps for a group's rules by the
   // place each rule stands in, so those are compared by kind.
   it.effect.prop(
     "are derived from nothing the same, whatever order the rules and the facts came in",
-    { order: seed, program: apart },
+    { order: seed, program: oneOf(apart, clashing) },
     ({ order, program: { keyed, start, ways } }) =>
       Effect.gen(function* () {
         const rules = rulesOf(ways, keyed);

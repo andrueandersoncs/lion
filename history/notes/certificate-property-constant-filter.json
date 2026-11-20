@@ -1,0 +1,14 @@
+{
+  "claims": [
+    {
+      "quote": "The property that `why` explains a rule no values meet with certificates that whole-number arithmetic checks no longer asks for a certificate when `why` leaves the rule out: a filter that is false whatever the values, such as `[\"number/lessThan\", [\"cond\", [[\"number/lessThan\", 0, 0], \"?x\"], [\"else\", 0]], 0]`, mentions `?x` but is false without it, and `why` gives no reason for such a rule, on main too. It failed about once in 200 runs.",
+      "says": {
+        "behavior": "certificate-property-constant-filter",
+        "is": "left-out",
+        "area": "tests",
+        "fixes": true,
+        "was": "required"
+      }
+    }
+  ]
+}

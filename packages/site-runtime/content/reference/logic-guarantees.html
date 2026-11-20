@@ -59,7 +59,7 @@
 <h2 id="guarantee-keys">Keys</h2>
 <ul>
   <li>A keyed relation holds at most one row per key. A fact with a key that is present replaces the old row.</li>
-  <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows. A relation that merges joins its merged columns instead, and the rest must agree.</li>
+  <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows and a rule that gave one. It names the same rows and the same rule whatever order the rules and facts came in. A relation that merges joins its merged columns instead, and the rest must agree.</li>
   <li>The exception is an <a href="#form-some">unknown</a> that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented. When two rows with the same key differ only where one holds such an unknown, the unknown takes the other row's value, or, when both hold one, the one that nests fewer unknowns, and of those the one that sorts first, and every row that holds it is replaced. So the value kept never depends on the order rules or facts were added in. An unknown that a fact holds is given, so a key never changes it.</li>
 </ul>
 

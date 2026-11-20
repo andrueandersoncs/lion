@@ -450,7 +450,15 @@ describe("solving for a variable a schema types", () => {
         const solvedFor = (code: Code) =>
           JSON.stringify(code).includes('"?x"') ||
           JSON.stringify(code).includes('"?y"');
-        if (real && tests.every((each) => decidable(each) && solvedFor(each))) {
+        // A filter that is false whatever the values, such as one whose cond
+        // always takes a branch without them, leaves the rule out of `why`:
+        // nothing about the values stopped it, so there is nothing to prove.
+        const explained = why.because.length > 0;
+        if (
+          real &&
+          explained &&
+          tests.every((each) => decidable(each) && solvedFor(each))
+        ) {
           expect(certificate).toBeDefined();
         }
       }),

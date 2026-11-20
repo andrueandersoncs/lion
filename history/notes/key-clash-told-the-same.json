@@ -1,0 +1,32 @@
+{
+  "claims": [
+    {
+      "quote": "Two rows with one key that a key cannot make one are told the same whatever order the rules and facts came in: the error names, of the clashes there are, the one whose rows sort first; of its two rows, the one a rule gave as derived, or the one that sorts later when rules gave both; and of the rules that gave it, the one whose written form sorts first. With twins a and b whose invented mothers facts hold, `\"mother\" is keyed by [\"child\"], but [\"rule\",[\"mother\",\"?a\",\"?m\"],[\"twin\",\"?a\",\"?b\"],[\"mother\",\"?b\",\"?m\"]] derived [\"mother\",\"a\",[\"some\",\"?m\",[\"mother\",\"b\",\"?m\"]]] while [\"mother\",\"a\",[\"some\",\"?m\",[\"mother\",\"a\",\"?m\"]]] holds.` comes with the facts in any order and the rules in any order; before, which row was derived and which rule derived it followed the order they were found in.",
+      "says": {
+        "behavior": "key-clash-message-order",
+        "is": "independent-of-order",
+        "area": "logic",
+        "fixes": true,
+        "was": "order-of-discovery"
+      }
+    },
+    {
+      "quote": "A group derived from nothing finishes before it tells a key clash, as a group a change is followed through does, and both tell the least clash among the rows that hold once it ends. Before, a group derived from nothing stopped at the first row it found beside another with its key.",
+      "says": {
+        "behavior": "fresh-derivation-key-clash",
+        "is": "told-at-end",
+        "area": "logic",
+        "was": "first-found"
+      }
+    },
+    {
+      "quote": "The property that rows derived from nothing are the same whatever order the rules and the facts came in now also draws programs in which twins pass a keyed mother on and facts hold the mothers invented for two of them, so every program has a clash to tell. It fails within 3 runs on the engine before this change, which a why property had met about once in 10,000 runs.",
+      "says": {
+        "behavior": "key-clash-order-property",
+        "is": "by-property",
+        "area": "tests",
+        "was": "caught-by-chance"
+      }
+    }
+  ]
+}
