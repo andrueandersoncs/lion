@@ -264,6 +264,12 @@ interface Chase {
   readonly invented: Set<string>;
   /** The answers of rules that invent whose head no row gave, so they did. */
   readonly inventing: Set<Entry>;
+  /**
+   * The rows with its key each row gave pairs with when it met them, as it
+   * came. Whether a key can make two values one depends on which unknowns
+   * facts hold, so what two rows gave is taken away as it was given.
+   */
+  readonly paired: WeakMap<Entry, Set<Entry>>;
   /** Each value a pair joins, by key. */
   readonly values: Map<string, unknown>;
   /** The answers that invent, by what a row must hold to give their head. */
@@ -877,6 +883,24 @@ const givenIn = (value: unknown, into: Set<string>) => {
   return into;
 };
 
+/**
+ * The unknowns some rows hold, by their own keys, not looking into what
+ * unknowns describe: the ones a fact among them makes given.
+ */
+export const unknownsHeld = (rows: Iterable<TupleSet>) => {
+  const found = new Set<string>();
+  for (const set of rows) {
+    for (const tuple of set.values()) {
+      for (const value of tuple) {
+        if (typeof value === "object" && value !== null) {
+          givenIn(value, found);
+        }
+      }
+    }
+  }
+  return found;
+};
+
 /** True when a row holds an unknown, not looking into what unknowns describe. */
 export const holdsUnknown = (tuple: Tuple) =>
   tuple.some(
@@ -893,19 +917,7 @@ export const holdsUnknown = (tuple: Tuple) =>
  */
 const givenOf = (model: Model) => {
   const home = model.base ?? model;
-  if (home.given === undefined) {
-    const found = new Set<string>();
-    for (const facts of home.facts.values()) {
-      for (const tuple of facts.values()) {
-        for (const value of tuple) {
-          if (typeof value === "object" && value !== null) {
-            givenIn(value, found);
-          }
-        }
-      }
-    }
-    home.given = found;
-  }
+  home.given ??= unknownsHeld(home.facts.values());
   return home.given;
 };
 
@@ -1472,9 +1484,32 @@ const together = (a: Entry, b: Entry) =>
   Math.max(a.from, b.from) < Math.min(a.until, b.until);
 
 /**
+ * Notes that two rows with one key gave pairs when they met, or, as they
+ * part, takes the note away and says whether they had.
+ */
+const met = (
+  chase: Chase | undefined,
+  entry: Entry,
+  other: Entry,
+  by: number
+) => {
+  if (chase === undefined || by > 0) {
+    chase?.paired.set(entry, (chase.paired.get(entry) ?? new Set()).add(other));
+    return chase !== undefined;
+  }
+  return (
+    (chase.paired.get(entry)?.delete(other) ||
+      chase.paired.get(other)?.delete(entry)) ??
+    false
+  );
+};
+
+/**
  * Counts what a row of a keyed relation and each other row with its key
  * make one: the values where the two differ. Two rows that cannot be made
- * one are noted, and fail the run when both still hold at its end.
+ * one are noted, and fail the run when both still hold at its end. Two rows
+ * that part take away what they gave when they met, though the unknowns
+ * facts hold have changed since.
  */
 const pairUp = (run: Run, entry: Entry, by: number) => {
   for (const tuple of withKeyOf(run, entry)) {
@@ -1490,10 +1525,13 @@ const pairUp = (run: Run, entry: Entry, by: number) => {
     const pairs: (readonly [unknown, unknown])[] = [];
     const one =
       pairsOf(entry.tuple, other.tuple, pairs) &&
-      pairs.every(
-        ([a, b]) =>
-          (isFree(run, a) && !occurs(a, b)) || (isFree(run, b) && !occurs(b, a))
-      );
+      (by < 0 ||
+        pairs.every(
+          ([a, b]) =>
+            (isFree(run, a) && !occurs(a, b)) ||
+            (isFree(run, b) && !occurs(b, a))
+        )) &&
+      met(run.support.chase, entry, other, by);
     if (!one) {
       if (by > 0) {
         run.clashes.push([entry, other]);
@@ -1503,6 +1541,26 @@ const pairUp = (run: Run, entry: Entry, by: number) => {
     const level = Math.max(entry.from, other.from) + 1;
     for (const [a, b] of pairs) {
       weighPair(run, a, b, level, by);
+    }
+  }
+};
+
+/**
+ * Pairs again the rows that hold some unknowns with the rows that have
+ * their key. A key makes an unknown one with another value only where no
+ * fact holds it, so when a fact that holds it comes or goes, two rows that
+ * met give the pairs they would give if they met now.
+ */
+const repair = (run: Run, unknowns: Iterable<string>) => {
+  const holders = run.support.chase?.holders ?? new Map<string, Some>();
+  const seen = new Set<Entry>();
+  for (const key of unknowns) {
+    for (const holder of allOf(holders, key)) {
+      if (holder.placed && !seen.has(holder)) {
+        seen.add(holder);
+        pairUp(run, holder, -1);
+        pairUp(run, holder, 1);
+      }
     }
   }
 };
@@ -2023,26 +2081,24 @@ const clash = (run: Run) => {
 };
 
 /**
- * Ends a run: fails when rows that hold break a key, and returns what each
- * relation gained and lost.
+ * Ends a run: returns what each relation gained and lost, and why the rows
+ * that hold break a key, when they do. The run is complete either way, so
+ * following the change back gives the rows and weights there were.
  */
-const finish = (run: Run) =>
-  Effect.gen(function* () {
-    const gained = new Map<string, TupleSet>();
-    const lost = new Map<string, TupleSet>();
-    let problem = clash(run);
-    for (const [relation, rows] of run.net) {
-      for (const [key, [tuple, net]] of rows) {
-        problem ??= net > 0 ? keyProblem(run, relation, key) : undefined;
-        if (net !== 0) {
-          setOf(net > 0 ? gained : lost, relation).addKeyed(key, tuple);
-        }
+const finish = (run: Run) => {
+  const gained = new Map<string, TupleSet>();
+  const lost = new Map<string, TupleSet>();
+  let problem = clash(run);
+  for (const [relation, rows] of run.net) {
+    for (const [key, [tuple, net]] of rows) {
+      problem ??= net > 0 ? keyProblem(run, relation, key) : undefined;
+      if (net !== 0) {
+        setOf(net > 0 ? gained : lost, relation).addKeyed(key, tuple);
       }
     }
-    return problem === undefined
-      ? { gained, lost }
-      : yield* logicError(problem);
-  });
+  }
+  return { gained, lost, problem };
+};
 
 /**
  * Gives each fact of a group whose rows have levels an entry, held from the
@@ -2072,6 +2128,7 @@ const chaseOf = (): Chase => ({
   images: new Map(),
   invented: new Set(),
   inventing: new Set(),
+  paired: new WeakMap(),
   values: new Map(),
   watching: new Map(),
 });
@@ -2128,7 +2185,10 @@ export const deriveRows = (model: Model, stratum: Stratum) =>
       );
     }
     yield* settle(run);
-    yield* finish(run);
+    const { problem } = finish(run);
+    if (problem !== undefined) {
+      return yield* logicError(problem);
+    }
   });
 
 /** The rows a relation gained or lost, when it did. */
@@ -2406,28 +2466,34 @@ const outside = (run: Run, moved: Moved) =>
  * Follows a change through a group: the facts it gained and lost are
  * candidates added and taken away, what the relations it reads gained and
  * lost changes the candidates its rules give, and the levels are settled
- * lowest first. Returns what each relation of the group gained and lost.
- * `regiven` says the unknowns that facts hold are not what they were, so
- * every class of values is worked out again.
+ * lowest first. Returns what each relation of the group gained and lost,
+ * and why the rows that hold then break a key, when they do. `regiven` are
+ * the unknowns of facts that came or went: whether a fact holds them is not
+ * what it was, so every class of values is worked out again, and the rows
+ * that hold them are paired again with the rows that have their key.
  */
 export const followRows = (
   model: Model,
   stratum: Stratum,
   gained: ReadonlyMap<string, TupleSet>,
   lost: ReadonlyMap<string, TupleSet>,
-  regiven = false
+  regiven: ReadonlySet<string> = new Set()
 ): LogicEffect<{
   gained: Map<string, TupleSet>;
   lost: Map<string, TupleSet>;
+  problem: string | undefined;
 }> =>
   Effect.gen(function* () {
     const [first] = stratum.members;
     const support = model.support.get(first ?? "") as Support;
     const run = runOf(model, stratum, support);
-    for (const key of regiven ? (support.chase?.values.keys() ?? []) : []) {
+    for (const key of regiven.size > 0
+      ? (support.chase?.values.keys() ?? [])
+      : []) {
       run.links.add(key);
     }
     relink(run);
+    repair(run, regiven);
     for (const name of stratum.members) {
       for (const [rows, by] of [
         [rowsIn(lost, name), -1],
@@ -2440,7 +2506,7 @@ export const followRows = (
     }
     yield* outside(run, movedOf(model, stratum, gained, lost));
     yield* settle(run);
-    return yield* finish(run);
+    return finish(run);
   });
 
 /**

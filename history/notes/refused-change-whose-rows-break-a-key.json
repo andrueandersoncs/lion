@@ -1,0 +1,67 @@
+{
+  "claims": [
+    {
+      "quote": "A change an invariant refuses is followed back, so what was derived before it is still there, also when following it found two rows with one key that the key cannot make one, such as a twin of two registered mothers under a key on mother and an equality rule. Before, everything derived was forgotten, and the next question derived it all again.",
+      "says": {
+        "behavior": "derived-rows-after-a-change-a-key-refuses",
+        "is": "followed-back",
+        "area": "logic",
+        "was": "forgotten"
+      },
+      "decisions": ["rows-carry-weights"]
+    },
+    {
+      "quote": "A key makes an unknown one with another value only where no fact holds it, so when a fact that holds an unknown comes or goes, the rows that hold the unknown are paired again with the rows that have their key, and two rows that part take away what they gave when they met.",
+      "says": {
+        "behavior": "key-pairs-when-a-fact-holding-an-unknown-changes",
+        "is": "paired-again",
+        "area": "logic",
+        "was": "kept-as-met"
+      },
+      "decisions": ["rows-carry-weights"]
+    },
+    {
+      "quote": "The core has 1.0% more code lines (15,899 to 16,060), 0.6% more paths through functions (4,165 to 4,192), and the same semantics. Benchmarks run 0.90 to 1.25 times as fast as before, which is noise, and every scale workload grows as it did.",
+      "says": {
+        "measured": "core-code-lines",
+        "after": 16060,
+        "area": "metrics",
+        "before": 15899
+      }
+    },
+    {
+      "quote": "The core has 1.0% more code lines (15,899 to 16,060), 0.6% more paths through functions (4,165 to 4,192), and the same semantics. Benchmarks run 0.90 to 1.25 times as fast as before, which is noise, and every scale workload grows as it did.",
+      "says": {
+        "measured": "core-paths",
+        "after": 4192,
+        "area": "metrics",
+        "before": 4165
+      }
+    },
+    {
+      "quote": "The core has 1.0% more code lines (15,899 to 16,060), 0.6% more paths through functions (4,165 to 4,192), and the same semantics. Benchmarks run 0.90 to 1.25 times as fast as before, which is noise, and every scale workload grows as it did.",
+      "says": {
+        "measured": "speedup-benchmarks-min",
+        "after": 0.9,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "The core has 1.0% more code lines (15,899 to 16,060), 0.6% more paths through functions (4,165 to 4,192), and the same semantics. Benchmarks run 0.90 to 1.25 times as fast as before, which is noise, and every scale workload grows as it did.",
+      "says": {
+        "measured": "speedup-benchmarks-max",
+        "after": 1.25,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "Refusing a twin of two registered mothers 20 times, and asking a mother after each, takes 8.2 s among 10,000 people, from 15.0 s: the invariant that refuses the change still derives every mother from nothing, but the question after it no longer does.",
+      "says": {
+        "measured": "refused-twin-then-ask-ten-thousand-s",
+        "after": 8.2,
+        "area": "metrics",
+        "before": 15.0
+      }
+    }
+  ]
+}
