@@ -160,6 +160,9 @@ const TWINS = (n: number) => [
   ],
 ];
 
+/** How many of the twin pairs of `TWINS(n)` a workload uses: up to 20. */
+const twinsOf = (n: number) => Math.max(1, Math.min(20, Math.floor(n / 2)));
+
 /** `n` roads between scattered pairs of n/3 towns, each a few km long. */
 const ROADS = (n: number) => {
   const next = scattered(11);
@@ -563,6 +566,42 @@ export const WORKLOADS: readonly Workload[] = [
         ],
         size(["query", ["mother", `new${index}`, "?m"]]),
       ]),
+  },
+  {
+    // A twin of two registered mothers is refused, since the key would give
+    // a child both: what was derived before is kept, so the question after
+    // it derives no mother again.
+    name: "change: a twin a key and an equality rule refuse, ask a mother a key gave, 20 times",
+    gives: () => 1,
+    refuses: true,
+    setup: (n) => [
+      "begin",
+      ...TWINS(n),
+      ["relation", "registered", ["child", "mother"]],
+      [
+        "rule",
+        ["=", "?m", "?r"],
+        ["mother", "?c", "?m"],
+        ["registered", "?c", "?r"],
+      ],
+      [
+        "fact",
+        ...range(20).flatMap((index) => [
+          ["person", `s${index}`],
+          ["registered", `p${2 * (index % twinsOf(n))}`, "eve"],
+          ["registered", `s${index}`, "fay"],
+        ]),
+      ],
+      size(["query", ["mother", "?c", "?m"]]),
+    ],
+    timed: (n) =>
+      range(20).flatMap((index) => {
+        const twin = index % twinsOf(n);
+        return [
+          ["fact", ["twin", `p${2 * twin}`, `s${index}`]],
+          size(["query", ["mother", `p${2 * twin + 1}`, "?m"]]),
+        ];
+      }),
   },
   {
     name: "change: add a rule elsewhere, ask every row of a rule, 20 times",

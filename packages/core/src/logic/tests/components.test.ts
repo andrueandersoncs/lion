@@ -2,6 +2,8 @@
  * A group whose rules invent, and whose keys or equality rules make the
  * invented values one, follows a change row by row, however its rules join
  * rows: after any change it answers as a database that derived nothing yet.
+ * A change an invariant refuses is followed back, also when following it
+ * gave a child two mothers, so the next change is followed too.
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect } from "effect";
@@ -108,6 +110,9 @@ const program = {
 
 const QUESTIONS = {
   mother: ["find", ["array/make", "?c", "?m"], ["mother", "?c", "?m"]],
+  // A question that knows a value is answered goal-directed, by a model of
+  // its own that follows changes too.
+  siblings: ["query", ["sibling", "a", "?b"]],
   grandmother: [
     "find",
     ["array/make", "?m", "?g"],
@@ -141,7 +146,14 @@ const rulesOf = (ways: readonly Way[]) => [
     ...(ways.includes("key") ? [{ key: "child" }] : []),
   ],
   ["relation", "grandmother", ["mother", "grandmother"]],
+  ["relation", "sibling", ["a", "b"]],
   ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  [
+    "rule",
+    ["sibling", "?a", "?b"],
+    ["mother", "?a", "?m"],
+    ["mother", "?b", "?m"],
+  ],
   ...ways.flatMap((way): readonly unknown[] => WAYS[way]),
 ];
 
@@ -153,12 +165,13 @@ const rulesOf = (ways: readonly Way[]) => [
 const fromNothing = (ways: readonly Way[], facts: Iterable<unknown>) =>
   Effect.gen(function* () {
     const database = new LogicDatabase();
+    const declared = (form: unknown) => (form as unknown[])[0] === "relation";
     const made = yield* attempt(
       [
         "begin",
-        ...rulesOf(ways).slice(0, 5),
+        ...rulesOf(ways).filter(declared),
         ...[...facts].map((it) => ["fact", it]),
-        ...rulesOf(ways).slice(5),
+        ...rulesOf(ways).filter((form) => !declared(form)),
         true,
       ],
       database
@@ -170,7 +183,8 @@ const fromNothing = (ways: readonly Way[], facts: Iterable<unknown>) =>
  * Starts a database with the program's rules and facts, then makes each
  * change, and checks after each that it was kept exactly when a database
  * that derived nothing could hold the facts, and answers as that one does.
- * Returns how each change met the mothers: followed, derived, or untouched.
+ * Returns how each change, or the undoing of a refused one, met the
+ * mothers: followed, derived, forgotten, or untouched.
  */
 const changing = (
   ways: readonly Way[],
@@ -210,9 +224,15 @@ const changing = (
       const expected = yield* fromNothing(ways, next.values());
       // What the last change did with each relation, and only that.
       kept.model?.last.clear();
+      const goals = kept.goals.size;
       const changed = yield* attempt([form, fact], kept);
       expect(changed.ok).toBe(expected !== undefined);
+      // A refused change is followed back: what was derived is still there,
+      // with what goal-directed questions derived, and the next change is
+      // followed through it.
+      met.push(kept.model?.last.get("mother") ?? "untouched");
       if (expected === undefined) {
+        expect(kept.goals.size).toBe(goals);
         continue;
       }
       expect(yield* answers(kept)).toEqual(expected);
@@ -220,10 +240,62 @@ const changing = (
       for (const [key, value] of next) {
         held.set(key, value);
       }
-      met.push(kept.model?.last.get("mother") ?? "untouched");
     }
     return met;
   });
+
+const CHILDREN = ["a", "b", "c"] as const;
+
+/** A twin, a person, or a registered mother of one of a few children. */
+const often = Arbitrary.map(
+  Arbitrary.all([
+    element(["twin", "twin", "person", "registered"] as const),
+    element(CHILDREN),
+    element(CHILDREN),
+    element(["eve", "fay"] as const),
+  ]),
+  ([relation, a, b, mother]): readonly [string, string, string] => {
+    if (relation === "twin") {
+      return ["twin", a, b];
+    }
+    return relation === "person" ? ["person", a, a] : ["registered", a, mother];
+  }
+);
+
+/**
+ * Programs in which a key passes mothers between twins and an equality rule
+ * holds as an invariant: they start with people and one registered mother
+ * each, and a twin of two registered mothers is refused, since following it
+ * gives one twin two mothers, which the invariant's question meets.
+ */
+const refusing = {
+  ways: Arbitrary.map(
+    Arbitrary.array(element(["registered", "twins"] as Way[]), {
+      minLength: 1,
+      maxLength: 2,
+    }),
+    (ways) => [...new Set<Way>(["key", ...ways])].sort()
+  ),
+  start: Arbitrary.map(
+    Arbitrary.array(
+      Arbitrary.all([element(CHILDREN), element(["eve", "fay"] as const)]),
+      { maxLength: 3 }
+    ),
+    (rows) => {
+      const children = new Map<string, string>(rows.map(([c, m]) => [c, m]));
+      return [...children].flatMap(
+        ([child, mother]): (readonly [string, string, string])[] => [
+          ["person", child, child],
+          ["registered", child, mother],
+        ]
+      );
+    }
+  ),
+  changes: Arbitrary.array(
+    Arbitrary.all([element(["fact", "fact", "retract"] as const), often]),
+    { minLength: 1, maxLength: 5 }
+  ),
+};
 
 describe("a group whose rules invent and make values one", () => {
   it.effect.prop(
@@ -244,6 +316,19 @@ describe("a group whose rules invent and make values one", () => {
         }
       }),
     { timeout: 300_000, arbitrary: { runs: 300 } }
+  );
+
+  it.effect.prop(
+    "follows a change it refuses back, though following it found two rows with one key",
+    refusing,
+    ({ changes, start, ways }) =>
+      Effect.map(changing(ways, start, changes), (met) => {
+        for (const how of met) {
+          expect(how).not.toBe("derived");
+          expect(how).not.toBe("forgotten");
+        }
+      }),
+    { timeout: 300_000, arbitrary: { runs: 200 } }
   );
 
   it.effect.prop(

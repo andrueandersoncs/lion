@@ -58,20 +58,25 @@ import {
   ownVariables,
   type RelationInfo,
 } from "@/logic/terms";
-import { followRows as followWeights, holdsUnknown } from "@/logic/weights";
+import { followRows as followWeights, unknownsHeld } from "@/logic/weights";
 
 /** Rows by the name of their relation. */
 export type Rows = Map<string, TupleSet>;
 
 /** What a change did to the rows of every relation, as far as it is known. */
 export interface Pass {
+  /**
+   * The group whose rows break a key after the change. The change was
+   * followed through it, and no further.
+   */
+  broken: Stratum | undefined;
   /** The rows each relation gained: facts, and then what groups derived. */
   readonly gained: Rows;
   /** The rows each relation lost. */
   readonly lost: Rows;
   readonly model: Model;
-  /** True when a fact that holds an unknown came or went. */
-  readonly regiven: boolean;
+  /** The unknowns of facts that came or went. */
+  readonly regiven: ReadonlySet<string>;
   /** Relations whose rules changed, so their rows are derived again. */
   readonly stale: ReadonlySet<string>;
   /** Relations that changed in a way nobody followed: they were forgotten. */
@@ -408,7 +413,7 @@ const reaches = (pass: Pass, stratum: Stratum) =>
   isBlind(stratum) ||
   // Which values a key or an equality rule writes as another depends on
   // which unknowns facts hold.
-  (pass.regiven &&
+  (pass.regiven.size > 0 &&
     stratum.rules.some(
       (rule) => rule.invents !== undefined || rule.equates === true
     )) ||
@@ -445,10 +450,13 @@ const wayFor = (pass: Pass, stratum: Stratum) => {
 const followed = (pass: Pass, stratum: Stratum) => {
   return Effect.map(
     followWeights(pass.model, stratum, pass.gained, pass.lost, pass.regiven),
-    ({ gained, lost }) => {
+    ({ gained, lost, problem }) => {
       for (const name of stratum.members) {
         pass.gained.set(name, gained.get(name) ?? new TupleSet());
         pass.lost.set(name, lost.get(name) ?? new TupleSet());
+      }
+      if (problem !== undefined) {
+        pass.broken = stratum;
       }
     }
   );
@@ -499,21 +507,28 @@ const upkeep = (pass: Pass, stratum: Stratum) => {
  * the relations another model changed in a way that is `unknown`. Returns
  * what every relation gained and lost. Fails when a rule fails on the new
  * rows; the model is then not to be used again.
+ *
+ * Rows that break a key end the pass after the group that holds them,
+ * which the pass names as `broken`. Then the model is not to be read, since
+ * a reader would find the rows, but it holds them exactly: following the
+ * change back through it, as far as that group, which `last` names, gives
+ * what it held before.
  */
 export const maintain = (
   model: Model,
   gained: Rows,
   lost: Rows,
   stale: ReadonlySet<string> = new Set(),
-  unknown: Iterable<string> = []
+  unknown: Iterable<string> = [],
+  last?: Stratum
 ): LogicEffect<Pass> =>
   Effect.gen(function* () {
-    const facts = [...gained.values(), ...lost.values()];
-    const regiven = facts.some((rows) => [...rows.values()].some(holdsUnknown));
-    if (regiven) {
+    const regiven = unknownsHeld([...gained.values(), ...lost.values()]);
+    if (regiven.size > 0) {
       (model.base ?? model).given = undefined;
     }
     const pass: Pass = {
+      broken: undefined,
       gained,
       lost,
       model,
@@ -524,6 +539,10 @@ export const maintain = (
     model.last.clear();
     for (const stratum of orderOf(model).strata) {
       yield* upkeep(pass, stratum);
+      // No group past rows that break a key reads them.
+      if (pass.broken !== undefined || stratum === last) {
+        break;
+      }
     }
     for (const [name, inputs] of model.computed) {
       if (

@@ -16,6 +16,10 @@
  * another only later. Facts that hold an unknown come and go, which says
  * whether a class may write the unknown as another value.
  *
+ * A change that is refused leaves every row with the numbers it had, also
+ * when following it found two rows with one key that a key cannot make one,
+ * as a fact that makes an unknown given can.
+ *
  * Aggregates are kept by counted candidates: what each gives after any
  * changes is what a plain model computes from the facts there are.
  */
@@ -308,17 +312,22 @@ const follows = ({ changes, keyed, start, ways }: Program) =>
         next.delete(JSON.stringify(it));
       }
       const fresh = yield* fromNothing(rules, next.values());
+      const had = weights(kept);
       kept.model?.last.clear();
       const changed = yield* attempt([form, it], kept);
       // A change is refused exactly when the facts break a rule.
       expect(changed.ok).toBe(fresh !== undefined);
+      const derived = !("ok" in before);
       if (fresh === undefined) {
-        // Following a change that breaks a key fails partway, so what was
-        // derived is forgotten, and the next change has nothing to follow.
-        before = { message: "refused", ok: false };
+        // A refused change is followed back, also when following it found
+        // rows that break a key: every row keeps the levels and weights it
+        // had, and the next change is followed through them.
+        expect(weights(kept)).toEqual(had);
+        for (const how of derived ? (kept.model?.last.values() ?? []) : []) {
+          expect(how).toBe("followed");
+        }
         continue;
       }
-      const derived = !("ok" in before);
       before = yield* answers(kept);
       expect(before).toEqual(yield* answers(fresh));
       expect(weights(kept)).toEqual(weights(fresh));
@@ -359,6 +368,32 @@ const beside = {
   ),
 };
 
+/** A fact of a few people: one, a twin, or one whose invented mother it holds. */
+const kin: Arbitrary.Arbitrary<Form> = oneOf(
+  Arbitrary.map(name, (who) => ["person", who]),
+  Arbitrary.map(Arbitrary.all([name, name]), ([a, b]) => ["twin", a, b]),
+  Arbitrary.map(name, (who) => ["tall", ["some", "?m", ["mother", who, "?m"]]])
+);
+
+/**
+ * Programs in which twins pass a keyed mother on, a rule of the mothers'
+ * own group reads two of them, and an equality rule holds as an invariant,
+ * while facts come and go that hold a twin's invented mother, which makes
+ * her given: two twins whose mothers are both given have two mothers each,
+ * which the key cannot make one, and the invariant refuses.
+ */
+const given = {
+  changes: Arbitrary.array(
+    Arbitrary.all([element(["fact", "fact", "retract"] as const), kin]),
+    { minLength: 1, maxLength: 6 }
+  ),
+  keyed: element([true]),
+  start: Arbitrary.array(kin, { maxLength: 8 }),
+  ways: Arbitrary.map(program.ways, (ways) =>
+    [...new Set<Way>([...ways, "pass", "registered", "torn"])].sort()
+  ),
+};
+
 describe("rows with weights, held from a level", () => {
   it.effect.prop(
     "keep after any changes the rows, levels, and weights that deriving from nothing gives",
@@ -370,6 +405,13 @@ describe("rows with weights, held from a level", () => {
   it.effect.prop(
     "never give a rule two rows with one key, though one comes beside the other",
     beside,
+    follows,
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "keep them through a change a key refuses, where facts make invented mothers given",
+    given,
     follows,
     OPTIONS
   );

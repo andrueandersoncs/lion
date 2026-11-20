@@ -62,6 +62,7 @@ import {
   flowsOf,
   isOpaque,
   mentioned,
+  type Stratum,
   stronglyConnected,
 } from "@/logic/strata";
 import {
@@ -711,8 +712,47 @@ const followGoal = (
     lost.set(factsName(name), net.lost.get(name) ?? new TupleSet());
   }
   return maintain(model, gained, lost, new Set(), pass.unknown).pipe(
-    Effect.as(true),
+    Effect.map(({ broken }) => broken === undefined),
     Effect.catch(() => Effect.succeed(false))
+  );
+};
+
+/** Forgets what was derived when its rows break a key: nobody may read them. */
+const forgetBroken =
+  (database: LogicDatabase) =>
+  ({ broken }: Pass) => {
+    if (broken !== undefined) {
+      touch(database);
+    }
+  };
+
+/**
+ * What was derived before a change that gave rows breaking a key, kept
+ * aside while the change is checked: the model, which was followed through
+ * the change as far as the group that holds those rows, and the
+ * goal-directed queries, which were not followed. Nobody reads it, since a
+ * reader would find those rows. When the change is refused, following it
+ * back through the model gives what was derived before.
+ */
+interface Aside {
+  readonly goals: ReadonlyMap<string, GoalModel>;
+  /** The last group the change was followed through. */
+  readonly last: Stratum;
+  readonly model: Model;
+}
+
+/**
+ * The rows a change gave each relation, under the names a model reads them
+ * by: the facts of a relation that merges are the candidates its rule
+ * reads, under their own name, and not its rows.
+ */
+const givenTo = (database: LogicDatabase, rows: Rows) => {
+  const candidates = candidateRelations(database.rules);
+  return new Map(
+    [...rows].map(([name, set]) => [
+      candidates.has(name) ? factsName(name) : name,
+      set,
+    ])
   );
 };
 
@@ -720,42 +760,77 @@ const followGoal = (
  * Brings what was derived up to date with a change to facts: the database's
  * model, and then each goal-directed query's. When a rule fails on the new
  * facts, what was derived is forgotten: the next reader derives it again,
- * and is the one a failing rule fails.
+ * and is the one a failing rule fails. When the rule that fails is a key,
+ * the change was followed exactly, and what was derived is kept aside, so
+ * that a refusal can follow the change back.
  */
 const follow = (
   database: LogicDatabase,
   net: Net,
   touched: ReadonlySet<string>
-) =>
+): Effect.Effect<Aside | undefined, never, LionEnvironmentService> =>
   Effect.suspend(() => {
     const { goals, model } = database;
     // A change made while rules run finds their rows half derived.
     const running = [...(model?.state.values() ?? [])].includes("running");
     if (model === undefined || running) {
       touch(database);
-      return Effect.void;
+      return Effect.succeed(undefined);
     }
     if (goals.size > MOST_GOALS) {
       goals.clear();
     }
-    // The facts of a relation that merges are the candidates its rule
-    // reads, under their own name, and not its rows.
-    const candidates = candidateRelations(database.rules);
-    const given = (rows: ReadonlyMap<string, TupleSet>) =>
-      new Map(
-        [...rows].map(([name, set]) => [
-          candidates.has(name) ? factsName(name) : name,
-          set,
-        ])
-      );
     return Effect.gen(function* () {
-      const pass = yield* maintain(model, given(net.gained), given(net.lost));
+      const pass = yield* maintain(
+        model,
+        givenTo(database, net.gained),
+        givenTo(database, net.lost)
+      );
+      if (pass.broken !== undefined) {
+        const aside = { goals: new Map(goals), last: pass.broken, model };
+        touch(database);
+        return aside;
+      }
       for (const [key, goal] of [...goals]) {
         if (!(yield* followGoal(goal, pass, net, touched))) {
           goals.delete(key);
         }
       }
-    }).pipe(Effect.catch(() => Effect.sync(() => touch(database))));
+      return undefined;
+    }).pipe(
+      Effect.catch(() =>
+        Effect.sync(() => {
+          touch(database);
+          return undefined;
+        })
+      )
+    );
+  });
+
+/**
+ * Follows a refused change back through what was derived before it, which
+ * was kept aside: as far as the change was followed, so every row has the
+ * candidates it had, and the goal-directed queries are as they were.
+ */
+const followBack = (database: LogicDatabase, aside: Aside, net: Net) =>
+  Effect.suspend(() => {
+    touch(database);
+    const { goals, last, model } = aside;
+    database.model = model;
+    for (const [key, goal] of goals) {
+      database.goals.set(key, goal);
+    }
+    return maintain(
+      model,
+      givenTo(database, net.gained),
+      givenTo(database, net.lost),
+      new Set(),
+      [],
+      last
+    ).pipe(
+      Effect.map(forgetBroken(database)),
+      Effect.catch(() => Effect.sync(() => touch(database)))
+    );
   });
 
 /**
@@ -836,7 +911,7 @@ const renew = (database: LogicDatabase, before: Model | undefined) =>
     const stale = carry(before, next);
     database.model = next;
     return maintain(next, new Map(), new Map(), stale).pipe(
-      Effect.asVoid,
+      Effect.map(forgetBroken(database)),
       Effect.catch(() => Effect.sync(() => touch(database)))
     );
   });
@@ -948,11 +1023,21 @@ const changeDatabase = (
   };
   // What the change gained is what undoing it loses.
   const back = () => ({ gained: facts.net().lost, lost: facts.net().gained });
+  let aside: Aside | undefined;
   const upkeep =
     program === undefined
       ? {
-          after: Effect.suspend(() => follow(database, facts.net(), touched)),
-          undone: Effect.suspend(() => follow(database, back(), touched)),
+          after: Effect.map(
+            Effect.suspend(() => follow(database, facts.net(), touched)),
+            (kept) => {
+              aside = kept;
+            }
+          ),
+          undone: Effect.suspend(() =>
+            aside === undefined
+              ? Effect.asVoid(follow(database, back(), touched))
+              : followBack(database, aside, back())
+          ),
         }
       : {
           after: Effect.suspend(() =>

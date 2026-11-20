@@ -294,9 +294,37 @@ const SCALING: readonly Mutation[] = [
   {
     name: "a refused change is not followed back",
     file: core("logic/database.ts"),
-    find: "    undone: Effect.suspend(() => follow(database, back(), touched)),",
-    replace: "    undone: Effect.void,",
+    find: "              ? Effect.asVoid(follow(database, back(), touched))",
+    replace: "              ? Effect.void",
     tests: MAINTAINED_TESTS,
+  },
+  {
+    name: "a refused change whose rows broke a key forgets everything derived",
+    file: core("logic/database.ts"),
+    find: "              : followBack(database, aside, back())",
+    replace: "              : Effect.sync(() => touch(database))",
+    tests: MAINTAINED_TESTS,
+  },
+  {
+    name: "a refused change forgets the goal-directed queries it did not reach",
+    file: core("logic/database.ts"),
+    find: "goals: new Map(goals)",
+    replace: "goals",
+    tests: MAINTAINED_TESTS,
+  },
+  {
+    name: "a change whose rows break a key is followed back past the group it stopped at",
+    file: core("logic/maintain.ts"),
+    find: "      if (pass.broken !== undefined || stratum === last) {",
+    replace: "      if (pass.broken !== undefined) {",
+    tests: ["src/logic/tests/weights.test.ts", ...MAINTAINED_TESTS],
+  },
+  {
+    name: "a change is followed past the group whose rows break a key",
+    file: core("logic/maintain.ts"),
+    find: "      if (pass.broken !== undefined || stratum === last) {",
+    replace: "      if (stratum === last) {",
+    tests: ["src/logic/tests/weights.test.ts", ...MAINTAINED_TESTS],
   },
   {
     name: "a new rule forgets everything derived",
@@ -507,6 +535,21 @@ const WEIGHTS: readonly Mutation[] = [
     ""
   ),
   weighed(
+    "two rows with one key that part take away the pairs the unknowns facts hold now say they give, not the ones they gave",
+    "      (by < 0 ||\n        pairs.every(",
+    "      (by < -1 ||\n        pairs.every("
+  ),
+  weighed(
+    "two rows with one key that part take away pairs they never gave",
+    "        )) &&\n      met(run.support.chase, entry, other, by);",
+    "        )) &&\n      (by < 0 || met(run.support.chase, entry, other, by));"
+  ),
+  weighed(
+    "rows that hold an unknown a fact came or went with are not paired again with the rows that have their key",
+    "    repair(run, regiven);\n",
+    ""
+  ),
+  weighed(
     "an unknown a fact holds is written as another value",
     "  !givenOf(run.model).has(value.key);",
     "  true;"
@@ -556,7 +599,7 @@ const WEIGHTS: readonly Mutation[] = [
   {
     name: "a fact that holds an unknown does not reach the groups that invent",
     file: core("logic/maintain.ts"),
-    find: "  (pass.regiven &&",
+    find: "  (pass.regiven.size > 0 &&",
     replace: "  (false &&",
     tests: WEIGHT_TESTS,
   },
@@ -797,9 +840,9 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "derived rows stay as they were through a change to the facts",
     file: core("logic/database.ts"),
-    find: "    if (model === undefined || running) {\n      touch(database);\n      return Effect.void;\n    }\n    if (goals.size",
+    find: "    if (model === undefined || running) {\n      touch(database);\n      return Effect.succeed(undefined);\n    }\n    if (goals.size",
     replace:
-      "    if (true) {\n      return Effect.void;\n    }\n    if (goals.size",
+      "    if (true) {\n      return Effect.succeed(undefined);\n    }\n    if (goals.size",
   },
   {
     name: "a question may go through recursion when it runs",
@@ -1004,8 +1047,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a change to the facts of a relation that merges is followed as a change to its rows",
     file: core("logic/database.ts"),
-    find: "          candidates.has(name) ? factsName(name) : name,",
-    replace: "          name,",
+    find: "      candidates.has(name) ? factsName(name) : name,",
+    replace: "      name,",
     tests: [...MERGE_TESTS, CANDIDATE_TESTS],
   },
   {
