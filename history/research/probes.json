@@ -23058,5 +23058,64 @@
       ],
       ["else", ["quote", "other"]]
     ]
+  },
+  {
+    "case": "waiting-form-waits-again",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "link", ["from", "to"]],
+      ["relation", "even", ["n"]],
+      ["relation", "n", ["x"]],
+      ["relation", "out", ["x", "y"]],
+      ["fact", ["link", 1, 2], ["link", 2, 3]],
+      ["fact", ["even", 0], ["even", 2]],
+      ["fact", ["n", 1]],
+      [
+        "rule",
+        [
+          "out",
+          "?x",
+          [
+            "cond",
+            [["number/equals?", "?x", 0], "?x"],
+            [
+              "else",
+              [
+                "find",
+                [
+                  "number/add",
+                  "?k",
+                  ["cond", [["even", "?x"], "?x"], ["else", "?x"]]
+                ],
+                ["link", "?x", "?k"]
+              ]
+            ]
+          ]
+        ],
+        ["n", "?x"]
+      ],
+      [
+        "cond",
+        [
+          [
+            "=",
+            ["query", ["out", 1, "?y"]],
+            [
+              "array/make",
+              {
+                "y": [
+                  "find",
+                  ["number/add", "?k", ["cond", [["even", 1], 1], ["else", 1]]],
+                  ["link", 1, "?k"]
+                ]
+              }
+            ]
+          ],
+          ["quote", "bound-value"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

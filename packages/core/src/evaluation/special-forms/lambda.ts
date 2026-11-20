@@ -3,7 +3,7 @@ import {
   ArgumentMismatchError,
   type UnboundNameError,
 } from "@/errors/evaluation";
-import { nameOrString } from "@/evaluation/base-forms/primitive";
+import { nameOrString, readsAsName } from "@/evaluation/base-forms/primitive";
 import {
   type Compiled,
   DEEPEST,
@@ -12,7 +12,6 @@ import {
 } from "@/evaluation/compiled";
 import {
   asWritten,
-  declares,
   type Environment,
   lookup,
   predeclare,
@@ -267,15 +266,17 @@ const close = (
 };
 
 /**
- * The value of a name a form reads where it is written: the name's value
- * when the scope the form is written in declares it.
+ * The value of a name a form reads where it is written, as its compiled
+ * code reads it: a `?name`'s value wherever the form is written, as when a
+ * form that waited runs with the variable bound and waits again, and any
+ * other name's value when the scope the form is written in declares it.
  */
 const valueIn = (
   environment: Environment,
   scope: Scope | undefined,
   name: string
 ) =>
-  scope === undefined || declares(scope, name)
+  scope === undefined || readsAsName(scope, name)
     ? lookup(environment, name)
     : UNBOUND;
 

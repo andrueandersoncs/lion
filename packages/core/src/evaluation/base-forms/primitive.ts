@@ -65,6 +65,13 @@ export const nameOrString = (
 };
 
 /**
+ * True when a string is read as a name where it is written: a `?name`
+ * wherever it stands, or a name a scope around it declares.
+ */
+export const readsAsName = (scope: Scope | undefined, name: string) =>
+  isLogicVariableName(name) || declares(scope, name);
+
+/**
  * What a string means, by the scopes it is written in. A string a scope
  * declares is a name, and evaluates to its value; reading it before its
  * `define` has run is an error. A `?name` evaluates to the value bound to
@@ -108,7 +115,7 @@ export const compileHead = (
   scope: Scope | undefined
 ): Compiled => {
   const reference = compileReference(name, scope);
-  if (isLogicVariableName(name) || declares(scope, name)) {
+  if (readsAsName(scope, name)) {
     return reference;
   }
   return (environment, depth) => {

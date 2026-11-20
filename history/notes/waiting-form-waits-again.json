@@ -1,0 +1,15 @@
+{
+  "claims": [
+    {
+      "quote": "A form that waits reads a logic variable's value once the variable is bound, also where it runs into a form that waits again: in `[\"rule\", [\"out\", \"?x\", [\"cond\", [[\"number/equals?\", \"?x\", 0], \"?x\"], [\"else\", [\"find\", [\"number/add\", \"?k\", [\"cond\", [[\"even\", \"?x\"], \"?x\"], [\"else\", \"?x\"]]], [\"link\", \"?x\", \"?k\"]]]]], [\"n\", \"?x\"]]`, the `cond` that asks `[\"even\", \"?x\"]` inside the `find`'s template asks it of the value `?x` has, and the rule gives what plain code gives with `?x` bound. It failed with `Expected number`, because that `cond` took `?x` for a new variable.",
+      "says": {
+        "behavior": "waiting-form-waits-again",
+        "is": "bound-value",
+        "area": "logic",
+        "was": "error",
+        "fixes": true
+      },
+      "decisions": ["waiting-rule", "logic-forms-read-by-scope"]
+    }
+  ]
+}

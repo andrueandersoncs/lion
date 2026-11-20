@@ -215,6 +215,16 @@ const findOf = (n: Arbitrary.Arbitrary<Expression>, depth: number) => {
         k,
         ["and", ["in", k, ["array/range", -1, 3]], ["not", ["link", value, k]]],
       ]
+    ),
+    // The template asks a question too, about `?x` and each match, so it
+    // waits for the match while the find is written.
+    Arbitrary.map(
+      Arbitrary.all([n, goalOf(n, depth), n]),
+      ([value, goal, by]): Expression => [
+        "find",
+        ["number/add", k, ["cond", [goal, by], ["else", 0]]],
+        ["link", value, k],
+      ]
     )
   );
 };
@@ -334,6 +344,25 @@ export const numberOf = (
           ["aggregate/count", ["find", "?k", ["link", "?k", "v"]]],
         ],
         ["number/add", value, by],
+      ]
+    ),
+    // A question in a branch of a form that waits for `?x`: it is written
+    // again when the form runs, with `?x` bound.
+    Arbitrary.map(
+      Arbitrary.all([b, findOf(n, depth), n]),
+      ([test, found, otherwise]): Expression => [
+        "cond",
+        [test, ["aggregate/sum", found]],
+        ["else", otherwise],
+      ]
+    ),
+    Arbitrary.map(
+      Arbitrary.all([n, findOf(n, depth)]),
+      ([value, found]): Expression => [
+        "match",
+        value,
+        [isNegative, ["lambda", ["v"], ["array/length", found]]],
+        ["lambda", ["v"], "v"],
       ]
     ),
   ];

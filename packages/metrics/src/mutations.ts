@@ -3715,9 +3715,15 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a form that waits keeps every name its environment binds",
     file: core("evaluation/special-forms/lambda.ts"),
-    find: "  scope === undefined || declares(scope, name)",
+    find: "  scope === undefined || readsAsName(scope, name)",
     replace: "  true",
     tests: [SCOPE_TESTS],
+  },
+  {
+    name: "a form that waits again, once a ?name is bound, waits for a new variable",
+    file: core("evaluation/base-forms/primitive.ts"),
+    find: "  isLogicVariableName(name) || declares(scope, name);",
+    replace: "  declares(scope, name);",
   },
   {
     name: "code that eval runs does not declare what it defines",

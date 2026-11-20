@@ -228,11 +228,6 @@ describe("a rule that holds waiting forms", () => {
     ({ inputs, times, value }) =>
       Effect.gen(function* () {
         const expected = yield* substituteAll(value, inputs);
-        // The rule's sum is what plain code's aggregate/sum gives the same
-        // matches, which is the same in any order.
-        const plain = expected.ok
-          ? yield* attempt([["aggregate/sum", ["quote", expected.value]]])
-          : undefined;
         const database = new LogicDatabase();
         const program = [
           ...facts(inputs),
@@ -246,7 +241,8 @@ describe("a rule that holds waiting forms", () => {
         expectRows(
           yield* attempt([["query", ["total", "?sum"]]], database),
           expected,
-          () => [{ sum: plain?.ok ? plain.value : undefined }]
+          // Matches have no order, so their sum is rounded once.
+          (results) => [{ sum: nearestSum(results as number[]) }]
         );
       }),
     OPTIONS
