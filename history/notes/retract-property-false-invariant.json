@@ -1,0 +1,14 @@
+{
+  "claims": [
+    {
+      "quote": "The property that a rule or invariant form is refused in retract and assuming as the form itself is refused now leaves out an invariant that is well formed but does not hold, such as `[\"invariant\", [\"quote\", true], {\"assert\": \"none\"}]`: adding it is refused when it is checked, not as a form, and retracting it removes nothing, which the property now checks. It failed within about 1,000 runs in each of three passes of 5,000, about one test run in five at its 200 runs, and holds in three passes of 5,000 now.",
+      "says": {
+        "behavior": "retract-property-false-invariant",
+        "is": "retract-removes-nothing",
+        "area": "tests",
+        "fixes": true,
+        "was": "expected-refused"
+      }
+    }
+  ]
+}

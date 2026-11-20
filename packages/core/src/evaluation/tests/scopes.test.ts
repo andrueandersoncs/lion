@@ -25,6 +25,9 @@ const OPTIONS = { arbitrary: { runs: 200 } };
 const NOT_TRUTH =
   /^A condition must be true or false, but \["quote",.* is .*\.$/;
 
+/** How an invariant that is well formed but false now is refused. */
+const INVARIANT_DOES_NOT_HOLD = "This invariant does not hold";
+
 /** A plain word nothing in the standard library or these programs binds. */
 const word = Arbitrary.filter(
   Arbitrary.schema(Schema.String.check(Schema.isPattern(/^[a-z]{1,7}$/))),
@@ -437,6 +440,15 @@ describe("an array that names a special form", () => {
         ];
         const made = yield* outcome(within(held));
         if (!("error" in made)) {
+          return;
+        }
+        // An invariant that is well formed but does not hold, such as
+        // `["invariant", ["quote", true], {"assert": "none"}]`, is refused
+        // when it is checked, not as a form: retracting it removes nothing.
+        if (made.message.startsWith(INVARIANT_DOES_NOT_HOLD)) {
+          expect(yield* outcome(within(["retract", held]))).toEqual({
+            value: [],
+          });
           return;
         }
         expect(yield* outcome(within(["retract", held]))).toEqual(made);
