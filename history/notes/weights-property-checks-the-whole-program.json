@@ -1,0 +1,22 @@
+{
+  "claims": [
+    {
+      "quote": "The properties of the engine's rows, levels, and weights compare a database that followed changes with one that holds the rules and then every fact in one `fact` form, which is checked once, against the whole program, and forgets what following that form derived, so every group is derived from nothing. They compared with one that held the facts and then added the rules one at a time, each a change checked on its own. With a rule that tells two mothers of one child apart, and two equality rules that make twins' mothers one, one a level sooner than the other, that database refused the rule that tells them apart, since the sooner equality rule was not there yet, though the program as a whole holds. So \"keep after any changes the rows, levels, and weights that deriving from nothing gives\" failed once in 1,000 to 3,000 runs with `expected true to be false`; the engine gave the right answer.",
+      "says": {
+        "behavior": "test-weights-database-from-nothing",
+        "is": "rules-then-one-fact-form",
+        "area": "tests",
+        "fixes": true,
+        "was": "facts-then-each-rule"
+      }
+    },
+    {
+      "quote": "A new property derives each program from nothing with its rules and facts in the order given, reversed, and shuffled, and finds the same refusals, the same answers, and the same levels and weights for every row. Half of its programs hold twins and a child with two registered mothers, so it fails within 3 runs against the old way of building the database to compare with.",
+      "says": {
+        "measured": "weights-rule-order-property-runs-to-catch",
+        "after": 3,
+        "area": "tests"
+      }
+    }
+  ]
+}
