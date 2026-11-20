@@ -1,0 +1,45 @@
+{
+  "title": "set! fails where the engine chooses the order, for a binding made outside",
+  "context": "A rule body runs once when the rule is written, and a query or find runs its parts when and as often as the engine chooses. So a function that changes a binding with `set!`, called from a rule body over three items, gave all three one number, and the count moved by one; in plain code it numbered them 1, 2, and 3. The logic forms page said only that a call \"may be computed when the rule is written, which changes nothing but when a side effect happens\". The Clef run (`research/runs/clef/`) found it, against Lion's goal that an expression gives in a rule what it gives in plain code, and the user decided on 2026-11-20 to keep `set!` out of code whose order the engine picks.",
+  "decision": "While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began: `set! cannot change \"calls\" while a rule, query, or find runs: …`. A binding the evaluation made for itself, such as a counter a helper defines, it changes as it would anywhere. Each scope records when it was made, and the asker of a rule, query, or find when it began.",
+  "consequences": "A program that counted calls from a rule fails until it counts with an aggregate or outside the rule. A helper that loops with a `set!` of its own counter still works in a rule. Host functions with effects still run where the engine chooses; the rule covers `set!`, which Lion can see.",
+  "alternatives": [
+    {
+      "option": "Run a call with a set! once for each row the rule derives",
+      "rejected": "The engine still chooses the order and how often a row is derived again, so the count would still not be one for each answer."
+    },
+    {
+      "option": "Refuse every set! while a rule, query, or find runs",
+      "rejected": "A helper's own counter changes nothing outside the call, and plain code gives the same."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began",
+      "says": {
+        "decision": "set-in-rule-bodies",
+        "chose": "refused-for-outside-bindings",
+        "over": ["allowed", "refused-everywhere", "run-per-row"],
+        "area": "logic",
+        "because": "the engine chooses when and how often a rule, query, or find runs its parts"
+      }
+    },
+    {
+      "quote": "While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began: `set! cannot change \"calls\" while a rule, query, or find runs: …`.",
+      "says": {
+        "behavior": "set-outside-binding-in-rule-body",
+        "is": "error",
+        "area": "logic",
+        "was": "once-when-written"
+      }
+    },
+    {
+      "quote": "A binding the evaluation made for itself, such as a counter a helper defines, it changes as it would anywhere.",
+      "says": {
+        "behavior": "set-own-binding-in-rule-body",
+        "is": "changed",
+        "area": "logic"
+      }
+    }
+  ]
+}

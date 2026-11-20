@@ -170,6 +170,19 @@ Changes the value of the nearest binding of a name and returns the value, as in 
 
 Evaluates to `2`. A name no scope declares has no binding to change, so `["set!", "nope", 1]` fails.
 
+A rule, a query, and a `find` run their parts when and as often as the engine chooses: a rule body runs once when the rule is written, not once for each row. So `set!` of a binding made outside them fails there, `set! cannot change "calls" while a rule, query, or find runs: …`, where a counter called in plain code would number three items 1, 2, and 3 but in a rule body would give them all one number. A binding the call makes for itself, such as a helper's own counter, it changes as it would anywhere:
+
+```json
+["begin",
+  ["define", "calls", 0],
+  ["define", "counted", ["lambda", ["x"], ["begin", ["set!", "calls", ["number/add", "calls", 1]], "calls"]]],
+  ["define", "steps", ["lambda", ["x"], ["begin", ["define", "n", 0], ["set!", "n", ["number/add", "x", 1]], "n"]]],
+  {"numbered in plain code": ["array/map", ["array/make", 10, 20, 30], "counted"],
+   "a helper's own counter, in a find": ["find", ["steps", "?x"], ["in", "?x", ["array/make", 10, 20, 30]]]}]
+```
+
+Evaluates to `{"numbered in plain code": [1, 2, 3], "a helper's own counter, in a find": [11, 21, 31]}`. To count what a rule matches, use an aggregate, as `["aggregate/count", "?x"]` in its head.
+
 ### `lambda`
 
 Creates a Lion function with lexical scope.
@@ -362,7 +375,7 @@ Evaluates to `[{ "sensor": "attic", "summary": { "fahrenheit": 86, "level": "hot
 - What waits computes what it would compute with the value in place of the variable.
 - As a goal, a waiting call is a filter, and so is a variable that holds true or false. A filter must be true or false: `["string/indexOf", "?s", "a"]` as a goal is an error, since it is a number.
 - A goal is also a value: `["=", "?ok", ["and", ["number/greaterThan", "?x", 0], ["number/lessThan", "?x", 10]]]` binds `?ok` to true or false. A goal with a relation in it is asked for its value; see [Asking](#asking).
-- What a rule holds runs when the rule runs. A call on values that are already known may be computed when the rule is written, which changes nothing but when a side effect happens.
+- What a rule holds runs when the rule runs. A call on values that are already known may be computed when the rule is written. So a rule, a query, and a `find` refuse a `set!` of a binding made outside them, whose change would happen once, or as often as the engine chose, rather than once for each answer.
 - A filter runs as soon as its variables are bound, and filters that are ready together run in the order written. So a guard written first protects the filter after it, as in `["value/number?", "?v"], ["number/greaterThan", "?v", 0]`. A filter given a value it does not take names the function, the argument, and the value, as in `"number/greaterThan" takes a number as argument 1 but got "n/a".`, and any other failure names the call and the values it ran on.
 - A lambda passed to a waiting call, such as the function of `array/map`, waits with it, and can mention the rule's variables.
 - Names are replaced by their values when the rule is written, also inside a waiting `cond` or lambda, so redefining a name later does not change the rule. A lambda that calls itself by name is the exception: it looks its name up each time it runs, as it does outside of rules.

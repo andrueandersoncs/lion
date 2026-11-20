@@ -51,7 +51,8 @@ Status: `todo`, `doing`, `done (<commit>)`.
    - The rule `values-are-json` is restated to predict an error for a missing key.
    - As Racket's `hash-ref` and Lion's own `object/get-path`: a missing key fails (`KeyNotFoundError`), and a third argument is the value to give instead. Only a record's own keys count (today `["object/get", {}, "toString"]` gives a JavaScript function).
    - Add `object/has?` (Racket `hash-has-key?`). Update every program in the docs that relied on null.
-5. **No `set!` where the engine picks the order** — todo. A decision.
+5. **No `set!` where the engine picks the order** — done (commit "fix(core)!: set! fails where the engine chooses the order"). Decision `set-in-rule-bodies` in `history/notes/set-where-the-engine-orders.json`.
+   - Built as designed: `Environment.made` (from `makingScope()`), `Asker.since` (from `madeNow()`), and `refusedSet` in `evaluation/special-forms/set.ts`, which reads the asker synchronously through `Fiber.getCurrent()`. The interpreter model has the same rule.
    - A lambda called from a rule body runs once, when the rule is written (`applyIn` in `evaluation/special-forms/function.ts`), so a `set!` there runs once, not once for each row.
    - Rule: while a rule, query, or find is written or run (a `LionAskerService` is present), `set!` fails when it changes a binding made before that began. A binding the evaluation made itself, such as a loop's counter in a helper, can still change. Frames record when they were made; the asker records when it began.
 

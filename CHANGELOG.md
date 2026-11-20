@@ -98,6 +98,8 @@
 - A program's text, and a database file the `lion` command reads, may not write an integer that would come back as another when Lion writes it: `9007199254740993` would read as `9007199254740992`, so the text is refused, naming the integer and where it stands. (`integer-literal-past-exact-range` is `error`, was `rounded`)
 - `number/fromString` and `string/numbers` leave out such an integer, as they leave out a number past the largest one. (`number-from-string-past-exact-range` is `null`, was `rounded`)
 - Only a record's own keys count. (`object-get-inherited-key` is `error`, was `javascript-property`)
+- While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began: `set! cannot change "calls" while a rule, query, or find runs: …`. (`set-outside-binding-in-rule-body` is `error`, was `once-when-written`)
+- A binding the evaluation made for itself, such as a counter a helper defines, it changes as it would anywhere. (`set-own-binding-in-rule-body` is `changed`)
 
 ### Fixed
 
@@ -150,6 +152,7 @@
 - `func/callback`, where host code meets a Lion function, gives the function as many of the host's arguments as it takes (`callback-arity`: `as-many-as-it-takes` over `all-host-arguments`)
 - A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses (`lambda-arity`: `strict` over `extra-arguments-ignored`, was `extra-arguments-ignored`)
 - It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (`object-get-missing-key`: `fails-unless-given-a-value` over `null`, was `undefined`)
+- While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began (`set-in-rule-bodies`: `refused-for-outside-bindings` over `allowed`, `refused-everywhere`, `run-per-row`)
 
 ### Rules
 

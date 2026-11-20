@@ -16,8 +16,21 @@ export interface Environment {
   readonly bindings: Map<string, unknown>;
   /** True for the scope `define` binds in: a run's top scope, or a call's. */
   readonly body?: boolean;
+  /** When the scope was made, as `madeNow` counts: a later scope is larger. */
+  readonly made?: number;
   readonly parent: Environment | undefined;
 }
+
+let scopesMade = 0;
+
+/** A number larger than when any scope made so far was made. */
+export const madeNow = () => scopesMade;
+
+/** When a scope made now is made, counted from the first. */
+export const makingScope = () => {
+  scopesMade += 1;
+  return scopesMade;
+};
 
 /**
  * The names a scope declares, when code is compiled: an environment, or the
@@ -40,6 +53,7 @@ export const makeEnvironment = (
       ? bindings
       : new Map<string, unknown>(Object.entries(bindings)),
   ...(body ? { body } : {}),
+  made: makingScope(),
   parent,
 });
 
@@ -211,6 +225,23 @@ export const assign = (
     }
   }
   return false;
+};
+
+/** The nearest scope that binds a name, if any does. */
+export const scopeOf = (
+  environment: Environment,
+  name: string
+): Environment | undefined => {
+  for (
+    let scope: Environment | undefined = environment;
+    scope !== undefined;
+    scope = scope.parent
+  ) {
+    if (scope.bindings.has(name)) {
+      return scope;
+    }
+  }
+  return undefined;
 };
 
 /** Every name a scope or a scope around it declares. */

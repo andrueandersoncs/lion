@@ -5,6 +5,7 @@ import {
   logicError,
   takes,
 } from "@/errors/evaluation";
+import { madeNow } from "@/evaluation/environment";
 import {
   AGGREGATORS,
   aggregateCall,
@@ -1632,6 +1633,7 @@ const reading = <A>(
     return use(model).pipe(
       Effect.provideService(LionAskerService, {
         answer: (question) => answer(model, question),
+        since: madeNow(),
       })
     );
   });

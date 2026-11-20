@@ -52,6 +52,7 @@ import {
   evaluateSome,
   evaluateWhy,
 } from "@/evaluation/special-forms/logic";
+import { refusedSet } from "@/evaluation/special-forms/set";
 import {
   LogicDatabase,
   relationBindings,
@@ -399,6 +400,10 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
           return yield* unboundSet(id as string);
         }
         const value = yield* evaluate(expression as LionExpressionType);
+        const refused = refusedSet(environment, id as string);
+        if (refused !== undefined) {
+          return yield* refused;
+        }
         assign(environment, id as string, value);
         return value;
       }),

@@ -18,6 +18,7 @@ import {
   boundNames,
   declares,
   type Environment,
+  madeNow,
   makeEnvironment,
   type Scope,
   scopeWith,
@@ -371,6 +372,7 @@ const declaring = (name: string) =>
       logicError(
         `The shape of schema "${name}" asks ${show(question)} while it is declared, so it would depend on the facts of the moment. Ask inside a lambda, or use the relation itself as a schema.`
       ),
+    since: madeNow(),
   });
 
 const isIdentifier = Schema.is(ValidIdentifierSchema);

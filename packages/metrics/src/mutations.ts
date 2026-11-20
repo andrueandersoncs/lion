@@ -4038,4 +4038,25 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "    const found = fields.get(key.value) ?? fromValue(null);",
     tests: ["src/logic/tests/solving.test.ts"],
   },
+  {
+    name: "set! changes a binding made outside a rule while it runs",
+    file: core("evaluation/special-forms/set.ts"),
+    find: "  return scope === undefined || since === undefined || (scope.made ?? 0) > since",
+    replace: "  return true",
+    tests: ["src/evaluation/tests/ordered-effects.test.ts"],
+  },
+  {
+    name: "set! is refused even for a binding the call made for itself",
+    file: core("evaluation/special-forms/set.ts"),
+    find: "(scope.made ?? 0) > since",
+    replace: "(scope.made ?? 0) > Number.POSITIVE_INFINITY",
+    tests: ["src/evaluation/tests/ordered-effects.test.ts"],
+  },
+  {
+    name: "a call's scope is not newer than a rule that runs it",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "    made: makingScope(),",
+    replace: "    made: 0,",
+    tests: ["src/evaluation/tests/ordered-effects.test.ts"],
+  },
 ];

@@ -16,6 +16,7 @@ import {
   asWritten,
   type Environment,
   lookup,
+  makingScope,
   predeclare,
   type Scope,
   scopeWith,
@@ -164,6 +165,7 @@ export const enter = (
   const scope: Environment = {
     bindings,
     body: true,
+    made: makingScope(),
     parent: lambda.environment,
   };
   lambda.compiled ??= compile(lambda.body, asWritten(scope));

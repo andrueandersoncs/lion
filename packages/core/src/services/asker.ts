@@ -8,6 +8,11 @@ import type { EvaluateResult } from "@/types/evaluation";
  */
 export interface Asker {
   readonly answer?: (question: unknown) => EvaluateResult;
+  /**
+   * When the rule, query, or find began to be written or run, as the scopes
+   * count it: a scope made before then is outside it.
+   */
+  readonly since: number;
 }
 
 /**

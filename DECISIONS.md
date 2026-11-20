@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 200 questions have been decided, 89 records explain them, and of what the records assert, 627 hold when Lion is run, 5 are broken, 346 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 201 questions have been decided, 90 records explain them, and of what the records assert, 629 hold when Lion is run, 5 are broken, 347 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -206,6 +206,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-20 | [`snapshot-form-order`](#snapshot-form-order) | `rules-then-one-fact-form` | [A snapshot writes the rules, then every fact in one form, then the invariants](#snapshot-rules-before-facts) |
 | 2026-11-20 | [`key-clash-told-from-rows`](#key-clash-told-from-rows) | `rows-there-are` | [Rows that break a key are kept, and the clash is told from the rows there are](#key-clash-told-from-rows) |
 | 2026-11-20 | [`callback-arity`](#callback-arity) | `as-many-as-it-takes` | [A lambda takes as many arguments as it has parameters, and a callback gives a function as many as it takes](#lambda-takes-its-parameters) |
+| 2026-11-20 | [`set-in-rule-bodies`](#set-in-rule-bodies) | `refused-for-outside-bindings` | [set! fails where the engine chooses the order, for a binding made outside](#set-where-the-engine-orders) |
 
 <a id="program-representation"></a>
 
@@ -4586,3 +4587,34 @@ Recorded 2026-11-20 in `history/notes/key-clash-told-from-rows.json`.
 Now: `as-many-as-it-takes`.
 
 - 2026-11-20 `callback-arity`: `as-many-as-it-takes` over `all-host-arguments`: "`func/callback`, where host code meets a Lion function, gives the function as many of the host's arguments as it takes" (`lambda-takes-its-parameters.json`)
+
+<a id="set-in-rule-bodies"></a>
+
+## set-in-rule-bodies
+
+Now: `refused-for-outside-bindings`.
+
+- 2026-11-20 `set-in-rule-bodies`: `refused-for-outside-bindings` over `allowed`, `refused-everywhere`, `run-per-row`: "While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began" (`set-where-the-engine-orders.json`)
+
+<a id="set-where-the-engine-orders"></a>
+
+### set! fails where the engine chooses the order, for a binding made outside
+
+Recorded 2026-11-20 in `history/notes/set-where-the-engine-orders.json`.
+
+**Context.** A rule body runs once when the rule is written, and a query or find runs its parts when and as often as the engine chooses. So a function that changes a binding with `set!`, called from a rule body over three items, gave all three one number, and the count moved by one; in plain code it numbered them 1, 2, and 3. The logic forms page said only that a call "may be computed when the rule is written, which changes nothing but when a side effect happens". The Clef run (`research/runs/clef/`) found it, against Lion's goal that an expression gives in a rule what it gives in plain code, and the user decided on 2026-11-20 to keep `set!` out of code whose order the engine picks.
+
+**Decision.** While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began: `set! cannot change "calls" while a rule, query, or find runs: …`. A binding the evaluation made for itself, such as a counter a helper defines, it changes as it would anywhere. Each scope records when it was made, and the asker of a rule, query, or find when it began.
+
+**Consequences.** A program that counted calls from a rule fails until it counts with an aggregate or outside the rule. A helper that loops with a `set!` of its own counter still works in a rule. Host functions with effects still run where the engine chooses; the rule covers `set!`, which Lion can see.
+
+**Alternatives considered.**
+
+- Run a call with a set! once for each row the rule derives. The engine still chooses the order and how often a row is derived again, so the count would still not be one for each answer.
+- Refuse every set! while a rule, query, or find runs. A helper's own counter changes nothing outside the call, and plain code gives the same.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `set-in-rule-bodies`: `refused-for-outside-bindings`. "While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began"
+- Holds when Lion is run: `set-outside-binding-in-rule-body` is `error`. "While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began: `set! cannot change "calls" while a rule, query, or find runs: …`."
+- Holds when Lion is run: `set-own-binding-in-rule-body` is `changed`. "A binding the evaluation made for itself, such as a counter a helper defines, it changes as it would anywhere."

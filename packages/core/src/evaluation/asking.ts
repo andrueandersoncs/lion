@@ -8,6 +8,7 @@
  */
 import { Effect, Option } from "effect";
 import { logicError, WaitingError } from "@/errors/evaluation";
+import { madeNow } from "@/evaluation/environment";
 import { askDatabase } from "@/logic/database";
 import { isQuestion, isWaiting, LogicValue } from "@/logic/terms";
 import { LionAskerService } from "@/services/asker";
@@ -32,7 +33,9 @@ export const database = Effect.serviceOption(LionDatabaseService).pipe(
  * stay questions: they are asked when the rule or query runs.
  */
 export const writing = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
-  effect.pipe(Effect.provideService(LionAskerService, {}));
+  Effect.suspend(() =>
+    effect.pipe(Effect.provideService(LionAskerService, { since: madeNow() }))
+  );
 
 /** True while a rule, query, or find is being written. */
 export const isWriting = Effect.map(

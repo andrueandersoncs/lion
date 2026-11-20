@@ -23319,5 +23319,56 @@
     "case": "object-get-inherited-key",
     "area": "library",
     "program": ["object/get", ["quote", {}], "toString"]
+  },
+  {
+    "case": "set-outside-binding-in-rule-body",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["define", "calls", 0],
+      [
+        "define",
+        "counted",
+        [
+          "lambda",
+          ["x"],
+          ["begin", ["set!", "calls", ["number/add", "calls", 1]], "calls"]
+        ]
+      ],
+      ["find", ["counted", "?x"], ["in", "?x", ["array/make", 1, 2]]]
+    ]
+  },
+  {
+    "case": "set-own-binding-in-rule-body",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "steps",
+        [
+          "lambda",
+          ["x"],
+          [
+            "begin",
+            ["define", "n", 0],
+            ["set!", "n", ["number/add", "x", 1]],
+            "n"
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "=",
+            ["find", ["steps", "?x"], ["in", "?x", ["array/make", 1]]],
+            ["quote", [2]]
+          ],
+          ["quote", "changed"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

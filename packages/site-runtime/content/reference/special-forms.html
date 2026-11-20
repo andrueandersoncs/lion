@@ -61,7 +61,16 @@
   <li>Evaluates <code>expression</code>, changes the value of the nearest binding of <code>name</code> to it, and returns it, as <code>set!</code> does in Scheme.</li>
   <li>It is how a lambda changes a name around it, such as a counter or the state of an app that its callbacks update.</li>
   <li>A name no scope around the form declares has no binding to change, so the form fails with <code>UnboundNameError</code>.</li>
+  <li>A rule, query, or find runs its parts when and as often as the engine chooses, so there <code>set!</code> fails for a binding made outside it, where a counter would give every row one number. A binding the call makes for itself it changes as anywhere.</li>
 </ul>
+<lion-example name="set! in a rule" expect="error">
+["begin",
+  ["define", "calls", 0],
+  ["define", "counted", ["lambda", ["x"], ["begin", ["set!", "calls", ["number/add", "calls", 1]], "calls"]]],
+  ["relation", "item", ["x"]],
+  ["relation", "numbered", ["x", "n"]],
+  ["rule", ["numbered", "?x", ["counted", "?x"]], ["item", "?x"]]]
+</lion-example>
 <lion-example name="set!">
 ["begin",
   ["define", "count", 0],
