@@ -445,7 +445,7 @@ describe("an array that names a special form", () => {
         // An invariant that is well formed but does not hold, such as
         // `["invariant", ["quote", true], {"assert": "none"}]`, is refused
         // when it is checked, not as a form: retracting it removes nothing.
-        if (made.message.startsWith(INVARIANT_DOES_NOT_HOLD)) {
+        if ((made.message ?? "").startsWith(INVARIANT_DOES_NOT_HOLD)) {
           expect(yield* outcome(within(["retract", held]))).toEqual({
             value: [],
           });
