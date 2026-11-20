@@ -142,4 +142,17 @@ describe("delay and value/force", () => {
         });
       })
   );
+
+  it.effect.prop(
+    "write nothing of a promise as JSON, as for a function",
+    { n: count(9) },
+    ({ n }) =>
+      Effect.gen(function* () {
+        const result = yield* run(
+          { promise: ["delay", n], fn: ["lambda", [], n], n },
+          stdlib
+        );
+        expect(JSON.stringify(result)).toBe(JSON.stringify({ n }));
+      })
+  );
 });

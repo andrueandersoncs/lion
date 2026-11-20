@@ -1,0 +1,12 @@
+{
+  "claims": [
+    {
+      "quote": "The Clef run's seventeen probes ran again on Lion with every item of its build plan built, as `research/sources/lion-probes-cl-built.txt`: extra and missing arguments to a lambda fail in the arity message, a missing key fails, a `set!` from a rule body is refused, a failure names the function and the callers it left, an integer a JSON number cannot hold is refused when the text is read, a match may leave out its fallback, `delay` makes a promise, and `why` gives a contradiction for a proof whose premises contradict each other.",
+      "says": {
+        "feature": "lion-probes-cl-built",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}

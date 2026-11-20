@@ -1,0 +1,13 @@
+{
+  "claims": [
+    {
+      "quote": "A promise is not data, so JSON writes nothing for it, as it writes nothing for a function: the lion command printed `[\"delay\", 1]` as `{\"running\": false}`, a field of its own inside.",
+      "says": {
+        "behavior": "promise-as-json",
+        "is": "nothing",
+        "area": "evaluation",
+        "was": "internal-fields"
+      }
+    }
+  ]
+}

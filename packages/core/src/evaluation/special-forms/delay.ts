@@ -22,6 +22,14 @@ export class Delayed {
     this.run = run;
   }
 
+  /**
+   * A promise is not data, so JSON writes nothing for it, as it writes
+   * nothing for a function, and never its insides.
+   */
+  toJSON() {
+    return undefined;
+  }
+
   /** Whether `value/force` has made its value. */
   get forced() {
     return this.given !== undefined;

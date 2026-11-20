@@ -49,6 +49,7 @@
 - Numbers that carry their units, checked when the program runs, as Pint checks them. A quantity is data, a record of a `value` and a `unit` from each base unit to its whole exponent, so a schema can say what unit a value has, a fact can hold one, and a snapshot saves it (`quantity` added)
 - Host code can be told when a query's answers change. `watch` runs a query, such as a `find`, against a database, and after each change a `fact`, `retract`, `rule`, or `invariant` form makes that adds or takes away an answer, calls back with the answers that came and went. (`watch` added)
 - `func/reset` and `func/shift` are delimited continuations, as Racket's `reset` and `shift` are (`func/reset` added; `func/shift` added)
+- The Clef run's seventeen probes ran again on Lion with every item of its build plan built, as `research/sources/lion-probes-cl-built.txt`: extra and missing arguments to a lambda fail in the arity message, a missing key fails, a `set!` from a rule body is refused, a failure names the function and the callers it left, an integer a JSON number cannot hold is refused when the text is read, a match may leave out its fallback, `delay` makes a promise, and `why` gives a contradiction for a proof whose premises contradict each other. (`lion-probes-cl-built` added)
 
 ### Removed
 
@@ -123,6 +124,7 @@
 - A plain number is a quantity with no unit, and a result with no unit left is its plain number. (`quantity-with-no-unit` is `number`)
 - a change an invariant refuses, and what `assuming` asks, tell nothing (`watched-query-after-refused-change` is `not-told`)
 - Unlike Racket's, a continuation resumes once: a second call of one `k` fails, `A continuation was resumed a second time: …`, since the delimited part runs in a fiber of its own that can only go on once. (`continuation-resumed-twice` is `error`)
+- A promise is not data, so JSON writes nothing for it, as it writes nothing for a function: the lion command printed `["delay", 1]` as `{"running": false}`, a field of its own inside. (`promise-as-json` is `nothing`, was `internal-fields`)
 
 ### Fixed
 
