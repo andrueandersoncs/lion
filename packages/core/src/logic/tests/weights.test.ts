@@ -284,9 +284,9 @@ const weights = (
 const fromNothing = (rules: readonly Form[], facts: Iterable<Form>) =>
   Effect.gen(function* () {
     const database = new LogicDatabase();
-    const given = [...facts];
+    const all = [...facts];
     const made = yield* attempt(
-      ["begin", ...rules, ...(given.length > 0 ? [["fact", ...given]] : [])],
+      ["begin", ...rules, ...(all.length > 0 ? [["fact", ...all]] : [])],
       database
     );
     if (!made.ok) {
