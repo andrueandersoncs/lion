@@ -1,6 +1,8 @@
 /**
  * Lion's numbers are JSON numbers, so arithmetic never produces Infinity or
- * NaN: a result that is not a finite number is an ArithmeticError.
+ * NaN: a result that is not a finite number is an ArithmeticError. Integers
+ * a JSON number holds exactly do exact arithmetic: an integer result of
+ * them that is not the exact one is an ArithmeticError too.
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
@@ -32,6 +34,30 @@ const OPERATIONS: Record<string, (a: number, b: number) => number> = {
   "number/max": Math.max,
 };
 
+/** The exact result of integers, for the operations that are exact on them. */
+const EXACT: Record<string, (a: bigint, b: bigint) => bigint> = {
+  "number/add": (a, b) => a + b,
+  "number/subtract": (a, b) => a - b,
+  "number/multiply": (a, b) => a * b,
+  "number/power": (a, b) => a ** b,
+};
+
+/** Whether JavaScript's result is the exact one, where it should be. */
+const isExact = (name: string, a: number, b: number, result: number) => {
+  const exact = EXACT[name];
+  if (
+    exact === undefined ||
+    !Number.isSafeInteger(a) ||
+    !Number.isSafeInteger(b) ||
+    !Number.isInteger(result) ||
+    // A negative power is a fraction, which rounds as a float does.
+    (name === "number/power" && b < 0)
+  ) {
+    return true;
+  }
+  return exact(BigInt(a), BigInt(b)) === BigInt(result);
+};
+
 const ROUNDING: Record<string, (a: number) => number> = {
   "number/absolute": Math.abs,
   "number/floor": Math.floor,
@@ -61,14 +87,14 @@ const outcome = (program: unknown) =>
 
 describe("arithmetic", () => {
   it.effect.prop(
-    "returns the JavaScript result when it is finite, and fails otherwise",
+    "returns the JavaScript result when it is finite and, for integers a JSON number holds, exact, and fails otherwise",
     { a: number, b: number },
     ({ a, b }) =>
       Effect.gen(function* () {
         for (const [name, operate] of Object.entries(OPERATIONS)) {
           const expected = operate(a, b);
           const result = yield* outcome([name, a, b]);
-          if (Number.isFinite(expected)) {
+          if (Number.isFinite(expected) && isExact(name, a, b, expected)) {
             expect(result).toEqual({ value: expected });
           } else {
             expect(result).toMatchObject({ tag: "ArithmeticError" });
@@ -116,6 +142,70 @@ describe("arithmetic", () => {
           } else {
             expect(result).toMatchObject({ tag: "ArithmeticError" });
           }
+        }
+      })
+  );
+});
+
+/** Integers near the last one a JSON number holds exactly, on either side of 0. */
+const nearTheEdge = Arbitrary.map(
+  Arbitrary.all([
+    Arbitrary.schema(
+      Schema.Int.check(Schema.isBetween({ minimum: -4, maximum: 0 }))
+    ),
+    Arbitrary.schema(Schema.Boolean),
+    Arbitrary.schema(Schema.Boolean),
+  ]),
+  ([below, negative, half]) => {
+    const near = (half ? 2 ** 52 : Number.MAX_SAFE_INTEGER) + below;
+    return negative ? -near : near;
+  }
+);
+
+describe("integers a JSON number holds exactly", () => {
+  it.effect.prop(
+    "add, subtract, multiply, and sum to the exact result, or fail naming it",
+    {
+      values: Arbitrary.array(nearTheEdge, { minLength: 2, maxLength: 4 }),
+    },
+    ({ values }) =>
+      Effect.gen(function* () {
+        const [a, b] = values as [number, number];
+        for (const name of [
+          "number/add",
+          "number/subtract",
+          "number/multiply",
+        ]) {
+          const exact = (EXACT[name] as (x: bigint, y: bigint) => bigint)(
+            BigInt(a),
+            BigInt(b)
+          );
+          const result = yield* outcome([name, a, b]);
+          if (exact === BigInt(Number(exact))) {
+            expect(result).toEqual({ value: Number(exact) });
+          } else {
+            expect(result).toMatchObject({ tag: "ArithmeticError" });
+            expect((result as { message: string }).message).toContain(
+              `is ${exact}, but`
+            );
+          }
+        }
+        // The text of the exact sum reads back as it, or as the number JSON
+        // writes with its digits, or as nothing.
+        const exactSum = values.reduce((sum, value) => sum + BigInt(value), 0n);
+        const read = yield* outcome(["number/fromString", `${exactSum}`]);
+        const reads =
+          exactSum === BigInt(Number(exactSum)) ||
+          JSON.stringify(Number(exactSum)) === `${exactSum}`;
+        expect(read).toEqual({ value: reads ? Number(exactSum) : null });
+        const total = exactSum;
+        const summed = yield* outcome(["aggregate/sum", ["quote", values]]);
+        if (total === BigInt(Number(total))) {
+          expect(summed).toEqual({ value: Number(total) });
+        } else {
+          expect((summed as { message: string }).message).toContain(
+            `of integers is ${total}, but`
+          );
         }
       })
   );

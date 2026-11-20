@@ -3,7 +3,7 @@
 <p>Every function <a href="#logic-waiting">waits</a> when it is called with a logic variable among its arguments, so all of them work as filters and computed values in rules and queries. A function that is given a goal gets its answer, <code>true</code> or <code>false</code>; see <a href="#logic-asking">Asking questions</a>. Functions of the <code>aggregate</code> and <code>graph</code> modules take logic variables as they are, to build aggregates and goals.</p>
 
 <h2 id="module-number">number</h2>
-<p>Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with <code>ArithmeticError</code>.</p>
+<p>Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with <code>ArithmeticError</code>. Integers a JSON number holds exactly, up to 2^53 - 1 either side of zero, do exact arithmetic: a sum, difference, product, or power of them that a JSON number cannot hold exactly fails with <code>ArithmeticError</code> too, instead of rounding. Past that range a number is a float, and rounds as one.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
@@ -333,7 +333,7 @@
   <tbody>
     <tr data-entry="aggregate/count"><td><code>["aggregate/count", values]</code></td><td>How many values</td><td><code>0</code></td></tr>
     <tr data-entry="aggregate/countUnique"><td><code>["aggregate/countUnique", values]</code></td><td>How many distinct values</td><td><code>0</code></td></tr>
-    <tr data-entry="aggregate/sum"><td><code>["aggregate/sum", values]</code></td><td>The sum, rounded once to the number nearest the exact sum, so the order of the values never changes it; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>0</code></td></tr>
+    <tr data-entry="aggregate/sum"><td><code>["aggregate/sum", values]</code></td><td>The sum, rounded once to the number nearest the exact sum, so the order of the values never changes it; values must be numbers, and an overflow fails with <code>ArithmeticError</code>; a sum of integers a JSON number holds exactly fails where the exact sum is one it cannot hold</td><td><code>0</code></td></tr>
     <tr data-entry="aggregate/mean"><td><code>["aggregate/mean", values]</code></td><td>The mean: the sum, rounded once, divided by how many values there are; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/min"><td><code>["aggregate/min", values]</code></td><td>The smallest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/max"><td><code>["aggregate/max", values]</code></td><td>The largest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>

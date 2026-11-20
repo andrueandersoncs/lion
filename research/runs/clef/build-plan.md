@@ -40,7 +40,9 @@ Status: `todo`, `doing`, `done (<commit>)`.
    - `enter` fails when given more or fewer arguments than parameters, in the one form of message: `"next" takes 1 argument but got 2.` `ArgumentMismatchError` goes away.
    - Host callbacks: `func/callback` gives the lambda as many of the host's arguments as it takes. Check every library function that calls a Lion function (`array/map` and the rest) for the number of arguments it passes.
    - Guideline line "A call gives a function as many arguments as it takes" gains lambdas; the arity table too.
-3. **Integers Lion cannot hold exactly are refused** — todo.
+3. **Integers Lion cannot hold exactly are refused** — done (commit "fix(core): integers a JSON number holds exactly do exact arithmetic").
+   - As built, one change from the design: only integers a JSON number holds exactly (|n| <= 2^53 - 1) do exact arithmetic (add, subtract, multiply, power, `aggregate/sum`); past that range a number is a float and rounds. Every double past 2^53 is whole, so treating every whole operand as an integer refused `["number/multiply", 1e300, 1e5]`. So `["number/add", 9007199254740992, 1]` still rounds (2^53 is a float); `9007199254740991 + 2` fails.
+   - `evaluation/reading.ts` (`readJson`, `inexactInteger`) refuses text that writes an integer that would not read as itself; used by the CLI (file and `--database`), the site runtime, and the REPL. `number/fromString` and `string/numbers` leave such an integer out.
    - Arithmetic on integers whose result is an integer past ±(2^53−1) fails with an `ArithmeticError`, as a result past the finite numbers fails now.
    - A program's text with an integer literal past that range is refused when it is read, naming the literal: a check over the JSON text's number tokens, in one reader every host uses (CLI, site runtime, REPL, `--database` files).
 4. **`object/get` tells a missing key from one that holds null** — todo. A decision (breaking).

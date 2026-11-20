@@ -25,6 +25,7 @@
     "./evaluation/environment": "./dist/evaluation/environment.mjs",
     "./evaluation/evaluate": "./dist/evaluation/evaluate.mjs",
     "./evaluation/hoisting": "./dist/evaluation/hoisting.mjs",
+    "./evaluation/reading": "./dist/evaluation/reading.mjs",
     "./evaluation/special-forms/begin": "./dist/evaluation/special-forms/begin.mjs",
     "./evaluation/special-forms/cond": "./dist/evaluation/special-forms/cond.mjs",
     "./evaluation/special-forms/define": "./dist/evaluation/special-forms/define.mjs",

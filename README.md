@@ -95,7 +95,9 @@ The worker holds one logic database. Each message it is posted has an `id`, and 
 The snapshot there is the database of [Logic](#logic)'s first example, and each answer also has `ms`, how long it took. A page that carries this script runs the Lion of the command that printed it, so running the page's programs with that command checks the page: the [research skill](#research-skill)'s page is built this way.
 
 The `lion` command validates files as Lion expressions, evaluates them with the
-standard library, and writes results as formatted JSON. The graph editor keeps
+standard library, and writes results as formatted JSON. It refuses a file that
+writes an integer a JSON number cannot hold exactly, as `9007199254740993`, which
+would read as `9007199254740992`. The graph editor keeps
 opened programs local to the browser and saves through the browser's file APIs.
 
 ## Basic Usage
@@ -1342,7 +1344,7 @@ Six functions combine one or more arguments, as `+`, `*`, `min`, `max`, `string-
 ["number/fromString", "1,234,567.5", ","]
 ```
 
-Arithmetic whose result is not a finite number, such as division by zero, fails with `ArithmeticError`.
+Arithmetic whose result is not a finite number, such as division by zero, fails with `ArithmeticError`. Integers a JSON number holds exactly, those from -9007199254740991 to 9007199254740991 (2^53 - 1), do exact arithmetic, as Scheme's exact integers do: a sum, difference, product, power, or `aggregate/sum` of them is exact, or fails with `ArithmeticError` where a JSON number cannot hold the exact result, so `["number/add", 9007199254740991, 2]` fails with `number/add: 9007199254740991 + 2 is 9007199254740993, but a JSON number would hold it as 9007199254740992: …` instead of rounding without a word. Past that range a JSON number is a float, as `1e300` is, and rounds as one. A program's text, and a database file the `lion` command reads, may not write an integer that would come back as another when Lion writes it: `9007199254740993` would read as `9007199254740992`, so the text is refused, naming the integer and where it stands. Text Lion writes always reads back, as `36944794794896090`, the float JSON writes with those digits, does. `number/fromString` and `string/numbers` leave out such an integer, as they leave out a number past the largest one.
 
 `number/toString` is the number as text, the way JSON writes it: `"42"`, `"-0.5"`, `"1e+21"`. With a second argument, a string, the whole part is written in groups of three digits with that string between them, as `#:group-sep` does in Racket: `["number/toString", 1234567.5, ","]` is `"1,234,567.5"`, and `["number/toString", -1234, " "]` is `"-1 234"`. The digits after the point and a number written with an exponent stay as they are. With `string/concat` it builds text from a number, also from one a rule has bound:
 

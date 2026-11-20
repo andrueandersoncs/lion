@@ -3,6 +3,10 @@
 // page, and the docs build uses it to write each example's result, so a
 // published result always matches what the page computes.
 import { run } from "@lionlang/core/evaluation/evaluate";
+import {
+  inexactInteger,
+  inexactIntegerError,
+} from "@lionlang/core/evaluation/reading";
 import { stdlib } from "@lionlang/core/modules";
 import { Cause, Console, Effect, Exit, Scheduler } from "effect";
 
@@ -182,6 +186,18 @@ export const evaluateSource = async ({
       id,
       ok: false,
       error: `Invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
+      logs,
+    };
+  }
+  // An integer the text writes that would not read as itself is refused.
+  const inexact = inexactInteger(source);
+  if (inexact !== undefined) {
+    return {
+      id,
+      ok: false,
+      error: describeError(
+        inexactIntegerError(source, inexact.at, inexact.written)
+      ),
       logs,
     };
   }

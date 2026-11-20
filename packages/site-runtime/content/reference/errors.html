@@ -9,7 +9,7 @@
     <tr data-entry="InvalidFunctionCallError"><td><code>InvalidFunctionCallError</code></td><td>An array's first element does not evaluate to a function, including a string no scope declares. A misspelled <code>module/name</code> is an <code>UnboundNameError</code> instead.</td></tr>
     <tr data-entry="MalformedFormError"><td><code>MalformedFormError</code></td><td>An array starts with a special form's name that no scope declares, but does not have the form's shape, such as <code>["define", "x"]</code>. The message says what the form takes, with an example. The error holds the array as <code>expression</code>, the form's name as <code>form</code>, and what it takes as <code>usage</code>.</td></tr>
     <tr data-entry="UndefinedYetError"><td><code>UndefinedYetError</code></td><td>A name is read before the <code>define</code>, <code>relation</code>, or <code>schema</code> form that binds it has run. A body declares the names it defines from its start, so the string means that definition, which has no value yet. A body that defines the name of a form it uses, as <code>["define", "define", 1]</code> does, fails with it too, and the message says so. The error holds the name as <code>unassigned</code>.</td></tr>
-    <tr data-entry="ArithmeticError"><td><code>ArithmeticError</code></td><td>Arithmetic has no finite result, such as division by zero or an overflow. JSON cannot hold Infinity or NaN.</td></tr>
+    <tr data-entry="ArithmeticError"><td><code>ArithmeticError</code></td><td>Arithmetic has no finite result, such as division by zero or an overflow, since JSON cannot hold Infinity or NaN; or arithmetic on integers a JSON number holds exactly has an exact result a JSON number cannot hold, as <code>9007199254740991 + 2</code> does.</td></tr>
     <tr data-entry="LogicError"><td><code>LogicError</code></td><td>A logic form fails: an unsafe goal or rule, a recursion or question that breaks the rules, a broken invariant or query assertion, a key conflict, a bad option, and more. The message says what and where. A function called with the wrong number of arguments, or with an argument it does not take, fails with one too, as <code>"number/add" takes a number as argument 1 but got "one".</code></td></tr>
     <tr data-entry="WaitingError"><td><code>WaitingError</code></td><td>A value was needed before it is known. A host function gets this error from <a href="#api-function"><code>call</code></a> when a Lion function's value is not known yet; the call the host function is part of then waits, so a program does not see it. A program sees it when a <code>fact</code>, <code>retract</code>, or <code>why</code> written inside a rule, query, or <code>find</code> is given a question: those forms act right away, so they cannot wait.</td></tr>
     <tr data-entry="NotAnObjectError"><td><code>NotAnObjectError</code></td><td>A function that reads keys received something that is not an object, or a method function received <code>null</code>.</td></tr>
@@ -40,6 +40,9 @@
 </lion-example>
 <lion-example name="ArithmeticError" expect="error">
 ["number/multiply", 1e308, 10]
+</lion-example>
+<lion-example name="An integer a JSON number cannot hold exactly" expect="error">
+["number/add", 9007199254740991, 2]
 </lion-example>
 <lion-example name="A lambda given one argument too few" expect="error">
 ["begin",

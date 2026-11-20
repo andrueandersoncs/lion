@@ -161,6 +161,35 @@ const sum = (values: readonly unknown[]) => {
   return Number.isFinite(high) ? high : exactSum(values as readonly number[]);
 };
 
+/**
+ * Why a sum of integers a JSON number holds exactly cannot be held: its
+ * exact sum is not the number a JSON number holds, as an integer past
+ * 2^53 - 1 is not, which arithmetic on them refuses too. Integers whose sizes
+ * add up to no more than that always sum exactly.
+ */
+const inexactSum = (values: readonly unknown[]) => {
+  const numbers = values as readonly number[];
+  if (!numbers.every(Number.isSafeInteger)) {
+    return;
+  }
+  let size = 0;
+  for (const value of numbers) {
+    size += Math.abs(value);
+  }
+  if (size <= Number.MAX_SAFE_INTEGER) {
+    return;
+  }
+  const exact = numbers.reduce((total, value) => total + BigInt(value), 0n);
+  const held = sum(values);
+  return !Number.isFinite(held) || BigInt(held) === exact
+    ? undefined
+    : `of integers is ${exact}, but a JSON number would hold it as ${held}: it holds every integer only from -9007199254740991 to 9007199254740991`;
+};
+
+/** Numbers whose sum a JSON number holds, when they are integers. */
+const summable = (values: readonly unknown[]) =>
+  onlyNumbers(values) ?? inexactSum(values);
+
 const distinct = (values: readonly unknown[]) => {
   const unique = new Map<string, unknown>();
   for (const value of values) {
@@ -198,7 +227,7 @@ export const AGGREGATORS: Readonly<Record<string, Aggregator>> = {
     fold: (values) => distinct(values).length,
     selects: false,
   },
-  sum: { check: onlyNumbers, fold: sum, selects: false },
+  sum: { check: summable, fold: sum, selects: false },
   mean: {
     check: onlyNumbers,
     fold: (values) =>

@@ -2455,8 +2455,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "number/add takes two numbers and no more",
     file: core("modules/number.ts"),
-    find: '  add: arithmetic("add", "+", (a, b) => a + b, SOME),',
-    replace: '  add: arithmetic("add", "+", (a, b) => a + b),',
+    find: '    "+",\n    (a, b) => a + b,\n    SOME,',
+    replace: '    "+",\n    (a, b) => a + b,\n    2,',
     tests: ["src/modules/tests/arity.test.ts"],
   },
   {
@@ -2966,15 +2966,15 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a number read as text keeps -0",
     file: core("modules/lib/numerals.ts"),
-    find: "Number.isFinite(n) ? n + 0 : undefined",
-    replace: "Number.isFinite(n) ? n : undefined",
+    find: "  return n + 0;",
+    replace: "  return n;",
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
     name: "a number read as text keeps a number JSON cannot hold",
     file: core("modules/lib/numerals.ts"),
-    find: "Number.isFinite(n) ? n + 0 : undefined",
-    replace: "n + 0",
+    find: "  if (!Number.isFinite(n) || (rest",
+    replace: "  if ((rest",
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
@@ -3981,5 +3981,33 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "      count === undefined\n        ? made",
     replace: "      count !== undefined\n        ? made",
     tests: ["src/modules/tests/func.test.ts"],
+  },
+  {
+    name: "integer arithmetic past the exact integers rounds without a word",
+    file: core("modules/number.ts"),
+    find: "      if (whole === BigInt(result)) {",
+    replace: "      if (whole !== undefined) {",
+    tests: ["src/modules/tests/finite-numbers.test.ts"],
+  },
+  {
+    name: "a sum of integers past the exact integers rounds without a word",
+    file: core("logic/aggregates.ts"),
+    find: "  sum: { check: summable, fold: sum, selects: false },",
+    replace: "  sum: { check: onlyNumbers, fold: sum, selects: false },",
+    tests: ["src/modules/tests/finite-numbers.test.ts"],
+  },
+  {
+    name: "text that writes an integer past the exact integers reads it rounded",
+    file: core("evaluation/reading.ts"),
+    find: "    if (isInteger && !readsAsWritten(written)) {",
+    replace: "    if (false) {",
+    tests: ["src/evaluation/tests/reading.test.ts"],
+  },
+  {
+    name: "number/fromString reads an integer past the exact integers rounded",
+    file: core("modules/lib/numerals.ts"),
+    find: '(rest === "" && !readsAsWritten(written))',
+    replace: "false",
+    tests: ["src/modules/tests/finite-numbers.test.ts"],
   },
 ];

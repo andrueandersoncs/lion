@@ -1,3 +1,5 @@
+import { readsAsWritten } from "@/evaluation/reading";
+
 /** Text with the characters a pattern reads as its own taken as they are. */
 const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\/-]/g, "\\$&");
 
@@ -14,13 +16,21 @@ const numeral = (separator: string) => {
   return `(?<sign>(?<![\\p{L}\\p{N}.])[-−])?(?<whole>${grouped}\\d+)(?<rest>(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)`;
 };
 
-/** The number a written numeral stands for, unless JSON cannot hold it. */
+/**
+ * The number a written numeral stands for, unless JSON cannot hold it: a
+ * number past the finite ones, or an integer that would not read as itself,
+ * as 9007199254740993 would read as 9007199254740992.
+ */
 const valued = (separator: string, found: RegExpExecArray) => {
   const { rest = "", sign, whole = "" } = found.groups ?? {};
   const digits = separator === "" ? whole : whole.split(separator).join("");
-  const n = Number(`${sign === undefined ? "" : "-"}${digits}${rest}`);
+  const written = `${sign === undefined ? "" : "-"}${digits}`;
+  const n = Number(`${written}${rest}`);
+  if (!Number.isFinite(n) || (rest === "" && !readsAsWritten(written))) {
+    return undefined;
+  }
   // Adding zero turns -0 into 0, as JSON writes both.
-  return Number.isFinite(n) ? n + 0 : undefined;
+  return n + 0;
 };
 
 /** The text as a number, when all of it is one; otherwise null. */

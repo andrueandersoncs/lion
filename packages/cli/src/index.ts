@@ -1,18 +1,18 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { run } from "@lionlang/core/evaluation/evaluate";
+import { readJson } from "@lionlang/core/evaluation/reading";
 import { LogicDatabase } from "@lionlang/core/logic/database";
 import { loadDatabase, saveDatabase } from "@lionlang/core/logic/snapshot";
 import { stdlib } from "@lionlang/core/modules";
-import { LionExpressionSchema } from "@lionlang/core/schemas/lion-expression";
 import { Console, Effect, Option } from "effect";
 import { Argument, CliError, Command, Flag } from "effect/cli";
 
 export const VERSION = "0.13.1";
 
-const file = Argument.FileSchema("file", LionExpressionSchema, {
-  format: "json",
-}).pipe(Argument.withDescription("Path to a Lion JSON program"));
+const file = Argument.FileText("file").pipe(
+  Argument.withDescription("Path to a Lion JSON program")
+);
 
 const database = Flag.String("database").pipe(
   Flag.withDescription(
@@ -46,11 +46,10 @@ const readDatabase = (path: string) =>
         // A database file that does not exist yet starts empty.
         onNone: () => Effect.succeed(new LogicDatabase()),
         onSome: (text) =>
-          Effect.try({
-            try: () => JSON.parse(text) as unknown,
-            catch: (cause) =>
-              new Error(`${path} is not valid JSON: ${String(cause)}`),
-          }).pipe(Effect.flatMap((saved) => loadDatabase(saved, stdlib))),
+          readJson(text).pipe(
+            Effect.mapError((cause) => new Error(`${path}: ${cause.message}`)),
+            Effect.flatMap((saved) => loadDatabase(saved, stdlib))
+          ),
       })
     )
   );
@@ -73,7 +72,8 @@ const evaluateCommand = Command.make(
       const path = Option.getOrUndefined(database);
       const store =
         path === undefined ? new LogicDatabase() : yield* readDatabase(path);
-      const result = yield* run(file, stdlib, { database: store });
+      const program = yield* readJson(file);
+      const result = yield* run(program, stdlib, { database: store });
       yield* Console.log(JSON.stringify(result, null, 2));
       if (path !== undefined) {
         yield* writeDatabase(path, store);

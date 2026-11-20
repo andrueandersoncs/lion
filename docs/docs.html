@@ -7241,7 +7241,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 <p>Every function <a href="#logic-waiting">waits</a> when it is called with a logic variable among its arguments, so all of them work as filters and computed values in rules and queries. A function that is given a goal gets its answer, <code>true</code> or <code>false</code>; see <a href="#logic-asking">Asking questions</a>. Functions of the <code>aggregate</code> and <code>graph</code> modules take logic variables as they are, to build aggregates and goals.</p>
 
 <h2 id="module-number">number</h2>
-<p>Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with <code>ArithmeticError</code>.</p>
+<p>Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with <code>ArithmeticError</code>. Integers a JSON number holds exactly, up to 2^53 - 1 either side of zero, do exact arithmetic: a sum, difference, product, or power of them that a JSON number cannot hold exactly fails with <code>ArithmeticError</code> too, instead of rounding. Past that range a number is a float, and rounds as one.</p>
 <div class="doc-table"><table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
@@ -7773,7 +7773,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <tbody>
     <tr data-entry="aggregate/count" id="standard-library-aggregate-count"><td><code>["aggregate/count", values]</code></td><td>How many values</td><td><code>0</code></td></tr>
     <tr data-entry="aggregate/countUnique" id="standard-library-aggregate-countunique"><td><code>["aggregate/countUnique", values]</code></td><td>How many distinct values</td><td><code>0</code></td></tr>
-    <tr data-entry="aggregate/sum" id="standard-library-aggregate-sum"><td><code>["aggregate/sum", values]</code></td><td>The sum, rounded once to the number nearest the exact sum, so the order of the values never changes it; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>0</code></td></tr>
+    <tr data-entry="aggregate/sum" id="standard-library-aggregate-sum"><td><code>["aggregate/sum", values]</code></td><td>The sum, rounded once to the number nearest the exact sum, so the order of the values never changes it; values must be numbers, and an overflow fails with <code>ArithmeticError</code>; a sum of integers a JSON number holds exactly fails where the exact sum is one it cannot hold</td><td><code>0</code></td></tr>
     <tr data-entry="aggregate/mean" id="standard-library-aggregate-mean"><td><code>["aggregate/mean", values]</code></td><td>The mean: the sum, rounded once, divided by how many values there are; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/min" id="standard-library-aggregate-min"><td><code>["aggregate/min", values]</code></td><td>The smallest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/max" id="standard-library-aggregate-max"><td><code>["aggregate/max", values]</code></td><td>The largest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
@@ -8070,7 +8070,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
     <tr data-entry="InvalidFunctionCallError" id="errors-invalidfunctioncallerror"><td><code>InvalidFunctionCallError</code></td><td>An array's first element does not evaluate to a function, including a string no scope declares. A misspelled <code>module/name</code> is an <code>UnboundNameError</code> instead.</td></tr>
     <tr data-entry="MalformedFormError" id="errors-malformedformerror"><td><code>MalformedFormError</code></td><td>An array starts with a special form's name that no scope declares, but does not have the form's shape, such as <code>["define", "x"]</code>. The message says what the form takes, with an example. The error holds the array as <code>expression</code>, the form's name as <code>form</code>, and what it takes as <code>usage</code>.</td></tr>
     <tr data-entry="UndefinedYetError" id="errors-undefinedyeterror"><td><code>UndefinedYetError</code></td><td>A name is read before the <code>define</code>, <code>relation</code>, or <code>schema</code> form that binds it has run. A body declares the names it defines from its start, so the string means that definition, which has no value yet. A body that defines the name of a form it uses, as <code>["define", "define", 1]</code> does, fails with it too, and the message says so. The error holds the name as <code>unassigned</code>.</td></tr>
-    <tr data-entry="ArithmeticError" id="errors-arithmeticerror"><td><code>ArithmeticError</code></td><td>Arithmetic has no finite result, such as division by zero or an overflow. JSON cannot hold Infinity or NaN.</td></tr>
+    <tr data-entry="ArithmeticError" id="errors-arithmeticerror"><td><code>ArithmeticError</code></td><td>Arithmetic has no finite result, such as division by zero or an overflow, since JSON cannot hold Infinity or NaN; or arithmetic on integers a JSON number holds exactly has an exact result a JSON number cannot hold, as <code>9007199254740991 + 2</code> does.</td></tr>
     <tr data-entry="LogicError" id="errors-logicerror"><td><code>LogicError</code></td><td>A logic form fails: an unsafe goal or rule, a recursion or question that breaks the rules, a broken invariant or query assertion, a key conflict, a bad option, and more. The message says what and where. A function called with the wrong number of arguments, or with an argument it does not take, fails with one too, as <code>"number/add" takes a number as argument 1 but got "one".</code></td></tr>
     <tr data-entry="WaitingError" id="errors-waitingerror"><td><code>WaitingError</code></td><td>A value was needed before it is known. A host function gets this error from <a href="#api-function"><code>call</code></a> when a Lion function's value is not known yet; the call the host function is part of then waits, so a program does not see it. A program sees it when a <code>fact</code>, <code>retract</code>, or <code>why</code> written inside a rule, query, or <code>find</code> is given a question: those forms act right away, so they cannot wait.</td></tr>
     <tr data-entry="NotAnObjectError" id="errors-notanobjecterror"><td><code>NotAnObjectError</code></td><td>A function that reads keys received something that is not an object, or a method function received <code>null</code>.</td></tr>
@@ -8130,6 +8130,15 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <div class="playground-output">
     <span class="playground-status is-error">error</span>
     <pre class="playground-result is-error"><code>ArithmeticError: number/multiply: 1e+308 × 10 has no finite result.</code></pre>
+  </div>
+</div>
+<div class="playground" data-playground="An integer a JSON number cannot hold exactly">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["number/add", 9007199254740991, 2]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-error">error</span>
+    <pre class="playground-result is-error"><code>ArithmeticError: number/add: 9007199254740991 + 2 is 9007199254740993, but a JSON number would hold it as 9007199254740992: it holds every integer only from -9007199254740991 to 9007199254740991.</code></pre>
   </div>
 </div>
 <div class="playground" data-playground="A lambda given one argument too few">
@@ -8925,6 +8934,7 @@ for (const { pointer, value, meaning } of flattenAnalysis(
 <p>Lion runs on JavaScript, but its values are JSON, and the two disagree in a few places. Each time, Lion follows JSON, and applies the choice everywhere it comes up:</p>
 <ul>
   <li><strong>Numbers are finite.</strong> JavaScript has <code>Infinity</code> and <code>NaN</code>; JSON does not. So arithmetic whose result is not a finite number, such as dividing by zero, fails with <code>ArithmeticError</code> rather than producing a value that cannot be printed, stored as a fact, or saved in a snapshot. Facts and rule results already refused such numbers; the <code>number</code> functions and list aggregates now refuse them at the source.</li>
+  <li><strong>Integers are exact.</strong> A JSON number holds every integer only up to 2^53 - 1, so past it <code>9007199254740991 + 2</code> would round to <code>9007199254740992</code>, and the text <code>9007199254740993</code> would read as <code>9007199254740992</code> and equal it. Scheme's integers are exact; Lion's are exact where a JSON number can hold them, and arithmetic that would round one fails with <code>ArithmeticError</code>, as reading text that writes one fails. Numbers past that range are floats, as JSON numbers are.</li>
   <li><strong>Nothing is <code>null</code>.</strong> JavaScript has both <code>undefined</code> and <code>null</code>; JSON only has <code>null</code>. So every "there is nothing here" answer is <code>null</code>: a missing key from <code>object/get</code>, the first item of an empty list, the mean of no values, a <code>cond</code> with no match.</li>
   <li><strong>Records and lists are different kinds.</strong> To JavaScript's <code>typeof</code>, a list is an object; to JSON, it is not. So <code>value/object?</code> is true for records and not for lists, and <code>value/array?</code> is the test for lists.</li>
   <li><strong>Keys belong to objects; methods belong to any value.</strong> Reading a key needs an object, so <code>object/get</code> and paths pass only through objects. But a string has methods, as JavaScript's <code>"lion".toUpperCase()</code> shows, so every method function works on any value except <code>null</code>.</li>

@@ -1,0 +1,42 @@
+{
+  "claims": [
+    {
+      "quote": "Integers a JSON number holds exactly, those from -9007199254740991 to 9007199254740991 (2^53 - 1), do exact arithmetic, as Scheme's exact integers do: a sum, difference, product, power, or `aggregate/sum` of them is exact, or fails with `ArithmeticError` where a JSON number cannot hold the exact result, so `[\"number/add\", 9007199254740991, 2]` fails with `number/add: 9007199254740991 + 2 is 9007199254740993, but a JSON number would hold it as 9007199254740992: …` instead of rounding without a word.",
+      "says": {
+        "behavior": "integer-arithmetic-past-exact-range",
+        "is": "error",
+        "area": "library",
+        "was": "rounded",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "Past that range a JSON number is a float, as `1e300` is, and rounds as one.",
+      "says": {
+        "behavior": "float-arithmetic-past-exact-range",
+        "is": "rounded",
+        "area": "library",
+        "follows": "json"
+      }
+    },
+    {
+      "quote": "A program's text, and a database file the `lion` command reads, may not write an integer that would come back as another when Lion writes it: `9007199254740993` would read as `9007199254740992`, so the text is refused, naming the integer and where it stands.",
+      "says": {
+        "behavior": "integer-literal-past-exact-range",
+        "is": "error",
+        "area": "evaluation",
+        "was": "rounded",
+        "follows": "json"
+      }
+    },
+    {
+      "quote": "`number/fromString` and `string/numbers` leave out such an integer, as they leave out a number past the largest one.",
+      "says": {
+        "behavior": "number-from-string-past-exact-range",
+        "is": "null",
+        "area": "library",
+        "was": "rounded"
+      }
+    }
+  ]
+}

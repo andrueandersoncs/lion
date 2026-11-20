@@ -16695,16 +16695,13 @@
             ["repo/read", "packages/cli/src/index.ts"],
             [
               "quote",
-              "import { LionExpressionSchema } from \"@lionlang/core/schemas/lion-expression\";"
+              "const program = yield* readJson(file);\n      const result = yield* run(program, stdlib, { database: store });"
             ]
           ],
           [
             "string/includes",
             ["repo/read", "packages/cli/src/index.ts"],
-            [
-              "quote",
-              "const file = Argument.FileSchema(\"file\", LionExpressionSchema, {\n  format: \"json\",\n})"
-            ]
+            ["quote", "const file = Argument.FileText(\"file\")"]
           ]
         ],
         ["quote", "lion-expression-schema"]
@@ -23283,6 +23280,35 @@
           ]
         ],
         ["quote", "forgotten"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "integer-arithmetic-past-exact-range",
+    "area": "library",
+    "program": ["number/add", 9007199254740991, 2]
+  },
+  {
+    "case": "float-arithmetic-past-exact-range",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["number/equals?", ["number/add", 1e300, 1], 1e300],
+        ["quote", "rounded"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "number-from-string-past-exact-range",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["value/null?", ["number/fromString", "9007199254740993"]],
+        ["quote", "null"]
       ],
       ["else", ["quote", "other"]]
     ]
