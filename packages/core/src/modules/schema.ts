@@ -1,6 +1,7 @@
 import { Effect } from "effect";
-import { logicError } from "@/errors/evaluation";
+import { logicError, takes } from "@/errors/evaluation";
 import { builders, checking, fitsValue, misfit, problemsOf } from "@/logic/fit";
+import { includes } from "@/logic/inclusion";
 
 /**
  * Schemas: what a value must be. Anything is a schema. A function is a
@@ -27,6 +28,13 @@ export const module = {
       message === undefined ? Effect.succeed(value) : logicError(message)
     )
   ),
+
+  /**
+   * Whether every value the first schema allows fits the second: decided
+   * exactly, by listing the first schema's values or by the solver, and
+   * refused by name when neither can.
+   */
+  "includes?": takes(2, includes, "a schema and a schema"),
 
   ...builders,
 };

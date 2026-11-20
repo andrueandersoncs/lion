@@ -7,6 +7,7 @@
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
+import { type Certificate, checks } from "@/logic/certificate";
 import { LogicDatabase } from "@/logic/database";
 import { loadDatabase, saveDatabase } from "@/logic/snapshot";
 import {
@@ -79,6 +80,12 @@ const number = (depth: number): Arbitrary.Arbitrary<Code> => {
       Arbitrary.all([test(depth - 1), inner, inner]),
       ([t, a, b]) => ["cond", [t, a], ["else", b]]
     ),
+    // A lambda that a lambda returns, closed over a value, called in place:
+    // the solver runs both by their bodies.
+    Arbitrary.map(Arbitrary.all([inner, inner]), ([a, b]) => [
+      [["lambda", ["k"], ["lambda", ["v"], ["number/add", "v", "k"]]], b],
+      a,
+    ]),
     // A lambda run on the value, by its body.
     Arbitrary.map(Arbitrary.all([inner, int(-2, 2)]), ([a, k]) => [
       ["lambda", ["v"], ["number/add", "v", k]],
@@ -402,6 +409,55 @@ describe("solving for a variable a schema types", () => {
   );
 
   it.effect.prop(
+    "explains that no values meet a rule's goals with certificates that whole-number arithmetic checks",
+    { tests: filters, real: element([true, false]) },
+    ({ real, tests }) =>
+      Effect.gen(function* () {
+        const typed = (name: string): Code[] => [
+          ["schema/fits?", name, real ? "value/number?" : "value/integer?"],
+          ...inBox(name),
+        ];
+        const database = new LogicDatabase();
+        const outcome = yield* evaluate(
+          [
+            "begin",
+            ["relation", "found", ["ok"]],
+            ["rule", ["found", true], ...typed("?x"), ...typed("?y"), ...tests],
+            ["find", "?ok", ["found", "?ok"]],
+          ],
+          database
+        );
+        if (!outcome.ok) {
+          // A goal the solver cannot decide waits for values, and numbers
+          // that may be any number between bounds are infinitely many.
+          expect(real && !tests.every(decidable)).toBe(true);
+          return;
+        }
+        if ((outcome.value as boolean[]).length > 0) {
+          return;
+        }
+        const why = resultOf(
+          yield* evaluate(["why", ["found", true]], database)
+        ) as { because: { but?: { certificate?: Certificate[] } }[] };
+        const certificate = why.because[0]?.but?.certificate;
+        for (const proof of certificate ?? []) {
+          expect(checks(proof)).toBe(true);
+        }
+        // Over numbers that may be any number, eliminating them always
+        // refutes goals that have no values: Farkas' lemma.
+        // A filter about no solved variable runs on its own, and may be what
+        // stopped the rule instead.
+        const solvedFor = (code: Code) =>
+          JSON.stringify(code).includes('"?x"') ||
+          JSON.stringify(code).includes('"?y"');
+        if (real && tests.every((each) => decidable(each) && solvedFor(each))) {
+          expect(certificate).toBeDefined();
+        }
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
     "solves for the numbers of a record a schema shapes",
     { tests: filters },
     ({ tests }) =>
@@ -525,6 +581,33 @@ describe("solving for a variable a schema types", () => {
             schema,
           ])
         ).toEqual(named);
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "fails a filter that calls a library function with the wrong number of arguments, as plain code does",
+    {
+      args: Arbitrary.array(test(0), { minLength: 3, maxLength: 4 }),
+      call: element(["boolean/and", "boolean/or", "number/lessThan"]),
+    },
+    ({ args, call }) =>
+      Effect.gen(function* () {
+        // The library says each takes two; plain code refuses more, and so
+        // must the solver, which runs it on values that meet nothing else.
+        const wrong = [call, ...args];
+        const bySolver = yield* evaluate([
+          "find",
+          PAIR,
+          ["and", ...solved("?x"), ...solved("?y"), wrong],
+        ]);
+        const byListing = yield* evaluate([
+          "find",
+          PAIR,
+          ["and", ...listed("?x"), ...listed("?y"), wrong],
+        ]);
+        expect(byListing).toMatchObject({ ok: false });
+        expect(bySolver).toMatchObject({ ok: false });
       }),
     OPTIONS
   );

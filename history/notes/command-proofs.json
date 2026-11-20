@@ -1,0 +1,73 @@
+{
+  "title": "A proof that every command keeps a rule is a question to the solver, and the solver's proofs come with certificates anyone can check",
+  "context": "The formal-verification research ranked, after the solver, proofs that every command keeps the invariants, deciding when one schema includes another (the CIRT run's open idea), finding the invariants a proof needs, and certificates a small checker rechecks. With the solver working out every value a schema allows, and running a program's own lambdas, a proof by induction is a question Lion can already ask in the value model: is there a state the rule allows, and a command, whose next state breaks it? The solver could not run a lambda written inside a lambda, so a rule over a list of candidate rules failed, and it ran a library call with the wrong number of arguments, which plain code refuses. Its answer that no values exist came with no evidence a reader could check.",
+  "decision": "A proof that a command keeps a rule is a not over an exists of a typed state the rule allows, a typed command, and a next state that breaks the rule, with no new form; Houdini's search for the largest set of candidate rules that keeps itself is a few lines of Lion over the same question. The solver runs a lambda written where it runs, closed over the values it works out, by its body, and runs a library function only with as many arguments as the library says it takes. ['schema/includes?', a, b] says whether every value a allows fits b, decided exactly, by listing a's values or by the solver, and refused by name otherwise. Where the solver's step stopped a rule, why shows a certificate for each case the solver split the goals into: whole-number sums compared with 0 and steps that add earlier lines multiplied by whole numbers and, over whole numbers, tighten them, down to a false line, so plain arithmetic checks the proof.",
+  "consequences": "Proofs are about the value model, where a state is a record a schema types; a database's states are sets of facts, which the solver does not stand for, so a command given as changes to facts is checked by the bounded search, not proved. A case that only the Omega test's dark and grey shadows refute gets no certificate, and why shows none for it. schema/includes? refuses to say whether every number is a whole number, and anything about every string, since the solver can say a number is whole but not that it is not, and has no symbolic strings.",
+  "alternatives": [
+    {
+      "option": "A proof form that names a state schema, a step, and invariants",
+      "rejected": "It packages a question Lion can already ask, and would need a meaning wherever forms stand."
+    },
+    {
+      "option": "Proofs over a database's facts, changed by assuming",
+      "rejected": "The solver stands for values, not for sets of rows, so every state of a database is out of its reach; the bounded search checks such commands instead."
+    },
+    {
+      "option": "Certificates from an outside proof checker, such as DRAT or Alethe",
+      "rejected": "The solver's proofs are linear arithmetic, which Farkas' lemma and Chvátal–Gomory rounding certify in a few lines anyone can recheck, in Lion itself."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A proof that a command keeps a rule is a not over an exists of a typed state the rule allows, a typed command, and a next state that breaks the rule, with no new form",
+      "says": {
+        "decision": "command-proofs",
+        "chose": "induction-as-a-question",
+        "over": ["proof-form", "database-state-proofs", "outside-certificates"],
+        "because": "the solver already works out every state and command a schema allows and runs the step function's own code, so the induction step is one question, and its proof is linear arithmetic a few lines can recheck",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "['schema/includes?', a, b] says whether every value a allows fits b, decided exactly, by listing a's values or by the solver, and refused by name otherwise.",
+      "says": {
+        "feature": "schema/includes?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "Where the solver's step stopped a rule, why shows a certificate for each case the solver split the goals into",
+      "says": {
+        "feature": "solver-proof-certificates",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The solver runs a lambda written where it runs, closed over the values it works out, by its body",
+      "says": {
+        "feature": "solver-runs-closures",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "and runs a library function only with as many arguments as the library says it takes",
+      "says": {
+        "behavior": "solver-library-call-wrong-arguments",
+        "is": "error",
+        "area": "logic",
+        "was": "run"
+      }
+    },
+    {
+      "quote": "['schema/includes?', a, b] says whether every value a allows fits b",
+      "says": {
+        "behavior": "schema-includes-integer-in-number",
+        "is": "included",
+        "area": "schemas"
+      }
+    }
+  ]
+}

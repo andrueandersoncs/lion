@@ -6,6 +6,7 @@
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Schema } from "effect";
+import { type Certificate, checks, refute } from "@/logic/certificate";
 import {
   type Constraint,
   constant,
@@ -285,4 +286,141 @@ describe("the solver", () => {
     },
     OPTIONS
   );
+
+  it.prop(
+    "gives certificates that whole-number arithmetic checks, for constraints that have no solution, and none for constraints that have one",
+    { generated: constraints(5), whole: element([true, false]) },
+    ({ generated: { constraints: list, names }, whole }) => {
+      const kept = list.filter((c) => c.relation !== "!=");
+      const bounded = [...kept, ...box(names, 3)];
+      const sorts = sortsOf(names, whole ? "integer" : "real");
+      const certificate = refute(bounded, sorts);
+      const solvable = satisfiable(bounded, sorts);
+      if (certificate !== undefined) {
+        expect(checks(certificate)).toBe(true);
+        expect(solvable).toBe(false);
+        expect(sameConstraints(certificate, bounded)).toBe(true);
+      }
+      // Over numbers that may be any number, eliminating them refutes
+      // every set of constraints that has no solution: Farkas' lemma.
+      if (!(whole || solvable)) {
+        expect(certificate).toBeDefined();
+      }
+    },
+    OPTIONS
+  );
+
+  it.prop(
+    "gives a certificate for every set of constraints on one whole number that has no solution",
+    {
+      bounds: Arbitrary.array(
+        Arbitrary.all([
+          Arbitrary.map(
+            Arbitrary.all([int(1, 5), element([1, -1])]),
+            ([k, sign]) => k * sign
+          ),
+          int(-9, 9),
+          element<Relation>([">=", ">", "="]),
+        ]),
+        { minLength: 1, maxLength: 4 }
+      ),
+    },
+    ({ bounds }) => {
+      // k·x + c, compared with 0: tightened to whole numbers, then
+      // eliminated, one variable leaves nothing out.
+      const list = bounds.map(
+        ([k, c, relation]): Constraint => ({
+          linear: linearOf([k], ["x"], c),
+          relation,
+        })
+      );
+      const sorts = sortsOf(["x"], "integer");
+      const certificate = refute(list, sorts);
+      if (satisfiable(list, sorts)) {
+        expect(certificate).toBeUndefined();
+      } else {
+        expect(certificate).toBeDefined();
+        expect(checks(certificate as Certificate)).toBe(true);
+      }
+    },
+    OPTIONS
+  );
+
+  it.prop(
+    "checks no certificate missing its last step, or that multiplies an inequality by a negative number",
+    { generated: constraints(5) },
+    ({ generated: { constraints: list, names } }) => {
+      const kept = list.filter((c) => c.relation !== "!=");
+      const certificate = refute(
+        [...kept, ...box(names, 3)],
+        sortsOf(names, "real")
+      );
+      if (certificate === undefined) {
+        return;
+      }
+      // Every line before the last holds somewhere, so without it nothing is
+      // proved.
+      expect(
+        checks({ ...certificate, steps: certificate.steps.slice(0, -1) })
+      ).toBe(false);
+      // An inequality may be added, never taken away.
+      const steps = certificate.steps.map((step) => ({
+        ...step,
+        from: step.from.map(
+          ([at, m]) =>
+            [
+              at,
+              at < certificate.constraints.length &&
+              certificate.constraints[at]?.relation !== "="
+                ? -Math.abs(m) - 1
+                : m,
+            ] as const
+        ),
+      }));
+      if (
+        steps.some((step, at) =>
+          step.from.some(
+            ([, m], i) => m !== certificate.steps[at]?.from[i]?.[1]
+          )
+        )
+      ) {
+        expect(checks({ ...certificate, steps })).toBe(false);
+      }
+    },
+    OPTIONS
+  );
 });
+
+/** Whether a certificate's constraints are the given ones, each multiplied by a positive number. */
+const sameConstraints = (
+  certificate: Certificate,
+  list: readonly Constraint[]
+) =>
+  certificate.constraints.length === list.length &&
+  certificate.constraints.every((line, at) => {
+    const given = list[at] as Constraint;
+    const names = new Set([
+      ...Object.keys(line.sum),
+      ...[...given.linear.coefficients]
+        .filter(([, k]) => k.n !== 0n)
+        .map(([n]) => n),
+    ]);
+    // The scale that takes the given constant, or a coefficient, to the line's.
+    const pairs: [Rational, number][] = [
+      [given.linear.constant, line.constant],
+      ...[...names].map((name): [Rational, number] => [
+        given.linear.coefficients.get(name) ?? ratio(0n),
+        line.sum[name] ?? 0,
+      ]),
+    ];
+    const scale = pairs.find(([k]) => k.n !== 0n);
+    if (scale === undefined) {
+      return pairs.every(([, n]) => n === 0);
+    }
+    const factor = scale[1] / toNumber(scale[0]);
+    return (
+      factor > 0 &&
+      line.relation === given.relation &&
+      pairs.every(([k, n]) => Math.abs(toNumber(k) * factor - n) < 1e-9)
+    );
+  });

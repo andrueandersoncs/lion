@@ -16,6 +16,7 @@
 import { Effect, Result } from "effect";
 import { ArithmeticError, LogicError, logicError } from "@/errors/evaluation";
 import { aggregator } from "@/logic/aggregates";
+import { type Certificate, refute } from "@/logic/certificate";
 import {
   type CompiledRule,
   compilable,
@@ -36,6 +37,7 @@ import {
   type Rational,
   type Sort,
   solve as solveConstraints,
+  cases as splitCases,
   multiply as timesRational,
 } from "@/logic/solver";
 import { mentioned, type Stratum, strataOf } from "@/logic/strata";
@@ -1749,6 +1751,41 @@ const firstAnswer = (
       defect instanceof LogicError ? Effect.fail(defect) : Effect.die(defect)
     )
   ) as LogicEffect<Vars | undefined>;
+
+/**
+ * Certificates that a solver step has no values for an answer: one for each
+ * case the solver splits its goals into, each a proof plain arithmetic
+ * checks. Undefined where the step has none to give: where a goal waits for
+ * listed values, a schema lists them, or only the Omega test's dark and
+ * grey shadows refute a case.
+ */
+export const certificateOf = (model: Model, asked: Solved, vars: Vars) =>
+  Effect.gen(function* () {
+    const step = withKnown(asked, vars);
+    if ((yield* listedTyping(model, step, vars)) !== undefined) {
+      return undefined;
+    }
+    const { choices, sorts } = yield* stepFormulas(model, step, vars);
+    const proofs: Certificate[] = [];
+    for (const choice of choices) {
+      if (choice.waiting.length > 0) {
+        return undefined;
+      }
+      for (const conjunction of choice.formula) {
+        for (const each of yield* solving(() => splitCases(conjunction))) {
+          const proof = refute(each, sortsFor(each, [], sorts));
+          if (proof === undefined) {
+            return undefined;
+          }
+          proofs.push(proof);
+        }
+      }
+    }
+    return proofs;
+  }).pipe(
+    Effect.catch(() => Effect.succeed(undefined)),
+    Effect.catchDefect(() => Effect.succeed(undefined))
+  ) as LogicEffect<readonly Certificate[] | undefined>;
 
 /** Runs the solver, as an effect that fails with a LogicError when the question is too hard. */
 const solving = <A>(work: () => A) =>

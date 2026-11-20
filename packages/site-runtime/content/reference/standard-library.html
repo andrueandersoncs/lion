@@ -213,6 +213,7 @@
   <tbody>
     <tr data-entry="schema/fits?"><td><code>["schema/fits?", value, schema]</code></td><td>Whether the value fits the schema. With a logic variable in it, it is a goal that also binds the variables of the schema, and binds the value to each value the schema allows when the schema can list them; see <a href="#logic-patterns">Patterns</a>.</td></tr>
     <tr data-entry="schema/problems"><td><code>["schema/problems", value, schema]</code></td><td>Every place where the value does not fit, in the order of their paths; an empty list when it fits. A problem is a record with a <code>path</code>, the keys and positions that lead to the part. A part with the wrong value has what was <code>expected</code>, a schema written as the expression that makes it, and what was <code>found</code>. A part that is missing has only <code>expected</code>, and a key the schema does not name has only <code>found</code>.</td></tr>
+    <tr data-entry="schema/includes?"><td><code>["schema/includes?", a, b]</code></td><td>Whether every value <code>a</code> allows fits <code>b</code>: decided exactly, by listing <code>a</code>'s values when it can list them and by the <a href="#logic-solving">solver</a> otherwise. Fails, and says why, when neither can decide it.</td></tr>
     <tr data-entry="schema/assert"><td><code>["schema/assert", value, schema]</code></td><td>The value, when it fits. When it does not, fails with a message that says where. As a value in a rule or <code>find</code>, it fails the query that runs it.</td></tr>
     <tr data-entry="schema/anyOf"><td><code>["schema/anyOf", schema, ...]</code></td><td>A schema that fits a value which fits at least one of the schemas. Of plain values it is a list of choices. It reports one problem, at the value that fits none.</td></tr>
     <tr data-entry="schema/allOf"><td><code>["schema/allOf", schema, ...]</code></td><td>A schema that fits a value which fits every one of the schemas. It reports the problems of each schema the value does not fit.</td></tr>
@@ -229,6 +230,7 @@
    {"id": "x"},
    {"id": "value/integer?", "name": "value/string?"}],
  "assert": ["schema/assert", 3, "value/number?"],
+ "includes?": ["schema/includes?", "value/integer?", "value/number?"],
  "anyOf": ["schema/fits?", null, ["schema/anyOf", "value/string?", null]],
  "allOf": ["schema/fits?", 5,
    ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/lessThan", "n", 3]]]],

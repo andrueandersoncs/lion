@@ -1,0 +1,232 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-proofs"
+   ],
+   [
+    "quote",
+    "research/probes/"
+   ],
+   [
+    "quote",
+    "Lion programs run after proofs that a command keeps a rule, schema inclusion, and certificates (build step 4)"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261120020000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-p1"
+   ],
+   [
+    "quote",
+    "lion-probes-proofs"
+   ],
+   [
+    "quote",
+    "\"within limit, kept by every command\": [ {} ],"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a proof that every change keeps an invariant",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-p1"
+   ],
+   [
+    "quote",
+    "program built-proofs.json: whether some account within its limit, and some command, lead outside it"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-p2"
+   ],
+   [
+    "quote",
+    "lion-probes-proofs"
+   ],
+   [
+    "quote",
+    "\"a state that breaks it\": { \"?a\": { \"balance\": 0, \"limit\": 1 },"
+   ],
+   [
+    "quote",
+    {
+     "lion": "states that break an induction step but may be unreachable",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-p2"
+   ],
+   [
+    "quote",
+    "program built-proofs.json: why's example of an account and command that break \"not overdrawn\""
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-p3"
+   ],
+   [
+    "quote",
+    "lion-probes-proofs"
+   ],
+   [
+    "quote",
+    "\"the rules a proof needs\": [ \"limit not negative\", \"within limit\" ],"
+   ],
+   [
+    "quote",
+    {
+     "lion": "invariants found automatically",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-p3"
+   ],
+   [
+    "quote",
+    "program built-proofs.json: Houdini written in Lion over the induction question"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-p4"
+   ],
+   [
+    "quote",
+    "lion-probes-proofs"
+   ],
+   [
+    "quote",
+    "\"every integer is a number\": true,"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a check of whether one schema includes another",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-p4"
+   ],
+   [
+    "quote",
+    "program built-proofs.json: schema/includes? of value/integer? in value/number?"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-p5"
+   ],
+   [
+    "quote",
+    "lion-probes-proofs"
+   ],
+   [
+    "quote",
+    "\"positive amounts are not negative\": true,"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a way to compare what two predicates accept",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-p5"
+   ],
+   [
+    "quote",
+    "program built-proofs.json: schema/includes? of one predicate's values in another's"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-p6"
+   ],
+   [
+    "quote",
+    "lion-probes-proofs"
+   ],
+   [
+    "quote",
+    "\"every case of the certificate checks\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a proof a small checker can recheck",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-p6"
+   ],
+   [
+    "quote",
+    "program built-proofs.json: a certificate why gave, rechecked by a checker written in Lion"
+   ]
+  ]
+ ],
+ "recorded"
+]

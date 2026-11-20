@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 195 questions have been decided, 83 records explain them, and of what the records assert, 611 hold when Lion is run, 5 are broken, 337 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 196 questions have been decided, 84 records explain them, and of what the records assert, 616 hold when Lion is run, 5 are broken, 338 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -201,6 +201,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`schema-binds-its-value`](#schema-binds-its-value) | `list-finite-schemas` | [A schema stands for each value it allows: schema/fits? binds the value it checks when its schema can list them](#schemas-list-their-values) |
 | 2026-11-19 | [`solve-typed-variables`](#solve-typed-variables) | `exact-linear-decision-in-lion` | [A variable that a schema types and no goal binds is solved for: the filters about it become constraints, decided exactly in Lion](#solve-typed-variables) |
 | 2026-11-19 | [`eventually-rules`](#eventually-rules) | `questions-over-run-states` | [Rules about what must eventually happen are questions about the states of every run, which the solver decides for amounts of any size](#eventually-rules) |
+| 2026-11-19 | [`command-proofs`](#command-proofs) | `induction-as-a-question` | [A proof that every command keeps a rule is a question to the solver, and the solver's proofs come with certificates anyone can check](#command-proofs) |
 
 <a id="program-representation"></a>
 
@@ -4384,3 +4385,38 @@ Recorded 2026-11-19 in `history/notes/eventually-rules.json`.
 - Holds when Lion is run: `solving-runs-of-commands` exists. "The solver runs array functions on a list of known length, such as one ['schema/arrayOf', schema, most] stands for, item by item, and in takes each of its items, so a check of every run of commands leaves the amounts the commands carry to the solver and covers every amount."
 - Holds when Lion is run: `computed-schema-solved-for` is `solved`. "A schema computed where it is written, such as one that holds a lambda or one a function is given, stands for its values as the same schema under a name does: listed when it can list them, solved for otherwise."
 - Holds when Lion is run: `why-solved-row-values` is `row-values`. "why now explains a row the solver gave with the row's own values."
+
+<a id="command-proofs"></a>
+
+## command-proofs
+
+Now: `induction-as-a-question`.
+
+- 2026-11-19 `command-proofs`: `induction-as-a-question` over `proof-form`, `database-state-proofs`, `outside-certificates`: "A proof that a command keeps a rule is a not over an exists of a typed state the rule allows, a typed command, and a next state that breaks the rule, with no new form" (`command-proofs.json`)
+
+<a id="command-proofs"></a>
+
+### A proof that every command keeps a rule is a question to the solver, and the solver's proofs come with certificates anyone can check
+
+Recorded 2026-11-19 in `history/notes/command-proofs.json`.
+
+**Context.** The formal-verification research ranked, after the solver, proofs that every command keeps the invariants, deciding when one schema includes another (the CIRT run's open idea), finding the invariants a proof needs, and certificates a small checker rechecks. With the solver working out every value a schema allows, and running a program's own lambdas, a proof by induction is a question Lion can already ask in the value model: is there a state the rule allows, and a command, whose next state breaks it? The solver could not run a lambda written inside a lambda, so a rule over a list of candidate rules failed, and it ran a library call with the wrong number of arguments, which plain code refuses. Its answer that no values exist came with no evidence a reader could check.
+
+**Decision.** A proof that a command keeps a rule is a not over an exists of a typed state the rule allows, a typed command, and a next state that breaks the rule, with no new form; Houdini's search for the largest set of candidate rules that keeps itself is a few lines of Lion over the same question. The solver runs a lambda written where it runs, closed over the values it works out, by its body, and runs a library function only with as many arguments as the library says it takes. ['schema/includes?', a, b] says whether every value a allows fits b, decided exactly, by listing a's values or by the solver, and refused by name otherwise. Where the solver's step stopped a rule, why shows a certificate for each case the solver split the goals into: whole-number sums compared with 0 and steps that add earlier lines multiplied by whole numbers and, over whole numbers, tighten them, down to a false line, so plain arithmetic checks the proof.
+
+**Consequences.** Proofs are about the value model, where a state is a record a schema types; a database's states are sets of facts, which the solver does not stand for, so a command given as changes to facts is checked by the bounded search, not proved. A case that only the Omega test's dark and grey shadows refute gets no certificate, and why shows none for it. schema/includes? refuses to say whether every number is a whole number, and anything about every string, since the solver can say a number is whole but not that it is not, and has no symbolic strings.
+
+**Alternatives considered.**
+
+- A proof form that names a state schema, a step, and invariants. It packages a question Lion can already ask, and would need a meaning wherever forms stand.
+- Proofs over a database's facts, changed by assuming. The solver stands for values, not for sets of rows, so every state of a database is out of its reach; the bounded search checks such commands instead.
+- Certificates from an outside proof checker, such as DRAT or Alethe. The solver's proofs are linear arithmetic, which Farkas' lemma and Chvátal–Gomory rounding certify in a few lines anyone can recheck, in Lion itself.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `command-proofs`: `induction-as-a-question`. "A proof that a command keeps a rule is a not over an exists of a typed state the rule allows, a typed command, and a next state that breaks the rule, with no new form"
+- Holds when Lion is run: `schema/includes?` exists. "['schema/includes?', a, b] says whether every value a allows fits b, decided exactly, by listing a's values or by the solver, and refused by name otherwise."
+- Holds when Lion is run: `solver-proof-certificates` exists. "Where the solver's step stopped a rule, why shows a certificate for each case the solver split the goals into"
+- Holds when Lion is run: `solver-runs-closures` exists. "The solver runs a lambda written where it runs, closed over the values it works out, by its body"
+- Holds when Lion is run: `solver-library-call-wrong-arguments` is `error`. "and runs a library function only with as many arguments as the library says it takes"
+- Holds when Lion is run: `schema-includes-integer-in-number` is `included`. "['schema/includes?', a, b] says whether every value a allows fits b"

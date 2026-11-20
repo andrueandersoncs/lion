@@ -191,6 +191,26 @@ export const EXPRESSIONS: readonly Expression[] = [
     boolean: true,
   },
   {
+    name: "lambda made by a lambda",
+    form: [
+      [["lambda", ["k"], ["lambda", ["v"], ["number/add", "v", "k"]]], X],
+      1,
+    ],
+  },
+  {
+    name: "schema inclusion",
+    form: [
+      "schema/includes?",
+      ["schema/anyOf", X, 9],
+      [
+        "schema/allOf",
+        "value/integer?",
+        ["lambda", ["n"], ["number/greaterThan", "n", 1]],
+      ],
+    ],
+    boolean: true,
+  },
+  {
     name: "membership in a fold's states",
     form: [
       "in",

@@ -21763,6 +21763,107 @@
     ]
   },
   {
+    "feature": "schema/includes?",
+    "kind": "function",
+    "program": ["value/function?", "schema/includes?"]
+  },
+  {
+    "feature": "solver-proof-certificates",
+    "kind": "capability",
+    "program": [
+      "begin",
+      ["relation", "room", ["n"]],
+      ["relation", "limit", ["n"]],
+      ["fact", ["limit", 3]],
+      [
+        "rule",
+        ["room", "?n"],
+        ["limit", "?n"],
+        ["schema/fits?", "?x", "value/integer?"],
+        ["number/greaterThan", "?x", 2],
+        ["number/lessThan", "?x", "?n"]
+      ],
+      [
+        "value/array?",
+        [
+          "object/get",
+          [
+            "object/get",
+            ["array/head", ["object/get", ["why", ["room", 3]], "because"]],
+            "but"
+          ],
+          "certificate"
+        ]
+      ]
+    ]
+  },
+  {
+    "feature": "solver-runs-closures",
+    "kind": "capability",
+    "program": [
+      "schema/fits?",
+      [
+        "query",
+        [
+          "not",
+          [
+            "exists",
+            ["?x"],
+            [
+              "and",
+              ["schema/fits?", "?x", "value/integer?"],
+              [
+                "number/lessThan",
+                [
+                  [
+                    [
+                      "lambda",
+                      ["k"],
+                      ["lambda", ["v"], ["number/add", "v", "k"]]
+                    ],
+                    1
+                  ],
+                  "?x"
+                ],
+                "?x"
+              ]
+            ]
+          ]
+        ]
+      ],
+      ["quote", [{}]]
+    ]
+  },
+  {
+    "case": "solver-library-call-wrong-arguments",
+    "area": "logic",
+    "program": [
+      "schema/includes?",
+      [
+        "schema/allOf",
+        "value/integer?",
+        [
+          "lambda",
+          ["n"],
+          ["boolean/and", ["number/greaterThan", "n", 0], true, true]
+        ]
+      ],
+      "value/number?"
+    ]
+  },
+  {
+    "case": "schema-includes-integer-in-number",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [
+        ["schema/includes?", "value/integer?", "value/number?"],
+        ["quote", "included"]
+      ],
+      ["else", ["quote", "not-included"]]
+    ]
+  },
+  {
     "case": "solver-waiting-goal",
     "area": "logic",
     "program": [

@@ -98,7 +98,15 @@ export type Sym =
   | { readonly kind: "truth"; readonly formula: Formula }
   | { readonly kind: "value"; readonly value: unknown }
   | { readonly kind: "record"; readonly fields: ReadonlyMap<string, Sym> }
-  | { readonly kind: "list"; readonly items: readonly Sym[] };
+  | { readonly kind: "list"; readonly items: readonly Sym[] }
+  /**
+   * A lambda written where the solver runs, over values it works out: its
+   * body runs on the arguments it is given, in the scope it was written in.
+   */
+  | {
+      readonly kind: "closure";
+      readonly apply: (args: readonly Sym[], depth: number) => unknown;
+    };
 
 /** A value in each of several cases, each with when it holds. */
 export type Cases = readonly { readonly when: Formula; readonly sym: Sym }[];
@@ -136,6 +144,8 @@ export const concrete = (sym: Sym, values: Values): unknown => {
       );
     case "value":
       return sym.value;
+    case "closure":
+      return undefined;
     case "record": {
       const out: Record<string, unknown> = {};
       for (const [key, field] of sym.fields) {
@@ -178,6 +188,7 @@ export const leavesOf = (sym: Sym): string[] => {
         conjunction.flatMap((c) => [...c.linear.coefficients.keys()])
       );
     case "value":
+    case "closure":
       return [];
     case "record":
       return [...sym.fields.values()].flatMap(leavesOf);
@@ -276,7 +287,22 @@ export const product = (
   return out;
 };
 
-export const isConcrete = (sym: Sym) => leavesOf(sym).length === 0;
+/** Whether a symbolic value holds a lambda the solver runs, which has no plain value. */
+const holdsClosure = (sym: Sym): boolean => {
+  switch (sym.kind) {
+    case "closure":
+      return true;
+    case "record":
+      return [...sym.fields.values()].some(holdsClosure);
+    case "list":
+      return sym.items.some(holdsClosure);
+    default:
+      return false;
+  }
+};
+
+export const isConcrete = (sym: Sym) =>
+  leavesOf(sym).length === 0 && !holdsClosure(sym);
 
 /** A value that has no unknown in it, as a plain value. */
 export const plainOf = (sym: Sym): unknown => concrete(sym, new Map());

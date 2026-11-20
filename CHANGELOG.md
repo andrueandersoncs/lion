@@ -28,6 +28,9 @@
 - array/some? and array/every? say whether a function holds for some item and for each, stopping at the first that settles it, as Racket's ormap and andmap do. (`array/every?` added; `array/some?` added)
 - array/reductions gives every value array/reduce passes through, starting with the first, so a step function gives the states of a run (`array/reductions` added)
 - The solver runs array functions on a list of known length, such as one ['schema/arrayOf', schema, most] stands for, item by item, and in takes each of its items, so a check of every run of commands leaves the amounts the commands carry to the solver and covers every amount. (`solving-runs-of-commands` added)
+- ['schema/includes?', a, b] says whether every value a allows fits b, decided exactly, by listing a's values or by the solver, and refused by name otherwise. (`schema/includes?` added)
+- Where the solver's step stopped a rule, why shows a certificate for each case the solver split the goals into (`solver-proof-certificates` added)
+- The solver runs a lambda written where it runs, closed over the values it works out, by its body (`solver-runs-closures` added)
 
 ### Removed
 
@@ -65,6 +68,8 @@
 - A variable that a goal about the solver's values defines with cond takes the value of each case that can hold, not only of the first the solver finds. (`solved-defined-variable-each-case` is `every-case`, was `one-case`)
 - A schema computed where it is written, such as one that holds a lambda or one a function is given, stands for its values as the same schema under a name does: listed when it can list them, solved for otherwise. (`computed-schema-solved-for` is `solved`, was `error`)
 - why now explains a row the solver gave with the row's own values. (`why-solved-row-values` is `row-values`, was `other-values`)
+- ['schema/includes?', a, b] says whether every value a allows fits b (`schema-includes-integer-in-number` is `included`)
+- and runs a library function only with as many arguments as the library says it takes (`solver-library-call-wrong-arguments` is `error`, was `run`)
 
 ### Fixed
 
@@ -102,6 +107,7 @@
 - When nothing else binds the value schema/fits? checks, and its schema can list the values it allows, the goal binds the value to each of them that fits, as in binds its element to each item of a list. (`schema-binds-its-value`: `list-finite-schemas` over `schema-values-function`, `size-bounded-listing`, `written-order`)
 - The solver is Lion's own, with exact rationals: Fourier and Motzkin's method for numbers that may be any number, Pugh's Omega test for whole numbers. (`solve-typed-variables`: `exact-linear-decision-in-lion` over `z3-in-webassembly`, `formula-terms`, `bounded-labelling`, `real-relaxation`, `limited-listing`)
 - A rule that must always hold is a question that no state of any run breaks it, one that must eventually hold a question that some state of every run meets it, and one checked at the end of every run a question about what array/reduce gives. (`eventually-rules`: `questions-over-run-states` over `temporal-forms`, `deferred-invariants`, `bounded-recursive-rules`)
+- A proof that a command keeps a rule is a not over an exists of a typed state the rule allows, a typed command, and a next state that breaks the rule, with no new form (`command-proofs`: `induction-as-a-question` over `proof-form`, `database-state-proofs`, `outside-certificates`)
 
 ### Rules
 

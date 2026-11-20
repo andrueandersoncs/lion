@@ -1,0 +1,68 @@
+{
+  "sources": [
+    {
+      "id": "lion-probes-proofs",
+      "url": "research/probes/",
+      "title": "Lion programs run after proofs that a command keeps a rule, schema inclusion, and certificates (build step 4)",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261120020000
+    }
+  ],
+  "claims": [
+    {
+      "id": "co-p1",
+      "source": "lion-probes-proofs",
+      "where": "program built-proofs.json: whether some account within its limit, and some command, lead outside it",
+      "quote": "\"within limit, kept by every command\": [ {} ],",
+      "says": {
+        "lion": "a proof that every change keeps an invariant",
+        "has": true
+      }
+    },
+    {
+      "id": "co-p2",
+      "source": "lion-probes-proofs",
+      "where": "program built-proofs.json: why's example of an account and command that break \"not overdrawn\"",
+      "quote": "\"a state that breaks it\": { \"?a\": { \"balance\": 0, \"limit\": 1 },",
+      "says": {
+        "lion": "states that break an induction step but may be unreachable",
+        "has": true
+      }
+    },
+    {
+      "id": "co-p3",
+      "source": "lion-probes-proofs",
+      "where": "program built-proofs.json: Houdini written in Lion over the induction question",
+      "quote": "\"the rules a proof needs\": [ \"limit not negative\", \"within limit\" ],",
+      "says": { "lion": "invariants found automatically", "has": true }
+    },
+    {
+      "id": "co-p4",
+      "source": "lion-probes-proofs",
+      "where": "program built-proofs.json: schema/includes? of value/integer? in value/number?",
+      "quote": "\"every integer is a number\": true,",
+      "says": {
+        "lion": "a check of whether one schema includes another",
+        "has": true
+      }
+    },
+    {
+      "id": "co-p5",
+      "source": "lion-probes-proofs",
+      "where": "program built-proofs.json: schema/includes? of one predicate's values in another's",
+      "quote": "\"positive amounts are not negative\": true,",
+      "says": {
+        "lion": "a way to compare what two predicates accept",
+        "has": true
+      }
+    },
+    {
+      "id": "co-p6",
+      "source": "lion-probes-proofs",
+      "where": "program built-proofs.json: a certificate why gave, rechecked by a checker written in Lion",
+      "quote": "\"every case of the certificate checks\": true",
+      "says": { "lion": "a proof a small checker can recheck", "has": true }
+    }
+  ]
+}

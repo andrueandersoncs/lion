@@ -82,6 +82,7 @@ const KINDS: readonly Kind[] = [
       "enforce-rules",
       "solve-for-values",
       "check-every-run",
+      "prove-commands",
       "check-data",
       "take-data-apart",
       "explain-results",

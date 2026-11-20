@@ -32,7 +32,7 @@ export interface Rational {
 
 const abs = (a: bigint) => (a < 0n ? -a : a);
 
-const gcd = (a: bigint, b: bigint): bigint => {
+export const gcd = (a: bigint, b: bigint): bigint => {
   let [x, y] = [abs(a), abs(b)];
   while (y !== 0n) {
     [x, y] = [y, x % y];
@@ -615,7 +615,7 @@ const pickVariable = (inequalities: readonly Whole[]) => {
 // the variables that may be any number, then the Omega test.
 
 /** Splits each "not equal" into above and below, every way. */
-const cases = (constraints: readonly Constraint[]): Constraint[][] => {
+export const cases = (constraints: readonly Constraint[]): Constraint[][] => {
   let out: Constraint[][] = [[]];
   for (const c of constraints) {
     if (c.relation === "!=") {

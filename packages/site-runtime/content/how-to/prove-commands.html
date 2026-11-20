@@ -1,0 +1,88 @@
+<article id="prove-commands" data-title="Prove that every command keeps a rule" data-summary="Prove for every state and every command that a step keeps a rule, see a state that breaks the proof, find the rules a proof needs, check a proof's certificate yourself, and ask whether one schema includes another.">
+<p>This guide shows how to prove that a model keeps a rule: not for the runs a search tried, but for every state the rule allows and every command, which is the step of a proof by induction. A schema types the state and the command, and <a href="#solve-for-values">the solver</a> works out every value they can take.</p>
+
+<h2>Prove that a command keeps a rule</h2>
+<p>An account has a balance and an overdraft limit, and a withdrawal that would go past the limit is refused. A rule is kept when no state the rule allows, and no command, leads to a state that breaks it. Ask whether such a state exists, under <code>not</code>: <code>[{}]</code> is the proof, for every account and every command, and <code>[]</code> says some state and command break the rule:</p>
+<lion-example name="A rule every command keeps">
+["begin",
+  ["schema", "Account", {"balance": "value/integer?", "limit": "value/integer?"}],
+  ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+  ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
+  ["define", "step", ["lambda", ["a", "c"], ["cond", [["value/number?", ["object/get", "c", "deposit"]], {"balance": ["number/add", ["object/get", "a", "balance"], ["object/get", "c", "deposit"]], "limit": ["object/get", "a", "limit"]}], [["number/lessThan", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], ["object/get", "c", "withdraw"]], "a"], ["else", {"balance": ["number/subtract", ["object/get", "a", "balance"], ["object/get", "c", "withdraw"]], "limit": ["object/get", "a", "limit"]}]]]],
+  ["define", "within limit", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], 0]]],
+  ["define", "limit not negative", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "limit"], 0]]],
+  ["define", "not overdrawn", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0]]],
+  ["define", "keeps", ["lambda", ["rule"], ["query", ["not", ["exists", ["?a", "?c"], ["and", ["schema/fits?", "?a", "Account"], ["rule", "?a"], ["schema/fits?", "?c", "Command"], ["not", ["rule", ["step", "?a", "?c"]]]]]]]]],
+  {"within limit": ["keeps", "within limit"], "not overdrawn": ["keeps", "not overdrawn"]}]
+</lion-example>
+<p>Staying within the limit is kept; never being overdrawn is not, since an account with a limit may go below 0.</p>
+
+<h2>See a state that breaks the proof</h2>
+<p>A rule that holds when the state that breaks the proof exists, and <code>why</code>, give that state and command. The state may never be reached from where the model starts: then the rule needs another one beside it that rules the state out.</p>
+<lion-example name="A state that breaks the proof">
+["begin",
+  ["schema", "Account", {"balance": "value/integer?", "limit": "value/integer?"}],
+  ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+  ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
+  ["define", "step", ["lambda", ["a", "c"], ["cond", [["value/number?", ["object/get", "c", "deposit"]], {"balance": ["number/add", ["object/get", "a", "balance"], ["object/get", "c", "deposit"]], "limit": ["object/get", "a", "limit"]}], [["number/lessThan", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], ["object/get", "c", "withdraw"]], "a"], ["else", {"balance": ["number/subtract", ["object/get", "a", "balance"], ["object/get", "c", "withdraw"]], "limit": ["object/get", "a", "limit"]}]]]],
+  ["define", "within limit", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], 0]]],
+  ["define", "limit not negative", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "limit"], 0]]],
+  ["define", "not overdrawn", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0]]],
+  ["define", "keeps", ["lambda", ["rule"], ["query", ["not", ["exists", ["?a", "?c"], ["and", ["schema/fits?", "?a", "Account"], ["rule", "?a"], ["schema/fits?", "?c", "Command"], ["not", ["rule", ["step", "?a", "?c"]]]]]]]]],
+  ["relation", "breaks", ["rule"]],
+  ["rule", ["breaks", ["quote", "not overdrawn"]], ["schema/fits?", "?a", "Account"], ["not overdrawn", "?a"], ["schema/fits?", "?c", "Command"], ["not", ["not overdrawn", ["step", "?a", "?c"]]]],
+  ["object/get", ["array/head", ["object/get", ["why", ["breaks", ["quote", "not overdrawn"]]], "because"]], "example"]]
+</lion-example>
+
+<h2>Find the rules a proof needs</h2>
+<p>A rule may be kept only together with others. Houdini's way finds the largest set of candidate rules that keeps itself: drop each candidate that some state the others allow, and some command, break, and ask again, until none is dropped. In Lion it is a few lines over the same question:</p>
+<lion-example name="The rules a proof needs">
+["begin",
+  ["schema", "Account", {"balance": "value/integer?", "limit": "value/integer?"}],
+  ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+  ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
+  ["define", "step", ["lambda", ["a", "c"], ["cond", [["value/number?", ["object/get", "c", "deposit"]], {"balance": ["number/add", ["object/get", "a", "balance"], ["object/get", "c", "deposit"]], "limit": ["object/get", "a", "limit"]}], [["number/lessThan", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], ["object/get", "c", "withdraw"]], "a"], ["else", {"balance": ["number/subtract", ["object/get", "a", "balance"], ["object/get", "c", "withdraw"]], "limit": ["object/get", "a", "limit"]}]]]],
+  ["define", "within limit", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], 0]]],
+  ["define", "limit not negative", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "limit"], 0]]],
+  ["define", "not overdrawn", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0]]],
+  ["define", "keeps", ["lambda", ["rule"], ["query", ["not", ["exists", ["?a", "?c"], ["and", ["schema/fits?", "?a", "Account"], ["rule", "?a"], ["schema/fits?", "?c", "Command"], ["not", ["rule", ["step", "?a", "?c"]]]]]]]]],
+  ["define", "candidates", {"within limit": "within limit", "limit not negative": "limit not negative", "not overdrawn": "not overdrawn"}],
+  ["define", "holds all", ["lambda", ["names", "a"], ["array/every?", "names", ["lambda", ["n"], [["object/get", "candidates", "n"], "a"]]]]],
+  ["define", "kept", ["lambda", ["names", "name"], ["not", ["exists", ["?a", "?c"], ["and", ["schema/fits?", "?a", "Account"], ["holds all", "names", "?a"], ["schema/fits?", "?c", "Command"], ["not", [["object/get", "candidates", "name"], ["step", "?a", "?c"]]]]]]]],
+  ["define", "houdini", ["lambda", ["names"], ["begin", ["define", "survivors", ["find", "?n", ["and", ["in", "?n", "names"], ["kept", "names", "?n"]]]], ["cond", [["number/equals?", ["array/length", "survivors"], ["array/length", "names"]], "names"], ["else", ["houdini", "survivors"]]]]]],
+  ["houdini", ["quote", ["within limit", "limit not negative", "not overdrawn"]]]]
+</lion-example>
+
+<h2>Check a proof yourself</h2>
+<p>Where a step of the solver stopped a rule, <code>why</code> shows a <code>certificate</code> for each case the solver split the goals into: the constraints, as whole-number sums compared with 0, and steps that each add earlier lines, each multiplied by a whole number, and over whole numbers may tighten the sum, dividing it by the greatest common divisor of its coefficients and rounding its constant down. The last line has no variables and is false, so the constraints have no solution. Checking it takes only arithmetic, so a small program can, without trusting the solver. Here one in Lion checks the certificate <code>why</code> gives:</p>
+<lion-example name="A proof checked by a small program">
+["begin",
+  ["relation", "limit", ["n"]],
+  ["relation", "room", ["n"]],
+  ["fact", ["limit", 3]],
+  ["rule", ["room", "?n"], ["limit", "?n"], ["schema/fits?", "?x", "value/integer?"], ["number/greaterThan", "?x", 2], ["number/lessThan", "?x", "?n"]],
+  ["define", "gcd", ["lambda", ["a", "b"], ["cond", [["number/equals?", "b", 0], ["number/absolute", "a"]], ["else", ["gcd", "b", ["number/remainder", "a", "b"]]]]]],
+  ["define", "add line", ["lambda", ["total", "line", "times"], {"sum": ["array/reduce", ["object/keys", ["object/get", "line", "sum"]], ["object/get", "total", "sum"], ["lambda", ["acc", "name"], ["object/set", "acc", "name", ["number/add", ["cond", [["array/includes?", ["object/keys", "acc"], "name"], ["object/get", "acc", "name"]], ["else", 0]], ["number/multiply", "times", ["object/get", ["object/get", "line", "sum"], "name"]]]]]], "constant": ["number/add", ["object/get", "total", "constant"], ["number/multiply", "times", ["object/get", "line", "constant"]]], "relation": ["cond", [["string/equals?", ["object/get", "line", ["quote", "relation"]], ["quote", "="]], ["object/get", "total", ["quote", "relation"]]], [["boolean/or", ["string/equals?", ["object/get", "line", ["quote", "relation"]], ">"], ["string/equals?", ["object/get", "total", ["quote", "relation"]], ">"]], ">"], ["else", ">="]]}]],
+  ["define", "tighten", ["lambda", ["line"], ["begin", ["define", "strict?", ["string/equals?", ["object/get", "line", ["quote", "relation"]], ">"]], ["define", "lowered", ["number/subtract", ["object/get", "line", "constant"], ["cond", ["strict?", 1], ["else", 0]]]], ["define", "divisor", ["array/reduce", ["object/values", ["object/get", "line", "sum"]], 0, "gcd"]], ["cond", [["number/lessThanOrEqualTo", "divisor", 1], {"sum": ["object/get", "line", "sum"], "constant": "lowered", "relation": ["cond", ["strict?", ">="], ["else", ["object/get", "line", ["quote", "relation"]]]]}], ["else", {"sum": ["array/reduce", ["object/keys", ["object/get", "line", "sum"]], {}, ["lambda", ["acc", "name"], ["object/set", "acc", "name", ["number/divide", ["object/get", ["object/get", "line", "sum"], "name"], "divisor"]]]], "constant": ["cond", [["string/equals?", ["object/get", "line", ["quote", "relation"]], ["quote", "="]], ["number/divide", "lowered", "divisor"]], ["else", ["number/floor", ["number/divide", "lowered", "divisor"]]]], "relation": ["cond", ["strict?", ">="], ["else", ["object/get", "line", ["quote", "relation"]]]]}]]]]],
+  ["define", "false?", ["lambda", ["line"], ["boolean/and", ["array/every?", ["object/values", ["object/get", "line", "sum"]], ["lambda", ["k"], ["number/equals?", "k", 0]]], ["cond", [["string/equals?", ["object/get", "line", ["quote", "relation"]], ">="], ["number/lessThan", ["object/get", "line", "constant"], 0]], [["string/equals?", ["object/get", "line", ["quote", "relation"]], ">"], ["number/lessThanOrEqualTo", ["object/get", "line", "constant"], 0]], ["else", ["boolean/not", ["number/equals?", ["object/get", "line", "constant"], 0]]]]]]],
+  ["define", "checks", ["lambda", ["given"], ["false?", ["array/head", ["array/slice", ["array/reduce", ["object/get", "given", "steps"], ["object/get", "given", "constraints"], ["lambda", ["lines", "step"], ["begin", ["define", "made", ["array/reduce", ["object/get", "step", "from"], {"sum": {}, "constant": 0, "relation": ["quote", "="]}, ["lambda", ["total", "use"], ["add line", "total", ["array/head", ["array/slice", "lines", ["array/head", "use"]]], ["array/head", ["array/tail", "use"]]]]]], ["array/concat", "lines", ["array/make", ["cond", [["object/get", "step", "tightened"], ["tighten", "made"]], ["else", "made"]]]]]]], -1]]]]],
+  ["define", "proof", ["object/get", ["object/get", ["array/head", ["object/get", ["why", ["room", 3]], "because"]], "but"], "certificate"]],
+  {"certificate": "proof", "every case checks": ["array/every?", "proof", "checks"]}]
+</lion-example>
+<p>A case that only the Omega test's dark and grey shadows refute, which some problems over whole numbers need, gets no certificate, and <code>why</code> then shows none.</p>
+
+<h2>Ask whether one schema includes another</h2>
+<p><code>schema/includes?</code> says whether every value one schema allows fits another, exactly: by listing the first schema's values when it can list them, and by the solver otherwise. It refuses, and says why, what neither can decide, such as whether every number is a whole number, or anything about every string:</p>
+<lion-example name="One schema in another">
+{"whole numbers are numbers": ["schema/includes?", "value/integer?", "value/number?"],
+ "positive amounts are not negative": ["schema/includes?", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]], ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 0]]]],
+ "and not the other way": ["schema/includes?", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 0]]], ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+ "a listed schema": ["schema/includes?", ["schema/anyOf", 1, 2], ["schema/anyOf", 1, 2, 3]]}
+</lion-example>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#solve-for-values">Solve for values and prove rules</a>: what the solver decides.</li>
+  <li><a href="#check-every-run">Check every run of commands</a>: rules over the states of every run up to a length.</li>
+</ul>
+</article>

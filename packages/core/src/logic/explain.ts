@@ -30,6 +30,7 @@ import {
 } from "@/logic/compile";
 import {
   answerKey,
+  certificateOf,
   compareMatches,
   complete,
   ensure,
@@ -715,6 +716,12 @@ const missing = (
     }
     const absent = asAsked(goal, vars);
     const node = marked({ absent }, yield* opens(telling, goal, vars));
+    if (goal instanceof Solved) {
+      // No values meet the step's goals: a certificate for each case the
+      // solver split them into says why, in arithmetic anyone can check.
+      const certificate = yield* certificateOf(telling.model, goal, vars);
+      return certificate === undefined ? node : { ...node, certificate };
+    }
     const key = JSON.stringify(absent);
     if (!hasRoutes(goal) || telling.told.has(key)) {
       return node;

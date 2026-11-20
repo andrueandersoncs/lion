@@ -125,6 +125,44 @@ const compareWith =
     [{ linear: flip ? minus(b, a) : minus(a, b), relation }],
   ];
 
+const ANY = Number.POSITIVE_INFINITY;
+
+/**
+ * How many arguments each function the solver runs takes, as the library
+ * says: a call with any other number is not run on symbolic values.
+ */
+const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
+  "array/concat": [1, ANY],
+  "array/every?": [2, 2],
+  "array/flat-map": [2, 2],
+  "array/head": [1, 1],
+  "array/includes?": [2, 2],
+  "array/length": [1, 1],
+  "array/map": [2, 2],
+  "array/reduce": [3, 3],
+  "array/reductions": [3, 3],
+  "array/some?": [2, 2],
+  "array/tail": [1, 1],
+  "boolean/and": [2, 2],
+  "boolean/not": [1, 1],
+  "boolean/or": [2, 2],
+  "number/absolute": [1, 1],
+  "number/add": [1, ANY],
+  "number/divide": [2, 2],
+  "number/equals?": [2, 2],
+  "number/greaterThan": [2, 2],
+  "number/greaterThanOrEqualTo": [2, 2],
+  "number/lessThan": [2, 2],
+  "number/lessThanOrEqualTo": [2, 2],
+  "number/max": [1, ANY],
+  "number/min": [1, ANY],
+  "number/multiply": [1, ANY],
+  "number/subtract": [2, 2],
+  "object/get": [2, 2],
+  "value/integer?": [1, 1],
+  "value/number?": [1, 1],
+};
+
 /** How a library function works on symbolic values, by its name. */
 const LIBRARY: Readonly<
   Record<
@@ -250,11 +288,45 @@ const listOf = (sym: Sym | undefined, name: string) => {
     : Effect.succeed(items);
 };
 
-/** A function a library call is given, which must be known. */
-const functionOf = (sym: Sym | undefined, name: string) =>
-  sym?.kind === "value" && typeof sym.value === "function"
-    ? Effect.succeed(sym.value)
+/** A function a library call is given: a known one, or a lambda the solver runs. */
+const functionOf = (sym: Sym | undefined, name: string) => {
+  if (sym?.kind === "closure") {
+    return Effect.succeed<unknown>(sym);
+  }
+  return sym?.kind === "value" && typeof sym.value === "function"
+    ? Effect.succeed<unknown>(sym.value)
     : refused(`${name} of a function no goal binds`);
+};
+
+const isClosure = (fn: unknown): fn is Extract<Sym, { kind: "closure" }> =>
+  typeof fn === "object" &&
+  fn !== null &&
+  (fn as { kind?: unknown }).kind === "closure";
+
+/** What a call's head is as something to call: a function, or a lambda the solver holds. */
+const callableOf = (sym: Sym): unknown => {
+  if (sym.kind === "closure") {
+    return sym;
+  }
+  return sym.kind === "value" && typeof sym.value === "function"
+    ? sym.value
+    : undefined;
+};
+
+/** Calls a known function, or runs a lambda the solver holds by its body. */
+const applyCallable = (
+  fn: unknown,
+  args: readonly Sym[],
+  context: Context,
+  depth: number
+): Result => {
+  if (!isClosure(fn)) {
+    return applyFunction(fn, args, context, depth);
+  }
+  return depth > MOST_DEPTH
+    ? refused("a function that calls itself")
+    : (fn.apply(args, depth + 1) as Result);
+};
 
 const listSym = (items: readonly Sym[]): Sym => ({ items, kind: "list" });
 
@@ -277,7 +349,7 @@ const fold = (
       const next: { when: Formula; states: Sym[] }[] = [];
       for (const way of ways) {
         const last = way.states.at(-1) as Sym;
-        for (const each of yield* applyFunction(
+        for (const each of yield* applyCallable(
           fn,
           [last, item],
           context,
@@ -305,7 +377,7 @@ const mapped = (
   depth: number
 ) =>
   Effect.map(
-    Effect.forEach(items, (item) => applyFunction(fn, [item], context, depth)),
+    Effect.forEach(items, (item) => applyCallable(fn, [item], context, depth)),
     (each) => product(each)
   );
 
@@ -322,7 +394,7 @@ const quantified = (
     ([items, f]) =>
       Effect.map(
         Effect.forEach(items, (item) =>
-          Effect.flatMap(applyFunction(f, [item], context, depth), formulaOf)
+          Effect.flatMap(applyCallable(f, [item], context, depth), formulaOf)
         ),
         (holds) =>
           one(
@@ -516,6 +588,11 @@ const applyFunction = (
     return Effect.succeed(one({ items: args, kind: "list" }));
   }
   const rule = LIBRARY[name] ?? ARRAYS[name];
+  const [least, most] = ARITIES[name] ?? [0, Number.POSITIVE_INFINITY];
+  if (args.length < least || args.length > most) {
+    // As plain code does, which then says so when the goal runs on values.
+    return refused(`${name} with ${args.length} arguments`);
+  }
   return rule === undefined ? refused(name) : rule(args, name, context, depth);
 };
 
@@ -528,7 +605,7 @@ const applyCases = (
 ): Result =>
   Effect.map(
     Effect.forEach(product(args), ({ syms, when }) =>
-      Effect.map(applyFunction(fn, syms, context, depth), (cases) =>
+      Effect.map(applyCallable(fn, syms, context, depth), (cases) =>
         cases.flatMap((each) => {
           const both = and(when, each.when);
           return both.length === 0 ? [] : [{ sym: each.sym, when: both }];
@@ -647,18 +724,41 @@ const callOf = (
   Effect.flatMap(expressionAt(head, where), (heads) =>
     Effect.flatMap(each(rest, where), (args) =>
       Effect.map(
-        Effect.forEach(heads, ({ sym, when }) =>
-          sym.kind === "value" && typeof sym.value === "function"
-            ? Effect.map(
-                applyCases(sym.value, args, where.context, where.depth),
+        Effect.forEach(heads, ({ sym, when }) => {
+          const fn = callableOf(sym);
+          return fn === undefined
+            ? refused(`a call of ${show(head)}`)
+            : Effect.map(
+                applyCases(fn, args, where.context, where.depth),
                 (cases) => under(when, cases)
-              )
-            : refused(`a call of ${show(head)}`)
-        ),
+              );
+        }),
         (all) => all.flat()
       )
     )
   );
+
+/** A lambda written where the solver runs: its body runs, when it is called, in the scope it was written in. */
+const closureOf = (
+  [parameters, body]: readonly unknown[],
+  where: Where
+): Sym => ({
+  apply: (args, depth) =>
+    expressionAt(body, {
+      ...where,
+      depth,
+      scope: new Map([
+        ...where.scope,
+        ...(parameters as readonly string[]).map(
+          (name, at): [string, Cases] => [
+            name,
+            one(args[at] ?? fromValue(null)),
+          ]
+        ),
+      ]),
+    }),
+  kind: "closure",
+});
 
 const expressionAt = (code: unknown, where: Where): Result => {
   if (typeof code === "string") {
@@ -684,6 +784,8 @@ const expressionAt = (code: unknown, where: Where): Result => {
       return Effect.succeed(one(fromValue(rest[0])));
     case "cond":
       return conditional(rest, where);
+    case "lambda":
+      return Effect.succeed(one(closureOf(rest, where)));
     default:
       return head.includes("/")
         ? callOf(head, rest, where)

@@ -445,6 +445,7 @@ Evaluates to `{ "absent": ["eligible", "bo"], "because": [{ "rule": [...], "beca
 
 - `but` is the other side of the goal that stopped the rule. A filter that was false and a relation call with no match are `absent`, and an absent relation call is explained in turn, down to the facts that are missing. A `not` stops a rule because what it denies holds, so its `but` is that fact or `check`: for `["why", ["eligible", "cy"]]` it is `{ "fact": ["banned", "cy"], "given": true }`.
 - Every `absent`, asked as it stands, is `false`, as every `check` is `true`. A variable the rule had not bound when it stopped keeps its name.
+- Where the [solver's step](#solving-for-values) stopped a rule, its `absent` has a `certificate` for each case the solver split the goals into: the constraints as whole-number sums compared with 0, and steps, each adding earlier lines multiplied by whole numbers and, over whole numbers, maybe tightened, down to a line with no variables that is false. Plain arithmetic checks it; see [Prove that every command keeps a rule](#prove-commands). A case only the Omega test's dark and grey shadows refute gets none.
 - A rule's body runs from the values the fact gives its head, so the goals those values reach come first. A rule is told once for every answer of its first goals that the next goal stops, in an order that does not depend on the order facts were added in.
 - When a rule's whole body holds, it gave another row than the one asked about, since its head computes, combines, or invents a value. That way has no `because`, and its `but` explains the row the rule gave, such as the total a rule summed when another total was asked about.
 - A goal under `not` that is made of several goals lists its alternatives the same way, without a `rule`. So an `absent` premise of a fact that holds says why it had no match.
@@ -1189,6 +1190,30 @@ Evaluates to `{ "careful overdraws": [], "careless overdraws": [{}], "every run 
 - The shortest run that breaks a rule: a rule that gives each length of a run that breaks it, with the length in its head and the run only in its body, so its rows are the lengths; `aggregate/min` gives the least, and `why` shows a run of that length with amounts that break it.
 - A run's length is known in each shape the schema gives it, so the solver runs the step function on each command in turn; see [Solving for values](#solving-for-values) for what it decides, and what waits for listed values instead.
 
+### Proving that a command keeps a rule
+
+A rule is kept by a step function when no state the rule allows, and no command, leads to a state that breaks it: the step of a proof by induction. With the state and the command typed by schemas, it is one question, for every state and every command:
+
+```json
+["begin",
+  ["schema", "Account", {"balance": "value/integer?", "limit": "value/integer?"}],
+  ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+  ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
+  ["define", "step", ["lambda", ["a", "c"], ["cond", [["value/number?", ["object/get", "c", "deposit"]], {"balance": ["number/add", ["object/get", "a", "balance"], ["object/get", "c", "deposit"]], "limit": ["object/get", "a", "limit"]}], [["number/lessThan", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], ["object/get", "c", "withdraw"]], "a"], ["else", {"balance": ["number/subtract", ["object/get", "a", "balance"], ["object/get", "c", "withdraw"]], "limit": ["object/get", "a", "limit"]}]]]],
+  ["define", "within limit", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], 0]]],
+  ["define", "limit not negative", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "limit"], 0]]],
+  ["define", "not overdrawn", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0]]],
+  ["define", "keeps", ["lambda", ["rule"], ["query", ["not", ["exists", ["?a", "?c"], ["and", ["schema/fits?", "?a", "Account"], ["rule", "?a"], ["schema/fits?", "?c", "Command"], ["not", ["rule", ["step", "?a", "?c"]]]]]]]]],
+  {"within limit": ["keeps", "within limit"], "not overdrawn": ["keeps", "not overdrawn"]}]
+```
+
+Evaluates to `{ "within limit": [{}], "not overdrawn": [] }`: every command keeps a balance within its overdraft limit, for every account; but a withdrawal can take an account with a limit below 0.
+
+- When the proof fails, a rule that holds when a breaking state exists, and `why` of it, give the state and the command. A state that cannot be reached means the rule needs another beside it; Houdini's way of finding the largest set of candidate rules that keeps itself is a few lines of Lion over the same question.
+- Where the solver's step stopped a rule, `why` shows a certificate that plain arithmetic checks.
+- `["schema/includes?", a, b]` says whether every value `a` allows fits `b`, decided the same way.
+- See [Prove that every command keeps a rule](#prove-commands) for each, with examples.
+
 ### Schemas in rules and queries
 
 A schema check is a call like any other. It waits for logic variables, so it is a filter in a rule or query, it works under `not` and in a `find`, and its value can go in a rule head. `schema/problems` gives a list, so `in` turns the problems of a value into rows.
@@ -1460,6 +1485,7 @@ Checks values against [schemas](#schemas), and builds schemas out of others.
 ["schema/fits?", 3, "value/number?"]
 ["schema/problems", {"id": "x"}, {"id": "value/integer?", "name": "value/string?"}]
 ["schema/assert", 3, "value/number?"]
+["schema/includes?", "value/integer?", "value/number?"]
 ["schema/anyOf", "value/string?", null]
 ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/lessThan", "n", 3]]]
 ["schema/arrayOf", "value/number?"]

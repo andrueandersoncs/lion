@@ -42,6 +42,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "array/reductions": [3, 3],
   "array/some?": [2, 2],
   "array/every?": [2, 2],
+  "schema/includes?": [2, 2],
   "array/slice": [2, 3],
   "array/tail": [1, 1],
   "boolean/and": [2, 2],
