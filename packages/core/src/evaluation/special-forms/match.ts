@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { logicError } from "@/errors/evaluation";
+import { LogicError, logicError } from "@/errors/evaluation";
 import { answer, isWriting } from "@/evaluation/asking";
 import {
   andThen,
@@ -13,13 +13,14 @@ import { applyIn } from "@/evaluation/special-forms/function";
 import { suspend } from "@/evaluation/special-forms/lambda";
 import { fits } from "@/logic/fit";
 import { isWaiting, LogicValue, show } from "@/logic/terms";
-import type { MatchFormSchema } from "@/schemas/evaluation";
+import { isMatchCase, type MatchFormSchema } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
 import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult } from "@/types/evaluation";
 
 /*
-["match", <value>, [<schema>, <fn>], ..., <fallback-fn>]
+["match", <value>, [<schema>, <fn>], ..., <fallback-fn>], the fallback
+optional
 */
 
 /** A case's function, which a value that is not one cannot be, as a call says. */
@@ -30,7 +31,8 @@ const functionOf = (fn: unknown) =>
 
 /**
  * Applies the function of the first pattern whose schema the value fits, or
- * the fallback. Anything is a schema: a predicate, a relation, a record or
+ * the fallback; without one, as Racket's `match`, a value no case fits
+ * fails. Anything is a schema: a predicate, a relation, a record or
  * list of schemas, or a plain value. A value that is a question is asked.
  * When the value, or what a schema says about it, is not known yet, the
  * form waits.
@@ -41,12 +43,20 @@ export const compileMatch = (
 ): Compiled => {
   const [_, subject, ...rest] = expression;
   const value = compile(subject, scope);
+  // A last part that is a pair is a case: the match has no fallback.
+  const last = rest.at(-1);
+  const hasFallback = !isMatchCase(last);
   const patterns = (
-    rest.slice(0, -1) as (readonly [LionExpressionType, LionExpressionType])[]
+    (hasFallback ? rest.slice(0, -1) : rest) as (readonly [
+      LionExpressionType,
+      LionExpressionType,
+    ])[]
   ).map(
     ([schema, fn]) => [compile(schema, scope), compile(fn, scope)] as const
   );
-  const fallback = compile(rest.at(-1) as LionExpressionType, scope);
+  const fallback = hasFallback
+    ? compile(last as LionExpressionType, scope)
+    : undefined;
   const applied = (fn: Compiled, made: unknown, environment: Environment) =>
     Effect.gen(function* () {
       const decoded = yield* functionOf(yield* toEffect(fn(environment, 0)));
@@ -67,6 +77,11 @@ export const compileMatch = (
             applyIn(decoded, [made], undefined, environment, 0)
           );
         }
+      }
+      if (fallback === undefined) {
+        return yield* new LogicError({
+          message: `No case of the match fits ${show(made)}, and it has no fallback: ${show(expression)}.`,
+        });
       }
       return yield* applied(fallback, made, environment);
     });

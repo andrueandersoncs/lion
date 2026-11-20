@@ -39,6 +39,8 @@ export interface IndexedSemanticNode {
   readonly searchText: string;
   readonly specialForm?: SpecialFormName;
   readonly value?: boolean | null | number | string;
+  /** What is wrong though nothing fails, such as a match case no value can reach. */
+  readonly warning?: string;
 }
 
 export interface GraphLayoutNode {

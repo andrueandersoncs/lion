@@ -265,10 +265,39 @@ function DocumentStatus({ editor }: { readonly editor: EditorController }) {
   );
 }
 
+/**
+ * What the analysis finds wrong though nothing fails, such as a match case
+ * no value can reach: the program still graphs and runs.
+ */
+function Warnings({ editor }: { readonly editor: EditorController }) {
+  const warned = editor.projection.nodes.filter(
+    (node) => node.warning !== undefined
+  );
+  const [first] = warned;
+  if (first === undefined) {
+    return null;
+  }
+  return (
+    <Alert className="m-3 w-auto" data-testid="analysis-warnings">
+      <CircleAlertIcon />
+      <AlertTitle>
+        {warned.length === 1
+          ? "One part needs a look"
+          : `${warned.length} parts need a look`}
+      </AlertTitle>
+      <AlertDescription>
+        <span>
+          {first.pointer || "/"}: {first.warning}
+        </span>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
 function Diagnostics({ editor }: { readonly editor: EditorController }) {
   const diagnostic = editor.projection.diagnostics[0];
   if (!(diagnostic || editor.workerError)) {
-    return null;
+    return <Warnings editor={editor} />;
   }
   return (
     <Alert className="m-3 w-auto" variant="destructive">

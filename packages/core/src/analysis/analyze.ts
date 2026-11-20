@@ -6,14 +6,16 @@
  * `declaredIn`): a name that a scope around it declares, a logic variable,
  * data, or, where it can only have been meant as a name, an error.
  */
-import { Exit, Option } from "effect";
+import { Effect, Exit, Option } from "effect";
 import { MalformedFormError, unboundSet } from "@/errors/evaluation";
 import { nameOrString } from "@/evaluation/base-forms/primitive";
 import { declares, type Scope, scopeWith } from "@/evaluation/environment";
+import { run } from "@/evaluation/evaluate";
 import { bodyNames, declaredIn, definedIn } from "@/evaluation/hoisting";
 import { isLogicVariableName, isNamespacedName } from "@/logic/terms";
 import {
   fitsForm,
+  isMatchCase,
   isSpecialFormName,
   type SpecialFormName,
   USAGE,
@@ -98,9 +100,11 @@ export interface SemanticNode {
   readonly quoted: boolean;
   readonly specialForm?: SpecialFormName;
   readonly value?: boolean | null | number | string;
+  /** What is wrong though nothing fails, such as a case no value can reach. */
+  readonly warning?: string;
 }
 
-type Role = (index: number, length: number) => string;
+type Role = (index: number, length: number, part?: unknown) => string;
 
 const roleByIndex =
   (roles: readonly string[], fallback: string): Role =>
@@ -116,11 +120,12 @@ const ROLES: Record<SpecialFormName, Role> = {
   "set!": roleByIndex(["operator", "binding", "value"], "value"),
   lambda: roleByIndex(["operator", "parameters", "body"], "body"),
   cond: roleByIndex(["operator"], "branch"),
-  match: (index, length) => {
+  // A last part that is a pair is a case, and the match has no fallback.
+  match: (index, length, part) => {
     if (index < 2) {
       return index === 0 ? "operator" : "subject";
     }
-    return index === length - 1 ? "fallback" : "pattern";
+    return index === length - 1 && !isMatchCase(part) ? "fallback" : "pattern";
   },
   relation: roleByIndex(
     ["operator", "binding", "columns", "options"],
@@ -501,7 +506,7 @@ const formPart = (
 ): SemanticNode => {
   const value = expression[order] as LionExpressionType;
   const at = [...path, order];
-  const role = ROLES[form](order, expression.length);
+  const role = ROLES[form](order, expression.length, value);
   if (role === "operator") {
     return stringNode(value as string, at, false, [{ kind: "form" }]);
   }
@@ -558,7 +563,7 @@ const formParts = (
   const inner =
     form === "lambda" ? lambdaContext(expression, path, context) : context;
   return expression.map((_, order) => ({
-    role: ROLES[form](order, expression.length),
+    role: ROLES[form](order, expression.length, expression[order]),
     order,
     node: formPart(
       form,
@@ -654,12 +659,16 @@ export const analyze = (
     undefined,
     undefined
   );
-  return analyzeNode(expression, [], {
-    body: top,
-    quoted: false,
-    scope: top,
-    top,
-  });
+  return withCaseWarnings(
+    analyzeNode(expression, [], {
+      body: top,
+      quoted: false,
+      scope: top,
+      top,
+    }),
+    expression,
+    environment
+  );
 };
 
 export const flattenAnalysis = (
@@ -674,4 +683,103 @@ export const flattenAnalysis = (
   };
   visit(root);
   return nodes;
+};
+
+/** The part of an expression at a path. */
+const partAt = (expression: unknown, path: StructuralPath): unknown =>
+  path.reduce(
+    (part: unknown, step) =>
+      (part as Record<string | number, unknown> | undefined)?.[step],
+    expression
+  );
+
+/**
+ * Whether a part has the same value wherever it runs: each name in it is
+ * the host's, or bound inside the part itself, as a lambda's parameter is,
+ * and it has no logic variable.
+ */
+const closed = (node: SemanticNode, inside: string): boolean => {
+  const { meaning } = node;
+  if (meaning?.kind === "logic-variable" || meaning?.kind === "unbound") {
+    return false;
+  }
+  if (
+    meaning?.kind === "name" &&
+    meaning.binding.kind !== "environment" &&
+    !meaning.binding.at.every((at) => at.startsWith(inside))
+  ) {
+    return false;
+  }
+  return node.children.every((child) => closed(child.node, inside));
+};
+
+/** The most cases of a match whose reach is checked, as pairs are many. */
+const MOST_CASES = 12;
+
+/**
+ * Whether every value `later` allows fits `earlier`, as `schema/includes?`
+ * says it, run on the host's environment; false when it cannot say.
+ */
+const includes = (
+  later: unknown,
+  earlier: unknown,
+  environment: Readonly<Record<string, unknown>>
+) => {
+  const exit = Effect.runSyncExit(
+    run(["schema/includes?", later, earlier], environment)
+  );
+  return Exit.isSuccess(exit) && exit.value === true;
+};
+
+/**
+ * The match cases no value can reach, each warned of: a case whose schema
+ * includes no value an earlier case's schema leaves, as `schema/includes?`
+ * decides, so the earlier case takes every value that fits it. Only cases
+ * whose schemas have one value wherever the match runs are checked.
+ */
+const withCaseWarnings = (
+  root: SemanticNode,
+  expression: LionExpressionType,
+  environment: Readonly<Record<string, unknown>>
+): SemanticNode => {
+  const warn = (node: SemanticNode): SemanticNode => {
+    const children = node.children.map((child) => ({
+      ...child,
+      node: warn(child.node),
+    }));
+    if (node.specialForm !== "match") {
+      return { ...node, children };
+    }
+    const cases = children.filter(
+      (child) => child.role === "pattern" && child.node.children[0]
+    );
+    const schemaOf = (child: SemanticChild) =>
+      child.node.children[0]?.node as SemanticNode;
+    const checked =
+      cases.length <= MOST_CASES &&
+      cases.every((child) => closed(schemaOf(child), schemaOf(child).pointer));
+    if (!checked) {
+      return { ...node, children };
+    }
+    const warned = children.map((child) => {
+      const at = cases.indexOf(child);
+      const later = partAt(expression, schemaOf(child)?.path ?? []);
+      const earlier = cases
+        .slice(0, Math.max(at, 0))
+        .findIndex((each) =>
+          includes(later, partAt(expression, schemaOf(each).path), environment)
+        );
+      return at <= 0 || earlier < 0
+        ? child
+        : {
+            ...child,
+            node: {
+              ...child.node,
+              warning: `This case can never be reached: every value its schema allows fits the schema of case ${earlier + 1}, which comes first.`,
+            },
+          };
+    });
+    return { ...node, children: warned };
+  };
+  return warn(root);
 };

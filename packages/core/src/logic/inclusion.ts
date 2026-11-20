@@ -29,6 +29,15 @@ const fitting = (schema: unknown, value: unknown) =>
     (fit) => fit === true
   );
 
+/** Whether two schemas are written the same way. */
+const sameWritten = (a: unknown, b: unknown) => {
+  try {
+    return show(a) === show(b);
+  } catch {
+    return false;
+  }
+};
+
 const sortsOf = (
   constraints: readonly Constraint[],
   sorts: ReadonlyMap<string, Sort>
@@ -39,8 +48,20 @@ const sortsOf = (
       .map((name) => [name, sorts.get(name) ?? "real"] as const)
   );
 
-/** Whether every value `inner` allows fits `outer`. */
+/**
+ * Whether every value `inner` allows fits `outer`. A schema includes
+ * itself, as one written the same way does, whatever it allows.
+ */
 export const includes = (
+  inner: unknown,
+  outer: unknown
+): Effect.Effect<boolean, LogicError> =>
+  inner === outer || sameWritten(inner, outer)
+    ? Effect.succeed(true)
+    : decided(inner, outer);
+
+/** Whether every value `inner` allows fits `outer`, by listing or the solver. */
+const decided = (
   inner: unknown,
   outer: unknown
 ): Effect.Effect<boolean, LogicError> =>

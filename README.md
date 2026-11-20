@@ -64,6 +64,12 @@ bun run lion more-facts.json --database store.json
 
 The file is loaded before the program runs, so the program can use its relations without declaring them, and is saved afterwards as a [snapshot](#snapshots) program, one form and one fact per line. A file that does not exist yet starts empty. A program that fails, such as one that would break an [invariant](#invariants) saved in the file, leaves the file as it was. Running the same setup again keeps one copy of each rule and invariant.
 
+Read a program without running it, and print what is wrong with it, each with where it stands as a JSON pointer: a part that would fail when it runs, as an `error`, and a part that is wrong though nothing fails, such as a [match](#match) case no value can reach, as a `warning`. It exits with an error when there is an `error`:
+
+```bash
+bun run lion check program.json
+```
+
 Serve the bundled graph editor locally:
 
 ```bash
@@ -357,7 +363,7 @@ If no branch matches and no `else` is provided, `cond` returns `null`. A conditi
 
 ### `match`
 
-Checks a value against schema/function pairs, then applies the function of the first schema the value fits. The last argument is a fallback function.
+Checks a value against schema/function pairs, then applies the function of the first schema the value fits. A last argument that is not a pair is a fallback function, applied to a value no schema fits; without one, as Racket's `match` does, a value no schema fits fails: `No case of the match fits "value", and it has no fallback: …`. A last argument that is a pair is a case, so a fallback is never written as a call of two parts, such as `["func/partial", "f"]`: write it as a lambda.
 
 ```json
 ["match",
@@ -385,6 +391,16 @@ Anything is a [schema](#schemas): a predicate, a record or list of schemas, or a
 A plain value fits a value equal to it, so `match` can pick among choices with `["schema/anyOf", "refund", "void"]`. To pick a branch by one field of a record that has others, open the record: `[["schema/open", {"type": "refund"}], handler]`.
 
 A relation is a predicate too: `["match", "name", ["member", handler], fallback]` takes the first branch when `["member", "name"]` has a match. See [Asking](#asking).
+
+A case that comes after one whose schema takes every value it allows can never be reached. Reading the program finds it without running it, as `schema/includes?` decides, where both schemas have one value wherever the match runs: the graph editor shows it, and `lion check program.json` prints each such case with where it stands, as for this match, whose integer case the number case before it takes:
+
+```json
+["match", 5,
+  ["value/number?", ["lambda", ["n"], "a number"]],
+  ["value/integer?", ["lambda", ["n"], "an integer"]]]
+```
+
+`lion check` prints `[{"at": "/3", "warning": "This case can never be reached: every value its schema allows fits the schema of case 1, which comes first."}]`, and exits with an error when a part would fail when it runs.
 
 ## Logic
 

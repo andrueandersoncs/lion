@@ -158,4 +158,19 @@ describe("schema/includes?", () => {
       }),
     OPTIONS
   );
+
+  it.effect.prop(
+    "says a schema includes itself, whatever it allows",
+    { given: shape(2) },
+    ({ given }) =>
+      Effect.gen(function* () {
+        const outcome = yield* evaluate([
+          "schema/includes?",
+          lion(given),
+          lion(given),
+        ]);
+        expect(outcome).toEqual({ ok: true, value: true });
+      }),
+    OPTIONS
+  );
 });

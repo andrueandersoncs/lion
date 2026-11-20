@@ -23412,5 +23412,27 @@
         ["else", ["quote", "absent-only"]]
       ]
     ]
+  },
+  {
+    "case": "match-without-fallback",
+    "area": "evaluation",
+    "program": [
+      "match",
+      5,
+      ["value/string?", "value/identity"],
+      ["value/boolean?", "value/identity"]
+    ]
+  },
+  {
+    "case": "schema-includes-itself",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        ["schema/includes?", "value/string?", "value/string?"],
+        ["quote", "true"]
+      ],
+      ["else", ["quote", "false"]]
+    ]
   }
 ]

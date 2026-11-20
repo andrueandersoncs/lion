@@ -12,6 +12,7 @@
 import { Array as Arr, Effect, pipe, Record, Schema } from "effect";
 import {
   InvalidFunctionCallError,
+  LogicError,
   logicError,
   MalformedFormError,
   UndefinedYetError,
@@ -88,6 +89,7 @@ import {
 } from "@/logic/terms";
 import {
   fitsForm,
+  isMatchCase,
   isSpecialFormName,
   LionFunctionValueSchema,
   type SpecialFormName,
@@ -299,7 +301,8 @@ const evaluateMatch = (expression: Form): EvaluateResult =>
       }
       value = yield* answer(value);
     }
-    const patterns = rest.slice(0, -1) as (readonly [
+    const hasFallback = !isMatchCase(rest.at(-1));
+    const patterns = (hasFallback ? rest.slice(0, -1) : rest) as (readonly [
       LionExpressionType,
       LionExpressionType,
     ])[];
@@ -309,6 +312,11 @@ const evaluateMatch = (expression: Form): EvaluateResult =>
       if (yield* fits(schema, value)) {
         return yield* apply(fn, [value]);
       }
+    }
+    if (!hasFallback) {
+      return yield* new LogicError({
+        message: `No case of the match fits ${show(value)}, and it has no fallback: ${show(expression)}.`,
+      });
     }
     const fallback = yield* evaluateFunction(rest.at(-1) as LionExpressionType);
     return yield* apply(fallback, [value]);

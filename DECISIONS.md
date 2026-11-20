@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 201 questions have been decided, 90 records explain them, and of what the records assert, 629 hold when Lion is run, 5 are broken, 347 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 202 questions have been decided, 91 records explain them, and of what the records assert, 631 hold when Lion is run, 5 are broken, 350 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -207,6 +207,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-20 | [`key-clash-told-from-rows`](#key-clash-told-from-rows) | `rows-there-are` | [Rows that break a key are kept, and the clash is told from the rows there are](#key-clash-told-from-rows) |
 | 2026-11-20 | [`callback-arity`](#callback-arity) | `as-many-as-it-takes` | [A lambda takes as many arguments as it has parameters, and a callback gives a function as many as it takes](#lambda-takes-its-parameters) |
 | 2026-11-20 | [`set-in-rule-bodies`](#set-in-rule-bodies) | `refused-for-outside-bindings` | [set! fails where the engine chooses the order, for a binding made outside](#set-where-the-engine-orders) |
+| 2026-11-20 | [`match-fallback`](#match-fallback) | `optional` | [A match may leave out its fallback, and a case no value can reach is found without running](#match-cases-checked) |
 
 <a id="program-representation"></a>
 
@@ -4618,3 +4619,36 @@ Recorded 2026-11-20 in `history/notes/set-where-the-engine-orders.json`.
 - Stated, not checked by running Lion: decided `set-in-rule-bodies`: `refused-for-outside-bindings`. "While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began"
 - Holds when Lion is run: `set-outside-binding-in-rule-body` is `error`. "While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began: `set! cannot change "calls" while a rule, query, or find runs: …`."
 - Holds when Lion is run: `set-own-binding-in-rule-body` is `changed`. "A binding the evaluation made for itself, such as a counter a helper defines, it changes as it would anywhere."
+
+<a id="match-fallback"></a>
+
+## match-fallback
+
+Now: `optional`.
+
+- 2026-11-20 `match-fallback`: `optional` over `required`: "A match's last part is a case when it is a pair, and the fallback otherwise. A match with no fallback fails on a value no case fits, as Racket's `match` does" (`match-cases-checked.json`)
+
+<a id="match-cases-checked"></a>
+
+### A match may leave out its fallback, and a case no value can reach is found without running
+
+Recorded 2026-11-20 in `history/notes/match-cases-checked.json`.
+
+**Context.** A match took a value, one or more cases, and a fallback function, all required: "At least one pair and the fallback are required." The last part was the fallback whatever its shape, so `["match", x, [s1, f1], [s2, f2]]` called `s2` on `f2` for its fallback. A case that an earlier case covered, as `value/integer?` after `value/number?`, could never be reached, and nothing said so. The Clef run (`research/runs/clef/`) ranked checking a match's cases with schema inclusion first among its ideas, and the user decided on 2026-11-20 that a match may leave out its fallback.
+
+**Decision.** A match's last part is a case when it is a pair, and the fallback otherwise. A match with no fallback fails on a value no case fits, as Racket's `match` does: `No case of the match fits 5, and it has no fallback: …`. Reading a program without running it warns of a case whose schema an earlier case's schema includes, as `schema/includes?` decides, where both schemas have one value wherever the match runs. The graph editor shows the warning, and `lion check` prints it. A schema includes itself.
+
+**Consequences.** A fallback written as a call of two parts, such as `["func/partial", "double"]`, is read as a case: write it as a lambda. A match with no fallback is a match of cases alone, as in Racket. The analysis evaluates case schemas made only of the host's names and of data, never of a program's own names.
+
+**Alternatives considered.**
+
+- Keep the fallback required. A match whose cases cover every value it can get needs no fallback, and a last pair read as a call is a surprise.
+- Fail when a match has a case no value can reach. A case that cannot be reached changes nothing a program gives, so it is a warning, as in OCaml and Rust, not a failure.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `match-fallback`: `optional`. "A match's last part is a case when it is a pair, and the fallback otherwise. A match with no fallback fails on a value no case fits, as Racket's `match` does"
+- Holds when Lion is run: `match-without-fallback` is `error`. "A match with no fallback fails on a value no case fits, as Racket's `match` does: `No case of the match fits 5, and it has no fallback: …`."
+- Stated, not checked by running Lion: `unreachable-match-case-warning` exists. "Reading a program without running it warns of a case whose schema an earlier case's schema includes, as `schema/includes?` decides, where both schemas have one value wherever the match runs. The graph editor shows the warning, and `lion check` prints it."
+- Stated, not checked by running Lion: `lion-check` exists. "The graph editor shows the warning, and `lion check` prints it."
+- Holds when Lion is run: `schema-includes-itself` is `true`. "A schema includes itself."

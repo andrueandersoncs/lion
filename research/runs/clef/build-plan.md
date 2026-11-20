@@ -66,7 +66,10 @@ Status: `todo`, `doing`, `done (<commit>)`.
 
 ### C. Matching and contracts
 
-7. **A match's cases checked with schema inclusion; the fallback optional** — todo. A decision (the fallback).
+7. **A match's cases checked with schema inclusion; the fallback optional** — done (commit "feat(core)!: a match may leave out its fallback"). Decision `match-fallback` in `history/notes/match-cases-checked.json`.
+   - As built: a last part that is a pair is a case (`isMatchCase` in `schemas/evaluation.ts`); with no fallback, no fit fails naming the value. The analysis (`withCaseWarnings` in `analysis/analyze.ts`) warns of a case an earlier case includes, for case schemas that are closed (host names, data, and names bound inside them); `lion check` prints analysis errors and warnings; the editor shows warnings in a non-blocking alert, and the match node reads "N cases" without a fallback. `schema/includes?` holds of a schema and itself.
+   - Not done: coverage of a subject's schema (a match "checked to cover every value of its schema"). It needs the subject's schema, which item 8's contracts give: do it there.
+   - Proof video: `out/proof/match-warning.mp4`.
    - A match with no fallback fails, naming the value, when no case fits, as Racket's `match` does.
    - `analyze` reports a case that an earlier case includes (it can never be reached), and a match without a fallback whose subject has a known schema (a contract's) that its cases do not cover. Both decided by `schema/includes?`.
 8. **Contracts on lambdas, with blame** — todo.

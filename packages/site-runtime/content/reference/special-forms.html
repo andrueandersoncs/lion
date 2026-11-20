@@ -115,19 +115,26 @@
 
 <h2 id="form-match"><code>match</code></h2>
 <code-block lang="json">
-["match", value, [schema, function], ..., fallback]
+["match", value, [schema, function], ..., fallback?]
 </code-block>
 <ul>
-  <li>Evaluates <code>value</code>, then tries each pair in order. The first whose schema the value <a href="#schema-fitting">fits</a> is chosen, and its function is called with the value. If the value fits none, <code>fallback</code> is called with the value.</li>
+  <li>Evaluates <code>value</code>, then tries each pair in order. The first whose schema the value <a href="#schema-fitting">fits</a> is chosen, and its function is called with the value. If the value fits none, <code>fallback</code> is called with the value; a match with no fallback fails, as Racket's does, naming the value.</li>
   <li>Anything is a schema. A function is a predicate: the value fits when it returns <code>true</code>, and a failure, or any other result, counts as not fitting. A relation with one column is a predicate too: the value fits when the goal the relation builds from it <a href="#logic-asking">has a match</a>.</li>
   <li>A record fits a record with the same keys, where each value fits the schema under the same key; <code>["schema/open", record]</code> fits a record that has other keys too. A list fits a list of the same length, item by item. Any other value fits a value equal to it. Schemas nest.</li>
-  <li>At least one pair and the fallback are required.</li>
+  <li>At least one pair is required, and the fallback may be left out. A last part that is a pair is a case, so write a fallback as a lambda or a name, not as a call of two parts.</li>
+  <li>A case after one whose schema takes every value it allows can never be reached. Reading the program finds it, as <a href="#module-schema"><code>schema/includes?</code></a> decides, where both schemas have one value wherever the match runs: the graph editor shows it, and <code>lion check</code> prints it.</li>
 </ul>
 <lion-example name="match">
 ["match", {"type": "user", "name": "Ada"},
   [{"type": ["func/partial", "string/equals?", "user"], "name": "value/string?"},
    ["lambda", ["u"], ["string/concat", "user ", ["object/get", "u", "name"]]]],
   ["lambda", ["other"], "unknown"]]
+</lion-example>
+<p>Without a fallback, a value no case fits fails:</p>
+<lion-example name="match with no fallback" expect="error">
+["match", "five",
+  ["value/integer?", ["lambda", ["n"], "an integer"]],
+  ["value/number?", ["lambda", ["n"], "a number"]]]
 </lion-example>
 <p>A plain value, a list, and a schema built by the <a href="#module-schema"><code>schema</code> module</a> are schemas too. The first pair here asks for a record with one key, so it does not fit; the third opens the record and takes it:</p>
 <lion-example name="match on schemas">

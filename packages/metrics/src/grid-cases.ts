@@ -157,6 +157,18 @@ export const EXPRESSIONS: readonly Expression[] = [
       ["lambda", ["v"], "little"],
     ],
   },
+  {
+    name: "match with no fallback",
+    form: [
+      "match",
+      X,
+      [
+        ["lambda", ["v"], ["number/greaterThan", "v", 1]],
+        ["lambda", ["v"], "big"],
+      ],
+      ["value/number?", ["lambda", ["v"], "little"]],
+    ],
+  },
   { name: "record", form: { next: ["number/add", X, 1], x: X } },
   {
     name: "record with the empty key",

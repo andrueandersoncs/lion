@@ -38,6 +38,8 @@
 - `["object/has?", record, key]` says whether the record has the key, as Racket's `hash-has-key?` does. (`object/has?` added)
 - Where the solver's step stopped a rule, its `absent` also has `contradicting`: the fewest of the step's goals that already have no values together, each with the answer's values, such as `[["number/greaterThanOrEqualTo", "?balance", 0], ["number/lessThan", "?balance", 0]]`. The same goes for an `exists` under `not` that the solver decides as a whole, as a proof that a rule is kept is, which `why` told only as absent. (`why-contradicting` added)
 - When the step denies a goal, as such a proof denies that the rule breaks, and the goals that contradict each other leave out every goal it denies, the other goals allow no values at all: the absent goal says `"vacuous": true`, since the proof holds of no state. (`why-vacuous` added)
+- The graph editor shows the warning, and `lion check` prints it. (`lion-check` added)
+- Reading a program without running it warns of a case whose schema an earlier case's schema includes, as `schema/includes?` decides, where both schemas have one value wherever the match runs. The graph editor shows the warning, and `lion check` prints it. (`unreachable-match-case-warning` added)
 
 ### Removed
 
@@ -103,6 +105,8 @@
 - While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began: `set! cannot change "calls" while a rule, query, or find runs: …`. (`set-outside-binding-in-rule-body` is `error`, was `once-when-written`)
 - A binding the evaluation made for itself, such as a counter a helper defines, it changes as it would anywhere. (`set-own-binding-in-rule-body` is `changed`)
 - The same goes for an `exists` under `not` that the solver decides as a whole, as a proof that a rule is kept is, which `why` told only as absent. (`why-solved-exists-under-not` is `certificate-and-contradiction`, was `absent-only`)
+- A match with no fallback fails on a value no case fits, as Racket's `match` does: `No case of the match fits 5, and it has no fallback: …`. (`match-without-fallback` is `error`, was `malformed`)
+- A schema includes itself. (`schema-includes-itself` is `true`, was `refused-for-strings`)
 
 ### Fixed
 
@@ -156,6 +160,7 @@
 - A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses (`lambda-arity`: `strict` over `extra-arguments-ignored`, was `extra-arguments-ignored`)
 - It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (`object-get-missing-key`: `fails-unless-given-a-value` over `null`, was `undefined`)
 - While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began (`set-in-rule-bodies`: `refused-for-outside-bindings` over `allowed`, `refused-everywhere`, `run-per-row`)
+- A match's last part is a case when it is a pair, and the fallback otherwise. A match with no fallback fails on a value no case fits, as Racket's `match` does (`match-fallback`: `optional` over `required`)
 
 ### Rules
 

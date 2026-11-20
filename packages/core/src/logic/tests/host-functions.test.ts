@@ -270,21 +270,34 @@ describe("a function that calls another", () => {
   );
 
   it.effect.prop(
-    "takes the last part of match as the fallback, whatever its shape",
-    { value: small },
-    ({ value }) =>
+    "takes the last part of match as a case when it is a pair, and as the fallback otherwise",
+    { value: small, pair: Arbitrary.schema(Schema.Boolean) },
+    ({ value, pair }) =>
       Effect.gen(function* () {
-        // A two-item fallback looks like a pattern, but it comes last.
+        // A pair last is a case, and a match with no fallback fails when no
+        // case fits; any other last part is the fallback.
+        const last = pair
+          ? ["value/number?", "double"]
+          : ["lambda", ["v"], ["double", "v"]];
         const result = yield* run(
-          [
-            "match",
-            value,
-            ["value/string?", "value/identity"],
-            ["func/partial", "double"],
-          ],
+          ["match", value, ["value/string?", "value/identity"], last],
           PLAIN
         );
         expect(result).toBe(value * 2);
+        const unmatched = yield* Effect.flip(
+          run(
+            [
+              "match",
+              value,
+              ["value/string?", "value/identity"],
+              ["value/boolean?", "double"],
+            ],
+            PLAIN
+          )
+        );
+        expect(String(unmatched.message)).toContain(
+          `No case of the match fits ${value}, and it has no fallback`
+        );
       }),
     OPTIONS
   );

@@ -4081,4 +4081,35 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "  false",
     tests: ["src/logic/tests/contradiction.test.ts"],
   },
+  {
+    name: "a match's last pair is its fallback",
+    file: core("evaluation/special-forms/match.ts"),
+    find: "  const hasFallback = !isMatchCase(last);",
+    replace: "  const hasFallback = true;",
+    tests: ["src/logic/tests/host-functions.test.ts"],
+  },
+  {
+    name: "the analysis warns of no case a match cannot reach",
+    file: core("analysis/analyze.ts"),
+    find: "      return at <= 0 || earlier < 0",
+    replace: "      return true",
+    tests: ["src/analysis/tests/match-cases.test.ts"],
+  },
+  {
+    name: "the analysis warns of a case only one before the one that covers it",
+    file: core("analysis/analyze.ts"),
+    find: "        .slice(0, Math.max(at, 0))",
+    replace: "        .slice(0, Math.max(at - 1, 0))",
+    tests: ["src/analysis/tests/match-cases.test.ts"],
+  },
+  {
+    name: "a schema does not include itself",
+    file: core("logic/inclusion.ts"),
+    find: "  inner === outer || sameWritten(inner, outer)",
+    replace: "  inner === outer",
+    tests: [
+      "src/analysis/tests/match-cases.test.ts",
+      "src/logic/tests/inclusion.test.ts",
+    ],
+  },
 ];

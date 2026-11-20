@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { analyze, flattenAnalysis } from "@lionlang/core/analysis/analyze";
 import { run } from "@lionlang/core/evaluation/evaluate";
 import { readJson } from "@lionlang/core/evaluation/reading";
 import { LogicDatabase } from "@lionlang/core/logic/database";
@@ -139,8 +140,48 @@ const workerCommand = Command.make(
   )
 );
 
+/**
+ * What reading a program without running it finds: each part that would
+ * fail when it runs, and each that is wrong though nothing fails, such as a
+ * match case no value can reach, with where it stands as a JSON pointer.
+ */
+export const findings = (program: unknown) =>
+  flattenAnalysis(analyze(program as never, stdlib)).flatMap((node) => [
+    ...(node.diagnostic === undefined
+      ? []
+      : [{ at: node.pointer, error: node.diagnostic }]),
+    ...(node.warning === undefined
+      ? []
+      : [{ at: node.pointer, warning: node.warning }]),
+  ]);
+
+const checkCommand = Command.make(
+  "check",
+  { file: Argument.FileText("file") },
+  Effect.fn(
+    function* ({ file }) {
+      const found = findings(yield* readJson(file));
+      yield* Console.log(JSON.stringify(found, null, 2));
+      if (found.some((each) => "error" in each)) {
+        return yield* new CliError.UserError({
+          cause: new Error("The program has parts that fail when they run."),
+        });
+      }
+    },
+    Effect.mapError((cause) =>
+      cause instanceof CliError.UserError
+        ? cause
+        : new CliError.UserError({ cause })
+    )
+  )
+).pipe(
+  Command.withDescription(
+    "Read a Lion JSON program without running it, and print what is wrong with it: parts that fail when they run, and parts that are wrong though nothing fails, such as a match case no value can reach"
+  )
+);
+
 export const command = evaluateCommand.pipe(
-  Command.withSubcommands([replCommand, workerCommand]),
+  Command.withSubcommands([replCommand, workerCommand, checkCommand]),
   Command.withDescription(
     "Evaluate Lion programs, serve the graph editor, and print Lion for a browser"
   )

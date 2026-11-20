@@ -1,0 +1,63 @@
+{
+  "title": "A match may leave out its fallback, and a case no value can reach is found without running",
+  "context": "A match took a value, one or more cases, and a fallback function, all required: \"At least one pair and the fallback are required.\" The last part was the fallback whatever its shape, so `[\"match\", x, [s1, f1], [s2, f2]]` called `s2` on `f2` for its fallback. A case that an earlier case covered, as `value/integer?` after `value/number?`, could never be reached, and nothing said so. The Clef run (`research/runs/clef/`) ranked checking a match's cases with schema inclusion first among its ideas, and the user decided on 2026-11-20 that a match may leave out its fallback.",
+  "decision": "A match's last part is a case when it is a pair, and the fallback otherwise. A match with no fallback fails on a value no case fits, as Racket's `match` does: `No case of the match fits 5, and it has no fallback: …`. Reading a program without running it warns of a case whose schema an earlier case's schema includes, as `schema/includes?` decides, where both schemas have one value wherever the match runs. The graph editor shows the warning, and `lion check` prints it. A schema includes itself.",
+  "consequences": "A fallback written as a call of two parts, such as `[\"func/partial\", \"double\"]`, is read as a case: write it as a lambda. A match with no fallback is a match of cases alone, as in Racket. The analysis evaluates case schemas made only of the host's names and of data, never of a program's own names.",
+  "alternatives": [
+    {
+      "option": "Keep the fallback required",
+      "rejected": "A match whose cases cover every value it can get needs no fallback, and a last pair read as a call is a surprise."
+    },
+    {
+      "option": "Fail when a match has a case no value can reach",
+      "rejected": "A case that cannot be reached changes nothing a program gives, so it is a warning, as in OCaml and Rust, not a failure."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A match's last part is a case when it is a pair, and the fallback otherwise. A match with no fallback fails on a value no case fits, as Racket's `match` does",
+      "says": {
+        "decision": "match-fallback",
+        "chose": "optional",
+        "over": ["required"],
+        "area": "evaluation",
+        "because": "a match whose cases cover every value needs no fallback, and a last pair read as a call is a surprise"
+      }
+    },
+    {
+      "quote": "A match with no fallback fails on a value no case fits, as Racket's `match` does: `No case of the match fits 5, and it has no fallback: …`.",
+      "says": {
+        "behavior": "match-without-fallback",
+        "is": "error",
+        "area": "evaluation",
+        "was": "malformed",
+        "follows": "racket"
+      }
+    },
+    {
+      "quote": "Reading a program without running it warns of a case whose schema an earlier case's schema includes, as `schema/includes?` decides, where both schemas have one value wherever the match runs. The graph editor shows the warning, and `lion check` prints it.",
+      "says": {
+        "feature": "unreachable-match-case-warning",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The graph editor shows the warning, and `lion check` prints it.",
+      "says": {
+        "feature": "lion-check",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "quote": "A schema includes itself.",
+      "says": {
+        "behavior": "schema-includes-itself",
+        "is": "true",
+        "area": "logic",
+        "was": "refused-for-strings"
+      }
+    }
+  ]
+}

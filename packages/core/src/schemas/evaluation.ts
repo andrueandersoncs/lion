@@ -104,10 +104,20 @@ export const LambdaFormSchema = form(
   Expression
 );
 export const CondFormSchema = Schema.TupleWithRest(form("cond", Pair), [Pair]);
-// ["match", <value>, [<predicate>, <fn>], ..., <fallback-fn>]
+// ["match", <value>, [<schema>, <fn>], ..., <fallback-fn>], where the
+// fallback may be left out: a last part that is a pair is a case.
+const isPair = Schema.is(Pair);
+
+/** Whether a part of a match after its value is one of its cases. */
+export const isMatchCase = (part: unknown) => isPair(part);
+
 export const MatchFormSchema = Schema.TupleWithRest(
   form("match", Expression, Pair),
-  [Pair, Expression]
+  [Expression]
+).pipe(
+  Schema.check(
+    Schema.makeFilter((expression) => expression.slice(3, -1).every(isPair))
+  )
 );
 // ["relation", <name>, [<column>, ...]], or with options such as
 // {"key": [<column>, ...]}
@@ -204,7 +214,7 @@ export const USAGE: Record<SpecialFormName, string> = {
     'lambda takes a list of parameter names and a body, as in ["lambda", ["x"], ["number/add", "x", 1]].',
   cond: 'cond takes one or more cases, each a condition and a result, as in ["cond", [["number/greaterThan", "x", 0], "positive"], ["else", "other"]].',
   match:
-    'match takes a value, one or more cases of a schema and a function, and a fallback function, as in ["match", "x", ["value/number?", "value/identity"], ["lambda", ["v"], null]].',
+    'match takes a value, one or more cases of a schema and a function, and maybe a fallback function, as in ["match", "x", ["value/number?", "value/identity"], ["lambda", ["v"], null]].',
   relation:
     'relation takes a name, a list of columns, and maybe options, as in ["relation", "edge", ["from", "to"]].',
   schema:

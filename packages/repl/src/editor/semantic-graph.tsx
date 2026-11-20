@@ -343,7 +343,10 @@ const describeSpecialForm = (
       return {
         mark: form,
         description: "pattern dispatch",
-        detail: `${patternCount} + fallback`,
+        detail:
+          roleCount("fallback") > 0
+            ? `${patternCount} + fallback`
+            : pluralize(patternCount, "case"),
       };
     }
     case "quote":

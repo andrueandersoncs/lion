@@ -49,6 +49,15 @@ const meaningText = (meaning: StringMeaning | undefined) => {
     : meaning.kind;
 };
 
+/** The parts of a node that only some nodes have. */
+const optionalParts = (node: SemanticNode) => ({
+  ...(node.value === undefined ? {} : { value: node.value }),
+  ...(node.specialForm ? { specialForm: node.specialForm } : {}),
+  ...(node.meaning ? { meaning: node.meaning } : {}),
+  ...(node.diagnostic ? { diagnostic: node.diagnostic } : {}),
+  ...(node.warning ? { warning: node.warning } : {}),
+});
+
 const flattenIndexed = (root: SemanticNode, tree: JsonNode) => {
   const nodes = flattenAnalysis(root);
   return nodes.map((node): IndexedSemanticNode => {
@@ -68,15 +77,12 @@ const flattenIndexed = (root: SemanticNode, tree: JsonNode) => {
       pointer: node.pointer,
       kind: node.kind,
       label: node.label,
-      ...(node.value === undefined ? {} : { value: node.value }),
-      ...(node.specialForm ? { specialForm: node.specialForm } : {}),
+      ...optionalParts(node),
       quoted: node.quoted,
       range,
       children: node.children.map(({ node: childNode }) =>
         nodeId(childNode.path)
       ),
-      ...(node.meaning ? { meaning: node.meaning } : {}),
-      ...(node.diagnostic ? { diagnostic: node.diagnostic } : {}),
       searchText: [
         node.label,
         node.pointer || "/",
