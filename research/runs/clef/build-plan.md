@@ -35,7 +35,8 @@ Status: `todo`, `doing`, `done (<commit>)`.
    - Today `["number/add", "seven", 1]` fails with "Expected number at [0]" (the schema decoder's words); `["label", "seven"]` through two lambdas says the same.
    - Rule: a library function's argument of the wrong kind fails in the same form as its arity message: `"number/add" takes a number as argument 1 but got "seven".` (`modules/lib/shared.ts`: `decode` failures inside `over` and `combining`, which know the function by `show`).
    - Callers: an error that passes out of a Lion function's body says which named functions it passed through, innermost first: `(in "next", called from "label")`. Added in `enter` (`evaluation/special-forms/lambda.ts`) on the error path only. A lambda gets its name from the `define` that binds it, as Racket infers names.
-2. **One arity rule: a lambda refuses extra arguments** — todo. Decision `lambda-arity` reversed.
+2. **One arity rule: a lambda refuses extra arguments** — done (commit "fix(core)!: a lambda takes as many arguments as it has parameters"). Decision `lambda-arity` reversed in `history/notes/lambda-takes-its-parameters.json`.
+   - Built as designed. `counted`/`countOf` in `errors/evaluation.ts` record every function's count (`takes`, lambdas, `func/partial`'s functions); `func/callback` slices the host's arguments to it. `ArgumentMismatchError` is gone (kinds of error 9 -> 8). Four known findings in `history/research/known.json` settled and removed.
    - `enter` fails when given more or fewer arguments than parameters, in the one form of message: `"next" takes 1 argument but got 2.` `ArgumentMismatchError` goes away.
    - Host callbacks: `func/callback` gives the lambda as many of the host's arguments as it takes. Check every library function that calls a Lion function (`array/map` and the rest) for the number of arguments it passes.
    - Guideline line "A call gives a function as many arguments as it takes" gains lambdas; the arity table too.
@@ -71,6 +72,13 @@ Status: `todo`, `doing`, `done (<commit>)`.
 11. **Numbers that carry their units** — todo. Pint's way, checked when the program runs: a quantity is a JSON record of a value and a unit, the unit a record from base unit to whole exponent, equal when the JSON is. Arithmetic checks units; schemas say what unit a value has; the solver solves for exponents.
 12. **Host code that watches a query** — todo. The database keeps derived rows up to date already; add a way for host code (and Lion code) to be told the answers that came and went after each change.
 13. **Delimited continuations** — todo. `reset` and `shift`, one-shot: the body after `shift` runs in a fiber that `k` resumes, so generators, coroutines, and early exit are one construct. A second resume of one `k` fails by name.
+
+## Pitfalls met
+
+- The pre-commit hook runs every package's tests; a failing hook leaves nothing committed. Check `git log` after each commit.
+- `compiled.test.ts` compares the compiled evaluator with `evaluation/tests/interpreter.ts`: change the interpreter with the evaluator. Messages are compared as raised (`raisedAs`), without the trail of callers.
+- Build core (`bunx turbo build --filter=@lionlang/core --filter=@lionlang/cli`) before `bun run --cwd packages/site-runtime docs`: the docs run the built core, and `bun run history check`'s probes do too.
+- A settled finding must leave `history/research/known.json`, or the check fails.
 
 ## Found while building
 

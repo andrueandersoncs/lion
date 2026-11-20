@@ -1,0 +1,98 @@
+{
+  "title": "A lambda takes as many arguments as it has parameters, and a callback gives a function as many as it takes",
+  "context": "Library functions, relations, schemas, aggregates, and graph algorithms took a set number of arguments and refused any other with one form of message, but a lambda ignored arguments past its parameters, as in JavaScript, so that host code could call it as a callback: `[[\"lambda\", [\"a\"], \"a\"], 1, 2, 3]` was `1`. A lambda given too few failed with `ArgumentMismatchError`, whose message named no function and no count. So a Lion programmer had two arity rules to remember. The Clef run (`research/runs/clef/`) ranked refusing extra arguments to a lambda among the first ideas to adopt, as Racket does, and the user decided it on 2026-11-20.",
+  "decision": "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses: `[\"lambda\",[\"a\"],\"a\"] takes 1 argument but got 3.`, or, for a lambda a `define` bound, `\"next\" takes 1 argument but got 2.` `func/callback`, where host code meets a Lion function, gives the function as many of the host's arguments as it takes, so `Array.prototype.map` can call a lambda or a library function of one parameter through it.",
+  "consequences": "`ArgumentMismatchError` is gone: a lambda's wrong count is a `LogicError`, as every other function's is. A program that called a lambda with extra arguments, by mistake or to ignore them, fails until it gives the lambda what it takes. A library function handed to host code through `func/callback` no longer fails on the extra arguments `Array.prototype.map` passes. The table of `arity.test.ts` checks lambdas as well.",
+  "alternatives": [
+    {
+      "option": "Keep ignoring a lambda's extra arguments, as in JavaScript",
+      "rejected": "Lion had two arity rules, and a wrong call to a lambda gave a wrong answer instead of an error."
+    },
+    {
+      "option": "Refuse extra arguments everywhere, callbacks too",
+      "rejected": "Host code such as `Array.prototype.map` passes arguments a Lion function cannot name, so a callback would have to declare parameters it never uses."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses",
+      "says": {
+        "decision": "lambda-arity",
+        "chose": "strict",
+        "over": ["extra-arguments-ignored"],
+        "area": "evaluation",
+        "because": "one arity rule for every function, and a wrong call fails instead of giving a wrong answer"
+      }
+    },
+    {
+      "quote": "`func/callback`, where host code meets a Lion function, gives the function as many of the host's arguments as it takes",
+      "says": {
+        "decision": "callback-arity",
+        "chose": "as-many-as-it-takes",
+        "over": ["all-host-arguments"],
+        "area": "host",
+        "because": "host code passes arguments a Lion function cannot name"
+      }
+    },
+    {
+      "quote": "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses: `[\"lambda\",[\"a\"],\"a\"] takes 1 argument but got 3.`",
+      "says": {
+        "behavior": "lambda-extra-arguments",
+        "is": "error",
+        "area": "evaluation",
+        "was": "ignored",
+        "follows": "racket"
+      }
+    },
+    {
+      "quote": "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses",
+      "says": {
+        "behavior": "lambda-missing-arguments",
+        "is": "error",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "A library function handed to host code through `func/callback` no longer fails on the extra arguments `Array.prototype.map` passes.",
+      "says": {
+        "behavior": "host-calls-library-function-extra-arguments",
+        "is": "ignored",
+        "area": "host",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "`ArgumentMismatchError` is gone: a lambda's wrong count is a `LogicError`, as every other function's is.",
+      "says": {
+        "feature": "ArgumentMismatchError",
+        "kind": "error",
+        "present": false
+      }
+    },
+    {
+      "quote": "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses",
+      "says": {
+        "rule": "arity-rule",
+        "holds": true,
+        "statement": "A call gives a function as many arguments as it takes, and one with any other number fails with one form of message: a lambda, a library function, a relation, a schema, an aggregate, and a graph algorithm, also where the call waits for a logic variable; func/callback gives a function as many of the host's arguments as it takes",
+        "area": "library",
+        "predicts": [
+          { "behavior": "lambda-extra-arguments", "is": "error" },
+          { "behavior": "lambda-missing-arguments", "is": "error" },
+          { "behavior": "library-function-extra-arguments", "is": "error" },
+          { "behavior": "library-function-missing-arguments", "is": "error" },
+          { "behavior": "relation-call-wrong-arity", "is": "error" },
+          { "behavior": "schema-call-wrong-arity", "is": "error" },
+          { "behavior": "graph-algorithm-wrong-arity", "is": "error" },
+          { "behavior": "arity-error-in-waiting-call", "is": "error" },
+          { "behavior": "func-bind-missing-this", "is": "error" },
+          { "behavior": "func-apply-missing-this", "is": "error" },
+          {
+            "behavior": "host-calls-library-function-extra-arguments",
+            "is": "ignored"
+          }
+        ]
+      }
+    }
+  ]
+}

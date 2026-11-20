@@ -117,9 +117,6 @@ export const describeError = (error: unknown): string => {
   if (hasTag(error, "InvalidFunctionCallError")) {
     return `InvalidFunctionCallError: ${stringify(error.expression)} is not a valid call. The first element must be a special form or evaluate to a function.`;
   }
-  if (hasTag(error, "ArgumentMismatchError")) {
-    return "ArgumentMismatchError: a lambda was called with fewer arguments than it has parameters.";
-  }
   if (error instanceof Error) {
     const name = hasTag(error, "SchemaError") ? "SchemaError" : error.name;
     return `${name}: ${error.message}`;

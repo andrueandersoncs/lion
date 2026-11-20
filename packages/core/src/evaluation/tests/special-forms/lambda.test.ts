@@ -1,12 +1,9 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Array as Arr, Effect, Schema } from "effect";
-import {
-  ArgumentMismatchError,
-  type InvalidFunctionCallError,
-} from "@/errors/evaluation";
+import { Arbitrary, Array as Arr, Effect, Result, Schema } from "effect";
+import type { InvalidFunctionCallError } from "@/errors/evaluation";
 import { run } from "@/evaluation/evaluate";
-import { LambdaFormSchema, ValidIdentifierSchema } from "@/schemas/evaluation";
-import { LionExpressionSchema } from "@/schemas/lion-expression";
+import { stdlib } from "@/modules";
+import { LambdaFormSchema } from "@/schemas/evaluation";
 
 describe("lambda special form", () => {
   it.effect.prop(
@@ -44,31 +41,37 @@ describe("lambda special form", () => {
       })
   );
   it.effect.prop(
-    "should evaluate to a function, calling the function with too few arguments should produce an error",
-    [
-      Schema.Tuple([
-        Schema.Literal("lambda"),
-        Schema.TupleWithRest(Schema.Tuple([ValidIdentifierSchema]), [
-          ValidIdentifierSchema,
-        ]),
-        LionExpressionSchema,
-      ]),
-    ],
-    ([expression]) =>
+    "takes as many arguments as it has parameters, and fails in the arity message with any other number",
+    {
+      parameters: Arbitrary.map(
+        Arbitrary.array(Arbitrary.schema(Schema.Boolean), {
+          minLength: 4,
+          maxLength: 4,
+        }),
+        (chosen) => ["a", "b", "c", "d"].filter((_, at) => chosen[at])
+      ),
+      given: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 }))
+      ),
+      named: Arbitrary.schema(Schema.Boolean),
+    },
+    ({ parameters, given, named }) =>
       Effect.gen(function* () {
-        const result = yield* run(expression, {});
-        expect(typeof result).toBe("function");
-
-        if (typeof result === "function") {
-          const result2 = result();
-          expect(Effect.isEffect(result2)).toBe(true);
-
-          const result3 = yield* (
-            result2 as Effect.Effect<unknown, ArgumentMismatchError>
-          ).pipe(
-            Effect.catchTag("ArgumentMismatchError", (e) => Effect.succeed(e))
-          );
-          expect(result3).toBeInstanceOf(ArgumentMismatchError);
+        const lambda = ["lambda", parameters, ["array/make", ...parameters]];
+        const args = Array.from({ length: given }, (_, at) => at);
+        const program = named
+          ? ["begin", ["define", "f", lambda], ["f", ...args]]
+          : [lambda, ...args];
+        const result = yield* Effect.result(run(program, stdlib));
+        if (given === parameters.length) {
+          expect(result).toStrictEqual(Result.succeed(args));
+        } else {
+          const who = named ? '"f"' : JSON.stringify(lambda);
+          const many = `${parameters.length} argument${parameters.length === 1 ? "" : "s"}`;
+          expect(Result.isFailure(result) && result.failure).toMatchObject({
+            _tag: "LogicError",
+            message: `${who} takes ${many} but got ${given}.`,
+          });
         }
       })
   );

@@ -3961,4 +3961,25 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "  if (!(result instanceof Pending)) {",
     tests: ["src/evaluation/tests/failures.test.ts"],
   },
+  {
+    name: "a lambda ignores arguments past its parameters",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "  if (args.length !== parameters.length) {",
+    replace: "  if (args.length < parameters.length) {",
+    tests: ["src/evaluation/tests/special-forms/lambda.test.ts"],
+  },
+  {
+    name: "a callback gives a function every argument host code passes",
+    file: core("modules/func.ts"),
+    find: "      const args = given.slice(0, most);",
+    replace: "      const args = given;",
+    tests: ["src/modules/tests/func.test.ts"],
+  },
+  {
+    name: "a function func/partial built does not say how many it takes",
+    file: core("modules/func.ts"),
+    find: "      count === undefined\n        ? made",
+    replace: "      count !== undefined\n        ? made",
+    tests: ["src/modules/tests/func.test.ts"],
+  },
 ];

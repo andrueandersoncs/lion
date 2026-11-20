@@ -11,12 +11,12 @@
  */
 import { Array as Arr, Effect, pipe, Record, Schema } from "effect";
 import {
-  ArgumentMismatchError,
   InvalidFunctionCallError,
   logicError,
   MalformedFormError,
   UndefinedYetError,
   unboundSet,
+  wrongCount,
 } from "@/errors/evaluation";
 import { answer, isWriting, known } from "@/evaluation/asking";
 import { nameOrString } from "@/evaluation/base-forms/primitive";
@@ -155,15 +155,22 @@ const evaluateRecord = (expression: Record<string, LionExpressionType>) =>
     })
   );
 
+/** The names `define` gave Lion functions, which their failures use. */
+const NAMES = new WeakMap<object, string>();
+
 const makeLambda = (
   parameters: readonly string[],
   body: LionExpressionType,
   environment: Environment
-) =>
-  registerLambda(
+) => {
+  const fn: (...args: unknown[]) => EvaluateResult = registerLambda(
     Effect.fn(function* (...args: unknown[]) {
-      if (args.length < parameters.length) {
-        return yield* new ArgumentMismatchError();
+      if (args.length !== parameters.length) {
+        return yield* wrongCount(
+          JSON.stringify(NAMES.get(fn) ?? ["lambda", parameters, body]),
+          [parameters.length, parameters.length],
+          args.length
+        );
       }
       const frame = makeEnvironment(
         Record.fromEntries(Arr.zip(parameters, args)),
@@ -177,6 +184,8 @@ const makeLambda = (
     }),
     { parameters, body, environment }
   );
+  return fn;
+};
 
 const isSpecial = (arg: unknown) =>
   typeof arg === "function" || arg instanceof LogicValue;
@@ -374,6 +383,13 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
         const environment = yield* LionEnvironmentService;
         const value = yield* evaluate(expression as LionExpressionType);
         setLocalBinding(environment, id as string, value);
+        if (
+          typeof value === "function" &&
+          lambdaInfo(value) &&
+          !NAMES.has(value)
+        ) {
+          NAMES.set(value, id as string);
+        }
         return value;
       }),
     "set!": ([_, id, expression]: Form) =>

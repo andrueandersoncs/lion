@@ -76,7 +76,7 @@
 </code-block>
 <ul>
   <li>Returns a function. Calling it binds each parameter to the matching argument, and declares the names its body defines, in a new environment whose parent is the one where the lambda was created, then evaluates <code>body</code>.</li>
-  <li>Called with fewer arguments than parameters, it fails with <code>ArgumentMismatchError</code>. Extra arguments are ignored.</li>
+  <li>A call gives it one argument for each parameter. Called with any other number, it fails as every function does: <code>["lambda",["a","b"],"a"] takes 2 arguments but got 1.</code>, or, when a <code>define</code> bound it, with the name it was bound to. Host code that passes more, as <code>Array.prototype.map</code> does, calls it through <a href="#module-func"><code>func/callback</code></a>, which gives it as many as it takes.</li>
   <li>The body is one expression; use <code>begin</code> for several. It is in <a href="#rule-calls">tail position</a>, so a lambda that calls itself last loops in constant memory.</li>
   <li>Parameters can be any non-empty strings but <code>__proto__</code>; one that takes a form's name makes the form a call in the body: see <a href="#rule-reserved">Names of forms</a>.</li>
 </ul>

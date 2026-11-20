@@ -3,15 +3,6 @@ import { show } from "@/logic/terms";
 import { isSpecialFormName } from "@/schemas/evaluation";
 import { LionExpressionSchema } from "@/schemas/lion-expression";
 
-export class ArgumentMismatchError extends Schema.TaggedError<ArgumentMismatchError>()(
-  "ArgumentMismatchError",
-  {}
-) {
-  override get message() {
-    return "A lambda was called with fewer arguments than it has parameters.";
-  }
-}
-
 export class InvalidFunctionCallError extends Schema.TaggedError<InvalidFunctionCallError>()(
   "InvalidFunctionCallError",
   { expression: LionExpressionSchema }
@@ -122,6 +113,37 @@ export const atLeast = (least: number): Count => [
 
 const plural = (count: number) => `${count} argument${count === 1 ? "" : "s"}`;
 
+/** How many arguments each function takes, the fewest and the most. */
+const COUNTS = new WeakMap<object, readonly [least: number, most: number]>();
+
+/** Records how many arguments a function takes. */
+export const counted = <F extends object>(fn: F, count: Count): F => {
+  COUNTS.set(fn, typeof count === "number" ? [count, count] : count);
+  return fn;
+};
+
+/** How many arguments a function takes, when it says. */
+export const countOf = (fn: unknown) =>
+  typeof fn === "function" ? COUNTS.get(fn) : undefined;
+
+/** The failure of a call that gives `who` a number of arguments it does not take. */
+export const wrongCount = (
+  who: string,
+  [least, most]: readonly [number, number],
+  got: number,
+  what?: string
+) => {
+  let many = `${least} to ${plural(most)}`;
+  if (most === least) {
+    many = plural(least);
+  } else if (most === Number.POSITIVE_INFINITY) {
+    many = `${least} or more arguments`;
+  }
+  return new LogicError({
+    message: `${who} takes ${many}${what ? ` (${what})` : ""} but got ${got}.`,
+  });
+};
+
 /**
  * A function that takes a set number of arguments. A call with any other
  * number fails and says how many the function takes, so no argument is
@@ -133,20 +155,14 @@ export const takes = <A extends unknown[], B, E, R>(
   fn: (...args: A) => Effect.Effect<B, E, R>,
   what?: string
 ) => {
-  const [least, most] = typeof count === "number" ? [count, count] : count;
-  let many = `${least} to ${plural(most)}`;
-  if (most === least) {
-    many = plural(least);
-  } else if (most === Number.POSITIVE_INFINITY) {
-    many = `${least} or more arguments`;
-  }
+  const range: readonly [number, number] =
+    typeof count === "number" ? [count, count] : count;
+  const [least, most] = range;
   const self = (...args: A): Effect.Effect<B, E | LogicError, R> =>
     args.length < least || args.length > most
-      ? logicError(
-          `${show(self)} takes ${many}${what ? ` (${what})` : ""} but got ${args.length}.`
-        )
+      ? Effect.fail(wrongCount(show(self), range, args.length, what))
       : fn(...args);
-  return self;
+  return counted(self, range);
 };
 
 /**

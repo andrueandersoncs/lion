@@ -1,8 +1,9 @@
 import { Effect } from "effect";
 import {
-  ArgumentMismatchError,
+  counted,
   leaving,
   type UnboundNameError,
+  wrongCount,
 } from "@/errors/evaluation";
 import { nameOrString, readsAsName } from "@/evaluation/base-forms/primitive";
 import {
@@ -123,10 +124,25 @@ export const nameLambda = (value: unknown, name: string) => {
 class Called extends Pending {}
 
 /**
+ * The failure of a call that gives a Lion function a number of arguments
+ * other than its parameters, as a library function's says: by the name a
+ * `define` gave it, or else as it is written.
+ */
+const refused = (lambda: Lambda, got: number) => {
+  const count = lambda.parameters.length;
+  return wrongCount(
+    JSON.stringify(lambda.name ?? ["lambda", lambda.parameters, lambda.body]),
+    [count, count],
+    got
+  );
+};
+
+/**
  * Calls a Lion function from compiled code that is `depth` calls deep. Its
  * body runs right away, in a scope of its parameters inside the scope it
- * closes over. A call too deep for the stack starts again at the bottom of
- * it.
+ * closes over, when the call gives it one argument for each parameter, as
+ * every function takes as many as it says. A call too deep for the stack
+ * starts again at the bottom of it.
  */
 export const enter = (
   lambda: Lambda,
@@ -137,8 +153,8 @@ export const enter = (
     return new Called(Effect.suspend(() => toEffect(enter(lambda, args, 0))));
   }
   const { parameters } = lambda;
-  if (args.length < parameters.length) {
-    return new Pending(Effect.fail(new ArgumentMismatchError()));
+  if (args.length !== parameters.length) {
+    return new Pending(Effect.fail(refused(lambda, args.length)));
   }
   const bindings = new Map<string, unknown>();
   for (const [at, parameter] of parameters.entries()) {
@@ -195,7 +211,7 @@ export const makeLambda = (
     { parameters, body, environment }
   );
   LAMBDAS.set(fn, lambda);
-  return fn;
+  return counted(fn, parameters.length);
 };
 
 /**

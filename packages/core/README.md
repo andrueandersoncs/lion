@@ -190,7 +190,7 @@ Calls nest as deep as memory allows. A call in tail position keeps nothing of th
   ["count", 100000, 0]]
 ```
 
-A call must give a lambda at least as many arguments as it has parameters. Arguments beyond those are ignored, as in JavaScript, so host code can call a lambda as a callback. The functions of the [standard library](#standard-library) are stricter: each takes a set number of arguments.
+A call gives a lambda one argument for each parameter, as it gives every function as many as it takes, and any other number fails in the same form of message: `[["lambda", ["a"], "a"], 1, 2]` fails with `["lambda",["a"],"a"] takes 1 argument but got 2.`, and a lambda a `define` bound is named by it, as `"next" takes 1 argument but got 2.` Host code that passes more arguments than a function can name, as `Array.prototype.map` does, calls it through `func/callback`, which gives it as many as it takes.
 
 ### `cond`
 

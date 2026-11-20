@@ -58,16 +58,6 @@
   {
     "assumption": "rules-hold",
     "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "lambda-extra-arguments",
-      "predicted": "error",
-      "found": "ignored"
-    },
-    "note": "A lambda ignores extra arguments 'as in JavaScript' (c771be4, 356e74a, README), so host code can call it as a callback; Scheme raises an error. Decided (lambda-arity) but never named as an exception to the Scheme rule, and the arity rule lists it as its own exception."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
       "rule": "api-credentials-server-side",
       "case": "editor-jev-api-key-storage",
       "predicted": "server-side",
@@ -104,16 +94,6 @@
       "found": "present"
     },
     "note": "4c8df1b's message says a belief is judged from the version it was formed in, but the plain model in reasoning-skill.test.ts says other beliefs are judged in the present; the mutation list treats judging only in the present as a break, so the test comment looks stale."
-  },
-  {
-    "assumption": "scheme-precedent",
-    "witness": "356e74a-12",
-    "note": "Lambdas ignore extra arguments 'as in JavaScript' (356e74a): a base form following JavaScript, not Scheme. See lambda-extra-arguments."
-  },
-  {
-    "assumption": "scheme-precedent",
-    "witness": "doc-readme-83",
-    "note": "The README says arguments beyond a lambda's parameters are ignored 'as in JavaScript'. See lambda-extra-arguments."
   },
   {
     "assumption": "removals-decided",
@@ -251,11 +231,6 @@
       "started": 1695
     },
     "note": "1d5800a measures 'against the previous commit', but its starting core-nesting-decisions (1695) is not where b030d8a ended (1692); one of the two was measured on a working tree that differed from its commit."
-  },
-  {
-    "assumption": "scheme-precedent",
-    "witness": "arity-rule-19",
-    "note": "The arity-rule decision record says a lambda ignores arguments past its parameters as JavaScript does, so host code can call it as a callback; a Scheme lambda refuses them. A decision that keeps this departure would settle it with an exception to scheme-racket-semantics."
   },
   {
     "assumption": "removals-decided",

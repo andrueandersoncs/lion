@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 199 questions have been decided, 87 records explain them, and of what the records assert, 624 hold when Lion is run, 5 are broken, 343 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 200 questions have been decided, 88 records explain them, and of what the records assert, 626 hold when Lion is run, 5 are broken, 345 are stated but not checked by running Lion, and 25 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -37,7 +37,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-03-30 | [`special-form-prefix`](#special-form-prefix) | `plain` | [Special forms keep plain names, such as `"define"`, with no prefix](#special-forms-plain-names), [Special forms are written with a leading slash, such as `"/define"`](#special-forms-slash-prefix) |
 | 2026-03-31 | [`property-access-function`](#property-access-function) | `object/get` |  |
 | 2026-03-31 | [`array-without-function-head`](#array-without-function-head) | `error` | [An array is always a special form or a call, never a list that evaluates to itself](#arrays-are-never-data) |
-| 2026-04-01 | [`lambda-arity`](#lambda-arity) | `extra-arguments-ignored` | [A call gives a function as many arguments as it takes, and any other number fails with one form of message](#arity-rule) |
+| 2026-04-01 | [`lambda-arity`](#lambda-arity) | `strict` | [A call gives a function as many arguments as it takes, and any other number fails with one form of message](#arity-rule), [A lambda takes as many arguments as it has parameters, and a callback gives a function as many as it takes](#lambda-takes-its-parameters) |
 | 2026-04-02 | [`record-pattern-keys`](#record-pattern-keys) | `exact` | [A record pattern in `match` fits any record that has the pattern's keys with values that fit](#record-patterns-by-keys), [A record fits only a record with the same keys, and `schema/open` allows more](#records-are-exact), [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](#schemas-are-logic) |
 | 2026-04-03 | [`library-helpers-location`](#library-helpers-location) | `modules-lib-folder` |  |
 | 2026-04-04 | [`closure-environment-implementation`](#closure-environment-implementation) | `shared-mutable-frames` | [Environments form a chain from local to global, and a lambda closes over the environment it is made in](#lexical-closures) |
@@ -205,6 +205,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`command-proofs`](#command-proofs) | `induction-as-a-question` | [A proof that every command keeps a rule is a question to the solver, and the solver's proofs come with certificates anyone can check](#command-proofs) |
 | 2026-11-20 | [`snapshot-form-order`](#snapshot-form-order) | `rules-then-one-fact-form` | [A snapshot writes the rules, then every fact in one form, then the invariants](#snapshot-rules-before-facts) |
 | 2026-11-20 | [`key-clash-told-from-rows`](#key-clash-told-from-rows) | `rows-there-are` | [Rows that break a key are kept, and the clash is told from the rows there are](#key-clash-told-from-rows) |
+| 2026-11-20 | [`callback-arity`](#callback-arity) | `as-many-as-it-takes` | [A lambda takes as many arguments as it has parameters, and a callback gives a function as many as it takes](#lambda-takes-its-parameters) |
 
 <a id="program-representation"></a>
 
@@ -424,15 +425,15 @@ Recorded 2026-11-13 in `history/notes/arity-rule.json`.
 - Stated, not checked by running Lion: `arity-message-form` is `one-form`. "any other number fails with one form of message"
 - Holds when Lion is run: `func-bind-missing-this` is `error`. "`func/bind` and `func/apply` need the function and its `this`"
 - Holds when Lion is run: `func-apply-missing-this` is `error`. "`func/bind` and `func/apply` need the function and its `this`"
-- Holds when Lion is run: `host-calls-library-function-extra-arguments` is `error`. "a library function handed to host code that passes extra arguments, as `Array.prototype.map` does through `func/callback`, fails"
+- Replaced by a later word: `host-calls-library-function-extra-arguments` is `error`. "a library function handed to host code that passes extra arguments, as `Array.prototype.map` does through `func/callback`, fails"
 - Holds when Lion is run: `combining-functions-several-arguments` is `combine-left-to-right`. "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do"
 - Holds when Lion is run: `add-more-than-two-arguments` is `sum`. "`["number/add", 1, 2, 3]` is `6`, where the `3` used to be dropped"
-- Holds when Lion is run: `lambda-extra-arguments` is `ignored`. "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback."
+- Replaced by a later word: `lambda-extra-arguments` is `ignored`. "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback."
 - Stated, not checked by running Lion: decided `arity-checks`: `one-takes-function`. "One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms"
 - Holds when Lion is run: `takes` exists. "One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms"
 - Holds when Lion is run: `over` exists. "`over` builds a library function from a schema for each argument"
 - Stated, not checked by running Lion: `core-code-lines-added` is 62. "The code grew by 62 lines"
-- Stated, not checked by running Lion: decided `lambda-arity`: `extra-arguments-ignored`. "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback."
+- Replaced by a later word: decided `lambda-arity`: `extra-arguments-ignored`. "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback."
 - Holds when Lion is run: rule `arity-rule` holds. "A call gives a function as many arguments as it takes, and any other number fails with one form of message"
 - Stated, not checked by running Lion: rule `new-functions-declare-arity` holds. "Every new function declares what it takes, with `takes` or `over`, and has a row in the table of `arity.test.ts`."
 - Holds when Lion is run: `library-function-extra-arguments` is `error`. "Every function of the standard library takes a set number of arguments, and a call with any other number fails: `"number/subtract" takes 2 arguments but got 3.`"
@@ -905,9 +906,37 @@ Recorded 2026-03-31 in `history/notes/arrays-are-never-data.json`.
 
 ## lambda-arity
 
-Now: `extra-arguments-ignored`.
+Now: `strict`.
 
-- 2026-04-01 `lambda-arity`: `extra-arguments-ignored`: "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback." (`c771be4`, `2026-11-13-core-0.8.0.json`, `356e74a`, `arity-rule.json`, `README.md`)
+- 2026-04-01 `lambda-arity`: `extra-arguments-ignored`: "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback." (`c771be4`, `2026-11-13-core-0.8.0.json`, `356e74a`, `arity-rule.json`)
+- 2026-11-20 `lambda-arity`: `strict` over `extra-arguments-ignored`, was `extra-arguments-ignored`: "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses" (`lambda-takes-its-parameters.json`)
+
+<a id="lambda-takes-its-parameters"></a>
+
+### A lambda takes as many arguments as it has parameters, and a callback gives a function as many as it takes
+
+Recorded 2026-11-20 in `history/notes/lambda-takes-its-parameters.json`.
+
+**Context.** Library functions, relations, schemas, aggregates, and graph algorithms took a set number of arguments and refused any other with one form of message, but a lambda ignored arguments past its parameters, as in JavaScript, so that host code could call it as a callback: `[["lambda", ["a"], "a"], 1, 2, 3]` was `1`. A lambda given too few failed with `ArgumentMismatchError`, whose message named no function and no count. So a Lion programmer had two arity rules to remember. The Clef run (`research/runs/clef/`) ranked refusing extra arguments to a lambda among the first ideas to adopt, as Racket does, and the user decided it on 2026-11-20.
+
+**Decision.** A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses: `["lambda",["a"],"a"] takes 1 argument but got 3.`, or, for a lambda a `define` bound, `"next" takes 1 argument but got 2.` `func/callback`, where host code meets a Lion function, gives the function as many of the host's arguments as it takes, so `Array.prototype.map` can call a lambda or a library function of one parameter through it.
+
+**Consequences.** `ArgumentMismatchError` is gone: a lambda's wrong count is a `LogicError`, as every other function's is. A program that called a lambda with extra arguments, by mistake or to ignore them, fails until it gives the lambda what it takes. A library function handed to host code through `func/callback` no longer fails on the extra arguments `Array.prototype.map` passes. The table of `arity.test.ts` checks lambdas as well.
+
+**Alternatives considered.**
+
+- Keep ignoring a lambda's extra arguments, as in JavaScript. Lion had two arity rules, and a wrong call to a lambda gave a wrong answer instead of an error.
+- Refuse extra arguments everywhere, callbacks too. Host code such as `Array.prototype.map` passes arguments a Lion function cannot name, so a callback would have to declare parameters it never uses.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `lambda-arity`: `strict`. "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses"
+- Stated, not checked by running Lion: decided `callback-arity`: `as-many-as-it-takes`. "`func/callback`, where host code meets a Lion function, gives the function as many of the host's arguments as it takes"
+- Holds when Lion is run: `lambda-extra-arguments` is `error`. "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses: `["lambda",["a"],"a"] takes 1 argument but got 3.`"
+- Holds when Lion is run: `lambda-missing-arguments` is `error`. "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses"
+- Holds when Lion is run: `host-calls-library-function-extra-arguments` is `ignored`. "A library function handed to host code through `func/callback` no longer fails on the extra arguments `Array.prototype.map` passes."
+- Stated, not checked by running Lion: `ArgumentMismatchError` is removed. "`ArgumentMismatchError` is gone: a lambda's wrong count is a `LogicError`, as every other function's is."
+- Holds when Lion is run: rule `arity-rule` holds. "A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses"
 
 <a id="record-pattern-keys"></a>
 
@@ -4524,3 +4553,11 @@ Recorded 2026-11-20 in `history/notes/key-clash-told-from-rows.json`.
 - Holds when Lion is run: `key-clash-rule-named` is `gives-now`. "of the rules that give it, the one whose written form sorts first. Which rules give a row is found when a clash is told, by asking each rule's body with the row's values"
 - Holds when Lion is run: `derived-rows-after-a-change-a-key-refuses` is `followed-back`. "A refused change is followed back through the same model"
 - Holds when Lion is run: `derived-rows-after-a-kept-change-whose-rows-break-a-key` is `kept`. "A group whose rows break a key keeps them"
+
+<a id="callback-arity"></a>
+
+## callback-arity
+
+Now: `as-many-as-it-takes`.
+
+- 2026-11-20 `callback-arity`: `as-many-as-it-takes` over `all-host-arguments`: "`func/callback`, where host code meets a Lion function, gives the function as many of the host's arguments as it takes" (`lambda-takes-its-parameters.json`)

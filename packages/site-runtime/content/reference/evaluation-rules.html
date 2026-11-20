@@ -68,7 +68,7 @@
 <ul>
   <li>Arguments are evaluated before the call, from left to right.</li>
   <li>A function may return a value or an Effect. Lion runs an Effect and uses its result.</li>
-  <li>A <a href="#form-lambda">lambda</a> called with fewer arguments than it has parameters fails with <code>ArgumentMismatchError</code>. Extra arguments are ignored.</li>
+  <li>A call gives a function as many arguments as it takes: a <a href="#form-lambda">lambda</a> one for each parameter, and a library function, a relation, or a schema what it says. Any other number fails, and says how many the function takes.</li>
   <li>A call with a logic variable among its arguments does not run. It <a href="#logic-waiting">waits</a>: it becomes a value that a rule or query computes once the variable is bound. Every function waits this way, except relations, aggregates, graph algorithms, and lambdas, which take logic variables as they are.</li>
   <li>A function that is given a goal with a relation in it gets the goal's answer, <code>true</code> or <code>false</code>: the goal is <a href="#logic-asking">asked</a>. Relations, aggregates, graph algorithms, and lambdas take the goal itself.</li>
   <li>Calls nest as deep as memory allows. A call in tail position keeps nothing of the call it is in, as in Scheme. A lambda's body is in tail position, and so are the result of a <code>cond</code> case and the last expression of a <code>begin</code> that are. A lambda that calls itself there is a loop, and runs in constant memory.</li>

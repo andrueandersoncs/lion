@@ -300,7 +300,7 @@
     <tr data-entry="func/partial"><td><code>["func/partial", function, argument, ...]</code></td><td>A function that calls <code>function</code> with these arguments followed by its own, exactly as a call written out in full would. Made from a relation, it builds goals, as the relation does. Made from a logic variable in a rule or query, it waits for the variable, so <code>["func/partial", "number/lessThan", "?max"]</code> is a <a href="#logic-patterns">predicate</a> for values above <code>?max</code>.</td></tr>
     <tr data-entry="func/apply"><td><code>["func/apply", function, this, argument, ...]</code></td><td>What calling <code>function</code> with <code>this</code> and the arguments returns</td></tr>
     <tr data-entry="func/bind"><td><code>["func/bind", function, this, argument, ...]</code></td><td><code>function</code> with <code>this</code> and leading arguments fixed</td></tr>
-    <tr data-entry="func/callback"><td><code>["func/callback", function]</code></td><td>A JavaScript function that calls <code>function</code> and returns its result, or a Promise of it when the work is asynchronous. The callback keeps the environment and database it was created in.</td></tr>
+    <tr data-entry="func/callback"><td><code>["func/callback", function]</code></td><td>A JavaScript function that calls <code>function</code> with as many of the arguments it is given as <code>function</code> takes, and returns its result, or a Promise of it when the work is asynchronous. The callback keeps the environment and database it was created in.</td></tr>
   </tbody>
 </table>
 <lion-example name="func">

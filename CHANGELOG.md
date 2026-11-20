@@ -41,6 +41,7 @@
 - The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (`changelog-commit-count` removed)
 - The `relationships` field, with its `reference-candidate` and `definition` kinds, is gone. (`analysis-relationships` removed)
 - The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone (`research-engine-bundle` removed)
+- `ArgumentMismatchError` is gone: a lambda's wrong count is a `LogicError`, as every other function's is. (`ArgumentMismatchError` removed)
 
 ### Changed
 
@@ -90,6 +91,7 @@
 - A failure that leaves the body of a function a `define` bound ends with the functions it left, innermost first: `["label", "seven"]`, where `label` calls `next` and `next` adds 1, fails with `"number/add" takes a number as argument 1 but got "seven". (in "next", called from "label")`. A function that made its call in tail position has no frame left to name, as in Scheme, and a function no `define` bound has no name. The failure keeps its kind. (`failure-names-callers` is `named-frames-not-in-tail-position`)
 - A library function given an argument it does not take fails in the form of the message for the wrong number of arguments, naming the function, the argument, what it takes there, and what it got: `["number/add", "seven", 1]` fails with `"number/add" takes a number as argument 1 but got "seven".`, where it failed with `Expected number at [0]`. The failure is a `LogicError`, as an arity failure is, in plain code and where the call waits in a rule, a query, or a `find`. (`library-function-wrong-argument` is `names-function-and-argument`, was `decoder-message`)
 - A match case whose function is not a function fails as a call on it does: `5 is not a function, so it cannot be called.` (`match-case-not-a-function` is `call-message`, was `decoder-message`)
+- A library function handed to host code through `func/callback` no longer fails on the extra arguments `Array.prototype.map` passes. (`host-calls-library-function-extra-arguments` is `ignored`, was `error`)
 
 ### Fixed
 
@@ -139,6 +141,8 @@
 - A proof that a command keeps a rule is a not over an exists of a typed state the rule allows, a typed command, and a next state that breaks the rule, with no new form (`command-proofs`: `induction-as-a-question` over `proof-form`, `database-state-proofs`, `outside-certificates`)
 - A snapshot writes the relations and schemas, then every rule, then one fact form with every fact, then the invariants. (`snapshot-form-order`: `rules-then-one-fact-form` over `fact-form-per-relation-first`, `fact-form-per-relation-after-rules`, `load-without-checks`)
 - A group whose rows break a key keeps them, exactly as deriving from nothing gives them, and keeps why: a question that reads the group, or a group derived from it, fails with it at once. The clash is told from the rows there are (`key-clash-told-from-rows`: `rows-there-are` over `derive-from-nothing`, `followed-run`, `no-rule`, `counts-by-rule`, `broken-group-again`)
+- `func/callback`, where host code meets a Lion function, gives the function as many of the host's arguments as it takes (`callback-arity`: `as-many-as-it-takes` over `all-host-arguments`)
+- A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses (`lambda-arity`: `strict` over `extra-arguments-ignored`, was `extra-arguments-ignored`)
 
 ### Rules
 
@@ -894,7 +898,7 @@ Three surprises found while writing Lion programs for a research skill, each rem
 
 ### Rules
 
-- Like every library function, each waits for a logic variable and refuses a call with another number of arguments. (rule `arity-rule`)
+- A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses (rule `arity-rule`)
 - Every new function declares what it takes, with `takes` or `over`, and has a row in the table of `arity.test.ts`. (rule `new-functions-declare-arity`)
 
 ## 2026-11-13 — lionlang.dev
@@ -2047,8 +2051,8 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - if (typeof fn !== "function") { (`func-callback-non-function` is `returns-value`)
 - should evaluate to a function that can be called with the given arguments (`lambda-call` is `applied`)
 - const environment = yield* Ref.get(environmentRef); (`lambda-environment` is `copy-at-creation`)
-- should evaluate to a function, calling the function with incorrect arguments should produce an error (`lambda-extra-arguments` is `error`)
-- A call must give a lambda at least as many arguments as it has parameters. (`lambda-missing-arguments` is `error`)
+- A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses: `["lambda",["a"],"a"] takes 1 argument but got 3.` (`lambda-extra-arguments` is `error`, was `ignored`)
+- A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses (`lambda-missing-arguments` is `error`)
 - if (typeof classRef !== "function") { (`object-new-non-function` is `error`)
 - Schema.Literal("/define"), (`special-form-without-slash` is `not-special-form`, was `special-form`)
 - return method.bind(obj); (`object-get-method-result` is `bound-method`)
