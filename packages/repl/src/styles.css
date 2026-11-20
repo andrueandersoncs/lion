@@ -315,6 +315,10 @@
   --node-accent: var(--node-define);
 }
 
+.graph-node[data-color="delay"] {
+  --node-accent: var(--node-lambda);
+}
+
 .graph-node[data-color="eval"] {
   --node-accent: var(--node-eval);
 }

@@ -9,7 +9,7 @@ import { stdlib } from "@lionlang/core/modules";
 import { Console, Effect, Option } from "effect";
 import { Argument, CliError, Command, Flag } from "effect/cli";
 
-export const VERSION = "0.13.1";
+export const VERSION = "0.14.0";
 
 const file = Argument.FileText("file").pipe(
   Argument.withDescription("Path to a Lion JSON program")

@@ -2,7 +2,9 @@
 
 # Changelog
 
-## Unreleased
+## 2026-11-20 — @lionlang/core 0.15.0, @lionlang/cli 0.14.0
+
+A string is read by scope: it is a name where a scope declares it and data otherwise, the first element of an array always names what the array does, `define` binds in the body it stands in, and `set!` changes the nearest binding. A variable a schema types stands for every value the schema allows, and Lion's own solver, with exact rationals, decides the goals over it; `why` shows a certificate for each case it split a rule into and the goals that contradict each other, and `["schema/includes?", a, b]` says whether every value `a` allows fits `b`. From Clef and Racket: contracts on parameters, `["n", "value/number?"]`; `delay` and `value/force`; `func/catch` and `func/raise`; delimited continuations with `func/reset` and `func/shift`; a `quantity` module for numbers with units; `watch` for host code that follows a query's answers; and warnings from `lion check` and the graph editor for a match case that can never be reached or a value a contracted match leaves out. Breaking: a `cond` condition must be `true` or `false`; a lambda takes exactly as many arguments as it has parameters; `object/get` fails on a missing key unless given a value; integers up to 2^53 - 1 do exact arithmetic or fail, and program text may not write one that would read as another; a match with no fallback fails on a value no case fits; in a rule, query, or find, `set!` refuses a binding made outside it, and a `begin` waits as a whole for an earlier expression that waits, so every expression runs for each answer.
 
 ### Breaking
 
@@ -144,6 +146,7 @@
 - A database whose facts hold only beside every rule, such as two registered mothers of twins that an equality rule makes one, loads as it was saved, and saving the loaded database gives the same program; before, loading it failed with 'Adding this rule breaks an invariant'. (`snapshot-of-valid-database` is `loads`, was `error`)
 - A `begin` in a rule body, a query, or a `find` runs every expression before its last, also one that waits for a logic variable: with `pair` checking its argument with `schema/assert` first, `["find", ["pair", "?item"], ["in", "?item", ["array/make", 3, "three"]]]` fails with `"three" does not fit "value/number?".`, as `["pair", "three"]` does. It gave `[[3,3],["three","three"]]`. (`begin-expression-before-last-that-waits` is `error`, was `dropped`)
 - A question before a `begin`'s last expression in a rule, a query, or a `find` is not asked, but what it holds runs, as in plain code: `["begin", ["even", ["number/divide", 1, "?x"]], 3]` fails for 0, where it gave 3. (`begin-question-before-last-holding-a-call` is `error`, was `dropped`)
+- The graph editor shows a `delay` form as a promise that runs when forced, with an hourglass, where it showed a node with no description, and the editor type-checks again. (`editor-delay-node` is `promise`, was `undescribed`)
 
 ### Decided
 

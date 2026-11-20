@@ -93,6 +93,7 @@ const NODE_COLOR_BY_KEY = {
   cond: "var(--node-cond)",
   define: "var(--node-define)",
   "set!": "var(--node-define)",
+  delay: "var(--node-lambda)",
   eval: "var(--node-eval)",
   invalid: "var(--destructive)",
   lambda: "var(--node-lambda)",
@@ -328,6 +329,12 @@ const describeSpecialForm = (
         mark: form,
         description: "evaluate data",
         detail: "code → value",
+      };
+    case "delay":
+      return {
+        mark: form,
+        description: "promise",
+        detail: "runs when forced",
       };
     case "lambda": {
       const parameters = children.find(({ role }) => role === "parameters");
@@ -653,6 +660,12 @@ function SemanticNodeMark({ mark }: { readonly mark: GraphNodeMark }) {
         )}
         {mark === "lambda" && (
           <path d="M6 19c3.5-1 5.5-5.5 7-13M9 5c2.5 0 3.8 1.5 5 5l3 9" />
+        )}
+        {mark === "delay" && (
+          <>
+            <path d="M7 4h10M7 20h10" />
+            <path d="M8 4c0 4 4 5 4 8s-4 4-4 8M16 4c0 4-4 5-4 8s4 4 4 8" />
+          </>
         )}
         {mark === "match" && (
           <>

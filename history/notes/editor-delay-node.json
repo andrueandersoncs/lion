@@ -1,0 +1,14 @@
+{
+  "claims": [
+    {
+      "quote": "The graph editor shows a `delay` form as a promise that runs when forced, with an hourglass, where it showed a node with no description, and the editor type-checks again.",
+      "says": {
+        "behavior": "editor-delay-node",
+        "is": "promise",
+        "was": "undescribed",
+        "fixes": true,
+        "area": "editor"
+      }
+    }
+  ]
+}
