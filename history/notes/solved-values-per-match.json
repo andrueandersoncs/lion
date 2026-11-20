@@ -1,0 +1,34 @@
+{
+  "claims": [
+    {
+      "quote": "A find gives one value for every match of the variables the solver works out, as it does for values a schema lists, so a variable its template leaves out still makes its own matches: with ?x from -2 to 2, a find of a cond on ?x gives \"other\" three times and \"pos\" twice.",
+      "says": {
+        "behavior": "find-solved-variable-per-match",
+        "is": "per-match",
+        "area": "logic",
+        "was": "per-template-value"
+      },
+      "decisions": ["solve-typed-variables"]
+    },
+    {
+      "quote": "A rule that aggregates combines one value from each match of the variables the solver works out, as it does for values a schema lists.",
+      "says": {
+        "behavior": "rule-aggregate-solved-variable-per-match",
+        "is": "per-match",
+        "area": "logic",
+        "was": "per-head-value"
+      },
+      "decisions": ["solve-typed-variables"]
+    },
+    {
+      "quote": "A variable that a goal about the solver's values defines with cond takes the value of each case that can hold, not only of the first the solver finds.",
+      "says": {
+        "behavior": "solved-defined-variable-each-case",
+        "is": "every-case",
+        "area": "logic",
+        "was": "one-case"
+      },
+      "decisions": ["solve-typed-variables"]
+    }
+  ]
+}

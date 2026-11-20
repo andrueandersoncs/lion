@@ -1119,14 +1119,14 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "the goals that wait for a solver step's values never run",
     file: core("logic/model.ts"),
-    find: "        answers = yield* testEach(model, goal, answers);",
-    replace: "        answers = yield* Effect.succeed(answers);",
+    find: "      answers = yield* testEach(model, goal, answers);",
+    replace: "      answers = yield* Effect.succeed(answers);",
     tests: SOLVING_TESTS,
   },
   {
     name: "a goal that waits runs on one value of each variable it needs",
     file: core("logic/model.ts"),
-    find: "      ...new Set([...answered, ...leavesFor(needs, choice.symbols)]),",
+    find: "      ...new Set([...answered, ...leavesOfChosen(needs, chosen)]),",
     replace: "      ...new Set([...answered]),",
     tests: SOLVING_TESTS,
   },
@@ -1150,6 +1150,29 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "        // Stops at the first way past the most, before making the rest.\n        if (next.length > MOST_WAYS) {",
     replace:
       "        // Stops at the first way past the most, before making the rest.\n        if (false) {",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a find binds only the solved values its template shows",
+    file: core("logic/compile.ts"),
+    find: "  const planned = plan(goal, outer);",
+    replace:
+      "  const planned = plan(goal, outer, new Set(termVariables(template)));",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a rule that aggregates binds only the solved values its head shows",
+    file: core("logic/compile.ts"),
+    find: "      aggregating\n        ? undefined",
+    replace: "      false\n        ? undefined",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a variable a solver step defines takes the value of its first case only",
+    file: core("logic/model.ts"),
+    find: "  product(names.map((name) => choice.symbols.get(name) as Cases)).map(",
+    replace:
+      "  product(names.map((name) => (choice.symbols.get(name) as Cases).slice(0, 1))).map(",
     tests: SOLVING_TESTS,
   },
   // A schema that stands for each value it allows.

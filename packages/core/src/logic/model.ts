@@ -52,6 +52,8 @@ import {
   type Formula,
   leavesOf,
   MOST_WAYS,
+  product,
+  type Sym,
   TRUE,
 } from "@/logic/symbols";
 import {
@@ -1336,24 +1338,6 @@ const sortsFor = (
     ].map((name) => [name, sorts.get(name) ?? "real"] as const)
   );
 
-/** What the variables a step solves for have, for some values of the solver's variables. */
-const valuesOf = (
-  names: readonly string[],
-  symbols: ReadonlyMap<string, Cases>,
-  values: ReadonlyMap<string, Rational>
-) =>
-  new Map(
-    names.map((name) => {
-      const cases = symbols.get(name) ?? [];
-      const chosen =
-        cases.find((each) => holdsUnder(each.when, values)) ?? cases[0];
-      return [
-        name,
-        chosen === undefined ? undefined : concreteOf(chosen.sym, values),
-      ] as const;
-    })
-  );
-
 /** The solver's variables that the values of some variables are made of. */
 const leavesFor = (
   names: readonly string[],
@@ -1384,12 +1368,108 @@ const infinitely = (
 };
 
 /**
+ * The answers one solution gives: each chosen variable's value under it,
+ * with the other solver variables given values that meet the constraints
+ * too, and the waiting goals run on them.
+ */
+const answersAt = (
+  model: Model,
+  vars: Vars,
+  choice: Choice,
+  constraints: readonly Constraint[],
+  known: ReadonlyMap<string, Sort>,
+  solution: ReadonlyMap<string, Rational>,
+  chosen: ReadonlyMap<string, Sym>
+) =>
+  Effect.gen(function* () {
+    const others = new Map([...known].filter(([name]) => !solution.has(name)));
+    const rest =
+      chosen.size === 0
+        ? new Map()
+        : ((yield* solving(() =>
+            solveConstraints(fixed(constraints, solution), others)
+          )) ?? new Map());
+    const values = new Map([...rest, ...solution]);
+    let answers: readonly Vars[] = [
+      new Map([
+        ...vars,
+        ...[...chosen].map(
+          ([name, sym]) => [name, concreteOf(sym, values)] as const
+        ),
+      ]),
+    ];
+    for (const { goal } of choice.waiting) {
+      answers = yield* testEach(model, goal, answers);
+    }
+    return answers;
+  });
+
+/**
+ * One case of each variable at a time, so each value a variable can take is
+ * listed: the symbolic value chosen for each, and when they all hold.
+ */
+const chosenCases = (choice: Choice, names: readonly string[]) =>
+  product(names.map((name) => choice.symbols.get(name) as Cases)).map(
+    ({ syms, when }) => ({
+      chosen: new Map(names.map((name, at) => [name, syms[at] as Sym])),
+      when,
+    })
+  );
+
+/**
+ * What to list for each case of each variable and each way its cases hold:
+ * the constraints, the solver's variables to list, those of them the
+ * answers show, and the case chosen for each variable.
+ */
+const listings = (
+  choice: Choice,
+  constraints: readonly Constraint[],
+  {
+    first,
+    names,
+    needs,
+  }: {
+    readonly first: boolean;
+    readonly names: readonly string[];
+    readonly needs: readonly string[];
+  },
+  given: readonly string[]
+) =>
+  chosenCases(choice, given).flatMap(({ chosen, when }) => {
+    const answered = first ? [] : leavesOfChosen(names, chosen);
+    const listedLeaves = [
+      ...new Set([...answered, ...leavesOfChosen(needs, chosen)]),
+    ];
+    return when.map((extra) => ({
+      all: [...constraints, ...extra],
+      answered,
+      chosen,
+      listedLeaves,
+    }));
+  });
+
+/** The solver's variables that the chosen values of some variables are made of. */
+const leavesOfChosen = (
+  names: readonly string[],
+  chosen: ReadonlyMap<string, Sym>
+) => [
+  ...new Set(
+    names.flatMap((name) => {
+      const sym = chosen.get(name);
+      return sym === undefined ? [] : leavesOf(sym);
+    })
+  ),
+];
+
+/**
  * The answers one case of one choice of a solver step gives an answer,
- * with the variables `names` bound: one for each combination of values of
- * the solver's variables that they and the waiting goals need, each with
- * those goals run on it. With `first`, the variables `names` only need some
- * values, and the first answer is enough. Fails when a variable it must
- * list has infinitely many values.
+ * with the variables `names` bound. It takes one case of each variable they
+ * and the waiting goals need at a time, so each value a variable can take
+ * is listed, and lists the values of the solver's variables those cases
+ * are made of, each combination with the waiting goals run on it. With
+ * `first`, the variables `names` only need some values, and the first
+ * answer is enough. Fails when a variable it must list has infinitely many
+ * values.
  */
 const caseAnswers = (
   model: Model,
@@ -1405,51 +1485,39 @@ const caseAnswers = (
     const needs = [
       ...new Set(choice.waiting.flatMap(({ goal }) => goal.variables)),
     ].filter((name) => choice.symbols.has(name));
-    const answered = first ? [] : leavesFor(names, choice.symbols);
-    const listedLeaves = [
-      ...new Set([...answered, ...leavesFor(needs, choice.symbols)]),
-    ];
-    const known = sortsFor(constraints, listedLeaves, sorts);
-    const listed = yield* solving(() =>
-      enumerate(constraints, known, listedLeaves)
-    );
-    if ("infinite" in listed) {
-      return yield* logicError(
-        infinitely(
-          listed.infinite,
-          show(instantiate(step, vars)),
-          choice,
-          answered
-        )
-      );
-    }
     const given = [...new Set([...names, ...needs])].filter((name) =>
       choice.symbols.has(name)
     );
     const out: Vars[] = [];
-    for (const solution of listed.solutions) {
-      // The other variables' values, to tell which case a value is in.
-      const others = new Map(
-        [...known].filter(([name]) => !solution.has(name))
-      );
-      const rest =
-        given.length === 0
-          ? new Map()
-          : ((yield* solving(() =>
-              solveConstraints(fixed(constraints, solution), others)
-            )) ?? new Map());
-      let answers: readonly Vars[] = [
-        new Map([
-          ...vars,
-          ...valuesOf(given, choice.symbols, new Map([...rest, ...solution])),
-        ]),
-      ];
-      for (const { goal } of choice.waiting) {
-        answers = yield* testEach(model, goal, answers);
+    for (const { all, answered, chosen, listedLeaves } of listings(
+      choice,
+      constraints,
+      { first, names, needs: given.filter((name) => needs.includes(name)) },
+      given
+    )) {
+      const known = sortsFor(all, listedLeaves, sorts);
+      const listed = yield* solving(() => enumerate(all, known, listedLeaves));
+      if ("infinite" in listed) {
+        const shown = show(instantiate(step, vars));
+        return yield* logicError(
+          infinitely(listed.infinite, shown, choice, answered)
+        );
       }
-      out.push(...answers);
-      if (first && out.length > 0) {
-        return out;
+      for (const solution of listed.solutions) {
+        out.push(
+          ...(yield* answersAt(
+            model,
+            vars,
+            choice,
+            all,
+            known,
+            solution,
+            chosen
+          ))
+        );
+        if (first && out.length > 0) {
+          return out;
+        }
       }
     }
     return out;
@@ -1590,9 +1658,6 @@ const fixed = (
     }
     return { linear, relation: c.relation };
   });
-
-const holdsUnder = (formula: Formula, values: ReadonlyMap<string, Rational>) =>
-  concreteOf({ formula, kind: "truth" }, values) === true;
 
 /**
  * The answers a goal that can bind gives for an answer that leaves it a

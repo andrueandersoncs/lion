@@ -16,6 +16,18 @@
      ["=", ["number/add", "?x", "?y"], 3]]]}
 </lion-example>
 <p>The filters can add, subtract, multiply and divide by known numbers, compare, and use <code>number/min</code>, <code>number/max</code>, <code>number/absolute</code>, and <code>cond</code>. <code>value/number?</code> types a variable that may be any number.</p>
+<p>As with values a schema lists, a <code>find</code> gives one value for every match, so a value the solver works out counts even when the template leaves it out. A rule gives each row once:</p>
+<lion-example name="One value for every match">
+["begin",
+  ["relation", "sign", ["s"]],
+  ["rule", ["sign", "?s"], ["schema/fits?", "?x", "value/integer?"],
+    ["=", "?s", ["cond", [["number/greaterThan", "?x", 0], "positive"], ["else", "not positive"]]]],
+  {"each match": ["find", "?s",
+     ["and", ["schema/fits?", "?x", "value/integer?"],
+       ["number/greaterThanOrEqualTo", "?x", -1], ["number/lessThanOrEqualTo", "?x", 2],
+       ["=", "?s", ["cond", [["number/greaterThan", "?x", 0], "positive"], ["else", "not positive"]]]]],
+   "each row": ["find", "?s", ["sign", "?s"]]}]
+</lion-example>
 
 <h2>Ask whether a value exists, or prove that none does</h2>
 <p>When there are infinitely many values, they cannot each be an answer, but <code>exists</code> can still ask whether there is one, and <code>not</code> whether there is none. Lion decides it for every number, not only the ones it tried:</p>

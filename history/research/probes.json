@@ -21512,6 +21512,128 @@
     ]
   },
   {
+    "case": "find-solved-variable-per-match",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          [
+            "find",
+            "?v",
+            [
+              "and",
+              ["schema/fits?", "?x", "value/integer?"],
+              ["number/greaterThanOrEqualTo", "?x", -2],
+              ["number/lessThanOrEqualTo", "?x", 2],
+              [
+                "=",
+                "?v",
+                [
+                  "cond",
+                  [["number/greaterThan", "?x", 0], "pos"],
+                  ["else", "other"]
+                ]
+              ]
+            ]
+          ],
+          ["quote", ["other", "other", "other", "pos", "pos"]]
+        ],
+        ["quote", "per-match"]
+      ],
+      [
+        [
+          "schema/fits?",
+          [
+            "find",
+            "?v",
+            [
+              "and",
+              ["schema/fits?", "?x", "value/integer?"],
+              ["number/greaterThanOrEqualTo", "?x", -2],
+              ["number/lessThanOrEqualTo", "?x", 2],
+              [
+                "=",
+                "?v",
+                [
+                  "cond",
+                  [["number/greaterThan", "?x", 0], "pos"],
+                  ["else", "other"]
+                ]
+              ]
+            ]
+          ],
+          ["quote", ["other", "pos"]]
+        ],
+        ["quote", "per-template-value"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "rule-aggregate-solved-variable-per-match",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "total", ["n"]],
+      [
+        "rule",
+        ["total", ["aggregate/count", "?v"]],
+        ["schema/fits?", "?x", "value/integer?"],
+        ["number/greaterThanOrEqualTo", "?x", -2],
+        ["number/lessThanOrEqualTo", "?x", 2],
+        [
+          "=",
+          "?v",
+          ["cond", [["number/greaterThan", "?x", 0], "pos"], ["else", "other"]]
+        ]
+      ],
+      [
+        "cond",
+        [
+          ["schema/fits?", ["find", "?n", ["total", "?n"]], ["quote", [5]]],
+          ["quote", "per-match"]
+        ],
+        [
+          ["schema/fits?", ["find", "?n", ["total", "?n"]], ["quote", [2]]],
+          ["quote", "per-head-value"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "solved-defined-variable-each-case",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "kind", ["v"]],
+      [
+        "rule",
+        ["kind", "?v"],
+        ["schema/fits?", "?x", "value/integer?"],
+        [
+          "=",
+          "?v",
+          ["cond", [["number/greaterThan", "?x", 0], "pos"], ["else", "other"]]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "schema/fits?",
+            ["find", "?v", ["kind", "?v"]],
+            ["quote", ["other", "pos"]]
+          ],
+          ["quote", "every-case"]
+        ],
+        ["else", ["quote", "one-case"]]
+      ]
+    ]
+  },
+  {
     "case": "solver-waiting-goal",
     "area": "logic",
     "program": [

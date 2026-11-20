@@ -416,6 +416,41 @@ describe("solving for a variable a schema types", () => {
   );
 
   it.effect.prop(
+    "gives a find one value for every match, and an aggregating rule one value from each, as listing does",
+    { defined: number(2), tests: filters },
+    ({ defined, tests }) =>
+      Effect.gen(function* () {
+        // A value a goal defines from the variables the template leaves out,
+        // so the answers are the matches, not the values they give.
+        const body = (typed: (name: string) => Code[]) => [
+          "and",
+          ...typed("?x"),
+          ...typed("?y"),
+          ["=", "?v", defined],
+          ...tests,
+        ];
+        for (const asked of [
+          (goal: Code) => ["find", "?v", goal],
+          (goal: Code) => [
+            "begin",
+            ["relation", "total", ["n"]],
+            [
+              "rule",
+              ["total", ["aggregate/count", "?v"]],
+              ...(goal as Code[]).slice(1),
+            ],
+            ["find", "?n", ["total", "?n"]],
+          ],
+        ]) {
+          const bySolver = yield* evaluate(asked(body(solved)));
+          const byListing = yield* evaluate(asked(body(listed)));
+          expect(bySolver).toEqual(byListing);
+        }
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
     "counts every goal about a variable '=' defines, not only the first",
     { a: int(-3, 3), c: int(-6, 6), tests: filters },
     ({ a, c, tests }) =>

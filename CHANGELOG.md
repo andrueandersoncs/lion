@@ -57,6 +57,9 @@
 - When nothing else binds the value schema/fits? checks, and its schema can list the values it allows, the goal binds the value to each of them that fits, as in binds its element to each item of a list. (`schema-lists-its-values` is `lists`, was `error`)
 - A variable that a schema/fits? types with a schema that says what kind its values are, such as value/integer? or a record of such schemas, and that no relation goal, '=', or 'in' binds, stands for every value the schema allows. (`filter-typed-variable` is `solved`, was `error`)
 - A goal the solver cannot decide, such as a product of two unknowns, a string function, or a question, waits for values (`solver-waiting-goal` is `solved`)
+- A find gives one value for every match of the variables the solver works out, as it does for values a schema lists, so a variable its template leaves out still makes its own matches: with ?x from -2 to 2, a find of a cond on ?x gives "other" three times and "pos" twice. (`find-solved-variable-per-match` is `per-match`, was `per-template-value`)
+- A rule that aggregates combines one value from each match of the variables the solver works out, as it does for values a schema lists. (`rule-aggregate-solved-variable-per-match` is `per-match`, was `per-head-value`)
+- A variable that a goal about the solver's values defines with cond takes the value of each case that can hold, not only of the first the solver finds. (`solved-defined-variable-each-case` is `every-case`, was `one-case`)
 
 ### Fixed
 

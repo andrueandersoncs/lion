@@ -907,7 +907,9 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
     return plan(question, outer, NOTHING);
   }
   const [template, goal] = question.parts;
-  const planned = plan(goal, outer, new Set(termVariables(template)));
+  // A find gives one value for every match, so a value the solver works out
+  // is one of each match's values, whether the template shows it or not.
+  const planned = plan(goal, outer);
   for (const { bound } of planned) {
     checkValues(
       question,
@@ -1121,12 +1123,20 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
               : undefined
           ) as Atom)
     );
+    // A rule gives its head's rows, so the solver binds only what the head
+    // shows; one that aggregates combines one value from each match, so
+    // there it binds each match's values.
+    const aggregating = heads.some((call) => aggregatesOf(call).length > 0);
     const planned = plan(
       new LogicForm("and", body),
       [],
-      new Set(
-        [...heads, ...sides].flatMap((call) => call.args.flatMap(termVariables))
-      )
+      aggregating
+        ? undefined
+        : new Set(
+            [...heads, ...sides].flatMap((call) =>
+              call.args.flatMap(termVariables)
+            )
+          )
     );
     for (const { bound } of planned) {
       const taken = invented.find((name) => bound.has(name));
