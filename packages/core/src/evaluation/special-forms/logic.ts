@@ -71,6 +71,7 @@ import {
   show,
   termVariables,
 } from "@/logic/terms";
+import { tellWatchers } from "@/logic/watch";
 import {
   type AndFormSchema,
   type AssumingFormSchema,
@@ -441,7 +442,9 @@ export const evaluateRule = (
     const [headValue, ...bodyValues] = yield* writing(
       evaluateAll([head, ...body], part)
     );
-    yield* addRule(yield* database, headValue, bodyValues);
+    const db = yield* database;
+    yield* addRule(db, headValue, bodyValues);
+    yield* tellWatchers(db);
     return ["rule", render(headValue), ...bodyValues.map(render)];
   });
 
@@ -452,7 +455,10 @@ export const evaluateFact = (
 ) =>
   Effect.gen(function* () {
     const values = yield* atoms("fact", facts, part, scope);
-    return yield* assertFacts(yield* database, values);
+    const db = yield* database;
+    const made = yield* assertFacts(db, values);
+    yield* tellWatchers(db);
+    return made;
   });
 
 /**
@@ -505,7 +511,10 @@ export const evaluateRetract = (
       parts.filter(isTaken) as LionExpressionType[][],
       (form) => heldForm(form, part)
     );
-    return yield* retract(yield* database, [...values, ...forms]);
+    const db = yield* database;
+    const made = yield* retract(db, [...values, ...forms]);
+    yield* tellWatchers(db);
+    return made;
   });
 
 /** ["query", goal, options?]; options are read as written, not evaluated. */
@@ -727,7 +736,9 @@ export const evaluateInvariant = (
       options,
       part
     );
-    yield* addInvariant(yield* database, { assert, goal: goalValue, query });
+    const db = yield* database;
+    yield* addInvariant(db, { assert, goal: goalValue, query });
+    yield* tellWatchers(db);
     return ["invariant", render(goalValue), { assert }];
   });
 

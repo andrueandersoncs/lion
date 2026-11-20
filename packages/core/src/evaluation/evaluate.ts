@@ -16,6 +16,7 @@ import {
   schemaBindings,
 } from "@/logic/database";
 import { nameFunctions } from "@/logic/terms";
+import { type Watched, watchQuery } from "@/logic/watch";
 import type { JsonPrimitiveType } from "@/schemas/json-primitive";
 import {
   LionExpressionSchema,
@@ -107,3 +108,18 @@ export const run = (
       Effect.provideService(LionDatabaseService, database)
     );
   });
+
+/**
+ * Watches a query of a database from host code: `query` is Lion code, such
+ * as a `find`, run as `run` runs it against the database. Gives the answers
+ * now and a function that stops the watching; `onChange` is called after
+ * each change a `fact`, `retract`, `rule`, or `invariant` form makes that
+ * adds or takes away an answer, with the answers that came and went.
+ */
+export const watch = (
+  query: unknown,
+  environment: Record<string, unknown>,
+  database: LogicDatabase,
+  onChange: (watched: Watched) => void
+) =>
+  watchQuery(database, () => run(query, environment, { database }), onChange);

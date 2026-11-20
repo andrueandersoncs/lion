@@ -1214,6 +1214,23 @@ const problems = await Effect.runPromise(
 
 An empty list means `incoming` fits. Schemas are data like the rest of a Lion program, so they can be written, stored, and changed while the program runs, and a snapshot saves the ones a database holds.
 
+### Watching a query
+
+Host code can be told when a query's answers change. `watch` runs a query, such as a `find`, against a database, and after each change a `fact`, `retract`, `rule`, or `invariant` form makes that adds or takes away an answer, calls back with the answers that came and went. The database keeps what it derived up to date as its facts change, so asking again costs what the change costs; a change an invariant refuses, and what `assuming` asks, tell nothing:
+
+```ts
+import { run, watch } from "@lionlang/core/evaluation/evaluate";
+
+const { answers, stop } = await Effect.runPromise(
+  watch(["find", "?to", ["path", "a", "?to"]], stdlib, database, ({ added, removed }) =>
+    console.log("reachable now", added, "no longer", removed)
+  )
+);
+await Effect.runPromise(run(["fact", ["edge", "c", "d"]], stdlib, { database }));
+// reachable now [ "d" ] no longer []
+stop();
+```
+
 ## Standard Library
 
 The default environment exported as `stdlib` namespaces entries as `<module>/<name>`.

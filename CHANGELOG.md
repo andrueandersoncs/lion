@@ -47,6 +47,7 @@
 - `func/catch` calls a function of no arguments and gives its value; when it fails, it calls the handler with the failure as data and gives that, as Racket's `with-handlers` does (`func/catch` added)
 - `func/raise` fails with any value, as Racket's `raise` does: its message is the value, a string as it is, and a catch gives back the `value`, with `"failure": "raised"`. (`func/raise` added)
 - Numbers that carry their units, checked when the program runs, as Pint checks them. A quantity is data, a record of a `value` and a `unit` from each base unit to its whole exponent, so a schema can say what unit a value has, a fact can hold one, and a snapshot saves it (`quantity` added)
+- Host code can be told when a query's answers change. `watch` runs a query, such as a `find`, against a database, and after each change a `fact`, `retract`, `rule`, or `invariant` form makes that adds or takes away an answer, calls back with the answers that came and went. (`watch` added)
 
 ### Removed
 
@@ -119,6 +120,7 @@
 - A call that waits for a logic variable is not a failure, so a catch in a rule or a `find` gives for each value what plain code gives with the value in place. (`catch-in-a-find` is `like-plain-code`)
 - `quantity/add` and `quantity/subtract` need one unit, and fail with `ArithmeticError` otherwise, as `quantity/add: 120 {"m":1} and 8 {"s":1} have different units.` (`quantity-add-different-units` is `error`)
 - A plain number is a quantity with no unit, and a result with no unit left is its plain number. (`quantity-with-no-unit` is `number`)
+- a change an invariant refuses, and what `assuming` asks, tell nothing (`watched-query-after-refused-change` is `not-told`)
 
 ### Fixed
 

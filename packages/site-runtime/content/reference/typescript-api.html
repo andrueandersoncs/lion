@@ -8,6 +8,22 @@
     <p>Decodes <code>expression</code> as a Lion program and evaluates it with <code>environment</code>, a record of bindings. Returns an <code>Effect</code> of the result, failing with a <a href="#errors">Lion error</a>.</p>
     <p><code>options.database</code>: a <code>LogicDatabase</code> to use instead of an empty one. Its relations are bound by name, unless <code>environment</code> binds the same name.</p>
   </dd>
+  <dt data-entry="watch"><code>watch(query, environment, database, onChange)</code></dt>
+  <dd>
+    <p>Watches a query of a database: <code>query</code> is Lion code, such as a <code>find</code>, run as <code>run</code> runs it against <code>database</code>. Returns an <code>Effect</code> of <code>{answers, stop}</code>: what the query gives now, and a function that stops the watching. After each change a <code>fact</code>, <code>retract</code>, <code>rule</code>, or <code>invariant</code> form makes that adds or takes away an answer, <code>onChange</code> is called with <code>{answers, added, removed}</code>. The database keeps what it derived up to date as facts change, so asking again costs what the change costs. A change an invariant refuses, and what <code>assuming</code> asks, tell nothing.</p>
+    <code-block lang="ts">
+const database = new LogicDatabase();
+await Effect.runPromise(run(setup, stdlib, { database }));
+const { answers, stop } = await Effect.runPromise(
+  watch(["find", "?to", ["path", "a", "?to"]], stdlib, database, ({ added, removed }) =>
+    console.log("reachable now", added, "no longer", removed)
+  )
+);
+await Effect.runPromise(run(["fact", ["edge", "c", "d"]], stdlib, { database }));
+// reachable now [ "d" ] no longer []
+stop();
+    </code-block>
+  </dd>
   <dt data-entry="evaluate"><code>evaluate(expression)</code></dt>
   <dd><p>Evaluates an already decoded expression. Requires <code>LionEnvironmentService</code> and, for logic forms, <code>LionDatabaseService</code>. Most hosts use <code>run</code>.</p></dd>
 </dl>

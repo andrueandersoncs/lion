@@ -1,0 +1,16 @@
+{
+  "claims": [
+    {
+      "quote": "Host code can be told when a query's answers change. `watch` runs a query, such as a `find`, against a database, and after each change a `fact`, `retract`, `rule`, or `invariant` form makes that adds or takes away an answer, calls back with the answers that came and went.",
+      "says": { "feature": "watch", "kind": "function", "present": true }
+    },
+    {
+      "quote": "a change an invariant refuses, and what `assuming` asks, tell nothing",
+      "says": {
+        "behavior": "watched-query-after-refused-change",
+        "is": "not-told",
+        "area": "logic"
+      }
+    }
+  ]
+}

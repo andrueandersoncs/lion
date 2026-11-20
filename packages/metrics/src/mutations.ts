@@ -4190,4 +4190,25 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "  ({ value, unit });",
     tests: ["src/modules/tests/quantity.test.ts"],
   },
+  {
+    name: "a watcher is not told after a fact form",
+    file: core("evaluation/special-forms/logic.ts"),
+    find: "    const made = yield* assertFacts(db, values);\n    yield* tellWatchers(db);",
+    replace: "    const made = yield* assertFacts(db, values);",
+    tests: ["src/logic/tests/watch.test.ts"],
+  },
+  {
+    name: "a watcher is told when nothing came or went",
+    file: core("logic/watch.ts"),
+    find: "          if (added.length > 0 || removed.length > 0) {",
+    replace: "          if (true) {",
+    tests: ["src/logic/tests/watch.test.ts"],
+  },
+  {
+    name: "a watcher is told only what came",
+    file: core("logic/watch.ts"),
+    find: "          const removed = without(watcher.last, now);",
+    replace: "          const removed: unknown[] = [];",
+    tests: ["src/logic/tests/watch.test.ts"],
+  },
 ];
