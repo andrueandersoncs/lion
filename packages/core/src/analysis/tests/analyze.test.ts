@@ -20,6 +20,7 @@ import { run } from "@/evaluation/evaluate";
 import { LogicVariable } from "@/logic/terms";
 import { element } from "@/logic/tests/programs";
 import { stdlib } from "@/modules";
+import { isSpecialFormName } from "@/schemas/evaluation";
 import {
   BOUND,
   type Expression,
@@ -342,12 +343,120 @@ describe("analyze: a schema form", () => {
   );
 });
 
+describe("analyze: the parts a form reads as written", () => {
+  /**
+   * Strings a scope can bind: plain names, a logic variable's name, special
+   * forms' names, a library function's, and an aggregate's.
+   */
+  const WORDS = [
+    "x",
+    "y",
+    "f",
+    "?x",
+    "in",
+    "not",
+    "some",
+    "number/add",
+    "aggregate/max",
+  ];
+
+  /** A row of 0s and 1s, so that rows often share a key and merge. */
+  const row = Arbitrary.array(
+    Arbitrary.schema(
+      Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 1 }))
+    ),
+    { minLength: 3, maxLength: 3 }
+  );
+
+  it.effect.prop(
+    "are data: every string in a relation's columns and options, and in a query's and an invariant's options, is data the run does not read by scope",
+    {
+      words: Arbitrary.array(element(WORDS), { minLength: 1, maxLength: 3 }),
+      keyed: element(["none", "string", "list", "merge"]),
+      order: element(["c0", "-c0"]),
+      limit: element([undefined, 1]),
+      rows: Arbitrary.array(row, { minLength: 1, maxLength: 3 }),
+    },
+    ({ keyed, limit, order, rows, words }) =>
+      Effect.gen(function* () {
+        const columns = [...new Set(words)];
+        const [first, second] = columns;
+        const merged = keyed === "merge" && second !== undefined;
+        const relationOptions = {
+          ...(keyed === "string" ? { key: first } : {}),
+          ...(keyed === "list" || merged ? { key: [first] } : {}),
+          ...(merged ? { merge: { [second]: "aggregate/max" } } : {}),
+        };
+        const queryOptions = {
+          order,
+          ...(limit === undefined ? {} : { limit }),
+        };
+        const variables = columns.map((_, at) => `?c${at}`);
+        // With a key, the key decides each column it does not merge.
+        const fact = (values: readonly number[]) =>
+          columns.map((_, at) =>
+            keyed === "none" || at === 0 || (merged && at === 1)
+              ? values[at]
+              : values[0]
+          );
+        const forms = [
+          ["relation", "r", columns, relationOptions],
+          ...rows.map((values) => ["fact", ["r", ...fact(values)]]),
+          ["invariant", ["r", ...variables], { assert: "some" }],
+          ["query", ["r", ...variables], queryOptions],
+        ];
+        // Every string the forms read as written, each bound to a number.
+        const strings = [
+          ...new Set([
+            ...columns,
+            ...(merged ? ["aggregate/max"] : []),
+            order,
+            "some",
+          ]),
+        ];
+        const bindings = strings.map((name) => ["define", name, 0]);
+        const plain = ["begin", ...forms];
+        const bound = ["begin", ...bindings, ...forms];
+        const last = forms.length;
+        const written = [
+          `/${bindings.length + 1}/2`,
+          `/${bindings.length + 1}/3`,
+          `/${bindings.length + last - 1}/2`,
+          `/${bindings.length + last}/2`,
+        ];
+        const inside = flattenAnalysis(analyze(bound as never, stdlib)).filter(
+          ({ pointer }) =>
+            written.some(
+              (part) => pointer === part || pointer.startsWith(`${part}/`)
+            )
+        );
+        expect(
+          inside.filter(({ value }) => typeof value === "string")
+        ).not.toEqual([]);
+        for (const node of inside) {
+          expect(node.quoted).toBe(true);
+          expect(node.diagnostic).toBeUndefined();
+          if (typeof node.value === "string") {
+            expect(node.meaning).toEqual({ kind: "data" });
+          }
+        }
+        // The run reads them as written too: binding them changes nothing.
+        const ran = yield* outcome(plain);
+        expect(ran).toEqual({ value: expect.anything() });
+        same(ran, yield* outcome(bound));
+      }),
+    OPTIONS
+  );
+});
+
 const SHORT_WORD = /^[a-z]{2,6}$/;
 
 describe("analyze: the head of a call", () => {
+  // A name nothing binds: neither a library function nor a special form,
+  // since `["or", 0]` is the `or` form, not a call.
   const word = Arbitrary.filter(
     Arbitrary.schema(Schema.String.check(Schema.isPattern(SHORT_WORD))),
-    (name) => !Object.hasOwn(stdlib, name)
+    (name) => !(Object.hasOwn(stdlib, name) || isSpecialFormName(name))
   );
 
   it.effect.prop(
