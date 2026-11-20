@@ -1,0 +1,133 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-eventually"
+   ],
+   [
+    "quote",
+    "research/probes/"
+   ],
+   [
+    "quote",
+    "Lion programs run after rules about what must eventually happen became questions over the states of every run (build step 3)"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261120010000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-e1"
+   ],
+   [
+    "quote",
+    "lion-probes-eventually"
+   ],
+   [
+    "quote",
+    "\"every run of two reaches 1\": [],"
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules about what must eventually happen",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-e1"
+   ],
+   [
+    "quote",
+    "program built-eventually.json: whether every run of two commands, with any amounts, reaches a balance of 1 at some state"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-e2"
+   ],
+   [
+    "quote",
+    "lion-probes-eventually"
+   ],
+   [
+    "quote",
+    "\"careful overdraws\": [],"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a check of every sequence of changes up to a bound",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-e2"
+   ],
+   [
+    "quote",
+    "program built-eventually.json: whether some run of up to three commands, with any positive amounts, takes the careful account below 0"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-e3"
+   ],
+   [
+    "quote",
+    "lion-probes-eventually"
+   ],
+   [
+    "quote",
+    "\"shortest careless run that overdraws\": 1,"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the shortest sequence of changes that breaks a rule",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-e3"
+   ],
+   [
+    "quote",
+    "program built-eventually.json: the least length of a run that takes the careless account below 0, and why's example run"
+   ]
+  ]
+ ],
+ "recorded"
+]

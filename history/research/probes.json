@@ -21634,6 +21634,135 @@
     ]
   },
   {
+    "feature": "array/reductions",
+    "kind": "function",
+    "program": ["value/function?", "array/reductions"]
+  },
+  {
+    "feature": "array/some?",
+    "kind": "function",
+    "program": ["value/function?", "array/some?"]
+  },
+  {
+    "feature": "array/every?",
+    "kind": "function",
+    "program": ["value/function?", "array/every?"]
+  },
+  {
+    "feature": "solving-runs-of-commands",
+    "kind": "capability",
+    "program": [
+      "schema/fits?",
+      [
+        "query",
+        [
+          "exists",
+          ["?run", "?b"],
+          [
+            "and",
+            [
+              "schema/fits?",
+              "?run",
+              [
+                "schema/arrayOf",
+                {
+                  "withdraw": [
+                    "schema/allOf",
+                    "value/integer?",
+                    ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+                  ]
+                },
+                2
+              ]
+            ],
+            [
+              "in",
+              "?b",
+              [
+                "array/reductions",
+                "?run",
+                0,
+                [
+                  "lambda",
+                  ["s", "c"],
+                  ["number/subtract", "s", ["object/get", "c", "withdraw"]]
+                ]
+              ]
+            ],
+            ["number/lessThan", "?b", -100]
+          ]
+        ]
+      ],
+      ["quote", [{}]]
+    ]
+  },
+  {
+    "case": "computed-schema-solved-for",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          [
+            [
+              "lambda",
+              ["s"],
+              [
+                "find",
+                "?x",
+                [
+                  "and",
+                  ["schema/fits?", "?x", "s"],
+                  ["number/lessThan", "?x", 3]
+                ]
+              ]
+            ],
+            [
+              "schema/allOf",
+              "value/integer?",
+              ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+            ]
+          ],
+          ["quote", [1, 2]]
+        ],
+        ["quote", "solved"]
+      ],
+      ["else", ["quote", "error"]]
+    ]
+  },
+  {
+    "case": "why-solved-row-values",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "small", ["x"]],
+      [
+        "rule",
+        ["small", "?x"],
+        ["schema/fits?", "?x", "value/integer?"],
+        ["number/greaterThan", "?x", 0],
+        ["number/lessThan", "?x", 4]
+      ],
+      [
+        "cond",
+        [
+          [
+            "schema/fits?",
+            [
+              "object/get",
+              ["array/head", ["object/get", ["why", ["small", 3]], "because"]],
+              "example"
+            ],
+            { "?x": 3 }
+          ],
+          ["quote", "row-values"]
+        ],
+        ["else", ["quote", "other-values"]]
+      ]
+    ]
+  },
+  {
     "case": "solver-waiting-goal",
     "area": "logic",
     "program": [

@@ -27,7 +27,7 @@ import {
   Solved,
 } from "@/logic/compile";
 import { matching } from "@/logic/fit";
-import { candidatesOf } from "@/logic/listing";
+import { candidatesOf, unlisted } from "@/logic/listing";
 import { factsOf, originalName } from "@/logic/magic";
 import {
   type Constraint,
@@ -41,6 +41,7 @@ import {
 import { mentioned, type Stratum, strataOf } from "@/logic/strata";
 import {
   formulaOf,
+  members,
   type Context as SymbolicContext,
   shapeFor,
   term as symbolicTerm,
@@ -49,9 +50,11 @@ import {
   and,
   type Cases,
   concrete as concreteOf,
+  FALSE,
   type Formula,
   leavesOf,
   MOST_WAYS,
+  or,
   product,
   type Sym,
   TRUE,
@@ -1258,6 +1261,22 @@ const stepFormulas = (model: Model, step: Solved, vars: Vars) =>
   });
 
 /**
+ * Two formulas that must both hold, or, when together they split into more
+ * cases than the solver takes, why: the goal that adds the second then
+ * waits for values instead.
+ */
+const joined = (a: Formula, b: Formula): Formula | string => {
+  try {
+    return and(a, b);
+  } catch (error) {
+    if (error instanceof LogicError) {
+      return error.message;
+    }
+    throw error;
+  }
+};
+
+/**
  * What a solver step's goals make for one shape of each variable it types.
  * A goal the solver cannot work out on the symbols waits, and so does every
  * goal that needs a variable such a goal defines.
@@ -1276,40 +1295,47 @@ const choiceOf = (
     const waiting: Waiting[] = [];
     // The variables that waiting goals give values to.
     const pending = new Set<string>();
-    const worked = <A>(
-      goal: Literal,
-      value: unknown,
-      work: Effect.Effect<A, unknown>
-    ) =>
-      Effect.gen(function* () {
-        const before =
-          value instanceof LogicValue
-            ? value.variables.find((name) => pending.has(name))
-            : undefined;
-        if (before !== undefined) {
-          const why = `It needs the value of ?${before}, which a goal the solver cannot decide gives.`;
-          waiting.push({ goal, why });
-          return undefined;
-        }
-        const done = yield* attempt(work);
-        if (Result.isFailure(done)) {
-          waiting.push({ goal, why: done.failure });
-          return undefined;
-        }
-        return done.success;
-      });
-    for (const [name, value, by] of step.defines) {
-      const cases = yield* worked(by, value, symbolicTerm(value, context));
-      if (cases === undefined) {
-        pending.add(name);
-      } else {
-        symbols.set(name, cases);
-      }
-    }
+    const worked = worker(waiting, pending);
     let formula: Formula = shapes.reduce<Formula>(
       (f, [, each]) => and(f, each.when),
       TRUE
     );
+    // Adds what a goal says, or, when the cases grow too many, lets it wait.
+    const hold = (goal: Literal, extra: Formula) => {
+      const held = joined(formula, extra);
+      if (typeof held === "string") {
+        waiting.push({ goal, why: held });
+        return false;
+      }
+      formula = held;
+      return true;
+    };
+    for (const [name, value, by] of step.defines) {
+      // "in" takes one item of the list: one case for each, one of which
+      // must hold. The cases of "=" are every way its value can come out.
+      const taken = isForm(by, "in");
+      const cases = yield* worked(
+        by,
+        value,
+        taken
+          ? Effect.flatMap(symbolicTerm(value, context), (lists) =>
+              members(name, lists, context)
+            )
+          : symbolicTerm(value, context)
+      );
+      const kept =
+        cases !== undefined &&
+        (!taken ||
+          hold(
+            by,
+            cases.reduce<Formula>((f, each) => or(f, each.when), FALSE)
+          ));
+      if (kept) {
+        symbols.set(name, cases);
+      } else {
+        pending.add(name);
+      }
+    }
     for (const goal of goals) {
       const decided = yield* worked(
         goal,
@@ -1317,11 +1343,36 @@ const choiceOf = (
         Effect.flatMap(symbolicTerm(goal, context), formulaOf)
       );
       if (decided !== undefined) {
-        formula = and(formula, decided);
+        hold(goal, decided);
       }
     }
     return { formula, symbols, waiting } satisfies Choice;
   });
+
+/**
+ * Works a goal out on the symbols; when the solver cannot, or the goal needs
+ * a variable a waiting goal gives, the goal waits for values instead.
+ */
+const worker =
+  (waiting: Waiting[], pending: ReadonlySet<string>) =>
+  <A>(goal: Literal, value: unknown, work: Effect.Effect<A, unknown>) =>
+    Effect.gen(function* () {
+      const before =
+        value instanceof LogicValue
+          ? value.variables.find((name) => pending.has(name))
+          : undefined;
+      if (before !== undefined) {
+        const why = `It needs the value of ?${before}, which a goal the solver cannot decide gives.`;
+        waiting.push({ goal, why });
+        return undefined;
+      }
+      const done = yield* attempt(work);
+      if (Result.isFailure(done)) {
+        waiting.push({ goal, why: done.failure });
+        return undefined;
+      }
+      return done.success;
+    });
 
 /** The sorts of the solver's variables that some constraints and values hold. */
 const sortsFor = (
@@ -1524,6 +1575,44 @@ const caseAnswers = (
   }) as LogicEffect<readonly Vars[]>;
 
 /**
+ * The step with the variables an answer already holds taken as known: a
+ * schema check or "=" about one is then a goal like any other. `why` asks
+ * the step with the values of the row it explains.
+ */
+const withKnown = (step: Solved, vars: Vars) =>
+  step.symbols.some((name) => vars.has(name)) ||
+  step.defines.some(([name]) => vars.has(name))
+    ? new Solved(
+        step.parts as Literal[],
+        step.symbols.filter((name) => !vars.has(name)),
+        step.defines.filter(([name]) => !vars.has(name)),
+        step.keeps,
+        step.inputs
+      )
+    : step;
+
+/**
+ * A schema check of the step whose schema, computed when the step runs,
+ * lists the values it allows: as for a schema written in place, one that
+ * lists its values is listed, and the solver stands for the values of any
+ * other.
+ */
+const listedTyping = (model: Model, step: Solved, vars: Vars) =>
+  Effect.gen(function* () {
+    for (const literal of step.parts as readonly Literal[]) {
+      if (
+        isForm(literal, "schema/fits?") &&
+        literal.parts[1] instanceof LogicValue &&
+        step.symbols.includes((literal.parts[0] as LogicVariable).name) &&
+        unlisted(yield* term(model, literal.parts[1], vars)) === undefined
+      ) {
+        return literal;
+      }
+    }
+    return undefined;
+  });
+
+/**
  * The answers of a solver step for an answer. With nothing to keep, the
  * answer is kept once when there are values that meet its goals. Otherwise
  * each combination of values of the variables it keeps gives an answer,
@@ -1531,10 +1620,26 @@ const caseAnswers = (
  */
 const solvedAnswers = (
   model: Model,
-  step: Solved,
+  asked: Solved,
   vars: Vars
 ): LogicEffect<readonly Vars[]> =>
   Effect.gen(function* () {
+    const step = withKnown(asked, vars);
+    const listing = yield* listedTyping(model, step, vars);
+    if (listing !== undefined) {
+      // The variable takes each value its schema lists, as a listing does,
+      // and the rest of the step is solved with it known.
+      const out: Vars[] = [];
+      for (const each of yield* listed(
+        model,
+        listing.parts[0],
+        listing.parts[1],
+        vars
+      )) {
+        out.push(...(yield* solvedAnswers(model, step, each)));
+      }
+      return out;
+    }
     const { choices, sorts } = yield* stepFormulas(model, step, vars);
     const first = step.keeps.length === 0;
     const out = new Map<string, Vars>();
@@ -1570,6 +1675,9 @@ const solvedAnswers = (
       error instanceof LogicError
         ? error
         : new LogicError({ message: String(error) })
+    ),
+    Effect.catchDefect((defect) =>
+      defect instanceof LogicError ? Effect.fail(defect) : Effect.die(defect)
     )
   ) as LogicEffect<readonly Vars[]>;
 
@@ -1578,7 +1686,39 @@ const solvedAnswers = (
  * it solves for, as `why` shows them; undefined when none do.
  */
 export const exampleOf = (model: Model, step: Solved, vars: Vars) =>
+  Effect.map(firstAnswer(model, step, vars), (answer) =>
+    answer === undefined
+      ? undefined
+      : Object.fromEntries(
+          [...step.symbols, ...step.defines.map(([name]) => name)].map(
+            (name) => [`?${name.replace(LENGTH_MARK, "")}`, answer.get(name)]
+          )
+        )
+  ) as LogicEffect<Record<string, unknown> | undefined>;
+
+/** The first answer a solver step gives, with every variable it solves for bound. */
+const firstAnswer = (
+  model: Model,
+  asked: Solved,
+  vars: Vars
+): LogicEffect<Vars | undefined> =>
   Effect.gen(function* () {
+    const step = withKnown(asked, vars);
+    const listing = yield* listedTyping(model, step, vars);
+    if (listing !== undefined) {
+      for (const each of yield* listed(
+        model,
+        listing.parts[0],
+        listing.parts[1],
+        vars
+      )) {
+        const answer = yield* firstAnswer(model, step, each);
+        if (answer !== undefined) {
+          return answer;
+        }
+      }
+      return undefined;
+    }
     const { choices, sorts } = yield* stepFormulas(model, step, vars);
     const names = [...step.symbols, ...step.defines.map(([name]) => name)];
     for (const choice of choices) {
@@ -1594,12 +1734,7 @@ export const exampleOf = (model: Model, step: Solved, vars: Vars) =>
           true
         );
         if (answer !== undefined) {
-          return Object.fromEntries(
-            names.map((name) => [
-              `?${name.replace(LENGTH_MARK, "")}`,
-              answer.get(name),
-            ])
-          );
+          return answer;
         }
       }
     }
@@ -1609,8 +1744,11 @@ export const exampleOf = (model: Model, step: Solved, vars: Vars) =>
       error instanceof LogicError
         ? error
         : new LogicError({ message: String(error) })
+    ),
+    Effect.catchDefect((defect) =>
+      defect instanceof LogicError ? Effect.fail(defect) : Effect.die(defect)
     )
-  ) as LogicEffect<Record<string, unknown> | undefined>;
+  ) as LogicEffect<Vars | undefined>;
 
 /** Runs the solver, as an effect that fails with a LogicError when the question is too hard. */
 const solving = <A>(work: () => A) =>

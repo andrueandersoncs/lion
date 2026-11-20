@@ -364,6 +364,44 @@ describe("solving for a variable a schema types", () => {
   );
 
   it.effect.prop(
+    "explains each row of a rule with the row's own values, not other values that meet its goals",
+    { tests: filters, pick: int(0, 50) },
+    ({ pick, tests }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        const rows = resultOf(
+          yield* evaluate(
+            [
+              "begin",
+              ["relation", "pair", ["x", "y"]],
+              [
+                "rule",
+                ["pair", "?x", "?y"],
+                ...solved("?x"),
+                ...solved("?y"),
+                ...tests,
+              ],
+              ["find", PAIR, ["pair", "?x", "?y"]],
+            ],
+            database
+          )
+        ) as [number, number][];
+        const row = rows[pick % Math.max(rows.length, 1)];
+        if (row === undefined) {
+          return;
+        }
+        const why = resultOf(
+          yield* evaluate(["why", ["pair", ...row]], database)
+        ) as { because: { example?: Record<string, number> }[] };
+        const example = why.because.find(
+          (p) => p.example !== undefined
+        )?.example;
+        expect(example).toEqual({ "?x": row[0], "?y": row[1] });
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
     "solves for the numbers of a record a schema shapes",
     { tests: filters },
     ({ tests }) =>
@@ -446,6 +484,47 @@ describe("solving for a variable a schema types", () => {
           const byListing = yield* evaluate(asked(body(listed)));
           expect(bySolver).toEqual(byListing);
         }
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "solves for a value whose schema holds a lambda, written in place or passed to a function, as for the same schema under a name",
+    { low: int(-3, 0), high: int(0, 3), tests: filters },
+    ({ high, low, tests }) =>
+      Effect.gen(function* () {
+        const schema = [
+          "schema/allOf",
+          "value/integer?",
+          [
+            "lambda",
+            ["n"],
+            [
+              "boolean/and",
+              ["number/greaterThanOrEqualTo", "n", low],
+              ["number/lessThanOrEqualTo", "n", high],
+            ],
+          ],
+        ];
+        const body = (typed: Code) => [
+          "and",
+          ["schema/fits?", "?x", typed],
+          ["schema/fits?", "?y", typed],
+          ...tests,
+        ];
+        const named = yield* evaluate([
+          "begin",
+          ["schema", "Bounded", schema],
+          ["find", PAIR, body("Bounded")],
+        ]);
+        expect(named).toMatchObject({ ok: true });
+        expect(yield* evaluate(["find", PAIR, body(schema)])).toEqual(named);
+        expect(
+          yield* evaluate([
+            ["lambda", ["s"], ["find", PAIR, body("s")]],
+            schema,
+          ])
+        ).toEqual(named);
       }),
     OPTIONS
   );
@@ -534,6 +613,217 @@ describe("solving for a variable a schema types", () => {
     { timeout: 120_000, arbitrary: { runs: 60 } }
   );
 });
+
+/** Every run of up to two commands, each adding a whole number from the box. */
+const runs = (amount: Code): Code[] => [
+  ["schema", "Amount", amount],
+  ["schema", "Runs", ["schema/arrayOf", { add: "Amount" }, 2]],
+];
+
+/** The amounts as the solver works them out: whole numbers, bounded by a predicate. */
+const SOLVED_AMOUNT: Code = [
+  "schema/allOf",
+  "value/integer?",
+  [
+    "lambda",
+    ["n"],
+    [
+      "boolean/and",
+      ["number/greaterThanOrEqualTo", "n", -2],
+      ["number/lessThanOrEqualTo", "n", 2],
+    ],
+  ],
+];
+
+const LISTED_AMOUNT: Code = ["schema/anyOf", -2, -1, 0, 1, 2];
+
+/** Lion code with ?x and ?y put in place by what `by` gives for each. */
+const replaced = (code: Code, by: Record<string, Code>): Code => {
+  if (Array.isArray(code)) {
+    return code.map((part) => replaced(part, by));
+  }
+  return typeof code === "string" && code in by ? by[code] : code;
+};
+
+describe("solving for runs of commands", () => {
+  it.effect.prop(
+    "folds, maps, and asks about lists of known length whose items the solver works out, as listing them does",
+    { step: number(1), test: test(1), asked: int(0, 6) },
+    ({ asked, step, test: check }) =>
+      Effect.gen(function* () {
+        // A step from a state and a command, made from the generated sums.
+        const stepper = [
+          "lambda",
+          ["s", "c"],
+          replaced(step, { "?x": "s", "?y": ["object/get", "c", "add"] }),
+        ];
+        const states = ["array/reductions", "?run", 0, "stepper"];
+        const about = (x: Code, y: Code) =>
+          replaced(check, { "?x": x, "?y": y });
+        const questions: Code[] = [
+          // The state a run ends in.
+          [
+            "find",
+            "?run",
+            [
+              "and",
+              ["schema/fits?", "?run", "Runs"],
+              about(
+                ["array/reduce", "?run", 0, "stepper"],
+                ["array/length", "?run"]
+              ),
+            ],
+          ],
+          // Each state a run passes through, as in takes them.
+          [
+            "find",
+            ["array/make", "?run", "?state"],
+            [
+              "and",
+              ["schema/fits?", "?run", "Runs"],
+              ["in", "?state", states],
+              about("?state", ["array/length", "?run"]),
+            ],
+          ],
+          // Some state, and every state.
+          [
+            "find",
+            "?run",
+            [
+              "and",
+              ["schema/fits?", "?run", "Runs"],
+              ["array/some?", states, ["lambda", ["v"], about("v", 1)]],
+            ],
+          ],
+          [
+            "find",
+            "?run",
+            [
+              "and",
+              ["schema/fits?", "?run", "Runs"],
+              [
+                "array/every?",
+                [
+                  "array/map",
+                  "?run",
+                  ["lambda", ["c"], ["object/get", "c", "add"]],
+                ],
+                ["lambda", ["v"], about("v", ["array/length", "?run"])],
+              ],
+            ],
+          ],
+          // Whether some run and some state it passes through fail it, which
+          // the solver decides without listing the runs.
+          [
+            "query",
+            [
+              "exists",
+              ["?run", "?state"],
+              [
+                "and",
+                ["schema/fits?", "?run", "Runs"],
+                ["in", "?state", states],
+                ["not", about("?state", 1)],
+              ],
+            ],
+          ],
+          [
+            "query",
+            [
+              "exists",
+              ["?run"],
+              [
+                "and",
+                ["schema/fits?", "?run", "Runs"],
+                [
+                  "not",
+                  ["array/every?", states, ["lambda", ["v"], about("v", 1)]],
+                ],
+              ],
+            ],
+          ],
+          // Whether a run passes through a state, asked with in as a test.
+          [
+            "find",
+            "?run",
+            ["and", ["schema/fits?", "?run", "Runs"], ["in", 1, states]],
+          ],
+        ];
+        const question = questions[asked] as Code;
+        const ask = (amount: Code) =>
+          evaluate([
+            "begin",
+            ...runs(amount),
+            ["define", "stepper", stepper],
+            question,
+          ]);
+        const bySolver = yield* ask(SOLVED_AMOUNT);
+        // Both must give answers: a question both refuse alike proves nothing.
+        expect(bySolver).toMatchObject({ ok: true });
+        expect(bySolver).toEqual(yield* ask(LISTED_AMOUNT));
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "decides whether some run with amounts of any size meets a question, without listing them, and says yes wherever the box does",
+    {
+      step: Arbitrary.filter(number(1), decidable),
+      test: Arbitrary.filter(test(1), decidable),
+      every: element([true, false]),
+    },
+    ({ every, step, test: check }) =>
+      Effect.gen(function* () {
+        const stepper = [
+          "lambda",
+          ["s", "c"],
+          replaced(step, { "?x": "s", "?y": ["object/get", "c", "add"] }),
+        ];
+        const holds = [
+          every ? "array/every?" : "array/some?",
+          ["array/reductions", "?run", 0, "stepper"],
+          ["lambda", ["v"], replaced(check, { "?x": "v", "?y": 1 })],
+        ];
+        const ask = (amount: Code) =>
+          evaluate([
+            "begin",
+            ...runs(amount),
+            ["define", "stepper", stepper],
+            [
+              "query",
+              [
+                "exists",
+                ["?run"],
+                ["and", ["schema/fits?", "?run", "Runs"], holds],
+              ],
+            ],
+          ]);
+        const anySize = resultOf(yield* ask("value/integer?")) as unknown[];
+        const inTheBox = resultOf(yield* ask(LISTED_AMOUNT)) as unknown[];
+        if (inTheBox.length > 0) {
+          expect(anySize).toHaveLength(1);
+        }
+      }),
+    OPTIONS
+  );
+});
+
+/** True for code the solver decides itself: no product of two unknowns, and no schema. */
+const decidable = (code: Code): boolean => {
+  if (!Array.isArray(code)) {
+    return true;
+  }
+  if (code[0] === "schema/fits?") {
+    return false;
+  }
+  if (
+    code[0] === "number/multiply" &&
+    code.slice(1).filter((part) => typeof part !== "number").length > 1
+  ) {
+    return false;
+  }
+  return code.every(decidable);
+};
 
 /** A key that reads an item of a list. */
 const INDEX = /^\d+$/;

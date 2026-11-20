@@ -81,6 +81,7 @@ const KINDS: readonly Kind[] = [
       "graph-questions",
       "enforce-rules",
       "solve-for-values",
+      "check-every-run",
       "check-data",
       "take-data-apart",
       "explain-results",

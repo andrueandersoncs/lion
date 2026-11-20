@@ -1,0 +1,81 @@
+<article id="check-every-run" data-title="Check every run of commands" data-summary="Ask about every run of commands up to a length, and the states each passes through: a rule that must always hold, something that must eventually happen, and the shortest run that breaks a rule, with amounts of any size the solver works out.">
+<p>This guide shows how to check a model of commands: a step function that takes a state and a command to the next state. Lion asks about every run of commands up to a length, which a schema like <code>["schema/arrayOf", "Command", 3]</code> stands for, and about every state a run passes through. When a command carries an amount that a schema types, such as any positive whole number, the solver works the amounts out, so the check covers every amount, not only the ones a test tried.</p>
+
+<h2>Follow the states a run passes through</h2>
+<p><code>array/reductions</code> gives every value <code>array/reduce</code> passes through, starting with the first, so for a step function it gives the states a run goes through:</p>
+<lion-example name="The states of a run">
+["array/reductions",
+  ["quote", [{"deposit": 5}, {"withdraw": 3}, {"withdraw": 4}]], 0,
+  ["lambda", ["balance", "c"],
+    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+             ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]]
+</lion-example>
+
+<h2>Check that a rule always holds</h2>
+<p>A rule always holds when no state of any run breaks it. Type the run with a schema, take each state with <code>in</code>, and ask whether one breaks the rule. Here the amounts are any positive whole numbers. A careful withdrawal, which refuses to take more than the balance, never takes the account below 0, while a careless one can:</p>
+<lion-example name="A rule no run breaks">
+["begin",
+  ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+  ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
+  ["define", "careful", ["lambda", ["balance", "c"],
+    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+             [["number/lessThan", "balance", ["object/get", "c", "withdraw"]], "balance"],
+             ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
+  ["define", "careless", ["lambda", ["balance", "c"],
+    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+             ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
+  ["define", "overdraws", ["lambda", ["step"],
+    ["query", ["exists", ["?run", "?balance"],
+      ["and", ["schema/fits?", "?run", ["schema/arrayOf", "Command", 3]],
+              ["in", "?balance", ["array/reductions", "?run", 0, "step"]],
+              ["number/lessThan", "?balance", 0]]]]]],
+  {"careful": ["overdraws", "careful"], "careless": ["overdraws", "careless"]}]
+</lion-example>
+<p><code>[]</code> means no run of up to three commands, with any amounts, breaks the rule; <code>[{}]</code> means some run does.</p>
+
+<h2>Find the shortest run that breaks a rule</h2>
+<p>A rule with the run's length in its head, and the run only in its body, gives each length of a run that breaks the rule, however many runs of that length do. <code>why</code> shows a run of that length with amounts that break it:</p>
+<lion-example name="The shortest breaking run">
+["begin",
+  ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+  ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
+  ["define", "careless", ["lambda", ["balance", "c"],
+    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+             ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
+  ["relation", "breaks", ["length"]],
+  ["rule", ["breaks", "?n"],
+    ["schema/fits?", "?run", ["schema/arrayOf", "Command", 3]],
+    ["=", "?n", ["array/length", "?run"]],
+    ["number/lessThan", ["array/reduce", "?run", 0, "careless"], 0]],
+  {"shortest": ["aggregate/min", ["find", "?n", ["breaks", "?n"]]],
+   "example": ["object/get", ["array/head", ["object/get", ["why", ["breaks", 1]], "because"]], "example"]}]
+</lion-example>
+
+<h2>Check that something eventually happens</h2>
+<p>Something must eventually happen when some state of every run meets it: <code>array/some?</code> over the states. Which runs have run their course is a goal about the run, such as its length. Here a heater starts at 0 and each command heats it by an amount between two bounds. In three steps it always reaches 20 degrees when each step heats by 7 to 10, and not when a step may heat by only 5:</p>
+<lion-example name="Something every run reaches">
+["begin",
+  ["define", "heater", ["lambda", ["low", "high"],
+    {"heat": ["schema/allOf", "value/integer?",
+      ["lambda", ["n"], ["boolean/and", ["number/greaterThanOrEqualTo", "n", "low"], ["number/lessThanOrEqualTo", "n", "high"]]]]}]],
+  ["define", "always warm", ["lambda", ["command"],
+    ["query", ["not", ["exists", ["?run"],
+      ["and", ["schema/fits?", "?run", ["schema/arrayOf", "command", 3]],
+              ["number/equals?", ["array/length", "?run"], 3],
+              ["not", ["array/some?",
+                ["array/reductions", "?run", 0, ["lambda", ["t", "c"], ["number/add", "t", ["object/get", "c", "heat"]]]],
+                ["lambda", ["t"], ["number/greaterThanOrEqualTo", "t", 20]]]]]]]]]],
+  {"heating by 5 to 10": ["always warm", ["heater", 5, 10]],
+   "heating by 7 to 10": ["always warm", ["heater", 7, 10]]}]
+</lion-example>
+<p>The schema here is made by a function the check is given, and is solved for as one written under a name is.</p>
+
+<h2>Know what it decides</h2>
+<p>A run's length is known in each shape the schema gives it, so the solver runs the step function on each command in turn, on amounts it works out, and decides what <a href="#solve-for-values">it decides everywhere</a>: sums of numbers times known numbers, comparisons, and equality. A step it cannot decide, such as one that multiplies two amounts, waits for listed values, and so needs the amounts bounded.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#solve-for-values">Solve for values and prove rules</a>: what the solver decides, and how a question waits for values.</li>
+  <li><a href="#enforce-rules">Enforce rules on your data</a>: invariants check the facts a database holds.</li>
+</ul>
+</article>

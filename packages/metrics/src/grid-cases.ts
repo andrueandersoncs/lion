@@ -164,6 +164,42 @@ export const EXPRESSIONS: readonly Expression[] = [
   },
   { name: "list", form: ["array/make", X, ["number/add", X, 1]] },
   {
+    name: "states of a fold",
+    form: [
+      "array/reductions",
+      ["array/make", X, 1],
+      0,
+      ["lambda", ["s", "v"], ["number/add", "s", "v"]],
+    ],
+  },
+  {
+    name: "some item",
+    form: [
+      "array/some?",
+      ["array/make", X, 0],
+      ["lambda", ["v"], ["number/greaterThan", "v", 1]],
+    ],
+    boolean: true,
+  },
+  {
+    name: "every item",
+    form: [
+      "array/every?",
+      ["array/reductions", ["array/make", X, X], 0, "number/add"],
+      ["lambda", ["v"], ["number/lessThan", "v", 5]],
+    ],
+    boolean: true,
+  },
+  {
+    name: "membership in a fold's states",
+    form: [
+      "in",
+      2,
+      ["array/reductions", ["array/make", X, 1], 0, "number/add"],
+    ],
+    boolean: true,
+  },
+  {
     name: "lambda call",
     form: [["lambda", ["v"], ["number/multiply", "v", "v"]], X],
   },

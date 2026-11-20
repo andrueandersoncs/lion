@@ -480,11 +480,17 @@ const formReady = (literal: Literal, known: Ready, free: Ready) => {
     return free(second, true) || known(second);
   }
   // A known schema that lists the values it allows binds the value to
-  // each in turn. One computed from variables lists them when it runs.
+  // each in turn. One computed from variables lists them when it runs. One
+  // that is a call with none, such as a schema closed over a lambda, is the
+  // same for every answer: the solver's step takes a variable it types, and
+  // lists the schema's values when it can, and it binds a pattern when it
+  // runs.
   return (
     free(first) &&
     known(second) &&
-    (second instanceof LogicValue || unlisted(second) === undefined)
+    (second instanceof LogicValue
+      ? second.variables.length > 0 || !(first instanceof LogicVariable)
+      : unlisted(second) === undefined)
   );
 };
 
@@ -798,8 +804,9 @@ const solvable = (
       literal.parts[0] instanceof LogicVariable &&
       !literal.parts[0].anonymous &&
       !bound.has(literal.parts[0].name) &&
-      !(literal.parts[1] instanceof LogicValue) &&
-      symbolic(literal.parts[1]) === undefined
+      (literal.parts[1] instanceof LogicValue
+        ? literal.parts[1].variables.length === 0
+        : symbolic(literal.parts[1]) === undefined)
   );
   if (typing.length === 0) {
     return undefined;
@@ -814,31 +821,37 @@ const solvable = (
     term instanceof LogicValue && term.variables.some((name) => made.has(name));
   const defines: Define[] = [];
   const defining: Literal[] = [];
+  // A variable no goal binds that "=" equates with values made of the
+  // symbols, or that "in" takes from a list made of them, is defined by it.
+  const free = (term: unknown): term is LogicVariable =>
+    term instanceof LogicVariable &&
+    !term.anonymous &&
+    !bound.has(term.name) &&
+    !made.has(term.name);
+  const defined = (
+    literal: Literal
+  ): readonly [string, unknown] | undefined => {
+    const [a, b] = literal.parts;
+    if (isForm(literal, "in")) {
+      return free(a) && known(b) && about(b) ? [a.name, b] : undefined;
+    }
+    if (!isForm(literal, "=")) {
+      return undefined;
+    }
+    if (free(a) && known(b) && about(b)) {
+      return [a.name, b];
+    }
+    return free(b) && known(a) && about(a) ? [b.name, a] : undefined;
+  };
   for (let grew = true; grew; ) {
     grew = false;
     for (const literal of remaining) {
-      if (!isForm(literal, "=") || defining.includes(literal)) {
-        continue;
-      }
-      const [a, b] = literal.parts;
-      for (const [side, other] of [
-        [a, b],
-        [b, a],
-      ] as const) {
-        if (
-          side instanceof LogicVariable &&
-          !side.anonymous &&
-          !bound.has(side.name) &&
-          !made.has(side.name) &&
-          known(other) &&
-          about(other)
-        ) {
-          defines.push([side.name, other, literal]);
-          defining.push(literal);
-          made.add(side.name);
-          grew = true;
-          break;
-        }
+      const found = defining.includes(literal) ? undefined : defined(literal);
+      if (found !== undefined) {
+        defines.push([...found, literal]);
+        defining.push(literal);
+        made.add(found[0]);
+        grew = true;
       }
     }
   }

@@ -1027,12 +1027,51 @@ A schema stands for every value it allows. When nothing else binds the value `sc
 
 Evaluates to `{ "between": [3, 4, 5], "never overdrawn": [{}] }`: for every whole balance of at least 0 and every positive amount, the careful withdrawal leaves the balance at least 0.
 
+- A schema computed where it is written, such as one that holds a lambda or one a function is given, is the same for every answer, so it stands for its values as the same schema under a name does: listed when it can list them, solved for otherwise.
 - `value/integer?` stands for a whole number and `value/number?` for any number. A record or list of schemas stands for a record or list of what its parts stand for, `schema/anyOf` for any of its schemas' values, `["schema/arrayOf", schema, most]` for a list of each length up to `most`, and `schema/allOf` for what its first part stands for that fits the others. A predicate alone, such as a lambda, says no kind.
 - A goal that waits only for such variables joins one step that runs after the goals its other variables need. `=` with such a variable on one side gives it the value of the other.
-- The step works the goals out on the values: `number/add`, `number/subtract`, `number/multiply` and `number/divide` by a known number, comparisons, `number/equals?`, `=`, `cond`, `number/min`, `number/max`, `number/absolute`, `boolean/and`, `boolean/or`, `boolean/not`, `not`, `object/get` on a record, and a lambda by its body. Anything else on such a value, such as a product of two unknowns, a string function, or a question, waits: the step lists the values of the variables it needs and runs it on each, as plain code does. When those are infinitely many, the step fails and names what the solver cannot reason about.
+- The step works the goals out on the values: `number/add`, `number/subtract`, `number/multiply` and `number/divide` by a known number, comparisons, `number/equals?`, `=`, `cond`, `number/min`, `number/max`, `number/absolute`, `boolean/and`, `boolean/or`, `boolean/not`, `not`, `object/get` on a record, and a lambda by its body. A list of known length, such as one `["schema/arrayOf", schema, most]` stands for, keeps its items' values: `array/reduce`, `array/reductions`, `array/map`, `array/flat-map`, `array/some?`, `array/every?`, `array/length`, `array/head`, `array/tail`, `array/concat`, and `array/includes?` run on it item by item, and `in` takes each of its items, so a check of every run of commands can leave the amounts they carry to the solver (see [Checking every run of commands](#checking-every-run-of-commands)). Anything else on such a value, such as a product of two unknowns, a string function, or a question, waits: the step lists the values of the variables it needs and runs it on each, as plain code does. When those are infinitely many, the step fails and names what the solver cannot reason about.
 - The solver decides with exact numbers: Fourier and Motzkin's method for any number and Pugh's Omega test for whole numbers. Every question gets yes or no, the same on every machine. Plain code computes with floating-point numbers, which can round where the solver does not.
 - The step binds the variables whose values make the answers, to each combination of values they take, when those are finitely many: a whole number bounded on both sides, or a number the goals fix. In a query or a `find`, which give one answer or value for every match, and in a rule that aggregates, which combines one value from each, those are every variable of the body, as for values a schema lists; in any other rule, those its head shows. A variable a `cond` defines takes the value of each case that can hold. One with infinitely many values fails, and says so. The others, a plain rule's own, those `exists` lists, and a question's own under `not`, only need some values to exist. `why` explains a row the step gave with an `example` that meets its goals.
 - A step gives at most 100,000 answers, splits into at most 4,096 cases, and makes at most 20,000 constraints while eliminating its variables; past those it is refused, so every question ends soon.
+
+### Checking every run of commands
+
+A model of commands is checked by asking about every run of them up to a length, which `["schema/arrayOf", "Command", 3]` stands for, and about the states each run passes through, which `array/reductions` gives. When the commands carry amounts a schema types, such as any positive whole number, the solver works the amounts out, so a check covers every amount, not only the ones a test tried.
+
+```json
+["begin",
+  ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+  ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
+  ["define", "careful", ["lambda", ["balance", "c"],
+    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+             [["number/lessThan", "balance", ["object/get", "c", "withdraw"]], "balance"],
+             ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
+  ["define", "careless", ["lambda", ["balance", "c"],
+    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+             ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
+  ["define", "overdraws", ["lambda", ["step"],
+    ["query", ["exists", ["?run", "?balance"],
+      ["and", ["schema/fits?", "?run", ["schema/arrayOf", "Command", 3]],
+              ["in", "?balance", ["array/reductions", "?run", 0, "step"]],
+              ["number/lessThan", "?balance", 0]]]]]],
+  ["define", "reaches", ["lambda", ["step", "goal"],
+    ["query", ["not", ["exists", ["?run"],
+      ["and", ["schema/fits?", "?run", ["schema/arrayOf", "Command", 2]],
+              ["number/equals?", ["array/length", "?run"], 2],
+              ["not", ["array/some?", ["array/reductions", "?run", 0, "step"],
+                ["lambda", ["balance"], ["number/greaterThanOrEqualTo", "balance", "goal"]]]]]]]]]],
+  {"careful overdraws": ["overdraws", "careful"],
+   "careless overdraws": ["overdraws", "careless"],
+   "every run of two reaches 1": ["reaches", "careful", 1]}]
+```
+
+Evaluates to `{ "careful overdraws": [], "careless overdraws": [{}], "every run of two reaches 1": [] }`: no run of up to three commands, with any amounts, takes the careful account below 0; some run takes the careless one there; and a run of two withdrawals never brings the balance up to 1.
+
+- A rule that must always hold is one no state of any run breaks: `exists` over a run and a state `in` its states, under `not`.
+- Something that must eventually happen is something some state of every run meets: `array/some?` over the states. One checked at the end of every run is about what `array/reduce` gives. Which runs have run their course, such as those of a full length or those that end in a closing command, is a goal about the run.
+- The shortest run that breaks a rule: a rule that gives each length of a run that breaks it, with the length in its head and the run only in its body, so its rows are the lengths; `aggregate/min` gives the least, and `why` shows a run of that length with amounts that break it.
+- A run's length is known in each shape the schema gives it, so the solver runs the step function on each command in turn; see [Solving for values](#solving-for-values) for what it decides, and what waits for listed values instead.
 
 ### Schemas in rules and queries
 
@@ -1199,6 +1238,9 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["array/map", ["array/make", 1, 2, 3], ["lambda", ["x"], ["number/add", "x", 1]]]
 ["array/flat-map", ["array/make", 1, 2], ["lambda", ["x"], ["array/make", "x", "x"]]]
 ["array/reduce", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]]
+["array/reductions", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]]
+["array/some?", ["array/make", 1, 5, 2], ["lambda", ["x"], ["number/greaterThan", "x", 4]]]
+["array/every?", ["array/make", 1, 5, 2], ["lambda", ["x"], ["number/greaterThan", "x", 0]]]
 ```
 
 ### `string`

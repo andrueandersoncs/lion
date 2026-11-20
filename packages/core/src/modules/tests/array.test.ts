@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { module as array } from "../array.ts";
 import { stdlib } from "../index.ts";
@@ -70,4 +70,114 @@ describe("array", () => {
       })
     );
   });
+});
+
+describe("array/reductions", () => {
+  const list = Arbitrary.schema(
+    Schema.Array(
+      Schema.Int.check(Schema.isBetween({ minimum: -50, maximum: 50 }))
+    )
+  );
+  it.effect.prop(
+    "gives every value array/reduce passes through: the k-th is the first k items reduced, and the last is array/reduce's",
+    { items: list, initial: list },
+    ({ initial, items }) =>
+      Effect.gen(function* () {
+        // A step that keeps the order of what it saw, so any other order shows.
+        const step = [
+          "lambda",
+          ["seen", "x"],
+          ["array/concat", "seen", ["array/make", "x"]],
+        ];
+        const states = yield* run(
+          ["array/reductions", ["quote", items], ["quote", initial], step],
+          stdlib
+        );
+        expect(states).toEqual(
+          Array.from({ length: items.length + 1 }, (_, k) => [
+            ...initial,
+            ...items.slice(0, k),
+          ])
+        );
+        const reduced = yield* run(
+          ["array/reduce", ["quote", items], ["quote", initial], step],
+          stdlib
+        );
+        expect((states as unknown[]).at(-1)).toEqual(reduced);
+      })
+  );
+});
+
+describe("array/some? and array/every?", () => {
+  const items = Arbitrary.schema(
+    Schema.Array(
+      Schema.Int.check(Schema.isBetween({ minimum: -5, maximum: 5 }))
+    )
+  );
+  const above = Arbitrary.schema(
+    Schema.Int.check(Schema.isBetween({ minimum: -5, maximum: 5 }))
+  );
+  it.effect.prop(
+    "say whether the function is true for some item, and for each, asking no further than the first item that settles it",
+    { items, above },
+    ({ above, items }) =>
+      Effect.gen(function* () {
+        const test = ["lambda", ["x"], ["number/greaterThan", "x", above]];
+        const some = yield* run(
+          ["array/some?", ["quote", items], test],
+          stdlib
+        );
+        const every = yield* run(
+          ["array/every?", ["quote", items], test],
+          stdlib
+        );
+        expect(some).toBe(items.some((x) => x > above));
+        expect(every).toBe(items.every((x) => x > above));
+        // An item after the one that settles it would fail, and is not asked.
+        const failing = [
+          "lambda",
+          ["x"],
+          [
+            "cond",
+            [
+              ["number/equals?", "x", 99],
+              ["number/add", "x", "not a number"],
+            ],
+            ["else", ["number/greaterThan", "x", above]],
+          ],
+        ];
+        const settled = (stop: boolean) => {
+          const at = items.findIndex((x) => x > above === stop);
+          return at === -1 ? undefined : [...items.slice(0, at + 1), 99];
+        };
+        const someList = settled(true);
+        if (someList !== undefined) {
+          expect(
+            yield* run(["array/some?", ["quote", someList], failing], stdlib)
+          ).toBe(true);
+        }
+        const everyList = settled(false);
+        if (everyList !== undefined) {
+          expect(
+            yield* run(["array/every?", ["quote", everyList], failing], stdlib)
+          ).toBe(false);
+        }
+      })
+  );
+
+  it.effect.prop(
+    "fail when the function gives anything but true or false, as a condition does",
+    {
+      items: Arbitrary.array(Arbitrary.schema(Schema.Int), { minLength: 1 }),
+    },
+    ({ items }) =>
+      Effect.gen(function* () {
+        for (const name of ["array/some?", "array/every?"]) {
+          const outcome = yield* Effect.exit(
+            run([name, ["quote", items], ["lambda", ["x"], "x"]], stdlib)
+          );
+          expect(outcome._tag).toBe("Failure");
+        }
+      })
+  );
 });

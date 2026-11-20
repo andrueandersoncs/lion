@@ -32,8 +32,10 @@ import {
   negate,
   ONE,
   plus,
+  ratio,
   type Sort,
   times,
+  variable,
   ZERO,
 } from "@/logic/solver";
 import {
@@ -46,6 +48,7 @@ import {
   fromValue,
   isConcrete,
   itemsOf,
+  MOST_WAYS,
   not,
   numberSym,
   one,
@@ -57,6 +60,7 @@ import {
   shapeOf,
   TRUE,
   throughNames,
+  tooManyWays,
   truthSym,
 } from "@/logic/symbols";
 import {
@@ -128,7 +132,8 @@ const LIBRARY: Readonly<
     (
       args: readonly Sym[],
       name: string,
-      context: Context
+      context: Context,
+      depth: number
     ) => Effect.Effect<Cases, Error>
   >
 > = {
@@ -237,6 +242,204 @@ const LIBRARY: Readonly<
   },
 };
 
+/** The items of a list, or a refusal when the value is not one of known length. */
+const listOf = (sym: Sym | undefined, name: string) => {
+  const items = sym === undefined ? undefined : itemsOf(sym);
+  return items === undefined
+    ? refused(`${name} of a list whose length the solver does not know`)
+    : Effect.succeed(items);
+};
+
+/** A function a library call is given, which must be known. */
+const functionOf = (sym: Sym | undefined, name: string) =>
+  sym?.kind === "value" && typeof sym.value === "function"
+    ? Effect.succeed(sym.value)
+    : refused(`${name} of a function no goal binds`);
+
+const listSym = (items: readonly Sym[]): Sym => ({ items, kind: "list" });
+
+/**
+ * Every way a fold over a list of known length can go: the values it passes
+ * through, starting with `initial`, each way with when it holds.
+ */
+const fold = (
+  items: readonly Sym[],
+  initial: Sym,
+  fn: unknown,
+  context: Context,
+  depth: number
+) =>
+  Effect.gen(function* () {
+    let ways: { when: Formula; states: Sym[] }[] = [
+      { states: [initial], when: TRUE },
+    ];
+    for (const item of items) {
+      const next: { when: Formula; states: Sym[] }[] = [];
+      for (const way of ways) {
+        const last = way.states.at(-1) as Sym;
+        for (const each of yield* applyFunction(
+          fn,
+          [last, item],
+          context,
+          depth
+        )) {
+          const both = and(way.when, each.when);
+          if (both.length > 0) {
+            next.push({ states: [...way.states, each.sym], when: both });
+          }
+          if (next.length > MOST_WAYS) {
+            return yield* Effect.fail(tooManyWays());
+          }
+        }
+      }
+      ways = next;
+    }
+    return ways;
+  });
+
+/** The cases of a function called on each item of a list, as the list of results. */
+const mapped = (
+  items: readonly Sym[],
+  fn: unknown,
+  context: Context,
+  depth: number
+) =>
+  Effect.map(
+    Effect.forEach(items, (item) => applyFunction(fn, [item], context, depth)),
+    (each) => product(each)
+  );
+
+/** Whether a function holds for some item of a list, or, with `some` false, for each. */
+const quantified = (
+  [list, fn]: readonly Sym[],
+  name: string,
+  context: Context,
+  depth: number,
+  some: boolean
+) =>
+  Effect.flatMap(
+    Effect.all([listOf(list, name), functionOf(fn, name)]),
+    ([items, f]) =>
+      Effect.map(
+        Effect.forEach(items, (item) =>
+          Effect.flatMap(applyFunction(f, [item], context, depth), formulaOf)
+        ),
+        (holds) =>
+          one(
+            truthSym(some ? holds.reduce(or, FALSE) : holds.reduce(and, TRUE))
+          )
+      )
+  );
+
+/** How the array functions work on lists of known length whose items the solver works out. */
+const ARRAYS: Readonly<
+  Record<
+    string,
+    (
+      args: readonly Sym[],
+      name: string,
+      context: Context,
+      depth: number
+    ) => Effect.Effect<Cases, Error>
+  >
+> = {
+  "array/length": ([list], name) =>
+    Effect.map(listOf(list, name), (items) => one(fromValue(items.length))),
+  "array/head": ([list], name) =>
+    Effect.map(listOf(list, name), (items) => one(items[0] ?? fromValue(null))),
+  "array/tail": ([list], name) =>
+    Effect.map(listOf(list, name), (items) => one(listSym(items.slice(1)))),
+  "array/concat": (lists, name) =>
+    Effect.map(
+      Effect.forEach(lists, (list) => listOf(list, name)),
+      (all) => one(listSym(all.flat()))
+    ),
+  "array/includes?": ([list, item], name) =>
+    Effect.map(listOf(list, name), (items) =>
+      one(
+        truthSym(
+          items.reduce<Formula>(
+            (f, each) => or(f, equal(each, item as Sym)),
+            FALSE
+          )
+        )
+      )
+    ),
+  "array/map": ([list, fn], name, context, depth) =>
+    Effect.flatMap(
+      Effect.all([listOf(list, name), functionOf(fn, name)]),
+      ([items, f]) =>
+        Effect.map(mapped(items, f, context, depth), (ways) =>
+          ways.map(({ syms, when }) => ({ sym: listSym(syms), when }))
+        )
+    ),
+  "array/flat-map": ([list, fn], name, context, depth) =>
+    Effect.flatMap(
+      Effect.all([listOf(list, name), functionOf(fn, name)]),
+      ([items, f]) =>
+        Effect.flatMap(mapped(items, f, context, depth), (ways) =>
+          Effect.forEach(ways, ({ syms, when }) =>
+            Effect.map(
+              Effect.forEach(syms, (each) => listOf(each, name)),
+              (lists) => ({ sym: listSym(lists.flat()), when })
+            )
+          )
+        )
+    ),
+  "array/reduce": ([list, initial, fn], name, context, depth) =>
+    Effect.flatMap(
+      Effect.all([listOf(list, name), functionOf(fn, name)]),
+      ([items, f]) =>
+        Effect.map(fold(items, initial as Sym, f, context, depth), (ways) =>
+          ways.map(({ states, when }) => ({ sym: states.at(-1) as Sym, when }))
+        )
+    ),
+  "array/some?": (args, name, context, depth) =>
+    quantified(args, name, context, depth, true),
+  "array/every?": (args, name, context, depth) =>
+    quantified(args, name, context, depth, false),
+  "array/reductions": ([list, initial, fn], name, context, depth) =>
+    Effect.flatMap(
+      Effect.all([listOf(list, name), functionOf(fn, name)]),
+      ([items, f]) =>
+        Effect.map(fold(items, initial as Sym, f, context, depth), (ways) =>
+          ways.map(({ states, when }) => ({ sym: listSym(states), when }))
+        )
+    ),
+};
+
+/**
+ * What a variable that `in` takes from a list of known length stands for:
+ * one case for each item, told apart by a whole number the solver works
+ * out, so that the cases never overlap, and asking about the variable
+ * under `not` asks about the one item it is.
+ */
+export const members = (name: string, lists: Cases, context: Context) => {
+  const index = `${name}#in`;
+  context.sorts.set(index, "integer");
+  const out: { when: Formula; sym: Sym }[] = [];
+  for (const { sym, when } of lists) {
+    const items = itemsOf(sym);
+    if (items === undefined) {
+      return refused("in over a list whose length the solver does not know");
+    }
+    for (const [at, item] of items.entries()) {
+      const pinned = and(when, [
+        [
+          {
+            linear: minus(variable(index), constant(ratio(BigInt(at)))),
+            relation: "=" as const,
+          },
+        ],
+      ]);
+      if (pinned.length > 0) {
+        out.push({ sym: item, when: pinned });
+      }
+    }
+  }
+  return Effect.succeed(out as Cases);
+};
+
 /** Whether a sum is whole whenever its variables are: whole variables, whole coefficients. */
 const integral = (linear: Linear, sorts: ReadonlyMap<string, Sort>) =>
   linear.constant.d === 1n &&
@@ -312,8 +515,8 @@ const applyFunction = (
   if (name === "array/make") {
     return Effect.succeed(one({ items: args, kind: "list" }));
   }
-  const rule = LIBRARY[name];
-  return rule === undefined ? refused(name) : rule(args, name, context);
+  const rule = LIBRARY[name] ?? ARRAYS[name];
+  return rule === undefined ? refused(name) : rule(args, name, context, depth);
 };
 
 /** Each case of each argument, applied. */
@@ -614,6 +817,25 @@ const goal = (form: LogicForm, context: Context, depth: number): Result => {
     case "or":
       return Effect.map(truths(form.parts), (fs) =>
         one(truthSym(fs.reduce(or, FALSE)))
+      );
+    case "in":
+      return Effect.flatMap(
+        Effect.all([term(first, context, depth), term(second, context, depth)]),
+        ([elements, lists]) =>
+          Effect.map(
+            Effect.forEach(product([elements, lists]), ({ syms, when }) =>
+              Effect.map(listOf(syms[1], "in"), (items) =>
+                and(
+                  when,
+                  items.reduce<Formula>(
+                    (f, item) => or(f, equal(syms[0] as Sym, item)),
+                    FALSE
+                  )
+                )
+              )
+            ),
+            (fs) => one(truthSym(fs.reduce(or, FALSE)))
+          )
       );
     case "schema/fits?":
       if (mentions(second, context)) {

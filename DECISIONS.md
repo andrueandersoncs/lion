@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 194 questions have been decided, 82 records explain them, and of what the records assert, 605 hold when Lion is run, 5 are broken, 336 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 195 questions have been decided, 83 records explain them, and of what the records assert, 611 hold when Lion is run, 5 are broken, 337 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -200,6 +200,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`sum-rounding`](#sum-rounding) | `nearest-exact-sum` | [A sum is rounded once, so the order of its values never changes it](#exact-sums) |
 | 2026-11-19 | [`schema-binds-its-value`](#schema-binds-its-value) | `list-finite-schemas` | [A schema stands for each value it allows: schema/fits? binds the value it checks when its schema can list them](#schemas-list-their-values) |
 | 2026-11-19 | [`solve-typed-variables`](#solve-typed-variables) | `exact-linear-decision-in-lion` | [A variable that a schema types and no goal binds is solved for: the filters about it become constraints, decided exactly in Lion](#solve-typed-variables) |
+| 2026-11-19 | [`eventually-rules`](#eventually-rules) | `questions-over-run-states` | [Rules about what must eventually happen are questions about the states of every run, which the solver decides for amounts of any size](#eventually-rules) |
 
 <a id="program-representation"></a>
 
@@ -4347,3 +4348,39 @@ Recorded 2026-11-19 in `history/notes/solve-typed-variables.json`.
 - Holds when Lion is run: rule `solved-questions` holds. "Variables nothing needs only need some values to exist, so exists asks whether one does and not proves that none does, for every value, and why explains a row with an example."
 - Holds when Lion is run: `solving-typed-variables` exists. "Every goal that waits only for such variables joins one step that runs after the goals its other variables need, and the solver decides it"
 - Holds when Lion is run: `solver-waiting-goal` is `solved`. "A goal the solver cannot decide, such as a product of two unknowns, a string function, or a question, waits for values"
+
+<a id="eventually-rules"></a>
+
+## eventually-rules
+
+Now: `questions-over-run-states`.
+
+- 2026-11-19 `eventually-rules`: `questions-over-run-states` over `temporal-forms`, `deferred-invariants`, `bounded-recursive-rules`: "A rule that must always hold is a question that no state of any run breaks it, one that must eventually hold a question that some state of every run meets it, and one checked at the end of every run a question about what array/reduce gives." (`eventually-rules.json`)
+
+<a id="eventually-rules"></a>
+
+### Rules about what must eventually happen are questions about the states of every run, which the solver decides for amounts of any size
+
+Recorded 2026-11-19 in `history/notes/eventually-rules.json`.
+
+**Context.** The formal-verification research ranked rules about what must eventually happen third of its ideas: Alchemy Verify checks one such rule at the end of every sequence of commands it explores. Lion's bounded search is the one schemas that list their values made: ['schema/arrayOf', 'Command', 3] stands for every run of up to three commands, and plain code folds a run with array/reduce. A rule that must eventually hold is about the states a run passes through, not only its last, and Lion had no way to get them. Rules cannot follow the states a step function computes: a rule that computes a new value in its head while recursing is refused, with a bound or without. And a run whose commands carry amounts no goal binds stopped at the solver, which ran no array function, so the amounts had to be listed from a box.
+
+**Decision.** array/reductions gives every value array/reduce passes through, starting with the first, so a step function gives the states of a run; array/some? and array/every? say whether a function holds for some item and for each, stopping at the first that settles it, as Racket's ormap and andmap do. A rule that must always hold is a question that no state of any run breaks it, one that must eventually hold a question that some state of every run meets it, and one checked at the end of every run a question about what array/reduce gives. The solver runs array functions on a list of known length, such as one ['schema/arrayOf', schema, most] stands for, item by item, and in takes each of its items, so a check of every run of commands leaves the amounts the commands carry to the solver and covers every amount. A schema computed where it is written, such as one that holds a lambda or one a function is given, stands for its values as the same schema under a name does: listed when it can list them, solved for otherwise.
+
+**Consequences.** No new form: the rules are questions Lion could already ask, over one new library function and two that any program can use. Which runs have run their course is the model's to say, as a goal about the run. The shortest run that breaks a rule is the least length a rule gives when the length is in its head and the run only in its body, and why shows a run of that length with amounts that break it. A step the solver cannot decide, such as one that multiplies two amounts, waits for listed values, so it needs the amounts bounded. why now explains a row the solver gave with the row's own values.
+
+**Alternatives considered.**
+
+- Temporal forms such as always and eventually. They name what a question over a run's states already says, and would need a meaning in every place a goal can stand.
+- An invariant checked only at the end of a sequence of changes, as a deferred constraint is. Lion's database has no end of a sequence: each form is a change, an invariant already checks each form as a whole, and a run explored by the search is not a sequence of database changes.
+- Rules that follow the states a step function computes, up to a depth. Lion refuses recursion that computes new values in a head because it may never finish, and a depth written as a filter is not a bound the check can see.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `eventually-rules`: `questions-over-run-states`. "A rule that must always hold is a question that no state of any run breaks it, one that must eventually hold a question that some state of every run meets it, and one checked at the end of every run a question about what array/reduce gives."
+- Holds when Lion is run: `array/reductions` exists. "array/reductions gives every value array/reduce passes through, starting with the first, so a step function gives the states of a run"
+- Holds when Lion is run: `array/some?` exists. "array/some? and array/every? say whether a function holds for some item and for each, stopping at the first that settles it, as Racket's ormap and andmap do."
+- Holds when Lion is run: `array/every?` exists. "array/some? and array/every? say whether a function holds for some item and for each, stopping at the first that settles it, as Racket's ormap and andmap do."
+- Holds when Lion is run: `solving-runs-of-commands` exists. "The solver runs array functions on a list of known length, such as one ['schema/arrayOf', schema, most] stands for, item by item, and in takes each of its items, so a check of every run of commands leaves the amounts the commands carry to the solver and covers every amount."
+- Holds when Lion is run: `computed-schema-solved-for` is `solved`. "A schema computed where it is written, such as one that holds a lambda or one a function is given, stands for its values as the same schema under a name does: listed when it can list them, solved for otherwise."
+- Holds when Lion is run: `why-solved-row-values` is `row-values`. "why now explains a row the solver gave with the row's own values."

@@ -1,0 +1,145 @@
+[
+  "begin",
+  [
+    "schema",
+    "Amount",
+    [
+      "schema/allOf",
+      "value/integer?",
+      ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+    ]
+  ],
+  [
+    "schema",
+    "Command",
+    [
+      "schema/anyOf",
+      {
+        "deposit": "Amount"
+      },
+      {
+        "withdraw": "Amount"
+      }
+    ]
+  ],
+  [
+    "define",
+    "careful",
+    [
+      "lambda",
+      ["balance", "c"],
+      [
+        "cond",
+        [
+          ["value/number?", ["object/get", "c", "deposit"]],
+          ["number/add", "balance", ["object/get", "c", "deposit"]]
+        ],
+        [
+          ["number/lessThan", "balance", ["object/get", "c", "withdraw"]],
+          "balance"
+        ],
+        [
+          "else",
+          ["number/subtract", "balance", ["object/get", "c", "withdraw"]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careless",
+    [
+      "lambda",
+      ["balance", "c"],
+      [
+        "cond",
+        [
+          ["value/number?", ["object/get", "c", "deposit"]],
+          ["number/add", "balance", ["object/get", "c", "deposit"]]
+        ],
+        [
+          "else",
+          ["number/subtract", "balance", ["object/get", "c", "withdraw"]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "overdraws",
+    [
+      "lambda",
+      ["step"],
+      [
+        "query",
+        [
+          "exists",
+          ["?run", "?balance"],
+          [
+            "and",
+            ["schema/fits?", "?run", ["schema/arrayOf", "Command", 3]],
+            ["in", "?balance", ["array/reductions", "?run", 0, "step"]],
+            ["number/lessThan", "?balance", 0]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "reaches",
+    [
+      "lambda",
+      ["step", "goal"],
+      [
+        "query",
+        [
+          "not",
+          [
+            "exists",
+            ["?run"],
+            [
+              "and",
+              ["schema/fits?", "?run", ["schema/arrayOf", "Command", 2]],
+              ["number/equals?", ["array/length", "?run"], 2],
+              [
+                "not",
+                [
+                  "array/some?",
+                  ["array/reductions", "?run", 0, "step"],
+                  [
+                    "lambda",
+                    ["balance"],
+                    ["number/greaterThanOrEqualTo", "balance", "goal"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["relation", "breaks", ["length"]],
+  [
+    "rule",
+    ["breaks", "?n"],
+    ["schema/fits?", "?run", ["schema/arrayOf", "Command", 3]],
+    ["=", "?n", ["array/length", "?run"]],
+    ["number/lessThan", ["array/reduce", "?run", 0, "careless"], 0]
+  ],
+  {
+    "careful overdraws": ["overdraws", "careful"],
+    "careless overdraws": ["overdraws", "careless"],
+    "every run of two reaches 1": ["reaches", "careful", 1],
+    "shortest careless run that overdraws": [
+      "aggregate/min",
+      ["find", "?n", ["breaks", "?n"]]
+    ],
+    "an example of it": [
+      "object/get",
+      ["array/head", ["object/get", ["why", ["breaks", 1]], "because"]],
+      "example"
+    ]
+  }
+]

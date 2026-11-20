@@ -25,6 +25,9 @@
 - schema/arrayOf takes the most items a list may have as a second argument, and then lists every such list. (`schema/arrayOf-most` added)
 - A schema lists its values only where no relation goal, '=', or 'in' can bind the value first, and at most 100,000 of them. (`schemas-listing-their-values` added)
 - Every goal that waits only for such variables joins one step that runs after the goals its other variables need, and the solver decides it (`solving-typed-variables` added)
+- array/some? and array/every? say whether a function holds for some item and for each, stopping at the first that settles it, as Racket's ormap and andmap do. (`array/every?` added; `array/some?` added)
+- array/reductions gives every value array/reduce passes through, starting with the first, so a step function gives the states of a run (`array/reductions` added)
+- The solver runs array functions on a list of known length, such as one ['schema/arrayOf', schema, most] stands for, item by item, and in takes each of its items, so a check of every run of commands leaves the amounts the commands carry to the solver and covers every amount. (`solving-runs-of-commands` added)
 
 ### Removed
 
@@ -60,6 +63,8 @@
 - A find gives one value for every match of the variables the solver works out, as it does for values a schema lists, so a variable its template leaves out still makes its own matches: with ?x from -2 to 2, a find of a cond on ?x gives "other" three times and "pos" twice. (`find-solved-variable-per-match` is `per-match`, was `per-template-value`)
 - A rule that aggregates combines one value from each match of the variables the solver works out, as it does for values a schema lists. (`rule-aggregate-solved-variable-per-match` is `per-match`, was `per-head-value`)
 - A variable that a goal about the solver's values defines with cond takes the value of each case that can hold, not only of the first the solver finds. (`solved-defined-variable-each-case` is `every-case`, was `one-case`)
+- A schema computed where it is written, such as one that holds a lambda or one a function is given, stands for its values as the same schema under a name does: listed when it can list them, solved for otherwise. (`computed-schema-solved-for` is `solved`, was `error`)
+- why now explains a row the solver gave with the row's own values. (`why-solved-row-values` is `row-values`, was `other-values`)
 
 ### Fixed
 
@@ -96,6 +101,7 @@
 - `aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308. (`sum-rounding`: `nearest-exact-sum` over `added-as-values-come`, `added-in-sorted-order`)
 - When nothing else binds the value schema/fits? checks, and its schema can list the values it allows, the goal binds the value to each of them that fits, as in binds its element to each item of a list. (`schema-binds-its-value`: `list-finite-schemas` over `schema-values-function`, `size-bounded-listing`, `written-order`)
 - The solver is Lion's own, with exact rationals: Fourier and Motzkin's method for numbers that may be any number, Pugh's Omega test for whole numbers. (`solve-typed-variables`: `exact-linear-decision-in-lion` over `z3-in-webassembly`, `formula-terms`, `bounded-labelling`, `real-relaxation`, `limited-listing`)
+- A rule that must always hold is a question that no state of any run breaks it, one that must eventually hold a question that some state of every run meets it, and one checked at the end of every run a question about what array/reduce gives. (`eventually-rules`: `questions-over-run-states` over `temporal-forms`, `deferred-invariants`, `bounded-recursive-rules`)
 
 ### Rules
 

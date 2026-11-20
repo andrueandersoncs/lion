@@ -135,6 +135,9 @@
     <tr data-entry="array/map"><td><code>["array/map", list, function]</code></td><td>The list of <code>function</code>'s results for each item</td></tr>
     <tr data-entry="array/flat-map"><td><code>["array/flat-map", list, function]</code></td><td>The concatenation of the lists <code>function</code> returns for each item</td></tr>
     <tr data-entry="array/reduce"><td><code>["array/reduce", list, initial, function]</code></td><td>The result of calling <code>function</code> with the running value, starting at <code>initial</code>, and each item in turn</td></tr>
+    <tr data-entry="array/reductions"><td><code>["array/reductions", list, initial, function]</code></td><td>Every running value <code>array/reduce</code> passes through, starting with <code>initial</code>; the last is what <code>array/reduce</code> gives. The states a run of steps goes through</td></tr>
+    <tr data-entry="array/some?"><td><code>["array/some?", list, function]</code></td><td>Whether <code>function</code> is <code>true</code> for some item, stopping at the first that is, as Racket's <code>ormap</code> does. <code>function</code> gives <code>true</code> or <code>false</code>, as a condition does</td></tr>
+    <tr data-entry="array/every?"><td><code>["array/every?", list, function]</code></td><td>Whether <code>function</code> is <code>true</code> for every item, stopping at the first that is not, as Racket's <code>andmap</code> does</td></tr>
   </tbody>
 </table>
 <lion-example name="array">
@@ -149,7 +152,10 @@
  "includes?": ["array/includes?", ["quote", [1, {"a": 2}]], {"a": 2}],
  "map": ["array/map", ["array/make", 1, 2], ["lambda", ["x"], ["number/add", "x", 1]]],
  "flat-map": ["array/flat-map", ["array/make", 1, 2], ["lambda", ["x"], ["array/make", "x", "x"]]],
- "reduce": ["array/reduce", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]]}
+ "reduce": ["array/reduce", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]],
+ "reductions": ["array/reductions", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]],
+ "some?": ["array/some?", ["array/make", 1, 5, 2], ["lambda", ["x"], ["number/greaterThan", "x", 4]]],
+ "every?": ["array/every?", ["array/make", 1, 5, 2], ["lambda", ["x"], ["number/greaterThan", "x", 0]]]}
 </lion-example>
 
 <h2 id="module-value">value</h2>

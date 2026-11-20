@@ -1111,9 +1111,9 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a goal the solver cannot decide is refused instead of waiting for values",
     file: core("logic/model.ts"),
-    find: "          waiting.push({ goal, why: done.failure });\n          return undefined;",
+    find: "        waiting.push({ goal, why: done.failure });\n        return undefined;",
     replace:
-      "          return yield* Effect.fail(new LogicError({ message: done.failure }));",
+      "        return yield* Effect.fail(new LogicError({ message: done.failure }));",
     tests: SOLVING_TESTS,
   },
   {
@@ -1175,6 +1175,80 @@ export const MUTATIONS: readonly Mutation[] = [
       "  product(names.map((name) => (choice.symbols.get(name) as Cases).slice(0, 1))).map(",
     tests: SOLVING_TESTS,
   },
+  // Folds and questions over lists the solver works out (build step 3).
+  {
+    name: "a fold on solved values steps from its first value each time",
+    file: core("logic/symbolic.ts"),
+    find: "        const last = way.states.at(-1) as Sym;",
+    replace: "        const last = way.states[0] as Sym;",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "array/some? and array/every? on solved values swap",
+    file: core("logic/symbolic.ts"),
+    find: "            truthSym(some ? holds.reduce(or, FALSE) : holds.reduce(and, TRUE))",
+    replace:
+      "            truthSym(some ? holds.reduce(and, TRUE) : holds.reduce(or, FALSE))",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a variable in takes from a solved list is only its first item",
+    file: core("logic/symbolic.ts"),
+    find: "      if (pinned.length > 0) {",
+    replace: "      if (at === 0 && pinned.length > 0) {",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a variable in takes from a solved list need not be one of its items",
+    file: core("logic/model.ts"),
+    find: "        (!taken ||",
+    replace: "        (true ||",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "in as a test of a solved list never holds",
+    file: core("logic/symbolic.ts"),
+    find: "                    (f, item) => or(f, equal(syms[0] as Sym, item)),",
+    replace:
+      "                    (f, item) => and(f, equal(syms[0] as Sym, item)),",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "array/reductions repeats its first value",
+    file: core("modules/array.ts"),
+    find: "          states.push(next);",
+    replace: "          states.push(states[0]);",
+    tests: ["src/modules/tests/array.test.ts"],
+  },
+  {
+    name: "array/some? and array/every? never stop early",
+    file: core("modules/array.ts"),
+    find: "        if (value === stop) {",
+    replace: "        if (false) {",
+    tests: ["src/modules/tests/array.test.ts"],
+  },
+  {
+    name: "why explains a solved row with values other than the row's",
+    file: core("logic/model.ts"),
+    find: "): LogicEffect<Vars | undefined> =>\n  Effect.gen(function* () {\n    const step = withKnown(asked, vars);",
+    replace:
+      "): LogicEffect<Vars | undefined> =>\n  Effect.gen(function* () {\n    const step = asked;",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a schema closed over a lambda is listed when it runs, never solved for",
+    file: core("logic/compile.ts"),
+    find: "      ? second.variables.length > 0 || !(first instanceof LogicVariable)",
+    replace: "      ? true",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a schema computed when the solver's step runs is never listed",
+    file: core("logic/model.ts"),
+    find: "        unlisted(yield* term(model, literal.parts[1], vars)) === undefined",
+    replace: "        false",
+    tests: LISTING_TESTS,
+  },
   // A schema that stands for each value it allows.
   {
     name: "a schema binds its value to a listed value without checking that it fits",
@@ -1228,8 +1302,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "schema/fits? never binds the value it checks",
     file: core("logic/compile.ts"),
-    find: "    (second instanceof LogicValue || unlisted(second) === undefined)",
-    replace: "    false",
+    find: "      : unlisted(second) === undefined)",
+    replace: "      : false)",
     tests: LISTING_TESTS,
   },
   {

@@ -1,0 +1,44 @@
+{
+  "sources": [
+    {
+      "id": "lion-probes-eventually",
+      "url": "research/probes/",
+      "title": "Lion programs run after rules about what must eventually happen became questions over the states of every run (build step 3)",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261120010000
+    }
+  ],
+  "claims": [
+    {
+      "id": "co-e1",
+      "source": "lion-probes-eventually",
+      "where": "program built-eventually.json: whether every run of two commands, with any amounts, reaches a balance of 1 at some state",
+      "quote": "\"every run of two reaches 1\": [],",
+      "says": {
+        "lion": "rules about what must eventually happen",
+        "has": true
+      }
+    },
+    {
+      "id": "co-e2",
+      "source": "lion-probes-eventually",
+      "where": "program built-eventually.json: whether some run of up to three commands, with any positive amounts, takes the careful account below 0",
+      "quote": "\"careful overdraws\": [],",
+      "says": {
+        "lion": "a check of every sequence of changes up to a bound",
+        "has": true
+      }
+    },
+    {
+      "id": "co-e3",
+      "source": "lion-probes-eventually",
+      "where": "program built-eventually.json: the least length of a run that takes the careless account below 0, and why's example run",
+      "quote": "\"shortest careless run that overdraws\": 1,",
+      "says": {
+        "lion": "the shortest sequence of changes that breaks a rule",
+        "has": true
+      }
+    }
+  ]
+}
