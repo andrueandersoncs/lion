@@ -23483,5 +23483,53 @@
     "feature": "delay",
     "kind": "special-form",
     "program": ["lion/special-form?", "delay"]
+  },
+  {
+    "case": "library-function-wrong-argument",
+    "area": "library",
+    "program": [
+      "func/catch",
+      ["lambda", [], ["number/add", "seven", 1]],
+      [
+        "lambda",
+        ["caught"],
+        [
+          "cond",
+          [
+            [
+              "string/startsWith",
+              ["object/get", "caught", "message"],
+              "\"number/add\" takes a number as argument 1 but got \"seven\""
+            ],
+            ["quote", "names-function-and-argument"]
+          ],
+          ["else", ["quote", "decoder-message"]]
+        ]
+      ]
+    ]
+  },
+  {
+    "case": "catch-in-a-find",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "find",
+            [
+              "func/catch",
+              ["lambda", [], ["number/divide", 1, "?n"]],
+              ["lambda", ["caught"], 0]
+            ],
+            ["in", "?n", ["array/make", 0]]
+          ],
+          ["quote", [0]]
+        ],
+        ["quote", "like-plain-code"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
   }
 ]

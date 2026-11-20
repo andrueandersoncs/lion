@@ -4148,4 +4148,25 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "    if (this.running && this.given !== undefined) {",
     tests: ["src/evaluation/tests/delay.test.ts"],
   },
+  {
+    name: "a catch gives the failure's message with the functions it left",
+    file: core("errors/evaluation.ts"),
+    find: "        message: raisedAs(error),\n      };",
+    replace: "        message: error.message,\n      };",
+    tests: ["src/modules/tests/catch.test.ts"],
+  },
+  {
+    name: "a raised value is lost when the failure leaves a function",
+    file: core("errors/evaluation.ts"),
+    find: "  if (RAISED.has(error)) {\n    RAISED.set(copy, RAISED.get(error));\n  }",
+    replace: "",
+    tests: ["src/modules/tests/catch.test.ts"],
+  },
+  {
+    name: "a catch catches a call that waits",
+    file: core("errors/evaluation.ts"),
+    find: "  !(error instanceof WaitingError) &&\n  !STEERING.has(error);",
+    replace: "  !STEERING.has(error);",
+    tests: ["src/modules/tests/catch.test.ts"],
+  },
 ];

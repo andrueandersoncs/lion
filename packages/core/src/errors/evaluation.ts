@@ -195,6 +195,43 @@ const TRAILS = new WeakMap<
   { readonly message: string; readonly names: readonly string[] }
 >();
 
+/** The value each failure `func/raise` made was raised with. */
+const RAISED = new WeakMap<object, unknown>();
+
+/**
+ * The failure `func/raise` makes: its message is the value, a string as it
+ * is and any other value as JSON, and `func/catch` gives back the value.
+ */
+export const raised = (value: unknown) => {
+  const error = new LogicError({
+    message: typeof value === "string" ? value : show(value),
+  });
+  RAISED.set(error, value);
+  return error;
+};
+
+/**
+ * Whether a failure is one a program can catch: a failure Lion or a program
+ * raised, not a call that waits for a value or another failure that steers
+ * evaluation, and not a defect.
+ */
+export const isCatchable = (error: unknown): error is Error =>
+  error instanceof Error &&
+  !(error instanceof WaitingError) &&
+  !STEERING.has(error);
+
+/**
+ * A failure as data, as `func/catch` gives it to its handler: its kind, its
+ * message as it was raised, and, for one `func/raise` made, the value.
+ */
+export const failureRecord = (error: Error) =>
+  RAISED.has(error)
+    ? { failure: "raised", message: raisedAs(error), value: RAISED.get(error) }
+    : {
+        failure: (error as { readonly _tag?: string })._tag ?? error.name,
+        message: raisedAs(error),
+      };
+
 /** A failure's message as it was raised, before any call added to it. */
 export const raisedAs = (error: Error) =>
   TRAILS.get(error)?.message ?? error.message;
@@ -226,6 +263,9 @@ export const leaving = <E>(error: E, name: string): E => {
     writable: true,
   });
   TRAILS.set(copy, { message, names });
+  if (RAISED.has(error)) {
+    RAISED.set(copy, RAISED.get(error));
+  }
   return copy;
 };
 

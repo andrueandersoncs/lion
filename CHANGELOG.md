@@ -44,6 +44,8 @@
 - A match with no fallback on a parameter with a contract is checked to cover every value the contract allows: `lion check` and the graph editor warn when its cases leave one out. (`match-coverage-warning` added)
 - Makes a promise of an expression, as Racket's `delay` does: nothing runs until `value/force` asks for its value, the first force runs the expression and keeps the value, and every force after gives it without running the expression again. (`delay` added)
 - `value/force` of any other value gives the value, and `value/promise?` tells a promise apart. (`value/force` added; `value/promise?` added)
+- `func/catch` calls a function of no arguments and gives its value; when it fails, it calls the handler with the failure as data and gives that, as Racket's `with-handlers` does (`func/catch` added)
+- `func/raise` fails with any value, as Racket's `raise` does: its message is the value, a string as it is, and a catch gives back the `value`, with `"failure": "raised"`. (`func/raise` added)
 
 ### Removed
 
@@ -113,6 +115,7 @@
 - A schema includes itself. (`schema-includes-itself` is `true`, was `refused-for-strings`)
 - Where the call waits for a logic variable, in a rule or a `find`, the check waits too and runs when the variable is bound, as plain code would run it (`lambda-contract-in-rule` is `checked-when-bound`)
 - Makes a promise of an expression, as Racket's `delay` does: nothing runs until `value/force` asks for its value, the first force runs the expression and keeps the value, and every force after gives it without running the expression again. (`delay-forced-twice` is `runs-once`)
+- A call that waits for a logic variable is not a failure, so a catch in a rule or a `find` gives for each value what plain code gives with the value in place. (`catch-in-a-find` is `like-plain-code`)
 
 ### Fixed
 

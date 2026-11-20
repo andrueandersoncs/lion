@@ -22,6 +22,14 @@ Every item follows `AGENTS.md` and `CLAUDE.md`, and is committed on its own:
 
 At the end: run the Clef probes again under a new source id (`node research/probes/run.mjs lion-probes-cl-built ...`) and record what changed in the research model, so its verdicts follow what was built.
 
+## Faster checks (the user asked for them on 2026-11-20, with no weaker guarantees)
+
+Per item, from item 10 on:
+- benchmarks: one full `bun run bench --against HEAD`, then a re-time alone of every benchmark below 0.95x (`bun run bench --against HEAD "<words>"`), instead of two full runs;
+- growth: `bun run scale --against HEAD` in the background while the docs and record are written;
+- mutations: only the item's new ones, by a word of their names (`bun run mutate --jobs 12 <word>`), and `bun run mutate --list` for staleness; the full `bun run mutate --jobs 12 --in <every touched file>` once before the final report;
+- no separate `bun run history check` or full core run before a commit: the pre-commit hook runs both.
+
 ## The items, in build order
 
 Status: `todo`, `doing`, `done (<commit>)`.
@@ -81,7 +89,7 @@ Status: `todo`, `doing`, `done (<commit>)`.
 ### D. New values and control
 
 9. **`delay` and `force`** — done (commit "feat(core): delay makes a promise"). `Delayed` in `evaluation/special-forms/delay.ts`; `value/force` and `value/promise?` in the value module; grid row "delay and force", every place like plain code. As Racket: `["delay", expr]` makes a promise, which `force` runs once and keeps; `force` of any other value gives it back.
-10. **Failures a program can catch and read as data** — todo. As Racket's `with-handlers` and `raise`: a failure caught as a record (its kind and message, and the data it was raised with). Never catches waiting or asking, which are not failures.
+10. **Failures a program can catch and read as data** — done (commit "feat(core): func/catch and func/raise"). `raised`, `isCatchable`, `failureRecord` in `errors/evaluation.ts`; `func/catch` and `func/raise` in the func module. History probes now check item 1's message through a catch. As Racket's `with-handlers` and `raise`: a failure caught as a record (its kind and message, and the data it was raised with). Never catches waiting or asking, which are not failures.
 11. **Numbers that carry their units** — todo. Pint's way, checked when the program runs: a quantity is a JSON record of a value and a unit, the unit a record from base unit to whole exponent, equal when the JSON is. Arithmetic checks units; schemas say what unit a value has; the solver solves for exponents.
 12. **Host code that watches a query** — todo. The database keeps derived rows up to date already; add a way for host code (and Lion code) to be told the answers that came and went after each change.
 13. **Delimited continuations** — todo. `reset` and `shift`, one-shot: the body after `shift` runs in a fiber that `k` resumes, so generators, coroutines, and early exit are one construct. A second resume of one `k` fails by name.

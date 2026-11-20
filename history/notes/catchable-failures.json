@@ -1,0 +1,21 @@
+{
+  "claims": [
+    {
+      "quote": "`func/catch` calls a function of no arguments and gives its value; when it fails, it calls the handler with the failure as data and gives that, as Racket's `with-handlers` does",
+      "says": { "feature": "func/catch", "kind": "function", "present": true }
+    },
+    {
+      "quote": "`func/raise` fails with any value, as Racket's `raise` does: its message is the value, a string as it is, and a catch gives back the `value`, with `\"failure\": \"raised\"`.",
+      "says": { "feature": "func/raise", "kind": "function", "present": true }
+    },
+    {
+      "quote": "A call that waits for a logic variable is not a failure, so a catch in a rule or a `find` gives for each value what plain code gives with the value in place.",
+      "says": {
+        "behavior": "catch-in-a-find",
+        "is": "like-plain-code",
+        "area": "logic",
+        "follows": "racket"
+      }
+    }
+  ]
+}

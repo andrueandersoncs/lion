@@ -1531,7 +1531,11 @@ Algorithm goals over an edge relation; see [Graph algorithms](#graph-algorithms)
 ["func/apply", "fn", "obj", 1, 2]
 ["func/callback", ["lambda", ["x"], ["number/add", "x", 1]]]
 ["func/partial", "fn", 1, 2]
+["func/catch", ["lambda", [], ["number/divide", 1, 0]], ["lambda", ["failure"], "failure"]]
+["func/raise", "out of stock"]
 ```
+
+`func/catch` calls a function of no arguments and gives its value; when it fails, it calls the handler with the failure as data and gives that, as Racket's `with-handlers` does: `["func/catch", ["lambda", [], ["number/divide", 1, 0]], ["lambda", ["failure"], "failure"]]` is `{"failure": "ArithmeticError", "message": "number/divide: 1 ÷ 0 has no finite result."}`. `func/raise` fails with any value, as Racket's `raise` does: its message is the value, a string as it is, and a catch gives back the `value`, with `"failure": "raised"`. A call that waits for a logic variable is not a failure, so a catch in a rule or a `find` gives for each value what plain code gives with the value in place.
 
 `func/callback` is especially useful for turning Lion lambdas into JavaScript callbacks while preserving access to the Lion environment.
 

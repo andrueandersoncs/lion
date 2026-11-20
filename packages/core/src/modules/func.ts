@@ -1,6 +1,14 @@
 import { Effect } from "effect";
-import { atLeast, counted, countOf, takes } from "@/errors/evaluation";
-import { apply } from "@/evaluation/special-forms/function";
+import {
+  atLeast,
+  counted,
+  countOf,
+  failureRecord,
+  isCatchable,
+  raised,
+  takes,
+} from "@/errors/evaluation";
+import { apply, call } from "@/evaluation/special-forms/function";
 import { builtBy, type LionFunction, logicFunction } from "@/logic/terms";
 
 /**
@@ -78,4 +86,23 @@ export const module = {
   ),
 
   partial,
+
+  /**
+   * Calls `thunk`, a function of no arguments, and gives its value; when it
+   * fails, calls `handler` with the failure as data and gives that, as
+   * Racket's `with-handlers` does: `{"failure": kind, "message": text}`, and
+   * for a failure `func/raise` made, `"failure": "raised"` and the `value`.
+   * A call that waits for a logic variable is not a failure, so it waits.
+   */
+  catch: takes(2, (thunk: unknown, handler: unknown) =>
+    Effect.catchIf(call(thunk), isCatchable, (error) =>
+      call(handler, failureRecord(error))
+    )
+  ),
+
+  /**
+   * Fails with a value, as Racket's `raise` does: its message is the value,
+   * a string as it is, and `func/catch` gives back the value.
+   */
+  raise: takes(1, (value: unknown) => Effect.fail(raised(value))),
 };
