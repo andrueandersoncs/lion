@@ -20,6 +20,11 @@
  * when following it found two rows with one key that a key cannot make one,
  * as a fact that makes an unknown given can.
  *
+ * The database a followed one is compared with holds the rules and then
+ * every fact in one form, which is checked once, against the whole program,
+ * so what it derives does not depend on the order the rules or the facts
+ * came in.
+ *
  * Aggregates are kept by counted candidates: what each gives after any
  * changes is what a plain model computes from the facts there are.
  */
@@ -27,6 +32,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { LogicDatabase } from "@/logic/database";
 import { keptBy } from "@/logic/weights";
+import { seed, shuffled } from "./merges";
 import { attempt, element, nearestSum, oneOf } from "./programs";
 
 type Form = readonly unknown[];
@@ -245,14 +251,17 @@ const answers = (database: LogicDatabase) =>
  * Every row a database keeps candidates of, with the level it is held from,
  * the level it is held until, the level it can be read from, and its
  * candidates by level: also the rows of the relations the engine keeps for
- * itself.
+ * itself, each under the name `named` gives it.
  */
-const weights = (database: LogicDatabase) =>
+const weights = (
+  database: LogicDatabase,
+  named = (relation: string) => relation
+) =>
   (database.model === undefined ? [] : keptBy(database.model))
     .map(({ candidates, from, group, key, relation, seen, until }) =>
       JSON.stringify([
         group,
-        relation,
+        named(relation),
         key,
         from,
         String(until),
@@ -262,22 +271,30 @@ const weights = (database: LogicDatabase) =>
     )
     .sort();
 
-/** A database that holds some facts and has derived nothing yet. */
+/**
+ * A database that holds the rules and some facts and has derived nothing
+ * yet, or undefined when the facts break a rule. Separate forms are
+ * separate changes, each checked on its own, so the facts come after the
+ * rules, in one `fact` form: checked once, against every rule. Rules added
+ * one at a time after the facts would be checked against the rules there
+ * were so far, and a rule a later rule keeps from breaking an equality
+ * would be refused. What following the facts derived is then forgotten, so
+ * every group is derived from nothing when it is read.
+ */
 const fromNothing = (rules: readonly Form[], facts: Iterable<Form>) =>
   Effect.gen(function* () {
     const database = new LogicDatabase();
-    const declared = rules.filter(([form]) => form === "relation");
+    const given = [...facts];
     const made = yield* attempt(
-      [
-        "begin",
-        ...declared,
-        ...[...facts].map((it) => ["fact", it]),
-        ...rules.filter(([form]) => form !== "relation"),
-        true,
-      ],
+      ["begin", ...rules, ...(given.length > 0 ? [["fact", ...given]] : [])],
       database
     );
-    return made.ok ? database : undefined;
+    if (!made.ok) {
+      return;
+    }
+    database.model = undefined;
+    database.goals.clear();
+    return database;
   });
 
 interface Program {
@@ -359,6 +376,54 @@ const follows = ({ changes, keyed, start, ways }: Program) =>
     }
   });
 
+/** The place of a rule among its group's, in a relation the engine keeps. */
+const PLACE = /\^\d+$/;
+
+const two = element(["a", "b"]);
+
+/** A fact about two children: one of them, twins, or a registered mother. */
+const pair: Arbitrary.Arbitrary<Form> = oneOf(
+  Arbitrary.map(two, (who) => ["person", who]),
+  Arbitrary.map(Arbitrary.all([two, two]), ([a, b]) => ["twin", a, b]),
+  Arbitrary.map(Arbitrary.all([two, element(["eve", "fay"])]), ([c, m]) => [
+    "registered",
+    c,
+    m,
+  ])
+);
+
+/**
+ * Programs, half of them about twins with a child that has two registered
+ * mothers, with a rule that tells two mothers of one child apart and two
+ * equality rules that make twins' mothers one, one a level sooner than the
+ * other. Added after the facts, the rule that tells the mothers apart finds
+ * two where the sooner equality rule is not there yet, and the registered
+ * mothers it gives the child break the later one. Those come first, since
+ * the first runs of a property pick the first of each choice.
+ */
+const apart = oneOf(
+  // A key would make the mothers one before the rule could tell them apart.
+  Arbitrary.all({
+    keyed: element([false]),
+    start: Arbitrary.map(Arbitrary.array(pair, { maxLength: 4 }), (more) => [
+      ["person", "a"],
+      ["person", "b"],
+      ["twin", "a", "b"],
+      ["registered", "a", "eve"],
+      ["registered", "a", "fay"],
+      ...more,
+    ]),
+    ways: Arbitrary.map(program.ways, (ways) =>
+      [...new Set<Way>([...ways, "parents", "pass", "torn", "twins"])].sort()
+    ),
+  }),
+  Arbitrary.all({
+    keyed: program.keyed,
+    start: program.start,
+    ways: program.ways,
+  })
+);
+
 /** Programs in which a twin passes a keyed mother on inside her own group. */
 const beside = {
   ...program,
@@ -413,6 +478,43 @@ describe("rows with weights, held from a level", () => {
     "keep them through a change a key refuses, where facts make invented mothers given",
     given,
     follows,
+    OPTIONS
+  );
+
+  // Facts given after the rules in one form are checked once, against the
+  // whole program, so what they give does not depend on the order the rules
+  // or the facts came in: not whether they are refused, and not one row's
+  // levels or weights, though a rule tests that two mothers differ and a
+  // later rule makes them one. Each program is compared with its rules and
+  // facts reversed, which puts the sooner equality rule first, and shuffled.
+  // The engine numbers the relations it keeps for a group's rules by the
+  // place each rule stands in, so those are compared by kind.
+  it.effect.prop(
+    "are derived from nothing the same, whatever order the rules and the facts came in",
+    { order: seed, program: apart },
+    ({ order, program: { keyed, start, ways } }) =>
+      Effect.gen(function* () {
+        const rules = rulesOf(ways, keyed);
+        const declared = rules.filter(([form]) => form === "relation");
+        const others = rules.filter(([form]) => form !== "relation");
+        const fresh = yield* fromNothing(rules, start);
+        const byKind = (relation: string) => relation.replace(PLACE, "^");
+        for (const turn of [
+          <A>(items: readonly A[]) => [...items].reverse(),
+          <A>(items: readonly A[]) => shuffled(items, order),
+        ]) {
+          const turned = yield* fromNothing(
+            [...turn(declared), ...turn(others)],
+            turn(start)
+          );
+          expect(turned === undefined).toBe(fresh === undefined);
+          if (fresh === undefined || turned === undefined) {
+            continue;
+          }
+          expect(yield* answers(turned)).toEqual(yield* answers(fresh));
+          expect(weights(turned, byKind)).toEqual(weights(fresh, byKind));
+        }
+      }),
     OPTIONS
   );
 });
