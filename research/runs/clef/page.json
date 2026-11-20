@@ -6,18 +6,42 @@
     ["words/count", ["array/length", ["ours"]], "idea", "ideas"],
     " from Clef weighed here, ",
     [
-      "words/number",
-      ["array/length", ["withVerdict", ["quote", "worth adopting"]]]
+      "cond",
+      [
+        [
+          "number/greaterThan",
+          ["counted", ["quote", "Lion does this already"]],
+          0
+        ],
+        [
+          "string/concat",
+          "Lion does ",
+          ["words/number", ["counted", ["quote", "Lion does this already"]]],
+          " already and "
+        ]
+      ],
+      ["else", ""]
     ],
-    " are worth adopting and ",
+    ["words/number", ["counted", ["quote", "worth adopting"]]],
     [
-      "words/number",
-      ["array/length", ["withVerdict", ["quote", "Lion does this already"]]]
+      "cond",
+      [["number/equals?", ["counted", ["quote", "worth adopting"]], 1], " is"],
+      ["else", " are"]
     ],
-    " Lion does already. ",
-    "In the model's order, the first is ",
-    ["label", ["object/get", ["array/head", ["ranked"]], "idea"]],
-    ". ",
+    " worth adopting. ",
+    [
+      "cond",
+      [
+        ["number/greaterThan", ["array/length", ["ranked"]], 0],
+        [
+          "string/concat",
+          "In the model's order, the first is ",
+          ["label", ["object/get", ["array/head", ["ranked"]], "idea"]],
+          ". "
+        ]
+      ],
+      ["else", ""]
+    ],
     [
       "cond",
       [
@@ -66,31 +90,64 @@
     [
       "cond",
       [
-        ["and", ["violated", "?a", "?_"], ["string/startsWith", "?a", "cl-"]],
+        ["number/greaterThan", ["array/length", ["foundWrong"]], 0],
         [
           "string/concat",
           "Running Lion showed ",
           [
             "words/count",
-            [
-              "aggregate/countUnique",
-              [
-                "find",
-                "?a",
-                [
-                  "and",
-                  ["violated", "?a", "?_"],
-                  ["string/startsWith", "?a", "cl-"]
-                ]
-              ]
-            ],
+            ["array/length", ["foundWrong"]],
             "belief",
             "beliefs"
           ],
-          " about it wrong."
+          " about it wrong",
+          [
+            "cond",
+            [
+              ["number/greaterThan", ["array/length", ["madeTrue"]], 0],
+              [
+                "string/concat",
+                ", and the build has since made ",
+                ["words/number", ["array/length", ["madeTrue"]]],
+                " of them hold"
+              ]
+            ],
+            ["else", ""]
+          ],
+          "."
         ]
       ],
       ["else", "Every belief about Lion the run tested held."]
+    ],
+    [
+      "cond",
+      [
+        ["number/greaterThan", ["array/length", ["changedSince"]], 0],
+        [
+          "string/concat",
+          " ",
+          [
+            "words/count",
+            ["array/length", ["changedSince"]],
+            "belief",
+            "beliefs"
+          ],
+          " that held when the run tested ",
+          [
+            "cond",
+            [["number/equals?", ["array/length", ["changedSince"]], 1], "it"],
+            ["else", "them"]
+          ],
+          " no longer ",
+          [
+            "cond",
+            [["number/equals?", ["array/length", ["changedSince"]], 1], "does"],
+            ["else", "do"]
+          ],
+          ", since the build changed Lion."
+        ]
+      ],
+      ["else", ""]
     ]
   ],
   "names": {
@@ -161,6 +218,68 @@
       "lambda",
       ["items"],
       ["words/listed", ["aggregate/unique", "items"]]
+    ],
+    "counted": ["lambda", ["v"], ["array/length", ["withVerdict", "v"]]],
+    "foundWrong": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?s",
+          [
+            "and",
+            ["violated", "?a", "?_"],
+            ["string/startsWith", "?a", "cl-"],
+            ["assumption", "?a", "?s"],
+            [
+              "not",
+              [
+                "and",
+                ["expects", "?a", "?q", "?v"],
+                ["restated", "?q", "?_", "?v", "?_"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "madeTrue": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?s",
+          [
+            "and",
+            ["expects", "?a", "?q", "?v"],
+            ["string/startsWith", "?a", "cl-"],
+            ["restated", "?q", "?_", "?_", "?v"],
+            ["assumption", "?a", "?s"]
+          ]
+        ]
+      ]
+    ],
+    "changedSince": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?s",
+          [
+            "and",
+            ["expects", "?a", "?q", "?v"],
+            ["string/startsWith", "?a", "cl-"],
+            ["restated", "?q", "?_", "?v", "?_"],
+            ["assumption", "?a", "?s"]
+          ]
+        ]
+      ]
     ],
     "ranked": [
       "lambda",
@@ -384,6 +503,7 @@
                       [
                         "and",
                         ["weighed_in", "?c", ["quote", "clef"]],
+                        ["verdict", "?c", ["quote", "worth adopting"]],
                         ["precedent", "?c", "?_", "?_"]
                       ]
                     ]
@@ -532,51 +652,64 @@
           "type": "answer",
           "question": "What did running Lion show about Lion itself?",
           "answer": [
-            "cond",
+            "string/concat",
             [
+              "cond",
               [
-                "and",
-                ["violated", "?a", "?_"],
-                ["string/startsWith", "?a", "cl-"]
-              ],
-              [
-                "string/concat",
-                "These beliefs about Lion were wrong: ",
+                ["number/greaterThan", ["array/length", ["foundWrong"]], 0],
                 [
-                  "listOf",
+                  "string/concat",
+                  "These beliefs about Lion were wrong when the run tested them: ",
+                  ["listOf", ["foundWrong"]],
+                  ". "
+                ]
+              ],
+              ["else", "Every belief about Lion the run tested held. "]
+            ],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["array/length", ["madeTrue"]], 0],
+                [
+                  "string/concat",
+                  "The build has since made these hold: ",
+                  ["listOf", ["madeTrue"]],
+                  ". "
+                ]
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["array/length", ["changedSince"]], 0],
+                [
+                  "string/concat",
+                  "These held when the run tested them, and no longer do, since the build changed Lion: ",
+                  ["listOf", ["changedSince"]],
+                  ". "
+                ]
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "and",
+                  ["confirmed", "cl-vacuous"],
                   [
-                    "find",
-                    "?s",
-                    [
-                      "and",
-                      ["violated", "?a", "?w"],
-                      ["string/startsWith", "?a", "cl-"],
-                      ["assumption", "?a", "?s"]
-                    ]
+                    "stated",
+                    {
+                      "lion has": "a proof that says when its premises allow no state"
+                    },
+                    false
                   ]
                 ],
-                ". ",
-                [
-                  "cond",
-                  [
-                    [
-                      "and",
-                      ["confirmed", "cl-vacuous"],
-                      [
-                        "stated",
-                        {
-                          "lion has": "a proof that says when its premises allow no state"
-                        },
-                        false
-                      ]
-                    ],
-                    "And, as expected, a proof whose premises allow no state is still reported as a proof, without a word that it holds of nothing."
-                  ],
-                  ["else", ""]
-                ]
-              ]
-            ],
-            ["else", "Every belief about Lion the run tested held."]
+                "And, as expected, a proof whose premises allow no state is still reported as a proof, without a word that it holds of nothing."
+              ],
+              ["else", ""]
+            ]
           ],
           "evidence": [
             "query",
@@ -591,49 +724,111 @@
           "type": "answer",
           "question": "Which ideas need your decision first?",
           "answer": [
-            "string/join",
+            "cond",
             [
-              "array/map",
               [
-                "aggregate/unique",
-                [
-                  "find",
-                  "?c",
-                  [
-                    "and",
-                    ["weighed_in", "?c", ["quote", "clef"]],
-                    ["waits", "?c", "?_"]
-                  ]
-                ]
+                "and",
+                ["weighed_in", "?c", ["quote", "clef"]],
+                ["waits", "?c", "?_"]
               ],
               [
-                "lambda",
-                ["c"],
+                "string/join",
                 [
-                  "string/concat",
-                  ["label", "c"],
-                  " would change: ",
-                  ["listOf", ["find", "?r", ["waits", "c", "?r"]]],
-                  "."
-                ]
+                  "array/map",
+                  [
+                    "aggregate/unique",
+                    [
+                      "find",
+                      "?c",
+                      [
+                        "and",
+                        ["weighed_in", "?c", ["quote", "clef"]],
+                        ["waits", "?c", "?_"]
+                      ]
+                    ]
+                  ],
+                  [
+                    "lambda",
+                    ["c"],
+                    [
+                      "string/concat",
+                      ["label", "c"],
+                      " would change: ",
+                      ["listOf", ["find", "?r", ["waits", "c", "?r"]]],
+                      "."
+                    ]
+                  ]
+                ],
+                " "
               ]
             ],
-            " "
+            [
+              [
+                "and",
+                ["weighed_in", "?c", ["quote", "clef"]],
+                ["rewrites", "?c", "?r"],
+                ["stated", { "lion has": "?r" }, false]
+              ],
+              [
+                "string/concat",
+                "None waits now. Lion no longer has the rules that ",
+                [
+                  "words/listed",
+                  [
+                    "array/map",
+                    [
+                      "aggregate/unique",
+                      [
+                        "find",
+                        "?c",
+                        [
+                          "and",
+                          ["weighed_in", "?c", ["quote", "clef"]],
+                          ["rewrites", "?c", "?r"],
+                          ["stated", { "lion has": "?r" }, false]
+                        ]
+                      ]
+                    ],
+                    "label"
+                  ]
+                ],
+                " would have changed: ",
+                [
+                  "listOf",
+                  [
+                    "find",
+                    "?r",
+                    [
+                      "and",
+                      ["weighed_in", "?c", ["quote", "clef"]],
+                      ["rewrites", "?c", "?r"],
+                      ["stated", { "lion has": "?r" }, false]
+                    ]
+                  ]
+                ],
+                "."
+              ]
+            ],
+            [
+              "else",
+              "None: no idea from Clef would change a rule Lion documents."
+            ]
           ],
           "evidence": [
             "query",
             [
               "and",
               ["weighed_in", "?idea", ["quote", "clef"]],
-              ["waits", "?idea", "?rule"],
+              ["rewrites", "?idea", "?rule"],
               [
                 "answer",
                 {
                   "lion has": "?rule"
                 },
-                "?_",
+                "?lion_has_it",
                 "?statement"
-              ]
+              ],
+              ["not", ["withdrawn", { "lion has": "?rule" }, "?lion_has_it"]]
             ]
           ]
         },

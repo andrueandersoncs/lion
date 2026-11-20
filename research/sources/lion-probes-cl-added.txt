@@ -1,0 +1,148 @@
+Lion programs run for research with @lionlang/cli 0.13.1 built at commit c1279a1 (core 0.14.1), 2026-11-20.
+
+== program cl-built-units.json
+[
+  "quantity/add",
+  ["quote", { "value": 120, "unit": { "m": 1 } }],
+  ["quote", { "value": 8, "unit": { "s": 1 } }]
+]
+== gives
+
+ERROR
+  quantity/add: 120 {"m":1} and 8 {"s":1} have different units.
+
+== program cl-built-promise.json
+[
+  "begin",
+  ["define", "runs", 0],
+  [
+    "define",
+    "answer",
+    ["delay", ["begin", ["set!", "runs", ["number/add", "runs", 1]], 42]]
+  ],
+  {
+    "times the body ran before it was forced": "runs",
+    "a promise": ["value/promise?", "answer"],
+    "forced once": ["value/force", "answer"],
+    "forced again": ["value/force", "answer"],
+    "times the body ran": "runs"
+  }
+]
+== gives
+{
+  "times the body ran before it was forced": 0,
+  "a promise": true,
+  "forced once": 42,
+  "forced again": 42,
+  "times the body ran": 1
+}
+
+== program cl-built-catch.json
+{
+  "a failure caught as data": [
+    "func/catch",
+    ["lambda", [], ["number/add", "seven", 1]],
+    ["lambda", ["failure"], "failure"]
+  ],
+  "a value raised and caught": [
+    "func/catch",
+    ["lambda", [], ["func/raise", ["quote", { "code": 7 }]]],
+    ["lambda", ["failure"], ["object/get", "failure", "value"]]
+  ]
+}
+== gives
+{
+  "a failure caught as data": {
+    "failure": "LogicError",
+    "message": "\"number/add\" takes a number as argument 1 but got \"seven\"."
+  },
+  "a value raised and caught": {
+    "code": 7
+  }
+}
+
+== program cl-built-shift.json
+[
+  "begin",
+  [
+    "define",
+    "rest",
+    [
+      "func/reset",
+      ["lambda", [], ["number/add", 1, ["func/shift", ["lambda", ["k"], "k"]]]]
+    ]
+  ],
+  {
+    "early exit": [
+      "func/reset",
+      ["lambda", [], ["number/add", 1, ["func/shift", ["lambda", ["k"], 42]]]]
+    ],
+    "resumed once": [
+      "func/reset",
+      [
+        "lambda",
+        [],
+        [
+          "number/add",
+          1,
+          ["func/shift", ["lambda", ["k"], ["number/multiply", 10, ["k", 5]]]]
+        ]
+      ]
+    ],
+    "a continuation kept and called after its reset gave it": ["rest", 5],
+    "a continuation resumed twice": [
+      "func/catch",
+      [
+        "lambda",
+        [],
+        [
+          "func/reset",
+          [
+            "lambda",
+            [],
+            [
+              "number/add",
+              1,
+              [
+                "func/shift",
+                ["lambda", ["k"], ["number/add", ["k", 1], ["k", 2]]]
+              ]
+            ]
+          ]
+        ]
+      ],
+      ["lambda", ["failure"], ["object/get", "failure", "message"]]
+    ]
+  }
+]
+== gives
+{
+  "early exit": 42,
+  "resumed once": 60,
+  "a continuation kept and called after its reset gave it": 6,
+  "a continuation resumed twice": "A continuation was resumed a second time: the one func/shift gives goes on once."
+}
+
+== program cl-built-contract.json
+[
+  "begin",
+  [
+    "define",
+    "next",
+    ["lambda", [["n", "value/number?"]], ["number/add", "n", 1]]
+  ],
+  [
+    "define",
+    "label",
+    [
+      "lambda",
+      ["n"],
+      ["string/concat", "item ", ["number/toString", ["next", "n"]]]
+    ]
+  ],
+  ["label", "seven"]
+]
+== gives
+
+ERROR
+  "seven" does not fit "value/number?". (in "label")

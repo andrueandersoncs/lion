@@ -1,0 +1,12 @@
+{
+  "a failure caught as data": [
+    "func/catch",
+    ["lambda", [], ["number/add", "seven", 1]],
+    ["lambda", ["failure"], "failure"]
+  ],
+  "a value raised and caught": [
+    "func/catch",
+    ["lambda", [], ["func/raise", ["quote", { "code": 7 }]]],
+    ["lambda", ["failure"], ["object/get", "failure", "value"]]
+  ]
+}

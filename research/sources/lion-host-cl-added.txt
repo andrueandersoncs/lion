@@ -1,0 +1,52 @@
+Lion's check command and host code, run on what the Clef build added, with @lionlang/cli 0.13.1 built at commit c1279a1 (core 0.14.1), 2026-11-20.
+
+$ node packages/cli/dist/bin.mjs check research/probes/cl-match-cases.json   (reads the program without running it)
+[
+  {
+    "at": "/a case no value can reach, after one that takes every number/3",
+    "warning": "This case can never be reached: every value its schema allows fits the schema of case 1, which comes first."
+  }
+]
+
+== program cl-built-match-cover.json
+[
+  "begin",
+  [
+    "define",
+    "describe",
+    [
+      "lambda",
+      [
+        [
+          "order",
+          [
+            "schema/anyOf",
+            ["quote", { "kind": "sale" }],
+            ["quote", { "kind": "refund" }],
+            ["quote", { "kind": "void" }]
+          ]
+        ]
+      ],
+      [
+        "match",
+        "order",
+        [["quote", { "kind": "sale" }], ["lambda", ["o"], "a sale"]],
+        [["quote", { "kind": "refund" }], ["lambda", ["o"], "a refund"]]
+      ]
+    ]
+  ],
+  ["describe", ["quote", { "kind": "void" }]]
+]
+$ node packages/cli/dist/bin.mjs check research/probes/cl-built-match-cover.json   (reads the program without running it)
+[
+  {
+    "at": "/1/2/2",
+    "warning": "The cases leave out values \"order\" can have: some value of its contract, [\"schema/anyOf\",[\"quote\",{\"kind\":\"sale\"}],[\"quote\",{\"kind\":\"refund\"}],[\"quote\",{\"kind\":\"void\"}]], fits no case, and the match has no fallback."
+  }
+]
+
+$ node research/probes/watch-host/watch.mjs   (host code that watches a query: research/probes/watch-host/watch.mjs)
+answers when the watching starts: [1]
+told after a second order: {"added":[2],"removed":[1]}
+times told after the same order again: 1
+times told after the watching stopped and a third order came: 1

@@ -1,0 +1,16 @@
+[
+  "begin",
+  ["define", "runs", 0],
+  [
+    "define",
+    "answer",
+    ["delay", ["begin", ["set!", "runs", ["number/add", "runs", 1]], 42]]
+  ],
+  {
+    "times the body ran before it was forced": "runs",
+    "a promise": ["value/promise?", "answer"],
+    "forced once": ["value/force", "answer"],
+    "forced again": ["value/force", "answer"],
+    "times the body ran": "runs"
+  }
+]

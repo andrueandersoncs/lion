@@ -1,0 +1,28 @@
+[
+  "begin",
+  [
+    "define",
+    "describe",
+    [
+      "lambda",
+      [
+        [
+          "order",
+          [
+            "schema/anyOf",
+            ["quote", { "kind": "sale" }],
+            ["quote", { "kind": "refund" }],
+            ["quote", { "kind": "void" }]
+          ]
+        ]
+      ],
+      [
+        "match",
+        "order",
+        [["quote", { "kind": "sale" }], ["lambda", ["o"], "a sale"]],
+        [["quote", { "kind": "refund" }], ["lambda", ["o"], "a refund"]]
+      ]
+    ]
+  ],
+  ["describe", ["quote", { "kind": "void" }]]
+]

@@ -1,0 +1,106 @@
+A special form is an array whose first element is the form's name, where no scope declares that name. Unlike a function call, a special form decides which of its parts to evaluate, and when. The logic layer's forms are in Logic forms .
+quote
+["quote", expression]
+Returns expression without evaluating it. Use it for literal lists, records that contain lists, and strings that might be bound names.
+["quote", ["number/add", 1, 2]]
+eval
+["eval", expression]
+Evaluates expression , then evaluates the result as a program in the current environment. The result is compiled when it runs, as a program is: its strings mean what the scope declares then, together with the names the code defines, which it binds in the body eval stands in, and the relations and schemas it declares. The result must be JSON data; a function or other host value fails with SchemaError .
+["eval", ["quote", ["number/add", 1, 2]]]
+["eval", ["quote",
+["begin",
+["define", "twice", ["lambda", ["n"], ["double", ["double", "n"]]]],
+["define", "double", ["lambda", ["n"], ["number/multiply", "n", 2]]],
+["twice", 5]]]]
+begin
+["begin", expression, ...]
+Evaluates each expression in order and returns the last result. ["begin"] returns [] .
+["begin", ["define", "x", 1], ["define", "x", 2], "x"]
+define
+["define", name, expression]
+Evaluates expression , binds name to the result in the body the form stands in, a lambda's or the program's, and returns the result.
+The body declares the name from its start, so the name means this definition everywhere in the body, and functions can name each other in any order. Read before the define has run, it fails with UndefinedYetError .
+A define inside a lambda binds in the lambda's call, and never changes a name outside it. To change one, use set! .
+Binding a name again replaces its value. Functions that use the name see the new value when they next run.
+name can be any non-empty string but __proto__ , a form's name among them: see Names of forms .
+["begin",
+["define", "greet", ["lambda", [], ["string/concat", "hello, ", "who"]]],
+["define", "who", "world"],
+["greet"]]
+delay
+["delay", expression]
+Returns a promise of expression , in the scope the form is written in, as Racket's delay does. Nothing runs until value/force asks.
+The first force runs the expression and keeps its value; every force after gives that value without running it again. A failure keeps nothing, so the next force runs the expression again. A promise forced while it is being forced fails, since forcing it would never end.
+value/force of any other value gives the value, and value/promise? tells a promise apart. A promise is not data: a fact or a query's answer cannot hold one.
+["begin",
+["define", "runs", 0],
+["define", "total", ["delay", ["begin", ["set!", "runs", ["number/add", "runs", 1]], ["aggregate/sum", ["array/range", 0, 1000]]]]],
+{"before a force, the expression has run": "runs",
+"forced": ["value/force", "total"],
+"forced again": ["value/force", "total"],
+"after two forces, it has run": "runs"}]
+set!
+["set!", name, expression]
+Evaluates expression , changes the value of the nearest binding of name to it, and returns it, as set! does in Scheme.
+It is how a lambda changes a name around it, such as a counter or the state of an app that its callbacks update.
+A name no scope around the form declares has no binding to change, so the form fails with UnboundNameError .
+A rule, query, or find runs its parts when and as often as the engine chooses, so there set! fails for a binding made outside it, where a counter would give every row one number. A binding the call makes for itself it changes as anywhere.
+["begin",
+["define", "calls", 0],
+["define", "counted", ["lambda", ["x"], ["begin", ["set!", "calls", ["number/add", "calls", 1]], "calls"]]],
+["relation", "item", ["x"]],
+["relation", "numbered", ["x", "n"]],
+["rule", ["numbered", "?x", ["counted", "?x"]], ["item", "?x"]]]
+["begin",
+["define", "count", 0],
+["define", "tick", ["lambda", [], ["set!", "count", ["number/add", "count", 1]]]],
+["tick"], ["tick"],
+"count"]
+lambda
+["lambda", [parameter, ...], body]
+Returns a function. Calling it binds each parameter to the matching argument, and declares the names its body defines, in a new environment whose parent is the one where the lambda was created, then evaluates body .
+A call gives it one argument for each parameter. Called with any other number, it fails as every function does: ["lambda",["a","b"],"a"] takes 2 arguments but got 1. , or, when a define bound it, with the name it was bound to. Host code that passes more, as Array.prototype.map does, calls it through func/callback , which gives it as many as it takes.
+The body is one expression; use begin for several. It is in tail position , so a lambda that calls itself last loops in constant memory.
+Parameters can be any non-empty strings but __proto__ ; one that takes a form's name makes the form a call in the body: see Names of forms .
+A parameter written [name, schema] is a contract: a call checks the argument as schema/assert does, before the body runs, so a misfit fails there and the functions the failure left start with the caller. The schema is made where the lambda is. Where the call waits for a logic variable, the check waits too. A match with no fallback on such a parameter is checked to cover every value the contract allows.
+["begin",
+["define", "makeAdder", ["lambda", ["n"], ["lambda", ["x"], ["number/add", "x", "n"]]]],
+["define", "addTen", ["makeAdder", 10]],
+["addTen", 5]]
+["begin",
+["define", "next", ["lambda", [["n", "value/number?"]], ["number/add", "n", 1]]],
+["define", "label", ["lambda", ["n"], ["string/concat", "item ", ["number/toString", ["next", "n"]]]]],
+["label", "seven"]]
+cond
+["cond", [condition, result], ..., ["else", result]]
+Evaluates each condition in order and returns the evaluated result of the first one that is true . Later conditions are not evaluated. A condition must be true or false ; any other value fails: see Conditions .
+A condition that is a goal with a relation in it, such as a relation call, is asked : it holds when the goal has a match.
+An else branch always matches, unless a scope declares else .
+With no match and no else , returns null .
+["cond",
+[["number/greaterThan", 3, 5], "big"],
+[["number/greaterThan", 3, 1], "medium"],
+["else", "small"]]
+match
+["match", value, [schema, function], ..., fallback?]
+Evaluates value , then tries each pair in order. The first whose schema the value fits is chosen, and its function is called with the value. If the value fits none, fallback is called with the value; a match with no fallback fails, as Racket's does, naming the value.
+Anything is a schema. A function is a predicate: the value fits when it returns true , and a failure, or any other result, counts as not fitting. A relation with one column is a predicate too: the value fits when the goal the relation builds from it has a match .
+A record fits a record with the same keys, where each value fits the schema under the same key; ["schema/open", record] fits a record that has other keys too. A list fits a list of the same length, item by item. Any other value fits a value equal to it. Schemas nest.
+At least one pair is required, and the fallback may be left out. A last part that is a pair is a case, so write a fallback as a lambda or a name, not as a call of two parts.
+A case after one whose schema takes every value it allows can never be reached. Reading the program finds it, as schema/includes? decides, where both schemas have one value wherever the match runs: the graph editor shows it, and lion check prints it.
+["match", {"type": "user", "name": "Ada"},
+[{"type": ["func/partial", "string/equals?", "user"], "name": "value/string?"},
+["lambda", ["u"], ["string/concat", "user ", ["object/get", "u", "name"]]]],
+["lambda", ["other"], "unknown"]]
+Without a fallback, a value no case fits fails:
+["match", "five",
+["value/integer?", ["lambda", ["n"], "an integer"]],
+["value/number?", ["lambda", ["n"], "a number"]]]
+A plain value, a list, and a schema built by the schema module are schemas too. The first pair here asks for a record with one key, so it does not fit; the third opens the record and takes it:
+["match", ["quote", {"type": "refund", "amount": 5, "lines": [1, 2]}],
+[{"type": "refund"}, ["lambda", ["m"], "a refund and nothing else"]],
+[["schema/open", {"type": "sale"}], ["lambda", ["m"], "a sale"]],
+[["schema/open", {"type": ["schema/anyOf", "refund", "void"],
+"lines": ["array/make", "value/number?", "value/number?"]}],
+["lambda", ["m"], ["object/get", "m", "amount"]]],
+["lambda", ["m"], "something else"]]

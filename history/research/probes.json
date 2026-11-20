@@ -21091,6 +21091,15 @@
     ]
   },
   {
+    "feature": "research-clef-built-step",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "research/steps/45-cl-built.json"]],
+      1
+    ]
+  },
+  {
     "feature": "join-gap-research",
     "kind": "file",
     "program": [

@@ -1,0 +1,1291 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "research/probes/cl-*.json"
+   ],
+   [
+    "quote",
+    "Lion programs run for the Clef run again with its build plan built, at commit 1e16052"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261120155248
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-cl-added"
+   ],
+   [
+    "quote",
+    "research/probes/cl-built-*.json"
+   ],
+   [
+    "quote",
+    "Lion programs that use what the Clef build added, at commit c1279a1"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261120160759
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-host-cl-added"
+   ],
+   [
+    "quote",
+    "lion check research/probes/cl-match-cases.json and research/probes/cl-built-match-cover.json; node research/probes/watch-host/watch.mjs"
+   ],
+   [
+    "quote",
+    "Lion's check command and host code that watches a query, run on what the Clef build added, at commit c1279a1"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261120160759
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-special-forms-cl-built"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/reference/special-forms.html"
+   ],
+   [
+    "quote",
+    "Lion reference: Special forms, at commit c1279a1"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261120160759
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-standard-library-cl-built"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/reference/standard-library.html"
+   ],
+   [
+    "quote",
+    "Lion reference: Standard library, at commit c1279a1"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261120160759
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-logic-forms-cl-built"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/reference/logic-forms.html"
+   ],
+   [
+    "quote",
+    "Lion reference: Logic forms, at commit c1279a1"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261120160759
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b1"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "[\"lambda\",[\"a\"],\"a\"] takes 1 argument but got 3."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a call refused when a lambda is given more arguments than it has parameters",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b1"
+   ],
+   [
+    "quote",
+    "program cl-arity.json: a lambda of one parameter given three arguments"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b2"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "[\"lambda\",[\"a\"],\"a\"] takes 1 argument but got 3."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a lambda ignores extra arguments",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b2"
+   ],
+   [
+    "quote",
+    "program cl-arity.json: a lambda of one parameter given three arguments"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b3"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "[\"lambda\",[\"a\",\"b\"],\"a\"] takes 2 arguments but got 1."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a lambda given the wrong number of arguments fails as a library function does",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b3"
+   ],
+   [
+    "quote",
+    "program cl-arity-fewer.json: the message has the form of \"console/log\" takes 1 argument but got 2. (cl-arity-library.json), where it said before that a lambda was called with fewer arguments than it has parameters"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b4"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "There is no key \"b\" in {\"a\":1}."
+   ],
+   [
+    "quote",
+    {
+     "lion": "plain code that tells a missing key from a key holding null",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b4"
+   ],
+   [
+    "quote",
+    "program cl-missing-key.json: object/get of a key that is not there, which gave null before"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b5"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "No case of the match fits \"x\", and it has no fallback"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a match always has a fallback",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b5"
+   ],
+   [
+    "quote",
+    "program cl-match-fallback.json: a match with one case and no fallback, which was refused before as not a well-formed match form"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b6"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "set! cannot change \"calls\" while a rule, query, or find runs"
+   ],
+   [
+    "quote",
+    {
+     "lion": "effects kept out of code whose evaluation order the engine chooses",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b6"
+   ],
+   [
+    "quote",
+    "program cl-effect-in-rule.json: a counter that changes a binding made outside, called from a rule body"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b7"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "set! cannot change \"calls\" while a rule, query, or find runs"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a rule body may change a binding",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b7"
+   ],
+   [
+    "quote",
+    "program cl-effect-in-rule.json: a counter that changes a binding made outside, called from a rule body"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b8"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "set! cannot change \"calls\" while a rule, query, or find runs"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a function that changes a binding gives in a rule body what it gives in plain code",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b8"
+   ],
+   [
+    "quote",
+    "program cl-effect-in-rule.json: the counter numbers three items when array/map calls it in plain code, and fails when a rule body calls it, where it gave one number for all three before"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b9"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "\"number/add\" takes a number as argument 1 but got \"seven\". (in \"next\", called from \"label\")"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a failure that names the function given a wrong argument",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b9"
+   ],
+   [
+    "quote",
+    "program cl-contract.json: \"seven\" passed through two lambdas to number/add; it names the function and the functions the failure left, where it said Expected number at [0] before"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b10"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "The integer 9007199254740993 at line 3, column 50 cannot be held exactly"
+   ],
+   [
+    "quote",
+    {
+     "lion": "an integer refused when it cannot be held exactly",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b10"
+   ],
+   [
+    "quote",
+    "program cl-big-integers.json: an integer written one past two to the 53rd, refused when the program's text is read"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b11"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "a JSON number holds every integer only from -9007199254740991 to 9007199254740991"
+   ],
+   [
+    "quote",
+    {
+     "lion": "integers kept exact past two to the 53rd",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b11"
+   ],
+   [
+    "quote",
+    "program cl-big-integers.json: an integer past that range is refused, not kept exact"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b12"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "\"what why gives for a proof whose premises contradict each other\": \"absent, certificate, contradicting\""
+   ],
+   [
+    "quote",
+    {
+     "lion": "which assumptions make a goal unsatisfiable",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b12"
+   ],
+   [
+    "quote",
+    "program cl-why-absent.json: the keys of why's reason for a rule proved from premises that contradict each other, which were only absent before"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b13"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "\"what why gives for a proof whose premises contradict each other\": \"absent, certificate, contradicting\""
+   ],
+   [
+    "quote",
+    {
+     "lion": "a proof that says when its premises allow no state",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b13"
+   ],
+   [
+    "quote",
+    "program cl-why-absent.json: why names the contradicting premises; the proof itself still holds, as cl-vacuous-proof.json shows"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b14"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-built"
+   ],
+   [
+    "quote",
+    "undefined"
+   ],
+   [
+    "quote",
+    {
+     "lion": "values computed on first demand and kept",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b14"
+   ],
+   [
+    "quote",
+    "program cl-no-delay.json: [\"delay\", [\"number/add\", 1, 2]] is no longer refused as not a call; it gives a promise, which has no JSON form, so the CLI at this commit wrote undefined (cl-built-promise.json forces one)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b15"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-added"
+   ],
+   [
+    "quote",
+    "quantity/add: 120 {\"m\":1} and 8 {\"s\":1} have different units."
+   ],
+   [
+    "quote",
+    {
+     "lion": "quantities whose units are checked when they are combined",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b15"
+   ],
+   [
+    "quote",
+    "program cl-built-units.json: the length and the time cl-units.json added as numbers, added as quantities"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b16"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-added"
+   ],
+   [
+    "quote",
+    "\"times the body ran before it was forced\": 0"
+   ],
+   [
+    "quote",
+    {
+     "lion": "values computed on first demand and kept",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b16"
+   ],
+   [
+    "quote",
+    "program cl-built-promise.json: a delay whose body counts its runs, before value/force"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b17"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-added"
+   ],
+   [
+    "quote",
+    "\"times the body ran\": 1"
+   ],
+   [
+    "quote",
+    {
+     "lion": "values computed on first demand and kept",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b17"
+   ],
+   [
+    "quote",
+    "program cl-built-promise.json: after value/force twice, each giving 42"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b18"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-added"
+   ],
+   [
+    "quote",
+    "\"failure\": \"LogicError\""
+   ],
+   [
+    "quote",
+    {
+     "lion": "a failure a program can catch and read as data",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b18"
+   ],
+   [
+    "quote",
+    "program cl-built-catch.json: func/catch of number/add given \"seven\", whose handler gets the failure as a record of its kind and message"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b19"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-added"
+   ],
+   [
+    "quote",
+    "\"a continuation kept and called after its reset gave it\": 6"
+   ],
+   [
+    "quote",
+    {
+     "lion": "first-class continuations",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b19"
+   ],
+   [
+    "quote",
+    "program cl-built-shift.json: func/shift's handler gives k itself, func/reset gives it back as a value, and a call of it resumes the delimited part; delimited and one-shot, not call/cc, which cl-no-callcc.json still shows Lion lacks"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b20"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-added"
+   ],
+   [
+    "quote",
+    "A continuation was resumed a second time: the one func/shift gives goes on once."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a continuation resumed more than once",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b20"
+   ],
+   [
+    "quote",
+    "program cl-built-shift.json: a handler that calls k twice, under func/catch"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b21"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-added"
+   ],
+   [
+    "quote",
+    "\"seven\" does not fit \"value/number?\". (in \"label\")"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a lambda whose arguments are checked against schemas when it is called",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b21"
+   ],
+   [
+    "quote",
+    "program cl-built-contract.json: next's parameter is [\"n\", \"value/number?\"], and label calls it with \"seven\""
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b22"
+   ],
+   [
+    "quote",
+    "lion-probes-cl-added"
+   ],
+   [
+    "quote",
+    "\"seven\" does not fit \"value/number?\". (in \"label\")"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a failure that names the function and the caller that broke its contract",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b22"
+   ],
+   [
+    "quote",
+    "program cl-built-contract.json: the failure names the caller, label, but not next, whose contract it broke"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b23"
+   ],
+   [
+    "quote",
+    "lion-host-cl-added"
+   ],
+   [
+    "quote",
+    "This case can never be reached: every value its schema allows fits the schema of case 1, which comes first."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a report of a match case no value can reach",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b23"
+   ],
+   [
+    "quote",
+    "lion check of cl-match-cases.json: the value/integer? case after the value/number? case, which the program, run, does not report"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b24"
+   ],
+   [
+    "quote",
+    "lion-host-cl-added"
+   ],
+   [
+    "quote",
+    "fits no case, and the match has no fallback."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a match checked to cover every value of its schema",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b24"
+   ],
+   [
+    "quote",
+    "lion check of cl-built-match-cover.json: a match with no fallback on a parameter whose contract allows a sale, a refund, or a void, with cases for a sale and a refund"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b25"
+   ],
+   [
+    "quote",
+    "lion-host-cl-added"
+   ],
+   [
+    "quote",
+    "told after a second order: {\"added\":[2],\"removed\":[1]}"
+   ],
+   [
+    "quote",
+    {
+     "lion": "host code told when a derived value changes",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b25"
+   ],
+   [
+    "quote",
+    "watch-host/watch.mjs: host code watches a find of a count a rule derives; a fact that changes no answer, and a fact after the watching stopped, tell nothing"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b26"
+   ],
+   [
+    "quote",
+    "lion-special-forms-cl-built"
+   ],
+   [
+    "quote",
+    "Called with any other number, it fails as every function does"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a lambda ignores extra arguments",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b26"
+   ],
+   [
+    "quote",
+    "lambda, where the page said before that extra arguments are ignored"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b27"
+   ],
+   [
+    "quote",
+    "lion-special-forms-cl-built"
+   ],
+   [
+    "quote",
+    "calls it through func/callback , which gives it as many as it takes."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a lambda host code can call as a callback with extra arguments",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b27"
+   ],
+   [
+    "quote",
+    "lambda: host code that passes more, as Array.prototype.map does"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b28"
+   ],
+   [
+    "quote",
+    "lion-special-forms-cl-built"
+   ],
+   [
+    "quote",
+    "A parameter written [name, schema] is a contract: a call checks the argument as schema/assert does, before the body runs"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a lambda whose arguments are checked against schemas when it is called",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b28"
+   ],
+   [
+    "quote",
+    "lambda"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b29"
+   ],
+   [
+    "quote",
+    "lion-special-forms-cl-built"
+   ],
+   [
+    "quote",
+    "A match with no fallback on such a parameter is checked to cover every value the contract allows."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a match checked to cover every value of its schema",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b29"
+   ],
+   [
+    "quote",
+    "lambda: a parameter that is a contract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b30"
+   ],
+   [
+    "quote",
+    "lion-special-forms-cl-built"
+   ],
+   [
+    "quote",
+    "At least one pair is required, and the fallback may be left out."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a match always has a fallback",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b30"
+   ],
+   [
+    "quote",
+    "match, where the page said before that at least one pair and the fallback are required"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b31"
+   ],
+   [
+    "quote",
+    "lion-standard-library-cl-built"
+   ],
+   [
+    "quote",
+    "For a key it does not have, missing , as Racket's hash-ref takes a failure result; without it the call fails with KeyNotFoundError"
+   ],
+   [
+    "quote",
+    {
+     "lion": "plain code that tells a missing key from a key holding null",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b31"
+   ],
+   [
+    "quote",
+    "object/get, which said before that it gives null when there is no value under the key"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b32"
+   ],
+   [
+    "quote",
+    "lion-standard-library-cl-built"
+   ],
+   [
+    "quote",
+    "when it fails, what handler gives for the failure as data"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a failure a program can catch and read as data",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b32"
+   ],
+   [
+    "quote",
+    "func/catch"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b33"
+   ],
+   [
+    "quote",
+    "lion-logic-forms-cl-built"
+   ],
+   [
+    "quote",
+    "So a rule, query, or find refuses a set! of a binding made outside it"
+   ],
+   [
+    "quote",
+    {
+     "lion": "effects kept out of code whose evaluation order the engine chooses",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b33"
+   ],
+   [
+    "quote",
+    "Logic forms, the opening list, which said before that computing a call when the rule is written changes nothing but when a side effect happens"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "cl-b34"
+   ],
+   [
+    "quote",
+    "lion-logic-forms-cl-built"
+   ],
+   [
+    "quote",
+    "So a rule, query, or find refuses a set! of a binding made outside it"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a rule body may change a binding",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "cl-b34"
+   ],
+   [
+    "quote",
+    "Logic forms, the opening list"
+   ]
+  ]
+ ],
+ "recorded"
+]

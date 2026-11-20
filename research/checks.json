@@ -423,6 +423,19 @@
           ["unsettled", "?belief", "?_"],
           ["=", "?evidence", ["quote", "no evidence yet"]]
         ]
+      ],
+      [
+        "=",
+        "?answer_lion_changed",
+        [
+          "find",
+          { "from": "?before", "to": "?after" },
+          [
+            "and",
+            ["expects", "?belief", "?q", "?_"],
+            ["restated", "?q", "?_", "?before", "?after"]
+          ]
+        ]
       ]
     ]
   ],

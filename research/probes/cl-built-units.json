@@ -1,0 +1,5 @@
+[
+  "quantity/add",
+  ["quote", { "value": 120, "unit": { "m": 1 } }],
+  ["quote", { "value": 8, "unit": { "s": 1 } }]
+]

@@ -20,7 +20,7 @@ Every item follows `AGENTS.md` and `CLAUDE.md`, and is committed on its own:
 - claims in `history/notes/` (a decision record where a rule changes), a probe in `history/research/probes.json` for each behavior changed, `bun run history write`, `bun run history check`;
 - `bun run check`, `bun run test`, typecheck, before the commit.
 
-At the end: run the Clef probes again under a new source id (`node research/probes/run.mjs lion-probes-cl-built ...`) and record what changed in the research model, so its verdicts follow what was built. Done for the run: `research/sources/lion-probes-cl-built.txt`. Not done: a research step with claims quoting it, so the model's verdicts follow; proposed as its own session.
+At the end: run the Clef probes again under a new source id (`node research/probes/run.mjs lion-probes-cl-built ...`) and record what changed in the research model, so its verdicts follow what was built. Done for the run: `research/sources/lion-probes-cl-built.txt`, and step `45-cl-built`, whose claims quote it, programs that use what was built (`lion-probes-cl-added`), `lion check` and host code (`lion-host-cl-added`), and the reference pages as they read now, so the model's verdicts follow: Lion does 11 of the 12 ideas already, and contracts stay worth adopting, since a contract's failure does not name the function whose contract was broken.
 
 ## Faster checks (the user asked for them on 2026-11-20, with no weaker guarantees)
 

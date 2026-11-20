@@ -1,0 +1,12 @@
+{
+  "claims": [
+    {
+      "quote": "The research model records Lion after the Clef build, in step `research/steps/45-cl-built.json`: the seventeen probes run again, five new programs that use what the build added, `lion check` and host code that watches a query, and the reference pages as they read now. Each publisher's newer word replaces its older one, so Lion does eleven of the twelve ideas from Clef already. Contracts on lambdas stay worth adopting: a contract's failure blames the caller, but does not name the function whose contract was broken. The Clef page tells the beliefs the run found wrong from those the build has changed since.",
+      "says": {
+        "feature": "research-clef-built-step",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}

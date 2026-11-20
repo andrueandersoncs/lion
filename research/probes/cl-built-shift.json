@@ -1,0 +1,53 @@
+[
+  "begin",
+  [
+    "define",
+    "rest",
+    [
+      "func/reset",
+      ["lambda", [], ["number/add", 1, ["func/shift", ["lambda", ["k"], "k"]]]]
+    ]
+  ],
+  {
+    "early exit": [
+      "func/reset",
+      ["lambda", [], ["number/add", 1, ["func/shift", ["lambda", ["k"], 42]]]]
+    ],
+    "resumed once": [
+      "func/reset",
+      [
+        "lambda",
+        [],
+        [
+          "number/add",
+          1,
+          ["func/shift", ["lambda", ["k"], ["number/multiply", 10, ["k", 5]]]]
+        ]
+      ]
+    ],
+    "a continuation kept and called after its reset gave it": ["rest", 5],
+    "a continuation resumed twice": [
+      "func/catch",
+      [
+        "lambda",
+        [],
+        [
+          "func/reset",
+          [
+            "lambda",
+            [],
+            [
+              "number/add",
+              1,
+              [
+                "func/shift",
+                ["lambda", ["k"], ["number/add", ["k", 1], ["k", 2]]]
+              ]
+            ]
+          ]
+        ]
+      ],
+      ["lambda", ["failure"], ["object/get", "failure", "message"]]
+    ]
+  }
+]

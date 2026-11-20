@@ -1,0 +1,367 @@
+The default environment, stdlib , names each function module/function . Functions check their arguments. A call with an argument of the wrong kind fails and says which argument, what the function takes there, and what it got, as in "number/add" takes a number as argument 1 but got "one". Each says how many arguments it takes, and a call with any other number fails in the same form, as in "number/subtract" takes 2 arguments but got 3. Each module's example below calls every function in the module.
+Every function waits when it is called with a logic variable among its arguments, so all of them work as filters and computed values in rules and queries. A function that is given a goal gets its answer, true or false ; see Asking questions . Functions of the aggregate and graph modules take logic variables as they are, to build aggregates and goals.
+number
+Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with ArithmeticError . Integers a JSON number holds exactly, up to 2^53 - 1 either side of zero, do exact arithmetic: a sum, difference, product, or power of them that a JSON number cannot hold exactly fails with ArithmeticError too, instead of rounding. Past that range a number is a float, and rounds as one.
+Function Returns
+["number/add", a, b, ...] a + b , and so on for one or more numbers
+["number/subtract", a, b] a - b
+["number/multiply", a, b, ...] a × b , and so on for one or more numbers
+["number/divide", a, b] a ÷ b . Dividing by 0 fails with ArithmeticError .
+["number/remainder", a, b] What is left of a after dividing by b , with the sign of a . A remainder by 0 fails with ArithmeticError .
+["number/power", a, b] a to the power of b
+["number/min", a, b, ...] The smallest of one or more numbers
+["number/max", a, b, ...] The largest of one or more numbers
+["number/absolute", a] a without its sign
+["number/floor", a] The largest whole number that is at most a
+["number/ceiling", a] The smallest whole number that is at least a
+["number/round", a] The nearest whole number; a half rounds up
+["number/toString", a]
+["number/toString", a, separator] a as text, the way JSON writes it. With a separator, a string, the whole part is written in groups of three digits with it between them: "1,234,567.5"
+["number/fromString", text]
+["number/fromString", text, separator] The number text writes, as string->number reads it in Scheme, or null when text is not one number. With a separator, the whole part may be in groups of three digits with it between them, so it reads back what number/toString writes with the same separator
+["number/equals?", a, b] Whether a equals b
+["number/lessThan", a, b] Whether a < b
+["number/greaterThan", a, b] Whether a > b
+["number/lessThanOrEqualTo", a, b] Whether a ≤ b
+["number/greaterThanOrEqualTo", a, b] Whether a ≥ b
+{"add": ["number/add", 7, 3],
+"add-three": ["number/add", 7, 3, 1],
+"subtract": ["number/subtract", 7, 3],
+"multiply": ["number/multiply", 7, 3],
+"divide": ["number/divide", 7, 2],
+"remainder": ["number/remainder", 7, 3],
+"power": ["number/power", 2, 10],
+"min": ["number/min", 7, 3],
+"max": ["number/max", 7, 3],
+"absolute": ["number/absolute", -7],
+"floor": ["number/floor", 2.7],
+"ceiling": ["number/ceiling", 2.1],
+"round": ["number/round", 2.5],
+"toString": ["string/concat", "order ", ["number/toString", 42]],
+"grouped": ["number/toString", 1234567.5, ","],
+"fromString": ["number/fromString", "1,234,567.5", ","],
+"not a number": ["number/fromString", "12 apples"],
+"equals?": ["number/equals?", 7, 7],
+"lessThan": ["number/lessThan", 7, 3],
+"greaterThan": ["number/greaterThan", 7, 3],
+"lessThanOrEqualTo": ["number/lessThanOrEqualTo", 3, 3],
+"greaterThanOrEqualTo": ["number/greaterThanOrEqualTo", 2, 3]}
+["number/divide", 1, 0]
+boolean
+Every argument must be a boolean.
+Function Returns
+["boolean/not", a] The negation of a
+["boolean/and", a, b] Whether both are true
+["boolean/or", a, b] Whether either is true
+["boolean/xor", a, b] Whether exactly one is true
+["boolean/nand", a, b] Whether not both are true
+["boolean/nor", a, b] Whether neither is true
+["boolean/equals?", a, b] Whether a equals b
+{"not": ["boolean/not", true],
+"and": ["boolean/and", true, false],
+"or": ["boolean/or", true, false],
+"xor": ["boolean/xor", true, false],
+"nand": ["boolean/nand", true, true],
+"nor": ["boolean/nor", false, false],
+"equals?": ["boolean/equals?", true, true]}
+string
+Every argument must be a string. Functions that search take the text first. Lengths and positions count UTF-16 code units, as JavaScript does.
+Function Returns
+["string/length", text] The length of text
+["string/concat", a, b, ...] a followed by b , and so on for one or more strings
+["string/startsWith", text, prefix] Whether text starts with prefix
+["string/endsWith", text, suffix] Whether text ends with suffix
+["string/includes", text, search] Whether text contains search
+["string/indexOf", text, search] The position of the first search in text , or -1
+["string/join", list, separator]
+["string/join", list, separator, last] The strings of list with separator between them. With last , that string stands before the last item in place of the separator: "a, b and c" . Every item must be a string
+["string/split", text, separator] The parts of text between each separator ; joining them with the same separator gives text back
+["string/slice", text, start]
+["string/slice", text, start, end] The part of text from start up to, but not including, end , or to the end without it. A negative position counts from the end, and one past either end stops there, as JavaScript's slice cuts
+["string/padStart", text, length, fill] text made length long with copies of fill before it; unchanged when it is already that long
+["string/padEnd", text, length, fill] The same, with the copies after it
+["string/numbers", text]
+["string/numbers", text, separator] Every number written in text , in order, each read as number/fromString reads it with the same separator. A minus sign counts only where no letter, digit, or point is right before it, so "2023-24" holds 2023 and 24. Words for amounts are not read: "$1.2 billion" holds 1.2
+["string/equals?", a, b] Whether a equals b
+{"length": ["string/length", "lion"],
+"concat": ["string/concat", "lion", "ized"],
+"startsWith": ["string/startsWith", "lion", "li"],
+"endsWith": ["string/endsWith", "lion", "on"],
+"includes": ["string/includes", "lion", "io"],
+"indexOf": ["string/indexOf", "lion", "o"],
+"missing": ["string/indexOf", "lion", "z"],
+"join": ["string/join", ["array/make", "a", "b", "c"], ", "],
+"listed": ["string/join", ["array/make", "a", "b", "c"], ", ", " and "],
+"split": ["string/split", "2026-11-13", "-"],
+"slice": ["string/slice", "2026-11-13", 0, 7],
+"last": ["string/slice", "lionlang", -4],
+"padStart": ["string/padStart", "7", 2, "0"],
+"padEnd": ["string/padEnd", "7", 3, "."],
+"numbers": ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","],
+"equals?": ["string/equals?", "lion", "lion"]}
+array
+List arguments must be lists. A function argument is called with each item, and can be a lambda, a standard function, or a host function.
+Function Returns
+["array/make", item, ...] A list of the evaluated items
+["array/range", start, end] Whole numbers from start up to, but not including, end ; at most 1,000,000 of them. Both must be whole numbers.
+["array/length", list] The number of items
+["array/head", list] The first item, or null for an empty list
+["array/tail", list] Every item after the first; [] for an empty list
+["array/slice", list, start]
+["array/slice", list, start, end] The items from start up to, but not including, end , or to the end without it, counting a negative position from the end, as string/slice cuts text
+["array/concat", a, b, ...] The items of a followed by those of b , and so on for one or more lists
+["array/includes?", list, item] Whether the list holds a value equal to item , comparing lists and records by structure
+["array/map", list, function] The list of function 's results for each item
+["array/flat-map", list, function] The concatenation of the lists function returns for each item
+["array/reduce", list, initial, function] The result of calling function with the running value, starting at initial , and each item in turn
+["array/reductions", list, initial, function] Every running value array/reduce passes through, starting with initial ; the last is what array/reduce gives. The states a run of steps goes through
+["array/some?", list, function] Whether function is true for some item, stopping at the first that is, as Racket's ormap does. function gives true or false , as a condition does
+["array/every?", list, function] Whether function is true for every item, stopping at the first that is not, as Racket's andmap does
+{"make": ["array/make", 1, 2, 3],
+"range": ["array/range", 0, 4],
+"length": ["array/length", ["array/make", 1, 2, 3]],
+"head": ["array/head", ["array/make", 1, 2, 3]],
+"tail": ["array/tail", ["array/make", 1, 2, 3]],
+"slice": ["array/slice", ["array/make", 1, 2, 3, 4], 1, 3],
+"lastTwo": ["array/slice", ["array/make", 1, 2, 3, 4], -2],
+"concat": ["array/concat", ["array/make", 1], ["array/make", 2, 3]],
+"includes?": ["array/includes?", ["quote", [1, {"a": 2}]], {"a": 2}],
+"map": ["array/map", ["array/make", 1, 2], ["lambda", ["x"], ["number/add", "x", 1]]],
+"flat-map": ["array/flat-map", ["array/make", 1, 2], ["lambda", ["x"], ["array/make", "x", "x"]]],
+"reduce": ["array/reduce", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]],
+"reductions": ["array/reductions", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]],
+"some?": ["array/some?", ["array/make", 1, 5, 2], ["lambda", ["x"], ["number/greaterThan", "x", 4]]],
+"every?": ["array/every?", ["array/make", 1, 5, 2], ["lambda", ["x"], ["number/greaterThan", "x", 0]]]}
+value
+Predicates tell JSON's kinds of value apart: value/object? is true for records, and value/array? for lists. value/unknown? tells an unknown , a value a rule invented, from a value that was given.
+Function Returns
+["value/number?", x] Whether x is a number
+["value/integer?", x] Whether x is a whole number
+["value/string?", x] Whether x is a string
+["value/boolean?", x] Whether x is a boolean. As a schema it lists false and true.
+["value/null?", x] Whether x is null . As a schema it lists null .
+["value/array?", x] Whether x is a list
+["value/object?", x] Whether x is a record, or another object that is not a list or an unknown, such as a host object
+["value/unknown?", x] Whether x is an unknown , such as a value a rule whose head says exists invented
+["value/function?", x] Whether x is a function
+["value/undefined?", x] Whether x is JavaScript's undefined , which only host values produce
+["value/symbol?", x] Whether x is a JavaScript symbol
+["value/any?", x] true for every value: the schema that anything fits
+["value/identity", x] x
+["value/promise?", x] Whether x is a promise delay made
+["value/force", x] The value of a promise: its expression run the first time, and kept, as Racket's force gives it; any other x as it is
+{"number?": ["value/number?", 1],
+"integer?": ["value/integer?", 1.5],
+"string?": ["value/string?", "a"],
+"boolean?": ["value/boolean?", false],
+"null?": ["value/null?", null],
+"array?": ["value/array?", ["array/make"]],
+"object? of a record": ["value/object?", {}],
+"object? of a list": ["value/object?", ["array/make"]],
+"function?": ["value/function?", "number/add"],
+"undefined?": ["value/undefined?", null],
+"symbol? of a module's own symbol": ["value/symbol?", "number/symbol"],
+"symbol? of text": ["value/symbol?", ["quote", "number/symbol"]],
+"any?": ["value/any?", null],
+"identity": ["value/identity", 42],
+"promise?": ["value/promise?", ["delay", 1]],
+"force": ["value/force", ["delay", ["number/add", 1, 2]]],
+"force of a plain value": ["value/force", 3]}
+A rule that invents gives unknowns, and value/unknown? keeps them apart from the values that were given:
+["begin",
+["relation", "team", ["name"]],
+["relation", "lead", ["team", "person"]],
+["fact", ["team", "web"], ["team", "data"], ["lead", "web", "ana"]],
+["rule", ["exists", ["?p"], ["lead", "?t", "?p"]], ["team", "?t"]],
+{"leads": ["find", ["array/make", "?t", "?p", ["value/unknown?", "?p"]], ["lead", "?t", "?p"]],
+"known leads": ["find", "?p", ["and", ["lead", "?_", "?p"], ["not", ["value/unknown?", "?p"]]]],
+"object? of an unknown": ["value/object?", ["some", "?p", ["lead", "data", "?p"]]]}]
+schema
+Checks values against schemas, and builds schemas out of others. Anything is a schema; see What fits a schema . The functions that check take the value first, then the schema. schema gives a schema a name.
+Function Returns
+["schema/fits?", value, schema] Whether the value fits the schema. With a logic variable in it, it is a goal that also binds the variables of the schema, and binds the value to each value the schema allows when the schema can list them; see Patterns .
+["schema/problems", value, schema] Every place where the value does not fit, in the order of their paths; an empty list when it fits. A problem is a record with a path , the keys and positions that lead to the part. A part with the wrong value has what was expected , a schema written as the expression that makes it, and what was found . A part that is missing has only expected , and a key the schema does not name has only found .
+["schema/includes?", a, b] Whether every value a allows fits b : decided exactly, by listing a 's values when it can list them and by the solver otherwise. Fails, and says why, when neither can decide it.
+["schema/assert", value, schema] The value, when it fits. When it does not, fails with a message that says where. As a value in a rule or find , it fails the query that runs it.
+["schema/anyOf", schema, ...] A schema that fits a value which fits at least one of the schemas. Of plain values it is a list of choices. It reports one problem, at the value that fits none.
+["schema/allOf", schema, ...] A schema that fits a value which fits every one of the schemas. It reports the problems of each schema the value does not fit.
+["schema/arrayOf", schema]
+["schema/arrayOf", schema, most] A schema that fits a list whose every item fits the schema. With most , a whole number, the list has at most that many items, so a schema whose items can be listed lists every such list.
+["schema/recordOf", schema] A schema that fits a record whose every value fits the schema
+["schema/optional", schema] As the schema of a record's key, lets the key be left out; a key that is there must fit. Anywhere else it is the schema itself.
+["schema/open", record]
+["schema/open", record, rest] A schema that fits a record which fits the record of schemas, or the named schema of one, whatever other keys it has. With rest , the record of its other keys must fit rest . A list of schemas works the same way, with the items after the ones it names as the rest. A record or list of schemas on its own leaves nothing for its rest.
+What the building functions return is a function: called with a value, it says whether the value fits. A snapshot writes it as the call that built it.
+{"fits?": ["schema/fits?", 3, "value/number?"],
+"problems": ["schema/problems",
+{"id": "x"},
+{"id": "value/integer?", "name": "value/string?"}],
+"assert": ["schema/assert", 3, "value/number?"],
+"includes?": ["schema/includes?", "value/integer?", "value/number?"],
+"anyOf": ["schema/fits?", null, ["schema/anyOf", "value/string?", null]],
+"allOf": ["schema/fits?", 5,
+["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/lessThan", "n", 3]]]],
+"arrayOf": ["schema/fits?", ["array/make", 1, 2], ["schema/arrayOf", "value/number?"]],
+"at most two": ["schema/fits?", ["array/make", 1, 2, 3], ["schema/arrayOf", "value/number?", 2]],
+"every value": ["find", "?x", ["schema/fits?", "?x", {"on": "value/boolean?", "size": ["schema/anyOf", "s", "m"]}]],
+"recordOf": ["schema/fits?", {"a": 1, "b": "x"}, ["schema/recordOf", "value/number?"]],
+"optional": ["schema/fits?", {}, {"note": ["schema/optional", "value/string?"]}],
+"extra key": ["schema/problems", {"id": 1, "extra": true}, {"id": "value/integer?"}],
+"open": ["schema/fits?", {"id": 1, "extra": true}, ["schema/open", {"id": "value/integer?"}]],
+"open with a rest": ["schema/problems", {"id": 1, "size": "m", "count": 2},
+["schema/open", {"id": "value/integer?"}, ["schema/recordOf", "value/string?"]]],
+"called": [["schema/arrayOf", "value/number?"], ["array/make", 1, "two"]]}
+["schema/assert",
+{"id": 7, "tags": ["array/make", "new", 3]},
+{"id": "value/integer?", "tags": ["schema/arrayOf", "value/string?"]}]
+object
+For records and host objects. Paths are dot-separated keys; a numeric segment indexes a list. Keys belong to objects, so reading one needs an object, but a method can belong to any value except null , so the method functions also work on strings, numbers, and lists.
+Function Returns
+["object/get", object, key, missing?] The value under a key the object has, null among them. For a key it does not have, missing , as Racket's hash-ref takes a failure result; without it the call fails with KeyNotFoundError , as object/get-path does. Only the object's own keys count. Fails with NotAnObjectError for a non-object.
+["object/has?", record, key] Whether the record has the key, as Racket's hash-has-key? says: true for a key that holds null , and false for one it does not have.
+["object/get-path", object, path] The value at path , such as "users.1.name" . Fails with KeyNotFoundError , IndexOutOfBoundsError , NotAnArrayError , or PathTraversalError when the path does not lead to a value.
+["object/keys", record] The record's keys
+["object/values", record] The record's values
+["object/set", record, key, value] A new record with key holding value , as hash-set gives in Racket. The record it was given is unchanged.
+["object/remove", record, key] A new record without key , as hash-remove gives in Racket. Removing a key the record does not hold gives the same record.
+["object/json-stringify", value, replacer, space] Any JSON value as JSON text, like JSON.stringify . The replacer and the indent are optional.
+["object/call-method", value, name, argument, ...] The result of calling value 's method name . Fails with NotAFunctionError when there is no such method, and NotAnObjectError when value is null .
+["object/get-method", value, name] The method name of value , bound to it. Fails like object/call-method .
+["object/call-method-path", object, path, argument, ...] The result of calling the method at the end of path , with this set to the value before it. Every value the path passes through must be an object; the last can be any value except null .
+["object/get-method-path", object, path] The method at the end of path , bound to the value before it
+["object/new", class, argument, ...] A new instance of class . Fails with NotAConstructorError for a non-function.
+["begin",
+["define", "data", ["quote", {"users": [{"name": "ana"}, {"name": "bo"}], "port": 8080}]],
+{"get": ["object/get", "data", "port"],
+"get-path": ["object/get-path", "data", "users.1.name"],
+"keys": ["object/keys", "data"],
+"values": ["object/values", ["quote", {"a": 1, "b": 2}]],
+"set": ["object/set", ["quote", {"a": 1}], "b", 2],
+"remove": ["object/remove", ["quote", {"a": 1, "b": 2}], "a"],
+"keys without port": ["object/keys", ["object/remove", "data", "port"]],
+"json-stringify": ["object/json-stringify", ["quote", {"a": [1, 2]}], null, 0],
+"missing, with a value to use": ["object/get", "data", "host", "localhost"],
+"has?": ["object/has?", "data", "port"],
+"has? a key that holds null": ["object/has?", ["quote", {"host": null}], "host"],
+"call-method": ["object/call-method", "lion", "toUpperCase"],
+"call-method-path": ["object/call-method-path", "data", "users.0.name.toUpperCase"],
+"get-method": [["object/get-method", ["array/make", 1, 2], "join"], "+"],
+"get-method-path": [["object/get-method-path", "data", "users.1.name.padStart"], 4, "."]}]
+object/new constructs a class that host code binds, as in Call host objects . A value that is not a class fails:
+["object/new", 42]
+quantity
+Numbers that carry their units, checked when the program runs, as Pint checks them. A quantity is data: a record of a value and a unit , the unit a record from each base unit's name to its whole exponent, so {"value": 15, "unit": {"m": 1, "s": -1}} is 15 metres a second. A plain number is a quantity with no unit, and a result with no unit left is its plain number. Units are equal when their records are; to convert, multiply by a quantity such as {"value": 1000, "unit": {"m": 1, "km": -1}} . A quantity is a record, so a schema says what unit a value has: {"value": "value/number?", "unit": {"m": 1}} .
+Function Returns
+["quantity/add", a, b, ...] The sum of quantities of one unit, in that unit; quantities of different units fail with ArithmeticError
+["quantity/subtract", a, b] The difference of two quantities of one unit
+["quantity/multiply", a, b, ...] The product: the values multiplied, each base unit's exponents added
+["quantity/divide", a, b] The quotient: the values divided, the divisor's exponents taken away
+["quantity/power", a, n] a to the whole power n : each exponent multiplied by n
+["quantity/in", a, unit] The number a is in unit , when that is its unit; any other unit fails
+["begin",
+["define", "distance", ["quote", {"value": 120, "unit": {"m": 1}}]],
+["define", "duration", ["quote", {"value": 8, "unit": {"s": 1}}]],
+["define", "metres per km", ["quote", {"value": 1000, "unit": {"m": 1, "km": -1}}]],
+{"speed": ["quantity/divide", "distance", "duration"],
+"twice as far": ["quantity/add", "distance", "distance"],
+"a little less": ["quantity/subtract", "distance", ["quote", {"value": 20, "unit": {"m": 1}}]],
+"back to a distance": ["quantity/multiply", ["quantity/divide", "distance", "duration"], "duration"],
+"no unit left": ["quantity/divide", "distance", "distance"],
+"area": ["quantity/power", "distance", 2],
+"in km": ["quantity/in", ["quantity/divide", "distance", "metres per km"], {"km": 1}],
+"farther than 100 m?": ["number/greaterThan", ["quantity/in", "distance", {"m": 1}], 100]}]
+A length and a time cannot be added:
+["quantity/add", ["quote", {"value": 120, "unit": {"m": 1}}], ["quote", {"value": 8, "unit": {"s": 1}}]]
+func
+For working with functions, especially host functions.
+Function Returns
+["func/partial", function, argument, ...] A function that calls function with these arguments followed by its own, exactly as a call written out in full would. Made from a relation, it builds goals, as the relation does. Made from a logic variable in a rule or query, it waits for the variable, so ["func/partial", "number/lessThan", "?max"] is a predicate for values above ?max .
+["func/catch", thunk, handler] What thunk , a function of no arguments, gives; when it fails, what handler gives for the failure as data, as Racket's with-handlers : {"failure": kind, "message": text} , and for a failure func/raise made, "failure": "raised" and the value . A call that waits for a logic variable is no failure
+["func/raise", value] Fails with value , as Racket's raise : its message is the value, a string as it is, and func/catch gives back the value
+["func/reset", thunk] What thunk , a function of no arguments, gives, or what the handler of a func/shift inside it gives: the delimited part of a continuation, as Racket's reset
+["func/shift", handler] Stops the delimited part where it stands; its func/reset gives what handler gives for k , the rest of the delimited part. A call of k with a value resumes it there, once, and gives what the rest gives, as Racket's shift , but resumed once
+["func/apply", function, this, argument, ...] What calling function with this and the arguments returns
+["func/bind", function, this, argument, ...] function with this and leading arguments fixed
+["func/callback", function] A JavaScript function that calls function with as many of the arguments it is given as function takes, and returns its result, or a Promise of it when the work is asynchronous. The callback keeps the environment and database it was created in.
+{"partial": [["func/partial", "number/add", 10], 5],
+"apply": ["func/apply", "number/subtract", null, 10, 4],
+"bind": [["func/bind", "number/multiply", null, 3], 7],
+"callback": ["value/function?", ["func/callback", "number/add"]]}
+A continuation stops a computation and resumes it later: an early exit, a resumed one, and a generator that yields its items one at a time:
+["begin",
+["define", "generator", ["lambda", ["items"],
+["func/reset", ["lambda", [],
+["begin",
+["array/map", "items", ["lambda", ["item"], ["func/shift", ["lambda", ["k"], {"value": "item", "rest": "k"}]]]],
+{"value": null, "rest": null}]]]]],
+["define", "first", ["generator", ["array/make", "a", "b"]]],
+["define", "second", [["object/get", "first", "rest"], null]],
+{"early exit": ["func/reset", ["lambda", [], ["number/add", 1, ["func/shift", ["lambda", ["k"], 42]]]]],
+"resumed": ["func/reset", ["lambda", [], ["number/add", 1, ["func/shift", ["lambda", ["k"], ["number/multiply", 10, ["k", 5]]]]]]],
+"yielded": ["array/make", ["object/get", "first", "value"], ["object/get", "second", "value"]]}]
+A failure is data a program can catch, read, and raise:
+["begin",
+["define", "safe divide", ["lambda", ["a", "b"],
+["func/catch", ["lambda", [], ["number/divide", "a", "b"]],
+["lambda", ["failure"], {"failed": ["object/get", "failure", "message"]}]]]],
+["define", "checked", ["lambda", ["n"],
+["cond", [["number/lessThan", "n", 0], ["func/raise", {"code": "negative", "n": "n"}]], ["else", "n"]]]],
+{"divided": ["safe divide", 6, 3],
+"by zero": ["safe divide", 1, 0],
+"raised": ["func/catch", ["lambda", [], ["checked", -2]], ["lambda", ["failure"], "failure"]]}]
+console
+Effects for output. On this page, output appears above the result.
+Function Returns
+["console/log", message] Prints message and returns it
+["console/log-json", value] Prints value as indented JSON and returns that text
+["begin",
+["console/log", "starting"],
+["console/log-json", {"step": 1}],
+"done"]
+aggregate
+Called on a list, each function combines the list. Called on anything else, it waits for the list its argument turns out to be; a find is the list of what it found. Only as a whole argument of a rule's head, and not on a find , it combines one value from each of the rule's matches instead, grouped by the head's other columns; see Summarize groups of facts . Each function takes exactly one argument.
+Function Returns Of nothing
+["aggregate/count", values] How many values 0
+["aggregate/countUnique", values] How many distinct values 0
+["aggregate/sum", values] The sum, rounded once to the number nearest the exact sum, so the order of the values never changes it; values must be numbers, and an overflow fails with ArithmeticError ; a sum of integers a JSON number holds exactly fails where the exact sum is one it cannot hold 0
+["aggregate/mean", values] The mean: the sum, rounded once, divided by how many values there are; values must be numbers, and an overflow fails with ArithmeticError null
+["aggregate/min", values] The smallest; all numbers or all strings. Lattice. null
+["aggregate/max", values] The largest; all numbers or all strings. Lattice. null
+["aggregate/shortest", values] The shortest list or string; ties go to the smaller value. Lattice. null
+["aggregate/union", values] Every item of every list, distinct and sorted. Lattice. []
+["aggregate/collect", values] Every value, sorted, duplicates kept []
+["aggregate/unique", values] The distinct values, sorted []
+A sum is rounded once, so adding the same numbers in another order, as the matches of a rule or the candidates of a key may come, gives the same number:
+{"forward": ["aggregate/sum", ["array/make", 1e16, 1, -1e16]],
+"backward": ["aggregate/sum", ["array/make", -1e16, 1, 1e16]]}
+Lattice aggregates only move one way as values arrive, so they may aggregate through recursion. See Logic database guarantees .
+["begin",
+["define", "values", ["array/make", 3, 1, 3, 2]],
+{"count": ["aggregate/count", "values"],
+"countUnique": ["aggregate/countUnique", "values"],
+"sum": ["aggregate/sum", "values"],
+"mean": ["aggregate/mean", "values"],
+"min": ["aggregate/min", "values"],
+"max": ["aggregate/max", "values"],
+"shortest": ["aggregate/shortest", ["quote", [[1, 2], [3], "ab"]]],
+"union": ["aggregate/union", ["quote", [[2, 1], [3, 1]]]],
+"collect": ["aggregate/collect", "values"],
+"unique": ["aggregate/unique", "values"]}]
+graph
+Algorithms over an edge relation whose first two columns are from and to. Each call is a goal: give the edge relation, any other inputs, then one term per output column. An input is a value, or a variable that another goal binds; the algorithm then runs once for each value. Results never depend on the order facts were added.
+Goal Rows
+["graph/shortestPath", edges, start, to, cost, path] Dijkstra's algorithm from start , in order of cost, starting with start itself at cost 0. A third edge column is the weight, at least 0; without one, each edge costs 1.
+["graph/pageRank", edges, node, rank] PageRank with damping 0.85, rounded to 6 decimal places. Ranks add up to 1.
+["graph/components", edges, node, component] Connected components, ignoring direction, named after their smallest node
+["graph/stronglyConnected", edges, node, component] Strongly connected components, named after their smallest node
+["graph/topologicalOrder", edges, node, position] Positions from 0 in a topological order, or an error that names a cycle
+["begin",
+["relation", "edge", ["from", "to"]],
+["fact", ["edge", "a", "b"], ["edge", "b", "c"], ["edge", "c", "d"]],
+{"shortestPath": ["query", ["graph/shortestPath", "edge", "a", "d", "?cost", "?path"]],
+"pageRank": ["query", ["graph/pageRank", "edge", "?node", "?rank"], {"order": "-rank", "limit": 1}],
+"components": ["query", ["graph/components", "edge", "?node", "?c"], {"limit": 1}],
+"stronglyConnected": ["query", ["graph/stronglyConnected", "edge", "c", "?c"]],
+"topologicalOrder": ["query", ["graph/topologicalOrder", "edge", "?node", "?position"], {"order": "position"}]}]
+Module symbols
+Every module except console also binds module/symbol , such as number/symbol , to a JavaScript symbol that identifies the module.
