@@ -322,17 +322,31 @@ const SCALING: readonly Mutation[] = [
     tests: MAINTAINED_TESTS,
   },
   {
-    name: "a change whose rows break a key is followed back past the group it stopped at",
+    name: "a refused change whose rows broke a key is followed back through the groups it set aside",
     file: core("logic/maintain.ts"),
-    find: "      if (pass.broken !== undefined || stratum === last) {",
-    replace: "      if (pass.broken !== undefined) {",
+    find: "  const behind = new Set(back ? model.behind : []);",
+    replace: "  const behind = new Set<string>();",
     tests: ["src/logic/tests/weights.test.ts", ...MAINTAINED_TESTS],
   },
   {
-    name: "a change is followed past the group whose rows break a key",
+    name: "a group that reads rows breaking a key is followed through a change as if they did not",
     file: core("logic/maintain.ts"),
-    find: "      if (pass.broken !== undefined || stratum === last) {",
-    replace: "      if (stratum === last) {",
+    find: "      model.behind.add(name);",
+    replace: "",
+    tests: ["src/logic/tests/weights.test.ts", ...MAINTAINED_TESTS],
+  },
+  {
+    name: "a group that reads a group set aside is followed through a change",
+    file: core("logic/maintain.ts"),
+    find: "    (unread.size > 0 && readsOther(stratum, (name) => unread.has(name))) ||",
+    replace: "    false ||",
+    tests: ["src/logic/tests/weights.test.ts", ...MAINTAINED_TESTS],
+  },
+  {
+    name: "a kept change whose rows broke a key keeps the groups it set aside, as they were",
+    file: core("logic/database.ts"),
+    find: "            forgetBehind(database.model);",
+    replace: "",
     tests: ["src/logic/tests/weights.test.ts", ...MAINTAINED_TESTS],
   },
   {
@@ -566,9 +580,45 @@ const WEIGHTS: readonly Mutation[] = [
   ),
   weighed(
     "two rows a key gets that differ where nothing merges both hold",
-    "    if (other !== tuple) {\n      problem = leastClash(",
-    "    if (other !== other) {\n      problem = leastClash(",
+    "    other === tuple ? [] : [clashOf(info, tuple, other)]",
+    "    []",
     ["src/logic/tests/keys.test.ts", ...MERGE_TESTS]
+  ),
+  weighed(
+    "of two rows with one key, the one that sorts first is told as the one derived",
+    "      byB.size === 0 && byA.size > 0 ? [a, b, byA] : [b, a, byB];",
+    "      byB.size === 0 && byA.size < 0 ? [a, b, byA] : [b, a, byB];",
+    ["src/logic/tests/keys.test.ts"]
+  ),
+  weighed(
+    "of the clashes among rows with one key, the one whose rows sort last is told",
+    "  return order <= 0 ? x : y;",
+    "  return order <= 0 ? y : x;",
+    ["src/logic/tests/keys.test.ts"]
+  ),
+  weighed(
+    "a key clash names the rule whose written form sorts last",
+    "  [...rules].sort((x, y) => compareValues(x.source, y.source))[0];",
+    "  [...rules].sort((x, y) => compareValues(x.source, y.source)).at(-1);",
+    ["src/logic/tests/keys.test.ts"]
+  ),
+  weighed(
+    "a row a key or an equality rule made is given by no rule",
+    "    for (const ended of formersOf(run, relation, tuple)) {",
+    "    for (const ended of NONE) {",
+    ["src/logic/tests/keys.test.ts", "src/logic/tests/weights.test.ts"]
+  ),
+  weighed(
+    "a change forgets which rows stood beside another with their key",
+    "    run.support.clashing = clashing.size === 0 ? undefined : clashing;",
+    "    run.support.clashing = undefined;",
+    ["src/logic/tests/weights.test.ts", "src/logic/tests/keys.test.ts"]
+  ),
+  weighed(
+    "a group reads its own rows as a question about them would",
+    "    return name === undefined ? undefined : everOf(run, name);",
+    "    return name === undefined || !run.support.past.has(name)\n      ? undefined\n      : everOf(run, name);",
+    ["src/logic/tests/weights.test.ts", "src/logic/tests/keys.test.ts"]
   ),
   weighed(
     "why tells a row of a group that made values one as if none were",
@@ -813,12 +863,6 @@ export const MUTATIONS: readonly Mutation[] = [
     file: core("logic/model.ts"),
     find: "    rows === undefined ? toRead(model, literal.relation, true) : undefined;",
     replace: "    undefined as ReturnType<typeof toRead>;",
-  },
-  {
-    name: "relations that depend on each other wait for each other's rows",
-    file: core("logic/model.ts"),
-    find: '  if (state === "done" || (reading && state === "running")) {',
-    replace: '  if (state === "done") {',
   },
   {
     name: "a copy's guard waits for the variables of a question it holds, which are the question's own",
@@ -3543,6 +3587,27 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "",
     package: "site-runtime",
     tests: ["src/tests/package-readme.test.ts"],
+  },
+  {
+    name: "a question about rows that break a key reads them",
+    file: core("logic/model.ts"),
+    find: "  return problem === undefined ? undefined : logicError(problem);",
+    replace: "  return undefined;",
+    tests: ["src/logic/tests/keys.test.ts", "src/logic/tests/weights.test.ts"],
+  },
+  {
+    name: "a lookup of some of a tuple's values reads it as a lookup of its key",
+    file: core("logic/model.ts"),
+    find: "      positions.length === this.width &&",
+    replace: "      positions.length <= this.width &&",
+    tests: TUPLE_SET_TESTS,
+  },
+  {
+    name: "a set of tuples of several widths reads a lookup of the first one's every value by key",
+    file: core("logic/model.ts"),
+    find: "        : Number.NaN;",
+    replace: "        : this.width;",
+    tests: TUPLE_SET_TESTS,
   },
   {
     name: "a fact form that repeats a key writes every row it gives the key",

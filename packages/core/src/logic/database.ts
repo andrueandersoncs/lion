@@ -36,10 +36,12 @@ import {
   changedAnswers,
   EMPTY,
   each,
+  forgetBehind,
   found,
   keyColumns,
   type LogicEffect,
   Model,
+  readable,
   type Sink,
   type Tuple,
   TupleSet,
@@ -62,7 +64,6 @@ import {
   flowsOf,
   isOpaque,
   mentioned,
-  type Stratum,
   stronglyConnected,
 } from "@/logic/strata";
 import {
@@ -717,27 +718,15 @@ const followGoal = (
   );
 };
 
-/** Forgets what was derived when its rows break a key: nobody may read them. */
-const forgetBroken =
-  (database: LogicDatabase) =>
-  ({ broken }: Pass) => {
-    if (broken !== undefined) {
-      touch(database);
-    }
-  };
-
 /**
- * What was derived before a change that gave rows breaking a key, kept
- * aside while the change is checked: the model, which was followed through
- * the change as far as the group that holds those rows, and the
- * goal-directed queries, which were not followed. Nobody reads it, since a
- * reader would find those rows. When the change is refused, following it
- * back through the model gives what was derived before.
+ * The goal-directed queries a change that gave rows breaking a key was not
+ * followed through, kept aside while the change is checked, with the model
+ * the change was followed through. When the change is refused, following it
+ * back through the model gives what was derived before, and the queries are
+ * what they were; when it is kept, they are forgotten.
  */
 interface Aside {
   readonly goals: ReadonlyMap<string, GoalModel>;
-  /** The last group the change was followed through. */
-  readonly last: Stratum;
   readonly model: Model;
 }
 
@@ -760,9 +749,10 @@ const givenTo = (database: LogicDatabase, rows: Rows) => {
  * Brings what was derived up to date with a change to facts: the database's
  * model, and then each goal-directed query's. When a rule fails on the new
  * facts, what was derived is forgotten: the next reader derives it again,
- * and is the one a failing rule fails. When the rule that fails is a key,
- * the change was followed exactly, and what was derived is kept aside, so
- * that a refusal can follow the change back.
+ * and is the one a failing rule fails. Rows that break a key are kept, and
+ * a question about them fails at once; the goal-directed queries, which
+ * may read them, are set aside, so that a refusal can follow the change
+ * back and find them as they were.
  */
 const follow = (
   database: LogicDatabase,
@@ -787,8 +777,8 @@ const follow = (
         givenTo(database, net.lost)
       );
       if (pass.broken !== undefined) {
-        const aside = { goals: new Map(goals), last: pass.broken, model };
-        touch(database);
+        const aside = { goals: new Map(goals), model };
+        goals.clear();
         return aside;
       }
       for (const [key, goal] of [...goals]) {
@@ -808,15 +798,18 @@ const follow = (
   });
 
 /**
- * Follows a refused change back through what was derived before it, which
- * was kept aside: as far as the change was followed, so every row has the
- * candidates it had, and the goal-directed queries are as they were.
+ * Follows a refused change back through the model it was followed through,
+ * so every row has the candidates it had, past the groups it set aside,
+ * which are as they were, and gives back the goal-directed queries.
  */
 const followBack = (database: LogicDatabase, aside: Aside, net: Net) =>
   Effect.suspend(() => {
-    touch(database);
-    const { goals, last, model } = aside;
-    database.model = model;
+    const { goals, model } = aside;
+    database.goals.clear();
+    if (database.model !== model) {
+      touch(database);
+      return Effect.void;
+    }
     for (const [key, goal] of goals) {
       database.goals.set(key, goal);
     }
@@ -826,9 +819,9 @@ const followBack = (database: LogicDatabase, aside: Aside, net: Net) =>
       givenTo(database, net.lost),
       new Set(),
       [],
-      last
+      true
     ).pipe(
-      Effect.map(forgetBroken(database)),
+      Effect.asVoid,
       Effect.catch(() => Effect.sync(() => touch(database)))
     );
   });
@@ -911,7 +904,7 @@ const renew = (database: LogicDatabase, before: Model | undefined) =>
     const stale = carry(before, next);
     database.model = next;
     return maintain(next, new Map(), new Map(), stale).pipe(
-      Effect.map(forgetBroken(database)),
+      Effect.asVoid,
       Effect.catch(() => Effect.sync(() => touch(database)))
     );
   });
@@ -950,6 +943,14 @@ const commit = (
           `${describe} breaks an invariant, so nothing changed.`,
           facts
         )
+      ),
+      // Kept, the change leaves the rows it was not followed through stale.
+      Effect.tap(() =>
+        Effect.sync(() => {
+          if (database.model !== undefined) {
+            forgetBehind(database.model);
+          }
+        })
       ),
       Effect.onError(() =>
         Effect.suspend(() => {
@@ -1660,7 +1661,7 @@ const answering = (
     database.rules,
     bodies,
     (relation) => (database.facts.get(relation)?.size ?? 0) > 0,
-    (relation) => model.state.get(relation) === "done"
+    (relation) => readable(model, relation)
   );
   if (program === undefined) {
     return { bodies, model };

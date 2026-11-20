@@ -23179,5 +23179,103 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "case": "key-clash-pair-told",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "key-clash"], "output"],
+          [
+            "quote",
+            "derived [\\\"out\\\",\\\"k\\\",1] while [\\\"out\\\",\\\"k\\\",2] holds."
+          ]
+        ],
+        ["quote", "rows-that-sort-first"]
+      ],
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "key-clash"], "output"],
+          [
+            "quote",
+            "derived [\\\"out\\\",\\\"k\\\",3] while [\\\"out\\\",\\\"k\\\",1] holds."
+          ]
+        ],
+        ["quote", "held-then-derived"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "key-clash-rule-named",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "key-clash"], "output"],
+          [
+            "quote",
+            "[\\\"rule\\\",[\\\"exists\\\",[\\\"?m\\\"],[\\\"mother\\\",\\\"?c\\\",\\\"?m\\\"]],[\\\"person\\\",\\\"?c\\\"]] derived [\\\"mother\\\",\\\"ann\\\",\\\"fay\\\"]"
+          ]
+        ],
+        ["quote", "gives-now"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "derived-rows-after-a-change-a-key-refuses",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "key-clash"], "output"],
+          [
+            "quote",
+            "after it, the model is the one before: true\nafter it, Ann's mother: [{\"m\":\"fay\"}]"
+          ]
+        ],
+        ["quote", "followed-back"]
+      ],
+      ["else", ["quote", "forgotten"]]
+    ]
+  },
+  {
+    "case": "derived-rows-after-a-kept-change-whose-rows-break-a-key",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "key-clash"], "output"],
+          [
+            "quote",
+            "after it, the model is the one before: true\nafter it, a question about mothers: \"\\\"mother\\\" is keyed by"
+          ]
+        ],
+        ["quote", "kept"]
+      ],
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "key-clash"], "output"],
+          [
+            "quote",
+            "after it, the model is the one before: false\nafter it, a question about mothers: \"\\\"mother\\\" is keyed by"
+          ]
+        ],
+        ["quote", "forgotten"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
   }
 ]

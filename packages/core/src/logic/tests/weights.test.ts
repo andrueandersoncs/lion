@@ -18,7 +18,10 @@
  *
  * A change that is refused leaves every row with the numbers it had, also
  * when following it found two rows with one key that a key cannot make one,
- * as a fact that makes an unknown given can.
+ * as a fact that makes an unknown given can. A change that is kept with
+ * such rows keeps them, with the same numbers, and every question fails or
+ * answers as in a database that derived nothing, with the same message,
+ * which names two rows and a rule that gives one of them.
  *
  * The database a followed one is compared with holds the rules and then
  * every fact in one form, which is checked once, against the whole program,
@@ -234,20 +237,27 @@ const program = {
   ),
 };
 
-/** What a database answers, as sorted text, or why it cannot. */
+/**
+ * What a database answers about each relation, asked one at a time: its
+ * rows as sorted text, or the message of why it cannot say. A question that
+ * fails, such as one about rows that break a key, leaves the others to be
+ * asked, so every group a question can derive is derived.
+ */
 const answers = (database: LogicDatabase) =>
-  Effect.map(attempt(QUESTIONS, database), (outcome) =>
-    outcome.ok
-      ? Object.fromEntries(
-          Object.entries(outcome.value as Record<string, unknown[]>).map(
-            ([relation, rows]) => [
-              relation,
-              rows.map((row) => JSON.stringify(row)).sort(),
-            ]
-          )
-        )
-      : outcome
-  );
+  Effect.gen(function* () {
+    const out: Record<string, string | string[]> = {};
+    for (const [relation, question] of Object.entries(QUESTIONS)) {
+      const outcome = yield* attempt(question, database);
+      out[relation] = outcome.ok
+        ? (outcome.value as unknown[]).map((row) => JSON.stringify(row)).sort()
+        : outcome.message;
+    }
+    return out;
+  });
+
+/** True when a database answered every question. */
+const answered = (found: Record<string, string | string[]>) =>
+  Object.values(found).every(Array.isArray);
 
 /**
  * Every row a database keeps candidates of, with the level it is held from,
@@ -275,7 +285,7 @@ const weights = (
 
 /**
  * A database that holds the rules and some facts and has derived nothing
- * yet, or undefined when the facts break a rule. Separate forms are
+ * yet, or the message of why the facts break a rule. Separate forms are
  * separate changes, each checked on its own, so the facts come after the
  * rules, in one `fact` form: checked once, against every rule. Rules added
  * one at a time after the facts would be checked against the rules there
@@ -283,7 +293,7 @@ const weights = (
  * would be refused. What following the facts derived is then forgotten, so
  * every group is derived from nothing when it is read.
  */
-const fromNothing = (rules: readonly Form[], facts: Iterable<Form>) =>
+const madeFromNothing = (rules: readonly Form[], facts: Iterable<Form>) =>
   Effect.gen(function* () {
     const database = new LogicDatabase();
     const all = [...facts];
@@ -292,12 +302,27 @@ const fromNothing = (rules: readonly Form[], facts: Iterable<Form>) =>
       database
     );
     if (!made.ok) {
-      return;
+      return made.message;
     }
     database.model = undefined;
     database.goals.clear();
     return database;
   });
+
+/** What starts the message of a refused change, which names the change. */
+const CHANGE = /^.*? breaks an invariant, so nothing changed\. /;
+
+/**
+ * Why a change was refused, without what starts the message: the change,
+ * such as "Adding this fact", which names one fact or several.
+ */
+const why = (message: string) => message.replace(CHANGE, "");
+
+/** The database `madeFromNothing` makes, or undefined when it refused. */
+const fromNothing = (rules: readonly Form[], facts: Iterable<Form>) =>
+  Effect.map(madeFromNothing(rules, facts), (made) =>
+    typeof made === "string" ? undefined : made
+  );
 
 interface Program {
   /** Each change is a `fact` or `retract` form, of one fact or several. */
@@ -333,14 +358,19 @@ const follows = ({ changes, keyed, start, ways }: Program) =>
           next.delete(JSON.stringify(it));
         }
       }
-      const fresh = yield* fromNothing(rules, next.values());
+      const fresh = yield* madeFromNothing(rules, next.values());
       const had = weights(kept);
       kept.model?.last.clear();
       const changed = yield* attempt([form, ...items], kept);
-      // A change is refused exactly when the facts break a rule.
-      expect(changed.ok).toBe(fresh !== undefined);
-      const derived = !("ok" in before);
-      if (fresh === undefined) {
+      // A change is refused exactly when the facts break a rule, and with
+      // the message a database that derived nothing gives for them.
+      expect(changed.ok).toBe(typeof fresh !== "string");
+      // What was derived is kept through every change, also one that gave
+      // rows which break a key: nothing is derived from nothing again.
+      expect(kept.model).toBeDefined();
+      const derived = answered(before);
+      if (typeof fresh === "string") {
+        expect(changed.ok ? undefined : why(changed.message)).toBe(why(fresh));
         // A refused change is followed back, also when following it found
         // rows that break a key: every row keeps the levels and weights it
         // had, and the next change is followed through them.
@@ -351,28 +381,34 @@ const follows = ({ changes, keyed, start, ways }: Program) =>
         continue;
       }
       before = yield* answers(kept);
+      // Each question answers as there, or fails with the same message,
+      // such as the one that names two rows with one key and the rule that
+      // gave one of them.
       expect(before).toEqual(yield* answers(fresh));
       expect(weights(kept)).toEqual(weights(fresh));
       // A rule never finds two rows with one key, though one comes beside
       // the other in the group that reads them.
-      if (keyed && !("ok" in before)) {
-        expect((before as Record<string, string[]>).torn).toEqual([]);
+      if (keyed && Array.isArray(before.torn)) {
+        expect(before.torn).toEqual([]);
       }
       // An unknown a fact holds is given: no class writes it as another
       // value, so the row a rule invented with it is there as it is.
-      for (const [, unknown] of "ok" in before ? [] : next.values()) {
+      const { mother } = before;
+      for (const [, unknown] of Array.isArray(mother) ? next.values() : []) {
         const who = ((unknown as Form | undefined)?.[2] as Form)?.[1];
         const invented = next.has(JSON.stringify(["person", who]));
         if (Array.isArray(unknown) && invented) {
-          expect((before as Record<string, string[]>).mother).toContain(
-            JSON.stringify([who, unknown])
-          );
+          expect(mother).toContain(JSON.stringify([who, unknown]));
         }
       }
-      // Every group was followed: none derived again, none forgotten.
-      // A group whose rows could not be derived had none to follow.
-      for (const how of derived ? (kept.model?.last.values() ?? []) : []) {
-        expect(how).toBe("followed");
+      // Every group was followed: none derived again. A group whose rows
+      // could not be derived had none to follow, and one that reads rows
+      // which break a key is forgotten, since no question can read it.
+      for (const [name, how] of derived ? (kept.model?.last ?? []) : []) {
+        expect(
+          how === "followed" ||
+            (how === "forgotten" && typeof before[name] === "string")
+        ).toBe(true);
       }
       held.clear();
       for (const [key, value] of next) {
@@ -491,6 +527,40 @@ const clashing = Arbitrary.all({
   ),
 });
 
+/** The facts that give twins a and b two mothers each, which a key cannot make one. */
+const TORN: readonly Form[] = [
+  ["person", "a"],
+  ["person", "b"],
+  ["tall", ["some", "?m", ["mother", "a", "?m"]]],
+  ["tall", ["some", "?m", ["mother", "b", "?m"]]],
+  ["twin", "a", "b"],
+];
+
+/**
+ * Programs whose rows break a key no invariant reads, unless an equality
+ * rule does, while changes take away and give back the facts that break
+ * it: a database keeps rows that break a key, follows the next change
+ * through them, and a question about them fails as it does in a database
+ * that derived nothing yet.
+ */
+const hiding = {
+  changes: Arbitrary.array(
+    Arbitrary.all([
+      element(["fact", "retract"] as const),
+      oneOf(element(TORN), element(TORN), kin, fact),
+    ]),
+    { minLength: 1, maxLength: 6 }
+  ),
+  keyed: element([true]),
+  start: Arbitrary.map(
+    Arbitrary.array(oneOf(kin, fact), { maxLength: 3 }),
+    (more) => [...TORN, ...more]
+  ),
+  ways: Arbitrary.map(program.ways, (ways) =>
+    [...new Set<Way>([...ways, "pass"])].sort()
+  ),
+};
+
 const three = element(["a", "b", "c"]);
 
 /** A fact of three people, which can give, register, or hold a mother. */
@@ -593,6 +663,57 @@ describe("rows with weights, held from a level", () => {
     OPTIONS
   );
 
+  it.effect.prop(
+    "keep them while rows break a key no invariant reads, and fail a question about them as deriving from nothing does",
+    hiding,
+    follows,
+    OPTIONS
+  );
+
+  // A kept change whose rows break a key set aside the groups that read
+  // them, as they were before it. A new rule, right after, takes over the
+  // rows of every group whose rules it leaves as they were: none of those
+  // set aside, which are no longer what the facts give.
+  it.effect.prop(
+    "take over none of what a kept change set aside into the rules that come after it",
+    hiding,
+    ({ changes, keyed, start, ways }) =>
+      Effect.gen(function* () {
+        const rules = [...rulesOf(ways, keyed), ["relation", "seen", ["who"]]];
+        const kept = new LogicDatabase();
+        const ready = yield* attempt(
+          ["begin", ...rules, ...start.map((it) => ["fact", it]), true],
+          kept
+        );
+        if (!ready.ok) {
+          return;
+        }
+        yield* answers(kept);
+        const held = new Map(start.map((it) => [JSON.stringify(it), it]));
+        const rule = ["rule", ["seen", "?x"], ["person", "?x"]];
+        for (const [form, ...items] of changes) {
+          if (!(yield* attempt([form, ...items], kept)).ok) {
+            continue;
+          }
+          for (const it of items) {
+            if (form === "fact") {
+              held.set(JSON.stringify(it), it);
+            } else {
+              held.delete(JSON.stringify(it));
+            }
+          }
+          yield* attempt(rule, kept);
+          yield* attempt(["retract", rule], kept);
+          const fresh = yield* fromNothing(rules, held.values());
+          expect(fresh).toBeDefined();
+          if (fresh !== undefined) {
+            expect(yield* answers(kept)).toEqual(yield* answers(fresh));
+          }
+        }
+      }),
+    OPTIONS
+  );
+
   // Facts given after the rules in one form are checked once, against the
   // whole program, so what they give does not depend on the order the rules
   // or the facts came in: not whether they are refused, and not one row's
@@ -641,11 +762,12 @@ const quoted = (value: unknown) =>
 const told = (database: LogicDatabase) =>
   Effect.gen(function* () {
     const found = yield* answers(database);
-    if ("ok" in found) {
-      return found;
-    }
     const out: Record<string, unknown> = {};
     for (const [relation, rows] of Object.entries(found)) {
+      if (typeof rows === "string") {
+        out[relation] = rows;
+        continue;
+      }
       for (const row of rows) {
         const parsed = JSON.parse(row) as unknown;
         const values = Array.isArray(parsed) ? parsed : [parsed];

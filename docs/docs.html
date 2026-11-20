@@ -7983,9 +7983,29 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 <h2 id="guarantee-keys">Keys</h2>
 <ul>
   <li>A keyed relation holds at most one row per key. A fact with a key that is present replaces the old row.</li>
-  <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows and a rule that gave one. It names the same rows and the same rule whatever order the rules and facts came in. A relation that merges joins its merged columns instead, and the rest must agree.</li>
+  <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make a query that reads them fail, naming both rows and a rule that gives one now. It names the same rows and the same rule whatever order the rules and facts came in, and whether the rows were derived from nothing or followed through changes. The rows are kept, so asking again fails at once, and the next change is followed through them. A relation that merges joins its merged columns instead, and the rest must agree.</li>
   <li>The exception is an <a href="#form-some">unknown</a> that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented. When two rows with the same key differ only where one holds such an unknown, the unknown takes the other row's value, or, when both hold one, the one that nests fewer unknowns, and of those the one that sorts first, and every row that holds it is replaced. So the value kept never depends on the order rules or facts were added in. An unknown that a fact holds is given, so a key never changes it.</li>
 </ul>
+
+<p>Here twins share a mother, and an equality rule makes each child's invented mother the one registered for her. Making Ann and Bea twins would give Ann two mothers, Eve and Fay, which the key cannot make one, so the equality rule refuses the change. The message names Fay as derived, since she sorts later, by the rule that passes a twin's mother on:</p>
+<div class="playground" data-playground="Two mothers a key cannot make one">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "twin", ["a", "b"]],
+  ["relation", "registered", ["child", "mother"]],
+  ["relation", "mother", ["child", "mother"], {"key": "child"}],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["mother", "?a", "?m"], ["twin", "?a", "?b"], ["mother", "?b", "?m"]],
+  ["rule", ["=", "?m", "?r"], ["mother", "?c", "?m"], ["registered", "?c", "?r"]],
+  ["fact", ["person", "ann"], ["person", "bea"], ["registered", "ann", "eve"], ["registered", "bea", "fay"]],
+  ["fact", ["twin", "ann", "bea"]]]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-error">error</span>
+    <pre class="playground-result is-error"><code>LogicError: "mother" is keyed by ["child"], but ["rule",["mother","?a","?m"],["twin","?a","?b"],["mother","?b","?m"]] derived ["mother","ann","fay"] while ["mother","ann","eve"] holds.</code></pre>
+  </div>
+</div>
 
 <h2 id="guarantee-changes">Changes are all or nothing</h2>
 <p>A form that changes the database, <code>fact</code>, <code>retract</code>, or <code>rule</code>, either makes all of its changes or fails and makes none of them. Every fact is checked before any is added or removed, and every rule before it is added. When the database has <a href="#form-invariant">invariants</a>, the form is checked against them after making its changes, and undone if any breaks or cannot be checked, leaving the database exactly as it was, facts in the same order. Separate forms are separate changes.</p>
@@ -8818,7 +8838,7 @@ for (const { pointer, value, meaning } of flattenAnalysis(
   </div>
 </div>
 <p>The answers are what a database that had derived nothing would give; only the order answers are found in can differ, which is one more reason to sort with <a href="#query-options"><code>"order"</code></a> when order matters. A rule that <a href="#form-exists">invents</a>, a key, and an equality rule are followed the same way, whatever the rule's goals look like. The answers of a rule that invents are counted as rows are, and each is asked, at the end of the stage it is first held in, whether a row held by then gives its head. Two values that a key or an equality rule makes one are a pair with candidates of its own: a row that holds a value its class no longer writes ends at the level the pair is held from, and is kept beside the row it became, so taking away the fact that made two unknowns one gives back the rows that held them apart. A row that comes beside a row with its key is read from the level after, when the pair has made the two one, so no rule finds two rows with one key, not even a rule of the group that derives them. <a href="#form-why"><code>why</code></a> finds the answer that gives a row when it is asked, from the level the row is held from, so a change keeps no explanations and works none out; where a key or an equality rule made values one, it derives the group's answers again once after a change. Two kinds of relation cannot be followed row by row: one whose rule holds a function from the host that does not say it reads only its arguments, and one whose rule reads a changed relation through a schema instead of a relation goal. Lion derives such a relation again and compares it with what it was, so the relations that read it are still followed. It does so when something has read the relation since the last change; otherwise nobody is waiting for it, and it is forgotten until something reads it.</p>
-<p>A new rule is followed the same way: the relations whose rules changed are derived again and compared, and the others keep their rows. A change an invariant refuses is followed back, so what was derived before it is still there, also when following it found two rows with one key that the key cannot make one. A query that knows an argument keeps what it derived and follows changes too.</p>
+<p>A new rule is followed the same way: the relations whose rules changed are derived again and compared, and the others keep their rows. A change an invariant refuses is followed back, so what was derived before it is still there, also when following it found two rows with one key that the key cannot make one. Such rows are kept as they are, and a question that reads them fails at once with what a database that derived nothing would say. A query that knows an argument keeps what it derived and follows changes too.</p>
 
 <h2 id="goal-directed-evaluation-turning-it-off">Turning it off</h2>
 <p>A host can create a database with <code>new LogicDatabase({ goalDirected: false })</code> to derive every row of the relations a query reads. This is useful for comparing results; Lion's own tests check that both ways agree.</p>

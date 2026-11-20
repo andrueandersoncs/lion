@@ -1,0 +1,79 @@
+{
+  "claims": [
+    {
+      "quote": "Of the pairs of rows that hold with one key, the clash told is the one whose rows sort first. With a fact [\"out\",\"k\",2] and a rule that gives [\"out\",\"k\",1] and [\"out\",\"k\",3], the error is `\"out\" is keyed by [\"kid\"], but [\"rule\",[\"out\",\"?k\",\"?v\"],[\"a\",\"?k\",\"?v\"]] derived [\"out\",\"k\",1] while [\"out\",\"k\",2] holds.`; before, it named the pair whose held row sorted first, [\"out\",\"k\",3] derived while [\"out\",\"k\",1] holds.",
+      "says": {
+        "behavior": "key-clash-pair-told",
+        "is": "rows-that-sort-first",
+        "area": "logic",
+        "was": "held-then-derived"
+      },
+      "decisions": ["key-clash-told-from-rows"]
+    },
+    {
+      "quote": "The rule a key clash names is the least, by written form, of the rules that give the derived row now: each with an answer that gives it, and each that gives a row which became it when a key or an equality rule made a value in it one with another. With twins Ann and Bea, Fay registered for Ann and Eve for Bea, the refused twin says `\"mother\" is keyed by [\"child\"], but [\"rule\",[\"exists\",[\"?m\"],[\"mother\",\"?c\",\"?m\"]],[\"person\",\"?c\"]] derived [\"mother\",\"ann\",\"fay\"] while [\"mother\",\"ann\",\"eve\"] holds.`, whether the database derived its rows from nothing or followed the facts in.",
+      "says": {
+        "behavior": "key-clash-rule-named",
+        "is": "gives-now",
+        "area": "logic",
+        "was": "gave-during-derivation"
+      },
+      "decisions": ["key-clash-told-from-rows"]
+    },
+    {
+      "quote": "A change an invariant refuses because its rows break a key is followed back through the model it was followed through, and the invariant finds the clash in the rows it kept, without deriving anything from nothing.",
+      "says": {
+        "behavior": "derived-rows-after-a-change-a-key-refuses",
+        "is": "followed-back",
+        "area": "logic"
+      },
+      "decisions": ["key-clash-told-from-rows"]
+    },
+    {
+      "quote": "A change no invariant refuses, whose rows break a key, keeps what was derived: the group that breaks the key keeps its rows, a question about them fails at once, and the next change is followed through them. Before, everything derived was forgotten, and every question derived it all again.",
+      "says": {
+        "behavior": "derived-rows-after-a-kept-change-whose-rows-break-a-key",
+        "is": "kept",
+        "area": "logic",
+        "was": "forgotten"
+      },
+      "decisions": ["key-clash-told-from-rows"]
+    },
+    {
+      "quote": "Refusing a twin of two registered mothers 20 times, and asking a mother after each, takes 20 ms among 1,000 people, 20 ms among 10,000, and 19 ms among 100,000, from 673 ms, 7.0 s, and over 60 s.",
+      "says": {
+        "measured": "refused-twin-then-ask-ten-thousand-s",
+        "after": 0.02,
+        "area": "metrics",
+        "before": 7.0
+      }
+    },
+    {
+      "quote": "Keeping a twin whose two mothers a key cannot make one, asking every mother, and taking the twin back, 20 times, takes 14 ms among 1,000 people, 14 ms among 10,000, and 15 ms among 100,000, from 620 ms, 7.4 s, and over 60 s, since each question derived every mother from nothing.",
+      "says": {
+        "measured": "kept-twin-then-ask-every-mother-ten-thousand-s",
+        "after": 0.014,
+        "area": "metrics",
+        "before": 7.4
+      }
+    },
+    {
+      "quote": "The core has 0.5% more code lines (20,800 to 20,894) and 0.9% more paths through functions (5,492 to 5,542), and the same semantics: no special form, library function, kind of error, or message more, and the grid's 3 exceptions. Benchmarks run 0.93 to 1.09 times as fast as before, which reruns show is noise, and every other scale workload grows as it did.",
+      "says": {
+        "measured": "core-code-lines",
+        "after": 20894,
+        "area": "metrics",
+        "before": 20800
+      }
+    },
+    {
+      "quote": "The core has 0.5% more code lines (20,800 to 20,894) and 0.9% more paths through functions (5,492 to 5,542), and the same semantics: no special form, library function, kind of error, or message more, and the grid's 3 exceptions. Benchmarks run 0.93 to 1.09 times as fast as before, which reruns show is noise, and every other scale workload grows as it did.",
+      "says": {
+        "measured": "core-paths",
+        "after": 5542,
+        "area": "metrics",
+        "before": 5492
+      }
+    }
+  ]
+}

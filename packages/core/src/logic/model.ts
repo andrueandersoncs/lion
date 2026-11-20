@@ -182,6 +182,8 @@ export class TupleSet {
    */
   private weights: number[] | undefined;
   private readonly indexes = new Map<string, Index>();
+  /** How many values each tuple holds, while they all hold as many. */
+  private width: number | undefined;
   /**
    * Set for a computed relation: adds the rows for some input values the
    * first time a goal asks for them, or returns why it cannot.
@@ -299,6 +301,10 @@ export class TupleSet {
     }
     const slot = this.rows.length;
     this.kept = undefined;
+    this.width =
+      this.width === undefined || this.width === tuple.length
+        ? tuple.length
+        : Number.NaN;
     this.slots.set(key, slot);
     this.rows.push(tuple);
     this.keys.push(key);
@@ -412,6 +418,7 @@ export class TupleSet {
   /** A set with the same tuples, in the same order. */
   clone(): TupleSet {
     const copy = new TupleSet();
+    copy.width = this.width;
     for (const [slot, tuple] of this.rows.entries()) {
       if (tuple !== undefined) {
         const key = this.keys[slot] as string;
@@ -426,6 +433,14 @@ export class TupleSet {
   lookup(positions: readonly number[], values: readonly unknown[]) {
     if (positions.length === 0) {
       return this.values();
+    }
+    // A lookup of every value of a tuple, in order, is a lookup of its key.
+    if (
+      positions.length === this.width &&
+      positions.every((position, at) => position === at)
+    ) {
+      const found = this.get(valueKey(values));
+      return found === undefined ? [] : [found];
     }
     const indexKey = positions.join(",");
     let index = this.indexes.get(indexKey);
@@ -493,6 +508,13 @@ export class Model {
   readonly support = new Map<string, Support>();
   /** Relations whose rows are being derived, or are complete. */
   readonly state = new Map<string, "running" | "done">();
+  /**
+   * While a change is checked, the relations whose rows are as they were
+   * before it, since they read rows that break a key: nobody reads them as
+   * they are, and the change was not followed through them. When the change
+   * is refused they are what they should be; when it is kept, forgotten.
+   */
+  readonly behind = new Set<string>();
   readonly facts: ReadonlyMap<string, TupleSet>;
   readonly rules: readonly CompiledRule[];
   /** The model that holds every relation these rules do not derive. */
@@ -2051,7 +2073,7 @@ const flow = (
   // A relation is derived the first time a goal reads it, so a query
   // derives only the relations its goals reach with an answer.
   const pending =
-    rows === undefined ? toRead(model, literal.relation, true) : undefined;
+    rows === undefined ? toRead(model, literal.relation) : undefined;
   const match = Effect.suspend(() =>
     matchRows(
       model,
@@ -2589,7 +2611,7 @@ const compute = (model: Model, relation: RelationInfo): LogicEffect<void> =>
           `Relation "${dependency}" is not declared here.`
         );
       }
-      yield* deriving(model, dependency, false) ?? Effect.void;
+      yield* deriving(model, dependency) ?? Effect.void;
     }
     const tuples = new TupleSet();
     const asked = new Map<string, string | undefined>();
@@ -2628,13 +2650,45 @@ export const forget = (model: Model, members: ReadonlySet<string>) => {
     model.relations.delete(name);
     model.told.delete(name);
     model.support.delete(name);
+    model.behind.delete(name);
   }
+};
+
+/** Forgets the rows set aside while a change was checked, once it is kept. */
+export const forgetBehind = (model: Model) => {
+  for (const name of [...model.behind]) {
+    forget(model, model.strata.get(name)?.members ?? new Set([name]));
+  }
+};
+
+/** Why a relation's rows break a key, when they do. */
+const brokenBy = (model: Model, name: string) =>
+  model.support.get(name)?.problem;
+
+/**
+ * True for a relation a question can read as it stands: derived in full,
+ * up to date, and with no two rows that break a key.
+ */
+export const readable = (model: Model, name: string) =>
+  model.state.get(name) === "done" &&
+  brokenBy(model, name) === undefined &&
+  !model.behind.has(name);
+
+/**
+ * Fails a question about rows that break a key, with why, as deriving them
+ * from nothing would: the rows are kept, so asking again costs nothing,
+ * and a change is followed through them as through any others.
+ */
+const failsOn = (model: Model, name: string) => {
+  const problem = brokenBy(model, name);
+  return problem === undefined ? undefined : logicError(problem);
 };
 
 /**
  * Derives the rows of relations that depend on each other, by running their
  * rules on top of their facts, and keeps how each row came about. A
- * relation the rules read is derived when a goal first reads it.
+ * relation the rules read is derived when a goal first reads it. Rows that
+ * break a key are kept as they are, with why.
  */
 export const derive = (model: Model, stratum: Stratum) =>
   Effect.gen(function* () {
@@ -2654,40 +2708,46 @@ export const derive = (model: Model, stratum: Stratum) =>
 
 /**
  * What must run before a declared relation's rows can be read, or undefined
- * when nothing must: its rules, unless they are done. A goal of a body that
- * is `reading` the rows takes them as they stand while they are derived, as
- * relations that depend on each other read each other while their rules
- * run; a question about them then fails.
+ * when nothing must: its rules, unless they are done. The rules of a group
+ * read its rows as they stand while they are derived through the engine,
+ * never here, so rows read here while they are derived are asked about
+ * through recursion, which fails.
  */
 const deriving = (
   model: Model,
-  name: string,
-  reading: boolean
+  name: string
 ): LogicEffect<void> | undefined => {
   const stratum = model.strata.get(name);
   if (stratum === undefined) {
-    return model.base && deriving(model.base, name, reading);
+    return model.base && deriving(model.base, name);
   }
   model.read.add(name);
+  if (model.behind.has(name)) {
+    // Rows a change was not followed through are read as they are now.
+    forget(model, stratum.members);
+  }
   const state = model.state.get(name);
-  if (state === "done" || (reading && state === "running")) {
-    return;
+  if (state === "done") {
+    return failsOn(model, name);
   }
   return state === "running"
     ? logicError(
         `"${originalName(name)}" was asked about while its own rows were being derived. A question cannot go through recursion.`
       )
-    : derive(model, stratum);
+    : Effect.andThen(
+        derive(model, stratum),
+        () => failsOn(model, name) ?? Effect.void
+      );
 };
 
 /** Makes a declared relation's rows complete, by its name. */
 export const complete = (model: Model, name: string): LogicEffect<void> =>
-  Effect.suspend(() => deriving(model, name, false) ?? Effect.void);
+  Effect.suspend(() => deriving(model, name) ?? Effect.void);
 
 /** What must run before a relation's rows can be read, as `deriving` says. */
-const toRead = (model: Model, relation: RelationInfo, reading = false) =>
+const toRead = (model: Model, relation: RelationInfo) =>
   relation.computed === undefined
-    ? deriving(model, relation.name, reading)
+    ? deriving(model, relation.name)
     : compute(model.base ?? model, relation);
 
 /** Makes a relation's rows complete, unless they are already. */

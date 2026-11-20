@@ -5,7 +5,8 @@
  * any steps the set must hold what the list holds, in its order, through
  * every index. And undoing logged steps must leave the set as it was before
  * them, however the steps before, the lookups between them, and the steps
- * after used it.
+ * after used it. A lookup of every value a tuple holds finds it by its key,
+ * so a set of tuples of one width answers it without an index.
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary } from "effect";
@@ -16,7 +17,16 @@ import { element, oneOf } from "./programs";
 // Few values, so tuples are added again, removed again, and share buckets.
 const VALUES = [0, 1, 2];
 
-const tuple = Arbitrary.all([element(VALUES), element(VALUES)]);
+/**
+ * Mostly two values, and now and then three: a lookup of both columns of a
+ * set of pairs reads a tuple by its key, and of a set that holds wider
+ * tuples too, reads part of one through an index.
+ */
+const tuple = oneOf<Tuple>(
+  Arbitrary.all([element(VALUES), element(VALUES)]),
+  Arbitrary.all([element(VALUES), element(VALUES)]),
+  Arbitrary.all([element(VALUES), element(VALUES), element(VALUES)])
+);
 
 const POSITIONS = [[0], [1], [0, 1]] as const;
 
@@ -98,7 +108,7 @@ const expectSame = (set: TupleSet, model: readonly Tuple[]) => {
   for (const first of VALUES) {
     for (const second of VALUES) {
       expect(set.has([first, second])).toBe(
-        model.some((row) => row[0] === first && row[1] === second)
+        model.some((row) => valueKey(row) === valueKey([first, second]))
       );
     }
   }

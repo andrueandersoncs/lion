@@ -38,6 +38,7 @@ import {
 import {
   derive,
   forget,
+  forgetBehind,
   type LogicEffect,
   type Model,
   rowsOf,
@@ -66,8 +67,8 @@ export type Rows = Map<string, TupleSet>;
 /** What a change did to the rows of every relation, as far as it is known. */
 export interface Pass {
   /**
-   * The group whose rows break a key after the change. The change was
-   * followed through it, and no further.
+   * The first group whose rows break a key after the change, or that was
+   * set aside because it reads such rows.
    */
   broken: Stratum | undefined;
   /** The rows each relation gained: facts, and then what groups derived. */
@@ -450,24 +451,60 @@ const wayFor = (pass: Pass, stratum: Stratum) => {
 const followed = (pass: Pass, stratum: Stratum) => {
   return Effect.map(
     followWeights(pass.model, stratum, pass.gained, pass.lost, pass.regiven),
-    ({ gained, lost, problem }) => {
+    ({ gained, lost }) => {
       for (const name of stratum.members) {
         pass.gained.set(name, gained.get(name) ?? new TupleSet());
         pass.lost.set(name, lost.get(name) ?? new TupleSet());
-      }
-      if (problem !== undefined) {
-        pass.broken = stratum;
       }
     }
   );
 };
 
-/** Brings one group up to date with a change, or forgets what it derived. */
+/** True for a relation whose rows break a key. */
+const breaks = (model: Model, name: string) =>
+  model.support.get(name)?.problem !== undefined;
+
+/** True when a group's rules read a relation of another group a test holds for. */
+const readsOther = (
+  { members, rules }: Stratum,
+  test: (name: string) => boolean
+) => readBy(rules).some(({ name }) => !members.has(name) && test(name));
+
+/**
+ * Sets a group aside when what it reads cannot be read as the change
+ * leaves it: rows set aside, or, when the change reaches it, rows that
+ * break a key. Its rows stay as they were before the change, which is what
+ * they are if the change is refused, and nobody reads them, as nobody
+ * could derive them now. `unread` are the relations set aside so far.
+ * Returns true when it set the group aside.
+ */
+const setAside = (
+  pass: Pass,
+  stratum: Stratum,
+  unread: Set<string>,
+  reached: boolean
+) => {
+  const { model } = pass;
+  const aside =
+    (unread.size > 0 && readsOther(stratum, (name) => unread.has(name))) ||
+    (reached && readsOther(stratum, (name) => breaks(model, name)));
+  if (!aside) {
+    return false;
+  }
+  for (const name of stratum.members) {
+    unread.add(name);
+    model.last.set(name, "forgotten");
+    if (model.state.get(name) === "done") {
+      model.behind.add(name);
+    }
+  }
+  pass.broken ??= stratum;
+  return true;
+};
+
+/** Brings a group a change reaches up to date, or forgets what it derived. */
 const upkeep = (pass: Pass, stratum: Stratum) => {
   const { model, unknown } = pass;
-  if (!reaches(pass, stratum)) {
-    return Effect.void;
-  }
   // What an algorithm computed is of no use once what it read has changed.
   for (const relation of readBy(stratum.rules)) {
     if (relation.computed !== undefined && untracked(pass, relation)) {
@@ -502,17 +539,33 @@ const upkeep = (pass: Pass, stratum: Stratum) => {
 };
 
 /**
+ * The groups set aside while a change was checked: when the change is
+ * followed back, they are what they were before it, so the pass leaves
+ * them as they are; any other pass forgets them.
+ */
+const behindOf = (model: Model, back: boolean) => {
+  const behind = new Set(back ? model.behind : []);
+  if (back) {
+    model.behind.clear();
+  } else {
+    forgetBehind(model);
+  }
+  return behind;
+};
+
+/**
  * Brings what a model has derived up to date with a change: the rows each
  * relation `gained` and `lost`, the relations whose rules are `stale`, and
  * the relations another model changed in a way that is `unknown`. Returns
  * what every relation gained and lost. Fails when a rule fails on the new
  * rows; the model is then not to be used again.
  *
- * Rows that break a key end the pass after the group that holds them,
- * which the pass names as `broken`. Then the model is not to be read, since
- * a reader would find the rows, but it holds them exactly: following the
- * change back through it, as far as that group, which `last` names, gives
- * what it held before.
+ * A group whose rows break a key keeps them, and says why when it is read.
+ * The pass goes on past it: a group that reads it is set aside, as it was
+ * before the change, and every other group is brought up to date. The pass
+ * names the first such group as `broken`. The pass that follows a refused
+ * change `back` leaves the groups set aside as they are, since they are
+ * as they were before the change.
  */
 export const maintain = (
   model: Model,
@@ -520,7 +573,7 @@ export const maintain = (
   lost: Rows,
   stale: ReadonlySet<string> = new Set(),
   unknown: Iterable<string> = [],
-  last?: Stratum
+  back = false
 ): LogicEffect<Pass> =>
   Effect.gen(function* () {
     const regiven = unknownsHeld([...gained.values(), ...lost.values()]);
@@ -537,11 +590,20 @@ export const maintain = (
       unknown: new Set(unknown),
     };
     model.last.clear();
+    const behind = behindOf(model, back);
+    const unread = new Set<string>();
     for (const stratum of orderOf(model).strata) {
+      const [first = ""] = stratum.members;
+      if (behind.has(first)) {
+        continue;
+      }
+      const reached = reaches(pass, stratum);
+      if (setAside(pass, stratum, unread, reached) || !reached) {
+        continue;
+      }
       yield* upkeep(pass, stratum);
-      // No group past rows that break a key reads them.
-      if (pass.broken !== undefined || stratum === last) {
-        break;
+      if (breaks(model, first)) {
+        pass.broken ??= stratum;
       }
     }
     for (const [name, inputs] of model.computed) {

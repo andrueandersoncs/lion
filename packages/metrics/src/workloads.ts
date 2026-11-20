@@ -604,6 +604,43 @@ export const WORKLOADS: readonly Workload[] = [
       }),
   },
   {
+    // A twin of two mothers facts hold breaks the key, and no invariant
+    // reads it, so the change is kept: a question about every mother fails,
+    // at once since the rows are kept, and taking the twin back is followed
+    // through them.
+    name: "change: a twin a key cannot make one is kept, ask every mother, take it back, 20 times",
+    gives: () => 1,
+    refuses: true,
+    setup: (n) => [
+      "begin",
+      ...TWINS(n),
+      ["relation", "tall", ["who"]],
+      [
+        "fact",
+        ...range(20).flatMap((index) => [
+          ["person", `s${index}`],
+          ["tall", ["some", "?m", ["mother", `s${index}`, "?m"]]],
+          [
+            "tall",
+            ["some", "?m", ["mother", `p${2 * (index % twinsOf(n))}`, "?m"]],
+          ],
+        ]),
+      ],
+      size(["query", ["mother", "?c", "?m"]]),
+    ],
+    timed: (n) => [
+      ...range(20).flatMap((index) => {
+        const twin = ["twin", `p${2 * (index % twinsOf(n))}`, `s${index}`];
+        return [
+          ["fact", twin],
+          size(["query", ["mother", "?c", "?m"]]),
+          ["retract", twin],
+        ];
+      }),
+      size(["query", ["mother", "p1", "?m"]]),
+    ],
+  },
+  {
     name: "change: add a rule elsewhere, ask every row of a rule, 20 times",
     gives: bigOrders,
     setup: (n) => [

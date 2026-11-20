@@ -34,5 +34,9 @@
   "analysis-strings": {
     "cwd": "packages/history",
     "command": ["bun", "commands/analysis-strings.mjs"]
+  },
+  "key-clash": {
+    "cwd": "packages/history",
+    "command": ["bun", "commands/key-clash.mjs"]
   }
 }

@@ -1,0 +1,78 @@
+{
+  "title": "Rows that break a key are kept, and the clash is told from the rows there are",
+  "context": "A change whose rows break a key, such as a twin of two registered mothers, was refused by an invariant that derived every group from nothing to find the clash again. The message named the rule that gave a row as the run that derived it saw it, and a run that followed a change saw only the rules of the rows that change gave. So telling the clash from the followed run was fast but could name another rule, or none, than a database that derived nothing; naming no rule was the other way to be fast. Refusing such a twin 20 times, and asking a mother after each, took 8.0 s among 10,000 people and over 60 s among 100,000. The user asked for both: fast, and a message that names a rule exactly as a database that derived nothing names it.",
+  "decision": "A group whose rows break a key keeps them, exactly as deriving from nothing gives them, and keeps why: a question that reads the group, or a group derived from it, fails with it at once. The clash is told from the rows there are: of the pairs of rows that hold with one key, the one whose rows sort first; of its two rows, the one a rule gives now, or the one that sorts later when rules give both; and of the rules that give it, the one whose written form sorts first. Which rules give a row is found when a clash is told, by asking each rule's body with the row's values, as why does, and through the rows that became it when a key or an equality rule made a value in them one with another. A change is followed past the group: a group that reads it is set aside as it was, and every other group is brought up to date. A refused change is followed back through the same model, and a kept one forgets the groups it set aside.",
+  "consequences": "Refusing a twin of two registered mothers 20 times, and asking a mother after each, takes about 20 ms whatever the number of people. A question about rows that break a key fails at once after the first time, and the next change is followed through them. Where a fact sorts between two rows that rules give with its key, the clash told is the pair whose rows sort first, where it was the pair whose held row sorted first. The rule named is one that gives the row now, where it was one that gave it during the derivation. A lookup that binds every column of a relation reads the row by its key, so asking a rule's body with a row's values builds no index.",
+  "alternatives": [
+    {
+      "option": "Derive every group from nothing to tell the clash, as before",
+      "rejected": "Exact, but a refusal costs a derivation of everything: 8.0 s for 20 refusals among 10,000 people, and over 60 s among 100,000."
+    },
+    {
+      "option": "Tell the clash from the run that followed the change",
+      "rejected": "Fast, but a followed run knows only the rules of the rows it gave, so it blamed another rule, or none, than a database that derived nothing."
+    },
+    {
+      "option": "Name no rule in the message",
+      "rejected": "Fast and exact, but the message would no longer say which rule to look at."
+    },
+    {
+      "option": "Count each row's candidates by rule, kept up to date",
+      "rejected": "Exact and cheap to read, but every row of a keyed relation would carry a count per rule through every change, and a row a merge gave would have to follow the rules of each row that became it. The rows already hold what telling a clash needs."
+    },
+    {
+      "option": "Derive only the broken group again, on top of the model set aside",
+      "rejected": "Exact, but the group that breaks a key is usually the large one, so it costs nearly what deriving everything does."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A group whose rows break a key keeps them, exactly as deriving from nothing gives them, and keeps why: a question that reads the group, or a group derived from it, fails with it at once. The clash is told from the rows there are",
+      "says": {
+        "decision": "key-clash-told-from-rows",
+        "chose": "rows-there-are",
+        "over": [
+          "derive-from-nothing",
+          "followed-run",
+          "no-rule",
+          "counts-by-rule",
+          "broken-group-again"
+        ],
+        "because": "a database that followed changes and one that derived nothing hold the same rows, so a message told from the rows is the same in both, and it needs no derivation",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "of the pairs of rows that hold with one key, the one whose rows sort first",
+      "says": {
+        "behavior": "key-clash-pair-told",
+        "is": "rows-that-sort-first",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "of the rules that give it, the one whose written form sorts first. Which rules give a row is found when a clash is told, by asking each rule's body with the row's values",
+      "says": {
+        "behavior": "key-clash-rule-named",
+        "is": "gives-now",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A refused change is followed back through the same model",
+      "says": {
+        "behavior": "derived-rows-after-a-change-a-key-refuses",
+        "is": "followed-back",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A group whose rows break a key keeps them",
+      "says": {
+        "behavior": "derived-rows-after-a-kept-change-whose-rows-break-a-key",
+        "is": "kept",
+        "area": "logic"
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 198 questions have been decided, 86 records explain them, and of what the records assert, 620 hold when Lion is run, 5 are broken, 342 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 199 questions have been decided, 87 records explain them, and of what the records assert, 624 hold when Lion is run, 5 are broken, 343 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -204,6 +204,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`eventually-rules`](#eventually-rules) | `questions-over-run-states` | [Rules about what must eventually happen are questions about the states of every run, which the solver decides for amounts of any size](#eventually-rules) |
 | 2026-11-19 | [`command-proofs`](#command-proofs) | `induction-as-a-question` | [A proof that every command keeps a rule is a question to the solver, and the solver's proofs come with certificates anyone can check](#command-proofs) |
 | 2026-11-20 | [`snapshot-form-order`](#snapshot-form-order) | `rules-then-one-fact-form` | [A snapshot writes the rules, then every fact in one form, then the invariants](#snapshot-rules-before-facts) |
+| 2026-11-20 | [`key-clash-told-from-rows`](#key-clash-told-from-rows) | `rows-there-are` | [Rows that break a key are kept, and the clash is told from the rows there are](#key-clash-told-from-rows) |
 
 <a id="program-representation"></a>
 
@@ -4487,3 +4488,39 @@ Recorded 2026-11-20 in `history/notes/snapshot-rules-before-facts.json`.
 **What it asserts, checked.**
 
 - Stated, not checked by running Lion: decided `snapshot-form-order`: `rules-then-one-fact-form`. "A snapshot writes the relations and schemas, then every rule, then one fact form with every fact, then the invariants."
+
+<a id="key-clash-told-from-rows"></a>
+
+## key-clash-told-from-rows
+
+Now: `rows-there-are`.
+
+- 2026-11-20 `key-clash-told-from-rows`: `rows-there-are` over `derive-from-nothing`, `followed-run`, `no-rule`, `counts-by-rule`, `broken-group-again`: "A group whose rows break a key keeps them, exactly as deriving from nothing gives them, and keeps why: a question that reads the group, or a group derived from it, fails with it at once. The clash is told from the rows there are" (`key-clash-told-from-rows.json`)
+
+<a id="key-clash-told-from-rows"></a>
+
+### Rows that break a key are kept, and the clash is told from the rows there are
+
+Recorded 2026-11-20 in `history/notes/key-clash-told-from-rows.json`.
+
+**Context.** A change whose rows break a key, such as a twin of two registered mothers, was refused by an invariant that derived every group from nothing to find the clash again. The message named the rule that gave a row as the run that derived it saw it, and a run that followed a change saw only the rules of the rows that change gave. So telling the clash from the followed run was fast but could name another rule, or none, than a database that derived nothing; naming no rule was the other way to be fast. Refusing such a twin 20 times, and asking a mother after each, took 8.0 s among 10,000 people and over 60 s among 100,000. The user asked for both: fast, and a message that names a rule exactly as a database that derived nothing names it.
+
+**Decision.** A group whose rows break a key keeps them, exactly as deriving from nothing gives them, and keeps why: a question that reads the group, or a group derived from it, fails with it at once. The clash is told from the rows there are: of the pairs of rows that hold with one key, the one whose rows sort first; of its two rows, the one a rule gives now, or the one that sorts later when rules give both; and of the rules that give it, the one whose written form sorts first. Which rules give a row is found when a clash is told, by asking each rule's body with the row's values, as why does, and through the rows that became it when a key or an equality rule made a value in them one with another. A change is followed past the group: a group that reads it is set aside as it was, and every other group is brought up to date. A refused change is followed back through the same model, and a kept one forgets the groups it set aside.
+
+**Consequences.** Refusing a twin of two registered mothers 20 times, and asking a mother after each, takes about 20 ms whatever the number of people. A question about rows that break a key fails at once after the first time, and the next change is followed through them. Where a fact sorts between two rows that rules give with its key, the clash told is the pair whose rows sort first, where it was the pair whose held row sorted first. The rule named is one that gives the row now, where it was one that gave it during the derivation. A lookup that binds every column of a relation reads the row by its key, so asking a rule's body with a row's values builds no index.
+
+**Alternatives considered.**
+
+- Derive every group from nothing to tell the clash, as before. Exact, but a refusal costs a derivation of everything: 8.0 s for 20 refusals among 10,000 people, and over 60 s among 100,000.
+- Tell the clash from the run that followed the change. Fast, but a followed run knows only the rules of the rows it gave, so it blamed another rule, or none, than a database that derived nothing.
+- Name no rule in the message. Fast and exact, but the message would no longer say which rule to look at.
+- Count each row's candidates by rule, kept up to date. Exact and cheap to read, but every row of a keyed relation would carry a count per rule through every change, and a row a merge gave would have to follow the rules of each row that became it. The rows already hold what telling a clash needs.
+- Derive only the broken group again, on top of the model set aside. Exact, but the group that breaks a key is usually the large one, so it costs nearly what deriving everything does.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `key-clash-told-from-rows`: `rows-there-are`. "A group whose rows break a key keeps them, exactly as deriving from nothing gives them, and keeps why: a question that reads the group, or a group derived from it, fails with it at once. The clash is told from the rows there are"
+- Holds when Lion is run: `key-clash-pair-told` is `rows-that-sort-first`. "of the pairs of rows that hold with one key, the one whose rows sort first"
+- Holds when Lion is run: `key-clash-rule-named` is `gives-now`. "of the rules that give it, the one whose written form sorts first. Which rules give a row is found when a clash is told, by asking each rule's body with the row's values"
+- Holds when Lion is run: `derived-rows-after-a-change-a-key-refuses` is `followed-back`. "A refused change is followed back through the same model"
+- Holds when Lion is run: `derived-rows-after-a-kept-change-whose-rows-break-a-key` is `kept`. "A group whose rows break a key keeps them"

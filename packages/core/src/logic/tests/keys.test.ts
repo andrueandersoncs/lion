@@ -5,7 +5,7 @@ import { run } from "@/evaluation/evaluate";
 import { LogicDatabase } from "@/logic/database";
 import { saveDatabase } from "@/logic/snapshot";
 import { stdlib } from "@/modules";
-import { element } from "./programs";
+import { attempt, element, oneOf } from "./programs";
 
 const orders = [
   ["relation", "order", ["id", "status", "total"], { key: ["id"] }],
@@ -267,5 +267,278 @@ describe("a fact form on a keyed relation", () => {
         );
       }),
     { arbitrary: { runs: 1000 } }
+  );
+});
+
+const KIDS = ["k1", "k2", "k3"] as const;
+
+/** Rules that give a keyed relation rows: two that copy a relation, one that recurses. */
+const GIVERS = {
+  a: ["rule", ["out", "?k", "?v"], ["a", "?k", "?v"]],
+  b: ["rule", ["out", "?k", "?v"], ["b", "?k", "?v"]],
+  link: [
+    "rule",
+    ["out", "?k", "?v"],
+    ["out", "?j", "?v"],
+    ["link", "?j", "?k"],
+  ],
+} as const;
+
+type Giver = keyof typeof GIVERS;
+
+/** A fact of a relation the rules read, or of the keyed relation itself. */
+const given = oneOf<readonly [string, string, number | string]>(
+  Arbitrary.all([element(["a", "b"]), element(KIDS), element([1, 2, 3])]),
+  Arbitrary.map(
+    Arbitrary.all([element(KIDS), element([1, 2, 3])]),
+    ([kid, value]) => ["out", kid, value] as const
+  ),
+  Arbitrary.map(
+    Arbitrary.all([element(KIDS), element(KIDS)]),
+    ([from, to]) => ["link", from, to] as const
+  )
+);
+
+/**
+ * What a question about the keyed relation says for some facts and rules,
+ * worked out plainly. Its rows are its facts, the last for each key, and
+ * what the rules give, to a fixed point. Two rows with one key fail the
+ * question: of every such pair, the one whose rows sort first, and of its
+ * two rows, the one a rule gives now, or the one that sorts later when
+ * rules give both; and of the rules that give it, the one whose written
+ * form sorts first.
+ */
+const plainly = (
+  rules: readonly Giver[],
+  facts: readonly (readonly [string, string, number | string])[]
+) => {
+  const keyed = new Map<string, number | string>();
+  const read = new Set<string>();
+  for (const [relation, kid, value] of facts) {
+    if (relation === "out") {
+      keyed.set(kid, value);
+    } else {
+      read.add(JSON.stringify([relation, kid, value]));
+    }
+  }
+  const rows = new Map<string, readonly [string, number]>();
+  const add = (kid: string, value: number) =>
+    rows.set(JSON.stringify([kid, value]), [kid, value]);
+  for (const [kid, value] of keyed) {
+    add(kid, value as number);
+  }
+  const gives = (rule: Giver, [kid, value]: readonly [string, number]) =>
+    rule === "link"
+      ? KIDS.some(
+          (from) =>
+            rows.has(JSON.stringify([from, value])) &&
+            read.has(JSON.stringify(["link", from, kid]))
+        )
+      : read.has(JSON.stringify([rule, kid, value]));
+  for (let grew = true; grew; ) {
+    const before = rows.size;
+    for (const kid of KIDS) {
+      for (const value of [1, 2, 3]) {
+        if (rules.some((rule) => gives(rule, [kid, value]))) {
+          add(kid, value);
+        }
+      }
+    }
+    grew = rows.size > before;
+  }
+  const sorted = [...rows.values()].sort(
+    ([a, x], [b, y]) => a.localeCompare(b) || x - y
+  );
+  const [held, other] = sorted.filter(
+    ([kid]) => sorted.filter(([each]) => each === kid).length > 1
+  );
+  if (held === undefined || other === undefined || held[0] !== other[0]) {
+    return { rows: sorted.map((row) => JSON.stringify(row)) };
+  }
+  const by = (row: readonly [string, number]) =>
+    rules.filter((rule) => gives(rule, row)).sort();
+  const [derived, kept] =
+    by(held).length > 0 && by(other).length === 0
+      ? [held, other]
+      : [other, held];
+  const [rule] = by(derived);
+  return {
+    message: `"out" is keyed by ["kid"], but ${JSON.stringify(GIVERS[rule as Giver])} derived ${JSON.stringify(["out", ...derived])} while ${JSON.stringify(["out", ...kept])} holds.`,
+  };
+};
+
+describe("two rows with one key", () => {
+  // A database follows each change, also when its rows break a key: the
+  // question then fails, naming the rows and a rule as deriving from
+  // nothing would, and the next change is followed through them.
+  it.effect.prop(
+    "fail a question with the two rows that sort first, and the least rule that gives one now",
+    {
+      changes: Arbitrary.array(
+        Arbitrary.all([element(["fact", "retract"] as const), given]),
+        { minLength: 1, maxLength: 8 }
+      ),
+      rules: Arbitrary.map(
+        Arbitrary.array(element(Object.keys(GIVERS) as Giver[]), {
+          maxLength: 4,
+        }),
+        (rules) => [...new Set(rules)]
+      ),
+      start: Arbitrary.array(given, { maxLength: 5 }),
+    },
+    ({ changes, rules, start }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        const facts = new Map<
+          string,
+          readonly [string, string, number | string]
+        >();
+        const out = new Map<
+          string,
+          readonly [string, string, number | string]
+        >();
+        const note = (form: "fact" | "retract", it: (typeof start)[number]) => {
+          const [relation, kid] = it;
+          const name = relation === "out" ? `out ${kid}` : JSON.stringify(it);
+          if (form === "fact") {
+            (relation === "out" ? out : facts).set(name, it);
+          } else if (
+            JSON.stringify(out.get(name) ?? facts.get(name)) ===
+            JSON.stringify(it)
+          ) {
+            out.delete(name);
+            facts.delete(name);
+          }
+        };
+        yield* attempt(
+          [
+            "begin",
+            ["relation", "a", ["kid", "value"]],
+            ["relation", "b", ["kid", "value"]],
+            ["relation", "link", ["from", "to"]],
+            ["relation", "out", ["kid", "value"], { key: "kid" }],
+            ...rules.map((rule) => GIVERS[rule]),
+            true,
+          ],
+          database
+        );
+        for (const [form, it] of [
+          ...start.map((it) => ["fact", it] as const),
+          ...changes,
+        ]) {
+          yield* attempt([form, it], database);
+          note(form, it);
+          const found = yield* attempt(
+            ["find", ["array/make", "?k", "?v"], ["out", "?k", "?v"]],
+            database
+          );
+          const expected = plainly(rules, [...facts.values(), ...out.values()]);
+          expect(
+            found.ok
+              ? {
+                  rows: (found.value as unknown[])
+                    .map((row) => JSON.stringify(row))
+                    .sort(),
+                }
+              : { message: found.message }
+          ).toEqual(
+            "rows" in expected
+              ? { rows: [...(expected.rows ?? [])].sort() }
+              : expected
+          );
+        }
+      }),
+    { arbitrary: { runs: 2000 }, timeout: 120_000 }
+  );
+});
+
+/** Rules of twins whose mothers are invented, passed on, and registered. */
+const TWIN_RULES = {
+  invent: [
+    "rule",
+    ["exists", ["?m"], ["mother", "?c", "?m"]],
+    ["person", "?c"],
+  ],
+  passTo: [
+    "rule",
+    ["mother", "?b", "?m"],
+    ["twin", "?a", "?b"],
+    ["mother", "?a", "?m"],
+  ],
+  passFrom: [
+    "rule",
+    ["mother", "?a", "?m"],
+    ["twin", "?a", "?b"],
+    ["mother", "?b", "?m"],
+  ],
+  registered: [
+    "rule",
+    ["=", "?m", "?r"],
+    ["mother", "?c", "?m"],
+    ["registered", "?c", "?r"],
+  ],
+} as const;
+
+describe("two rows with one key, one of which a key or an equality rule made", () => {
+  // Each twin's invented mother is made one with the mother registered for
+  // her, so the row that holds the registered mother is given by the rule
+  // that invented the one it became. Twins then pass both on, and the
+  // first twin has two mothers: the refusal tells the one that sorts later
+  // as derived, by the rule that invented it or the one that passed it on.
+  it.effect.prop(
+    "tell a row a merge gave as given by the rule that gave the row it became",
+    {
+      mothers: Arbitrary.filter(
+        Arbitrary.all([
+          element(["eve", "fay", "gil"]),
+          element(["eve", "fay", "gil"]),
+        ]),
+        ([first, second]) => first !== second
+      ),
+      reversed: element([false, true]),
+    },
+    ({ mothers: [first, second], reversed }) =>
+      Effect.gen(function* () {
+        const program = [
+          ["relation", "person", ["name"]],
+          ["relation", "twin", ["a", "b"]],
+          ["relation", "registered", ["child", "mother"]],
+          ["relation", "mother", ["child", "mother"], { key: "child" }],
+          ...Object.values(TWIN_RULES),
+          [
+            "fact",
+            ["person", "a"],
+            ["person", "b"],
+            ["registered", "a", first],
+            ["registered", "b", second],
+          ],
+        ];
+        const twin = reversed ? ["twin", "b", "a"] : ["twin", "a", "b"];
+        // The second twin's mother reaches the first twin by the rule that
+        // passes a mother in the twin's direction.
+        const passed = reversed ? TWIN_RULES.passTo : TWIN_RULES.passFrom;
+        const [derived, held, rule] =
+          second > first
+            ? [second, first, passed]
+            : [first, second, TWIN_RULES.invent];
+        const expected = `"mother" is keyed by ["child"], but ${JSON.stringify(rule)} derived ${JSON.stringify(["mother", "a", derived])} while ${JSON.stringify(["mother", "a", held])} holds.`;
+        const kept = new LogicDatabase();
+        yield* attempt(
+          ["begin", ...program, ["query", ["mother", "?c", "?m"]]],
+          kept
+        );
+        expect(yield* attempt(["fact", twin], kept)).toEqual({
+          message: expected,
+          ok: false,
+        });
+        const fresh = new LogicDatabase();
+        expect(
+          yield* attempt(["begin", ...program, ["fact", twin]], fresh)
+        ).toEqual({
+          message: expected,
+          ok: false,
+        });
+      }),
+    { arbitrary: { runs: 100 } }
   );
 });
