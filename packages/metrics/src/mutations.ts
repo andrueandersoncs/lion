@@ -450,9 +450,10 @@ const WEIGHTS: readonly Mutation[] = [
     "  fold.since = Math.min(fold.since, level);"
   ),
   weighed(
-    "a sum of numbers that are not whole is added in the order they came",
+    "an aggregate that cannot combine its candidates names the one that came last",
     "  const values = given(kind, kept).sort(compareValues);",
-    "  const values = given(kind, kept).reverse();"
+    "  const values = given(kind, kept).reverse();",
+    ["src/logic/tests/aggregates.test.ts", ...WEIGHT_TESTS]
   ),
   weighed(
     "a running total is kept for numbers that are not whole",

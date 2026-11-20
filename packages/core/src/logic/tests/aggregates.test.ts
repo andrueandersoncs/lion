@@ -2,7 +2,8 @@ import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
-import { element, nearestSum } from "./programs";
+import { seed, shuffled } from "./merges";
+import { element, nearestSum, oneOf } from "./programs";
 
 const int = (minimum: number, maximum: number) =>
   Arbitrary.schema(Schema.Int.check(Schema.isBetween({ minimum, maximum })));
@@ -425,6 +426,48 @@ describe("aggregate checks", () => {
         'aggregate/sum expects numbers, but found "ana"'
       );
     })
+  );
+});
+
+/** A value an aggregate may or may not combine: whole, not whole, or text. */
+const candidate = oneOf<unknown>(
+  int(-3, 3),
+  element([0.5, -1.25, 2.75]),
+  element(["ana", "bo", "cy"])
+);
+
+/** What a program gives, or the message it fails with. */
+const outcome = (program: unknown) =>
+  Effect.map(Effect.result(run(program, stdlib)), (result) =>
+    result._tag === "Success"
+      ? { value: result.success }
+      : { error: String((result.failure as { message?: unknown }).message) }
+  );
+
+describe("an aggregate over candidates it may not combine", () => {
+  it.effect.prop(
+    "gives the same, and fails naming the same values, whatever order the facts came in",
+    {
+      kind: element(["sum", "mean", "min", "max"]),
+      order: seed,
+      values: Arbitrary.array(candidate, { minLength: 2, maxLength: 6 }),
+    },
+    ({ kind, order, values }) =>
+      Effect.gen(function* () {
+        const facts = values.map((value, id) => ["n", id, value]);
+        const total = (given: readonly unknown[]) =>
+          outcome([
+            "begin",
+            ["relation", "n", ["id", "value"]],
+            ["relation", "total", ["value"]],
+            ["rule", ["total", [`aggregate/${kind}`, "?v"]], ["n", "?_", "?v"]],
+            ["fact", ...given],
+            ["query", ["total", "?t"]],
+          ]);
+        const expected = yield* total(facts);
+        expect(yield* total([...facts].reverse())).toEqual(expected);
+        expect(yield* total(shuffled(facts, order))).toEqual(expected);
+      })
   );
 });
 

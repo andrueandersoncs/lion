@@ -300,7 +300,8 @@ const fromNothing = (rules: readonly Form[], facts: Iterable<Form>) =>
   });
 
 interface Program {
-  readonly changes: readonly (readonly ["fact" | "retract", Form])[];
+  /** Each change is a `fact` or `retract` form, of one fact or several. */
+  readonly changes: readonly (readonly ["fact" | "retract", ...Form[]])[];
   readonly keyed: boolean;
   readonly start: readonly Form[];
   readonly ways: readonly Way[];
@@ -323,17 +324,19 @@ const follows = ({ changes, keyed, start, ways }: Program) =>
     }
     const held = new Map(start.map((it) => [JSON.stringify(it), it]));
     let before = yield* answers(kept);
-    for (const [form, it] of changes) {
+    for (const [form, ...items] of changes) {
       const next = new Map(held);
-      if (form === "fact") {
-        next.set(JSON.stringify(it), it);
-      } else {
-        next.delete(JSON.stringify(it));
+      for (const it of items) {
+        if (form === "fact") {
+          next.set(JSON.stringify(it), it);
+        } else {
+          next.delete(JSON.stringify(it));
+        }
       }
       const fresh = yield* fromNothing(rules, next.values());
       const had = weights(kept);
       kept.model?.last.clear();
-      const changed = yield* attempt([form, it], kept);
+      const changed = yield* attempt([form, ...items], kept);
       // A change is refused exactly when the facts break a rule.
       expect(changed.ok).toBe(fresh !== undefined);
       const derived = !("ok" in before);
@@ -488,6 +491,79 @@ const clashing = Arbitrary.all({
   ),
 });
 
+const three = element(["a", "b", "c"]);
+
+/** A fact of three people, which can give, register, or hold a mother. */
+const ofThree: Arbitrary.Arbitrary<Form> = oneOf(
+  Arbitrary.map(three, (who) => ["person", who]),
+  Arbitrary.map(Arbitrary.all([three, three]), ([a, b]) => ["twin", a, b]),
+  Arbitrary.map(three, (who) => [
+    "tall",
+    ["some", "?m", ["mother", who, "?m"]],
+  ]),
+  Arbitrary.map(Arbitrary.all([three, element(["eve", "fay"])]), ([c, m]) => [
+    "registered",
+    c,
+    m,
+  ])
+);
+
+/**
+ * Programs whose changes hold one to three facts, so that one change can
+ * make several invented mothers given at once, beside a mother a fact
+ * registers, which an equality rule makes them one with: a pair of rows
+ * with one key that met while their unknowns were free can then part
+ * after both became given.
+ */
+const several = {
+  changes: Arbitrary.array(
+    Arbitrary.map(
+      Arbitrary.all([
+        element(["fact", "fact", "retract"] as const),
+        oneOf<Form[]>(
+          Arbitrary.array(ofThree, { minLength: 1, maxLength: 3 }),
+          // Two invented mothers made given in one change.
+          Arbitrary.map(
+            Arbitrary.filter(Arbitrary.all([three, three]), ([a, b]) => a < b),
+            ([a, b]): Form[] =>
+              [a, b].map((who) => [
+                "tall",
+                ["some", "?m", ["mother", who, "?m"]],
+              ])
+          )
+        ),
+      ]),
+      ([form, items]): readonly ["fact" | "retract", ...Form[]] => [
+        form,
+        ...items,
+      ]
+    ),
+    { minLength: 1, maxLength: 5 }
+  ),
+  keyed: element([true]),
+  start: oneOf<Form[]>(
+    Arbitrary.array(ofThree, { maxLength: 6 }),
+    // Twins who are both people, a mother registered for one of them.
+    Arbitrary.map(
+      Arbitrary.all([
+        Arbitrary.filter(Arbitrary.all([three, three]), ([a, b]) => a !== b),
+        element(["eve", "fay"]),
+        Arbitrary.array(ofThree, { maxLength: 3 }),
+      ]),
+      ([[a, b], mother, more]): Form[] => [
+        ["person", a],
+        ["person", b],
+        ["twin", a, b],
+        ["registered", a, mother],
+        ...more,
+      ]
+    )
+  ),
+  ways: Arbitrary.map(program.ways, (ways) =>
+    [...new Set<Way>([...ways, "pass", "registered"])].sort()
+  ),
+};
+
 describe("rows with weights, held from a level", () => {
   it.effect.prop(
     "keep after any changes the rows, levels, and weights that deriving from nothing gives",
@@ -506,6 +582,13 @@ describe("rows with weights, held from a level", () => {
   it.effect.prop(
     "keep them through a change a key refuses, where facts make invented mothers given",
     given,
+    follows,
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "keep them through changes of several facts, which make several invented mothers given at once",
+    several,
     follows,
     OPTIONS
   );
