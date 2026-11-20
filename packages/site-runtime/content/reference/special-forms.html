@@ -34,6 +34,21 @@
 <lion-example name="begin">
 ["begin", ["define", "x", 1], ["define", "x", 2], "x"]
 </lion-example>
+<ul>
+  <li>Every expression before the last runs, also one that waits for a logic variable. Such an expression, or a question in a rule, a query, or a <code>find</code>, makes the whole <code>begin</code> wait, as a condition makes <code>cond</code> wait, and the <code>begin</code> then runs every expression for each answer, as plain code would with the values in place. A question it does not need is not asked, but what the question holds runs.</li>
+  <li>A program's own <code>begin</code>, and a <code>begin</code> among its forms, runs its forms one at a time instead, as Scheme splices a top-level <code>begin</code> into the program. A definition there of a value that waits names it, and the forms after it run.</li>
+</ul>
+<lion-example name="A function that checks its argument first, in a find" expect="error">
+["begin",
+  ["define", "pair", ["lambda", ["n"],
+    ["begin", ["schema/assert", "n", "value/number?"], ["array/make", "n", "n"]]]],
+  ["find", ["pair", "?item"], ["in", "?item", ["array/make", 3, "three"]]]]
+</lion-example>
+<lion-example name="A program names a value that waits">
+["begin",
+  ["define", "half", ["number/divide", "?n", 2]],
+  ["find", "half", ["in", "?n", ["array/make", 2, 4]]]]
+</lion-example>
 
 <h2 id="form-define"><code>define</code></h2>
 <code-block lang="json">

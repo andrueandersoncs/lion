@@ -17,7 +17,7 @@
 <p>A rule or query is written before its variables have values. Anything that needs the value of a logic variable waits, and runs once for each answer that binds the variable.</p>
 <ul>
   <li>A call waits when one of its arguments is a logic variable or a value that waits. Every function waits this way: standard functions, functions from the host, and functions made by <code>func/partial</code>.</li>
-  <li><code>cond</code> waits when a condition is not known yet, <code>match</code> when its value is not, <code>eval</code> when its code is not, and a record when one of its values is not.</li>
+  <li><code>cond</code> waits when a condition is not known yet, <code>match</code> when its value is not, <code>eval</code> when its code is not, <code>begin</code> when an expression before its last is not, and a record when one of its values is not.</li>
   <li>What a rule, query, or find holds runs when it does. A call on values that are already known may be computed when the rule is written. So a rule, query, or find refuses a <a href="#form-set">set!</a> of a binding made outside it, whose change would happen once, or as often as the engine chose, rather than once for each answer.</li>
   <li>Relations, aggregates, and graph algorithms take logic variables as they are, and build goals and aggregates from them. A lambda's body runs right away, so a lambda can build goals; whatever in the body needs a value waits. Only an argument that <a href="#logic-asking">asks a question</a> makes a lambda's call wait, so the question is answered first, as it is in plain code.</li>
   <li>What waits computes what it would compute with the value in place of the variable.</li>

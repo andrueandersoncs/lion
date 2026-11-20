@@ -948,6 +948,40 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/evaluation/tests/compiled.test.ts"],
   },
   {
+    name: "a begin goes on past a part that waits, which then never runs",
+    file: core("evaluation/special-forms/begin.ts"),
+    find: "    if (!(made instanceof LogicValue)) {",
+    replace: "    if (true) {",
+    tests: ["src/logic/tests/waiting.test.ts"],
+  },
+  {
+    name: "a begin goes on past a question while a rule is written, so what the question holds never runs",
+    file: core("evaluation/special-forms/begin.ts"),
+    find: "        writing ? wait(environment) : toEffect(from(at + 1, environment, 0))",
+    replace: "        toEffect(from(at + 1, environment, 0))",
+    tests: ["src/logic/tests/waiting.test.ts"],
+  },
+  {
+    name: "a program waits as a whole for a definition of a value that waits",
+    file: core("evaluation/evaluate.ts"),
+    find: "    ? compileBegin(program, scope, true)",
+    replace: "    ? compileBegin(program, scope, false)",
+    tests: [
+      "src/logic/tests/waiting.test.ts",
+      "src/evaluation/tests/special-forms/begin.test.ts",
+    ],
+  },
+  {
+    name: "a begin among a program's forms waits as a whole",
+    file: core("evaluation/special-forms/begin.ts"),
+    find: "    spliced && isBegin(arg, scope)",
+    replace: "    false && isBegin(arg, scope)",
+    tests: [
+      "src/evaluation/tests/special-forms/begin.test.ts",
+      "src/evaluation/tests/compiled.test.ts",
+    ],
+  },
+  {
     name: "cond does not ask a goal it tests",
     file: core("evaluation/special-forms/cond.ts"),
     find: "              toEffect(decide(Boolean(answered), at, environment, 0))",

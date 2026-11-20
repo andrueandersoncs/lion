@@ -5958,6 +5958,33 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
     <pre class="playground-result"><code>2</code></pre>
   </div>
 </div>
+<ul>
+  <li>Every expression before the last runs, also one that waits for a logic variable. Such an expression, or a question in a rule, a query, or a <code>find</code>, makes the whole <code>begin</code> wait, as a condition makes <code>cond</code> wait, and the <code>begin</code> then runs every expression for each answer, as plain code would with the values in place. A question it does not need is not asked, but what the question holds runs.</li>
+  <li>A program's own <code>begin</code>, and a <code>begin</code> among its forms, runs its forms one at a time instead, as Scheme splices a top-level <code>begin</code> into the program. A definition there of a value that waits names it, and the forms after it run.</li>
+</ul>
+<div class="playground" data-playground="A function that checks its argument first, in a find">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["define", "pair", ["lambda", ["n"],
+    ["begin", ["schema/assert", "n", "value/number?"], ["array/make", "n", "n"]]]],
+  ["find", ["pair", "?item"], ["in", "?item", ["array/make", 3, "three"]]]]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-error">error</span>
+    <pre class="playground-result is-error"><code>LogicError: "three" does not fit "value/number?".</code></pre>
+  </div>
+</div>
+<div class="playground" data-playground="A program names a value that waits">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["define", "half", ["number/divide", "?n", 2]],
+  ["find", "half", ["in", "?n", ["array/make", 2, 4]]]]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-ok">result</span>
+    <pre class="playground-result"><code>[1,2]</code></pre>
+  </div>
+</div>
 
 <h2 id="form-define"><code>define</code></h2>
 <div class="code-block"><pre><code data-highlight>["define", name, expression]</code></pre></div>
@@ -6202,7 +6229,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 <p>A rule or query is written before its variables have values. Anything that needs the value of a logic variable waits, and runs once for each answer that binds the variable.</p>
 <ul>
   <li>A call waits when one of its arguments is a logic variable or a value that waits. Every function waits this way: standard functions, functions from the host, and functions made by <code>func/partial</code>.</li>
-  <li><code>cond</code> waits when a condition is not known yet, <code>match</code> when its value is not, <code>eval</code> when its code is not, and a record when one of its values is not.</li>
+  <li><code>cond</code> waits when a condition is not known yet, <code>match</code> when its value is not, <code>eval</code> when its code is not, <code>begin</code> when an expression before its last is not, and a record when one of its values is not.</li>
   <li>What a rule, query, or find holds runs when it does. A call on values that are already known may be computed when the rule is written. So a rule, query, or find refuses a <a href="#form-set">set!</a> of a binding made outside it, whose change would happen once, or as often as the engine chose, rather than once for each answer.</li>
   <li>Relations, aggregates, and graph algorithms take logic variables as they are, and build goals and aggregates from them. A lambda's body runs right away, so a lambda can build goals; whatever in the body needs a value waits. Only an argument that <a href="#logic-asking">asks a question</a> makes a lambda's call wait, so the question is answered first, as it is in plain code.</li>
   <li>What waits computes what it would compute with the value in place of the variable.</li>
@@ -8966,7 +8993,7 @@ for (const { pointer, value, meaning } of flattenAnalysis(
 
 <h2 id="logic-programming-whatever-needs-a-value-waits">Whatever needs a value waits</h2>
 <p>A rule body mixes relation goals with filters such as <code>["number/greaterThan", "?amount", 50]</code>. When Lion evaluates that call, <code>?amount</code> has no value yet. So the call does not run: it becomes a value that stands for the call, and the engine runs it once for each answer that binds <code>?amount</code>. The engine plans the body so each filter runs as soon as its variables are bound, which is why goals may be written in any order, and why a filter whose variables are never bound is an error rather than a silent miss.</p>
-<p>The same one rule covers everything else that needs a value. Any function waits, whether it comes from the standard library or the host. A <code>cond</code> waits when its condition is not known, a <code>match</code> when its value is not, and a record when one of its values is not. Each of them is written back out, in a snapshot or an explanation, as the form it was. And each computes exactly what it would compute with the value in place of the variable, so there is nothing new to learn about how an expression behaves inside a rule.</p>
+<p>The same one rule covers everything else that needs a value. Any function waits, whether it comes from the standard library or the host. A <code>cond</code> waits when its condition is not known, a <code>match</code> when its value is not, a <code>begin</code> when an expression before its last is not, and a record when one of its values is not. Each of them is written back out, in a snapshot or an explanation, as the form it was. And each computes exactly what it would compute with the value in place of the variable, so there is nothing new to learn about how an expression behaves inside a rule.</p>
 <p>Only the things that build logic do not wait: relations, aggregates, and graph algorithms take a variable as it is and make a goal of it. A lambda's body runs right away for the same reason, so a lambda can build goals, while whatever inside it needs a value waits.</p>
 
 <h2 id="logic-programming-whatever-needs-an-answer-asks">Whatever needs an answer asks</h2>

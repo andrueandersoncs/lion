@@ -261,6 +261,29 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
   },
   {
+    name: "begin that checks first",
+    form: [
+      "begin",
+      ["schema/assert", X, "value/integer?"],
+      ["number/multiply", X, 2],
+    ],
+  },
+  {
+    name: "function that checks first",
+    form: [
+      [
+        "lambda",
+        ["v"],
+        [
+          "begin",
+          ["schema/assert", "v", "value/integer?"],
+          ["number/add", "v", 1],
+        ],
+      ],
+      X,
+    ],
+  },
+  {
     name: "set!",
     form: [
       [

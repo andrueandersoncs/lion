@@ -126,6 +126,7 @@
 - a change an invariant refuses, and what `assuming` asks, tell nothing (`watched-query-after-refused-change` is `not-told`)
 - Unlike Racket's, a continuation resumes once: a second call of one `k` fails, `A continuation was resumed a second time: …`, since the delimited part runs in a fiber of its own that can only go on once. (`continuation-resumed-twice` is `error`)
 - A promise is not data, so JSON writes nothing for it, as it writes nothing for a function: the lion command printed `["delay", 1]` as `{"running": false}`, a field of its own inside. (`promise-as-json` is `nothing`, was `internal-fields`)
+- A program's own `begin`, and a `begin` among its forms, runs its forms one at a time instead, as Scheme splices a top-level `begin` into the program (`program-begin-after-a-definition-that-waits` is `runs-on`)
 
 ### Fixed
 
@@ -141,6 +142,8 @@
 - The property that `why` explains a rule no values meet with certificates that whole-number arithmetic checks no longer asks for a certificate when `why` leaves the rule out: a filter that is false whatever the values, such as `["number/lessThan", ["cond", [["number/lessThan", 0, 0], "?x"], ["else", 0]], 0]`, mentions `?x` but is false without it, and `why` gives no reason for such a rule, on main too. It failed about once in 200 runs. (`certificate-property-constant-filter` is `left-out`, was `required`)
 - Two rows with one key that a key cannot make one are told the same whatever order the rules and facts came in: the error names, of the clashes there are, the one whose rows sort first; of its two rows, the one a rule gave as derived, or the one that sorts later when rules gave both; and of the rules that gave it, the one whose written form sorts first. With twins a and b whose invented mothers facts hold, `"mother" is keyed by ["child"], but ["rule",["mother","?a","?m"],["twin","?a","?b"],["mother","?b","?m"]] derived ["mother","a",["some","?m",["mother","b","?m"]]] while ["mother","a",["some","?m",["mother","a","?m"]]] holds.` comes with the facts in any order and the rules in any order; before, which row was derived and which rule derived it followed the order they were found in. (`key-clash-message-order` is `independent-of-order`, was `order-of-discovery`)
 - A database whose facts hold only beside every rule, such as two registered mothers of twins that an equality rule makes one, loads as it was saved, and saving the loaded database gives the same program; before, loading it failed with 'Adding this rule breaks an invariant'. (`snapshot-of-valid-database` is `loads`, was `error`)
+- A `begin` in a rule body, a query, or a `find` runs every expression before its last, also one that waits for a logic variable: with `pair` checking its argument with `schema/assert` first, `["find", ["pair", "?item"], ["in", "?item", ["array/make", 3, "three"]]]` fails with `"three" does not fit "value/number?".`, as `["pair", "three"]` does. It gave `[[3,3],["three","three"]]`. (`begin-expression-before-last-that-waits` is `error`, was `dropped`)
+- A question before a `begin`'s last expression in a rule, a query, or a `find` is not asked, but what it holds runs, as in plain code: `["begin", ["even", ["number/divide", 1, "?x"]], 3]` fails for 0, where it gave 3. (`begin-question-before-last-holding-a-call` is `error`, was `dropped`)
 
 ### Decided
 
@@ -180,6 +183,7 @@
 - It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (`object-get-missing-key`: `fails-unless-given-a-value` over `null`, was `undefined`)
 - While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began (`set-in-rule-bodies`: `refused-for-outside-bindings` over `allowed`, `refused-everywhere`, `run-per-row`)
 - A match's last part is a case when it is a pair, and the fallback otherwise. A match with no fallback fails on a value no case fits, as Racket's `match` does (`match-fallback`: `optional` over `required`)
+- A `begin` waits for an expression before its last as `cond` waits for a condition (`begin-waits-as-a-whole`: `whole-form-but-the-program` over `whole-form-everywhere`, `only-while-written`, `definitions-left-out`, `from-the-waiting-expression`)
 
 ### Rules
 

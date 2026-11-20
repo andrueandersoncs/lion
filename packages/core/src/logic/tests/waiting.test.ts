@@ -82,6 +82,37 @@ describe("an expression that mentions a logic variable", () => {
   );
 
   it.effect.prop(
+    "computes the same in what a find gives",
+    {
+      number: numberOf(3, ANY),
+      boolean: booleanOf(3, ANY),
+      list: listOf(3, ANY),
+      kind: expression,
+      inputs: values,
+    },
+    ({ inputs, kind, ...expressions }) =>
+      Effect.gen(function* () {
+        const value = expressions[kind];
+        const found = yield* attempt([
+          ["find", ["array/make", "?x", value], each(inputs)],
+        ]);
+        // A find's answers come in no promised order.
+        const actual: Outcome = found.ok
+          ? {
+              ok: true,
+              value: [...(found.value as [number, unknown][])].sort(
+                ([a], [b]) => a - b
+              ),
+            }
+          : found;
+        expectRows(actual, yield* substituteAll(value, inputs), (results) =>
+          inputs.map((x, at) => [x, results[at]])
+        );
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
     "computes the same in a rule head, with and without goal-directed queries",
     { value: headOf(3, ANY), inputs: values },
     ({ inputs, value }) =>

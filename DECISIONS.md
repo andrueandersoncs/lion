@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 202 questions have been decided, 91 records explain them, and of what the records assert, 631 hold when Lion is run, 5 are broken, 350 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 203 questions have been decided, 92 records explain them, and of what the records assert, 632 hold when Lion is run, 5 are broken, 351 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -208,6 +208,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-20 | [`callback-arity`](#callback-arity) | `as-many-as-it-takes` | [A lambda takes as many arguments as it has parameters, and a callback gives a function as many as it takes](#lambda-takes-its-parameters) |
 | 2026-11-20 | [`set-in-rule-bodies`](#set-in-rule-bodies) | `refused-for-outside-bindings` | [set! fails where the engine chooses the order, for a binding made outside](#set-where-the-engine-orders) |
 | 2026-11-20 | [`match-fallback`](#match-fallback) | `optional` | [A match may leave out its fallback, and a case no value can reach is found without running](#match-cases-checked) |
+| 2026-11-20 | [`begin-waits-as-a-whole`](#begin-waits-as-a-whole) | `whole-form-but-the-program` | [A begin waits as a whole for an expression before its last](#begin-waits-as-a-whole) |
 
 <a id="program-representation"></a>
 
@@ -4652,3 +4653,35 @@ Recorded 2026-11-20 in `history/notes/match-cases-checked.json`.
 - Stated, not checked by running Lion: `unreachable-match-case-warning` exists. "Reading a program without running it warns of a case whose schema an earlier case's schema includes, as `schema/includes?` decides, where both schemas have one value wherever the match runs. The graph editor shows the warning, and `lion check` prints it."
 - Stated, not checked by running Lion: `lion-check` exists. "The graph editor shows the warning, and `lion check` prints it."
 - Holds when Lion is run: `schema-includes-itself` is `true`. "A schema includes itself."
+
+<a id="begin-waits-as-a-whole"></a>
+
+## begin-waits-as-a-whole
+
+Now: `whole-form-but-the-program`.
+
+- 2026-11-20 `begin-waits-as-a-whole`: `whole-form-but-the-program` over `whole-form-everywhere`, `only-while-written`, `definitions-left-out`, `from-the-waiting-expression`: "A `begin` waits for an expression before its last as `cond` waits for a condition" (`begin-waits-as-a-whole.json`)
+
+<a id="begin-waits-as-a-whole"></a>
+
+### A begin waits as a whole for an expression before its last
+
+Recorded 2026-11-20 in `history/notes/begin-waits-as-a-whole.json`.
+
+**Context.** A `begin` in a rule body, a query, or a `find` gave its last expression's value and dropped an earlier one that waited for a logic variable, so that expression never ran. With `pair` defined as `["lambda", ["n"], ["begin", ["schema/assert", "n", "value/number?"], ["array/make", "n", "n"]]]`, the program `["find", ["pair", "?item"], ["in", "?item", ["array/make", 3, "three"]]]` gave `[[3,3],["three","three"]]`, while `["pair", "three"]` fails. A question before the last was dropped too, and with it the calls in its arguments and a `find`'s whole search. But a program is a `begin` as well, and its forms often name a value that waits, such as `["define", "half", ["number/divide", "?n", 2]]`, for a later query to read.
+
+**Decision.** A `begin` waits for an expression before its last as `cond` waits for a condition: one that waits for a logic variable, or a question while a rule, a query, or a `find` is written, makes the whole form wait, and the form runs every expression once the variables are bound, leaving a question it does not need unasked, as plain code does. A program's own `begin`, and a `begin` among its forms, runs its forms one at a time instead, as Scheme splices a top-level `begin` into the program, so a definition there of a value that waits names it and the forms after it run.
+
+**Consequences.** In every place an expression can stand, a `begin` now gives what plain code gives with the variables' values in place, and a function that checks its argument first checks it in a rule, a query, and a `find`. The expressions before the one that waited ran once when the rule was written, and run again for each answer, as a `cond`'s conditions do. A program's forms run as before. In plain code outside any rule, a question before the last is still given up without waiting, so a term built there leaves out the calls in such a question's arguments.
+
+**Alternatives considered.**
+
+- Wait as a whole everywhere, the program's own begin too. A program that names a value that waits, or a logic variable, as `["define", "again", "?x"]`, would wait at that definition and never run its later forms.
+- Wait only while a rule, a query, or a find is written. Every place a rule holds would agree with plain code, but a term built in plain code, such as `["define", "pairs", ["pair", "?item"]]`, would leave the check out, and a later `find` that reads `pairs` would skip it, where a `cond` in its place waits.
+- Leave out a definition's value, since its name keeps it. A rule's `begin` that defines a name nobody reads would never run the definition: `["begin", ["define", "t", ["number/divide", 1, "?x"]], 3]` would give 3 where plain code fails for 0. And the exception would be kept by the names of two forms.
+- Wait only from the expression that waits on. The expressions before it would run once, when the rule is written, where plain code runs them for each answer, and each place the form can wait would need the rest of the form compiled on its own.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `begin-waits-as-a-whole`: `whole-form-but-the-program`. "A `begin` waits for an expression before its last as `cond` waits for a condition"
+- Holds when Lion is run: `program-begin-after-a-definition-that-waits` is `runs-on`. "A program's own `begin`, and a `begin` among its forms, runs its forms one at a time instead, as Scheme splices a top-level `begin` into the program"

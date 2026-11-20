@@ -232,6 +232,37 @@ const findOf = (n: Arbitrary.Arbitrary<Expression>, depth: number) => {
 /** Fails when `?x` is 0, so it needs a guard. */
 const quotientIsSmall = ["number/lessThan", ["number/divide", 1, "?x"], 0.5];
 
+/** A number from `?x`, or one divided by `?x`, which fails when it is 0. */
+const risky = (n: Arbitrary.Arbitrary<Expression>) =>
+  oneOf<Expression>(
+    n,
+    Arbitrary.map(n, (value): Expression => ["number/divide", value, "?x"])
+  );
+
+/**
+ * A part of a `begin` that runs for what it does, not for its value: a
+ * number or a test computed from `?x`, which waits for it or not, or a
+ * check that fails for some values of `?x`, as plain code fails there, and
+ * only through `?x`.
+ */
+const stepOf = (
+  n: Arbitrary.Arbitrary<Expression>,
+  b: Arbitrary.Arbitrary<Expression>
+) =>
+  oneOf<Expression>(
+    n,
+    b,
+    Arbitrary.map(n, (value): Expression => ["number/divide", value, "?x"]),
+    Arbitrary.map(
+      n,
+      (value): Expression => [
+        "schema/assert",
+        ["number/divide", value, "?x"],
+        "value/integer?",
+      ]
+    )
+  );
+
 /** A number computed from `?x`, with every kind of form that waits. */
 export const numberOf = (
   depth: number,
@@ -317,6 +348,45 @@ export const numberOf = (
       ["lambda", ["v"], "v"],
     ]),
     one((value) => ["eval", ["array/make", ["quote", "number/add"], value, 1]]),
+    // A begin runs every part before it gives its last, also a part that
+    // waits: in a lambda's body that checks its argument first, or defines a
+    // name it never reads, and on its own.
+    Arbitrary.map(
+      Arbitrary.all([
+        Arbitrary.array(stepOf(n, b), { minLength: 1, maxLength: 2 }),
+        n,
+      ]),
+      ([steps, value]): Expression => ["begin", ...steps, value]
+    ),
+    // A question first is not asked, but what it holds runs, as in plain
+    // code: a goal's arguments, and a find.
+    Arbitrary.map(
+      Arbitrary.all([
+        oneOf(goalOf(risky(n), depth), findOf(risky(n), depth)),
+        n,
+      ]),
+      ([question, value]): Expression => ["begin", question, value]
+    ),
+    one((value) => [
+      [
+        "lambda",
+        ["v"],
+        [
+          "begin",
+          ["schema/assert", "v", "value/integer?"],
+          ["number/add", "v", 1],
+        ],
+      ],
+      ["number/divide", value, "?x"],
+    ]),
+    one((value) => [
+      [
+        "lambda",
+        ["v"],
+        ["begin", ["define", "w", ["number/divide", 1, "v"]], "v"],
+      ],
+      ["number/subtract", value, "?x"],
+    ]),
     // Questions: what a find found is a list like any other, and a goal with
     // a relation in it is a condition like any other.
     Arbitrary.map(
@@ -417,6 +487,11 @@ export const booleanOf = (
     Arbitrary.map(
       n,
       (value): Expression => ["string/equals?", ["host/describe", value], "<0>"]
+    ),
+    // A begin that checks or computes first, then gives a test.
+    Arbitrary.map(
+      Arbitrary.all([stepOf(n, b), b]),
+      ([step, test]): Expression => ["begin", step, test]
     ),
     // A guard written first protects the division after it.
     constant(["and", ["number/greaterThan", "?x", 0], quotientIsSmall]),
