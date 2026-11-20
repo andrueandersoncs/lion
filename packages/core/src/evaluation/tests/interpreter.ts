@@ -21,6 +21,7 @@ import {
 } from "@/errors/evaluation";
 import { answer, isWriting, known } from "@/evaluation/asking";
 import { nameOrString } from "@/evaluation/base-forms/primitive";
+import { Pending } from "@/evaluation/compiled";
 import {
   assign,
   declares,
@@ -34,6 +35,7 @@ import {
 } from "@/evaluation/environment";
 import { declaredIn, definedIn } from "@/evaluation/hoisting";
 import { notTruth } from "@/evaluation/special-forms/cond";
+import { Delayed } from "@/evaluation/special-forms/delay";
 import {
   suspendArguments,
   suspend as suspendIn,
@@ -441,6 +443,19 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
       }),
     eval: (form: Form) => evaluateEval(form),
     quote: ([_, quoted]: Form) => Effect.succeed(quoted),
+    delay: ([_, expression]: Form) =>
+      Effect.map(
+        LionEnvironmentService,
+        (environment) =>
+          new Delayed(
+            () =>
+              new Pending(
+                evaluate(expression as LionExpressionType).pipe(
+                  Effect.provideService(LionEnvironmentService, environment)
+                )
+              )
+          )
+      ),
     lambda: ([_, parameters, body]: Form) =>
       Effect.gen(function* () {
         const environment = yield* scope;

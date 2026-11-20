@@ -29,6 +29,7 @@
     "./evaluation/special-forms/begin": "./dist/evaluation/special-forms/begin.mjs",
     "./evaluation/special-forms/cond": "./dist/evaluation/special-forms/cond.mjs",
     "./evaluation/special-forms/define": "./dist/evaluation/special-forms/define.mjs",
+    "./evaluation/special-forms/delay": "./dist/evaluation/special-forms/delay.mjs",
     "./evaluation/special-forms/eval": "./dist/evaluation/special-forms/eval.mjs",
     "./evaluation/special-forms/function": "./dist/evaluation/special-forms/function.mjs",
     "./evaluation/special-forms/lambda": "./dist/evaluation/special-forms/lambda.mjs",

@@ -117,9 +117,11 @@ describe("a match on a parameter with a contract, with no fallback", () => {
       const match = flattenAnalysis(analyze(program as never, stdlib)).find(
         (node) => node.specialForm === "match"
       );
-      const covered = new Set(cases.flatMap((name) => FINITE[name][1]));
-      const leaves = FINITE[contract][1].some(
-        (value: unknown) => !covered.has(value as never)
+      const covered = new Set<unknown>(
+        cases.flatMap((name) => [...(FINITE[name][1] as readonly unknown[])])
+      );
+      const leaves = (FINITE[contract][1] as readonly unknown[]).some(
+        (value) => !covered.has(value as never)
       );
       expect(match?.warning !== undefined).toBe(leaves);
     }

@@ -80,7 +80,7 @@ Status: `todo`, `doing`, `done (<commit>)`.
 
 ### D. New values and control
 
-9. **`delay` and `force`** — todo. As Racket: `["delay", expr]` makes a promise, which `force` runs once and keeps; `force` of any other value gives it back.
+9. **`delay` and `force`** — done (commit "feat(core): delay makes a promise"). `Delayed` in `evaluation/special-forms/delay.ts`; `value/force` and `value/promise?` in the value module; grid row "delay and force", every place like plain code. As Racket: `["delay", expr]` makes a promise, which `force` runs once and keeps; `force` of any other value gives it back.
 10. **Failures a program can catch and read as data** — todo. As Racket's `with-handlers` and `raise`: a failure caught as a record (its kind and message, and the data it was raised with). Never catches waiting or asking, which are not failures.
 11. **Numbers that carry their units** — todo. Pint's way, checked when the program runs: a quantity is a JSON record of a value and a unit, the unit a record from base unit to whole exponent, equal when the JSON is. Arithmetic checks units; schemas say what unit a value has; the solver solves for exponents.
 12. **Host code that watches a query** — todo. The database keeps derived rows up to date already; add a way for host code (and Lion code) to be told the answers that came and went after each change.

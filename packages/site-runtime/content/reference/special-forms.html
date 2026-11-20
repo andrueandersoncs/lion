@@ -53,6 +53,25 @@
   ["greet"]]
 </lion-example>
 
+<h2 id="form-delay"><code>delay</code></h2>
+<code-block lang="json">
+["delay", expression]
+</code-block>
+<ul>
+  <li>Returns a promise of <code>expression</code>, in the scope the form is written in, as Racket's <code>delay</code> does. Nothing runs until <a href="#module-value"><code>value/force</code></a> asks.</li>
+  <li>The first force runs the expression and keeps its value; every force after gives that value without running it again. A failure keeps nothing, so the next force runs the expression again. A promise forced while it is being forced fails, since forcing it would never end.</li>
+  <li><code>value/force</code> of any other value gives the value, and <code>value/promise?</code> tells a promise apart. A promise is not data: a fact or a query's answer cannot hold one.</li>
+</ul>
+<lion-example name="delay">
+["begin",
+  ["define", "runs", 0],
+  ["define", "total", ["delay", ["begin", ["set!", "runs", ["number/add", "runs", 1]], ["aggregate/sum", ["array/range", 0, 1000]]]]],
+  {"before a force, the expression has run": "runs",
+   "forced": ["value/force", "total"],
+   "forced again": ["value/force", "total"],
+   "after two forces, it has run": "runs"}]
+</lion-example>
+
 <h2 id="form-set"><code>set!</code></h2>
 <code-block lang="json">
 ["set!", name, expression]

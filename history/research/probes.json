@@ -23458,5 +23458,30 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "case": "delay-forced-twice",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      ["define", "runs", 0],
+      [
+        "define",
+        "later",
+        ["delay", ["begin", ["set!", "runs", ["number/add", "runs", 1]], 7]]
+      ],
+      ["value/force", "later"],
+      ["value/force", "later"],
+      [
+        "cond",
+        [["number/equals?", "runs", 1], ["quote", "runs-once"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "feature": "delay",
+    "kind": "special-form",
+    "program": ["lion/special-form?", "delay"]
   }
 ]

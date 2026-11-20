@@ -57,6 +57,7 @@ export const SPECIAL_FORM_NAMES = [
   "snapshot",
   "invariant",
   "set!",
+  "delay",
 ] as const;
 
 export type SpecialFormName = (typeof SPECIAL_FORM_NAMES)[number];
@@ -95,6 +96,7 @@ const Pair = Schema.Tuple([Expression, Expression]);
 
 export const EvalFormSchema = form("eval", Expression);
 export const QuoteFormSchema = form("quote", Expression);
+export const DelayFormSchema = form("delay", Expression);
 export const BeginFormSchema = formWithMore("begin");
 export const DefineFormSchema = form("define", NameSchema, Expression);
 export const SetFormSchema = form("set!", NameSchema, Expression);
@@ -226,6 +228,7 @@ const SHAPES: Record<SpecialFormName, (value: unknown) => boolean> = {
   snapshot: Schema.is(form("snapshot")),
   invariant: Schema.is(InvariantFormSchema),
   "set!": Schema.is(SetFormSchema),
+  delay: Schema.is(DelayFormSchema),
 };
 
 /** What each special form takes, said when an array names it but has another shape. */
@@ -268,6 +271,8 @@ export const USAGE: Record<SpecialFormName, string> = {
     'invariant takes a goal and its options, as in ["invariant", ["broken", "?x"], {"assert": "none"}].',
   "set!":
     'set! takes a name a scope binds and an expression, as in ["set!", "count", ["number/add", "count", 1]].',
+  delay:
+    'delay takes one expression, which value/force runs once, as in ["delay", ["number/add", 1, 2]].',
 };
 
 /** True when an array has the shape of the special form it names. */

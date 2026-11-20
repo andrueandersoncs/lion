@@ -156,6 +156,19 @@ Evaluates a value, binds the name to it in the body the form stands in, a lambda
 ["define", "answer", 42]
 ```
 
+### `delay`
+
+Makes a promise of an expression, as Racket's `delay` does: nothing runs until `value/force` asks for its value, the first force runs the expression and keeps the value, and every force after gives it without running the expression again.
+
+```json
+["begin",
+  ["define", "runs", 0],
+  ["define", "total", ["delay", ["begin", ["set!", "runs", ["number/add", "runs", 1]], ["aggregate/sum", ["array/range", 0, 1000]]]]],
+  {"forced": ["value/force", "total"], "forced again": ["value/force", "total"], "runs": "runs"}]
+```
+
+Evaluates to `{"forced": 499500, "forced again": 499500, "runs": 1}`. A failure keeps nothing, so the next force runs the expression again, and a promise forced while it is being forced fails. `value/force` of any other value gives the value, and `value/promise?` tells a promise apart. A promise is not data, so a fact or a query's answer cannot hold one.
+
 ### `set!`
 
 Changes the value of the nearest binding of a name and returns the value, as in Scheme. It is how a lambda changes a name around it:

@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import { takes } from "@/errors/evaluation";
+import { Delayed } from "@/evaluation/special-forms/delay";
 import { allowsOnly, Unknown } from "@/logic/terms";
 
 /** A predicate on one value. */
@@ -30,7 +31,8 @@ export const module = {
       typeof a === "object" &&
       a !== null &&
       !Array.isArray(a) &&
-      !(a instanceof Unknown)
+      !(a instanceof Unknown) &&
+      !(a instanceof Delayed)
   ),
 
   /**
@@ -40,6 +42,17 @@ export const module = {
   "unknown?": is((a) => a instanceof Unknown),
 
   "array?": is(Array.isArray),
+
+  /** A promise `delay` made, forced or not. */
+  "promise?": is((a) => a instanceof Delayed),
+
+  /**
+   * The value of a promise: its expression run the first time, and kept,
+   * as Racket's `force` does. Any other value is its own value.
+   */
+  force: takes(1, (a: unknown) =>
+    a instanceof Delayed ? a.force() : Effect.succeed(a)
+  ),
 
   /** As a schema, it stands for null. */
   "null?": allowsOnly(

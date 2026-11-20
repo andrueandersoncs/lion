@@ -5,6 +5,7 @@ import { declares, type Scope } from "@/evaluation/environment";
 import { compileBegin } from "@/evaluation/special-forms/begin.ts";
 import { compileCond } from "@/evaluation/special-forms/cond.ts";
 import { compileDefine } from "@/evaluation/special-forms/define.ts";
+import { compileDelay } from "@/evaluation/special-forms/delay";
 import { compileEval } from "@/evaluation/special-forms/eval.ts";
 import { compileFunctionCall } from "@/evaluation/special-forms/function.ts";
 import { compileLambda } from "@/evaluation/special-forms/lambda";
@@ -84,6 +85,7 @@ const SPECIAL_FORMS: Record<
   begin: (form, scope) => compileBegin(form, scope),
   define: (form, scope) => compileDefine(form, scope),
   "set!": (form, scope) => compileSet(form, scope),
+  delay: (form, scope) => compileDelay(form, scope),
   eval: (form, scope) => compileEval(form, scope),
   quote: (form) => compileQuote(form),
   lambda: (form, scope) => compileLambda(form, scope),

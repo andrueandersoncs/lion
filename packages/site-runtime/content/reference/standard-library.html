@@ -176,6 +176,8 @@
     <tr data-entry="value/symbol?"><td><code>["value/symbol?", x]</code></td><td>Whether <code>x</code> is a JavaScript symbol</td></tr>
     <tr data-entry="value/any?"><td><code>["value/any?", x]</code></td><td><code>true</code> for every value: the schema that anything fits</td></tr>
     <tr data-entry="value/identity"><td><code>["value/identity", x]</code></td><td><code>x</code></td></tr>
+    <tr data-entry="value/promise?"><td><code>["value/promise?", x]</code></td><td>Whether <code>x</code> is a promise <a href="#form-delay"><code>delay</code></a> made</td></tr>
+    <tr data-entry="value/force"><td><code>["value/force", x]</code></td><td>The value of a promise: its expression run the first time, and kept, as Racket's <code>force</code> gives it; any other <code>x</code> as it is</td></tr>
   </tbody>
 </table>
 <lion-example name="value">
@@ -192,7 +194,10 @@
  "symbol? of a module's own symbol": ["value/symbol?", "number/symbol"],
  "symbol? of text": ["value/symbol?", ["quote", "number/symbol"]],
  "any?": ["value/any?", null],
- "identity": ["value/identity", 42]}
+ "identity": ["value/identity", 42],
+ "promise?": ["value/promise?", ["delay", 1]],
+ "force": ["value/force", ["delay", ["number/add", 1, 2]]],
+ "force of a plain value": ["value/force", 3]}
 </lion-example>
 <p>A rule that invents gives unknowns, and <code>value/unknown?</code> keeps them apart from the values that were given:</p>
 <lion-example name="value/unknown?">

@@ -1,0 +1,29 @@
+{
+  "claims": [
+    {
+      "quote": "Makes a promise of an expression, as Racket's `delay` does: nothing runs until `value/force` asks for its value, the first force runs the expression and keeps the value, and every force after gives it without running the expression again.",
+      "says": { "feature": "delay", "kind": "special-form", "present": true }
+    },
+    {
+      "quote": "`value/force` of any other value gives the value, and `value/promise?` tells a promise apart.",
+      "says": { "feature": "value/force", "kind": "function", "present": true }
+    },
+    {
+      "quote": "`value/force` of any other value gives the value, and `value/promise?` tells a promise apart.",
+      "says": {
+        "feature": "value/promise?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "Makes a promise of an expression, as Racket's `delay` does: nothing runs until `value/force` asks for its value, the first force runs the expression and keeps the value, and every force after gives it without running the expression again.",
+      "says": {
+        "behavior": "delay-forced-twice",
+        "is": "runs-once",
+        "area": "evaluation",
+        "follows": "racket"
+      }
+    }
+  ]
+}

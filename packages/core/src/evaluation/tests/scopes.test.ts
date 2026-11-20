@@ -8,7 +8,9 @@
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
+import { makeEnvironment } from "@/evaluation/environment";
 import { run } from "@/evaluation/evaluate";
+import { Delayed } from "@/evaluation/special-forms/delay";
 import { LogicDatabase } from "@/logic/database";
 import { loadDatabase, saveDatabase } from "@/logic/snapshot";
 import { element, oneOf } from "@/logic/tests/programs";
@@ -19,6 +21,7 @@ import {
   type SpecialFormName,
   USAGE,
 } from "@/schemas/evaluation";
+import { LionEnvironmentService } from "@/services/evaluation";
 
 const OPTIONS = { arbitrary: { runs: 200 } };
 
@@ -58,14 +61,30 @@ const json: Arbitrary.Arbitrary<unknown> = Arbitrary.schema(
 
 const form = Arbitrary.schema(Schema.Literals(SPECIAL_FORM_NAMES));
 
+/** What a program gives; a promise as what forcing it gives, its contents. */
 const outcome = (program: unknown) =>
-  Effect.map(Effect.result(run(program, stdlib)), (result) =>
-    result._tag === "Success"
-      ? { value: result.success as unknown }
-      : {
-          error: (result.failure as { _tag: string })._tag,
-          message: (result.failure as Error).message,
-        }
+  Effect.map(
+    Effect.result(
+      Effect.flatMap(run(program, stdlib), (value) =>
+        value instanceof Delayed
+          ? Effect.map(
+              Effect.provideService(
+                value.force(),
+                LionEnvironmentService,
+                makeEnvironment({})
+              ),
+              (forced) => ({ promised: forced })
+            )
+          : Effect.succeed(value)
+      )
+    ),
+    (result) =>
+      result._tag === "Success"
+        ? { value: result.success as unknown }
+        : {
+            error: (result.failure as { _tag: string })._tag,
+            message: (result.failure as Error).message,
+          }
   );
 
 describe("what a string means", () => {

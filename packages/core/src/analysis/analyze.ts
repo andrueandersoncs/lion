@@ -116,6 +116,7 @@ const roleByIndex =
 const ROLES: Record<SpecialFormName, Role> = {
   eval: roleByIndex(["operator", "expression"], "argument"),
   quote: roleByIndex(["operator", "quoted-value"], "quoted-value"),
+  delay: roleByIndex(["operator", "expression"], "expression"),
   begin: roleByIndex(["operator"], "sequence-item"),
   define: roleByIndex(["operator", "binding", "value"], "value"),
   "set!": roleByIndex(["operator", "binding", "value"], "value"),

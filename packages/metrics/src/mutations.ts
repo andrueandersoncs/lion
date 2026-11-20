@@ -4133,4 +4133,19 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "  return covered === undefined",
     tests: ["src/analysis/tests/match-cases.test.ts"],
   },
+  {
+    name: "a promise runs its expression at every force",
+    file: core("evaluation/special-forms/delay.ts"),
+    find: "    if (this.given !== undefined) {\n      return Effect.succeed(this.given.value);",
+    replace:
+      "    if (this.given === null) {\n      return Effect.succeed(this.given.value);",
+    tests: ["src/evaluation/tests/delay.test.ts"],
+  },
+  {
+    name: "a promise forced while it is being forced runs again",
+    file: core("evaluation/special-forms/delay.ts"),
+    find: "    if (this.running) {",
+    replace: "    if (this.running && this.given !== undefined) {",
+    tests: ["src/evaluation/tests/delay.test.ts"],
+  },
 ];
