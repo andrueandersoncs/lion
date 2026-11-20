@@ -430,17 +430,25 @@ const READERS: Readonly<Record<string, readonly string[]>> = {
   tag: ["tag"],
 };
 
-/** The facts of a database, by relation, as its snapshot writes them. */
+/**
+ * The facts of a database, by relation, as its snapshot writes them: the
+ * rows of its one `fact` form, in order, grouped by relation.
+ */
 const factsOf = (database: LogicDatabase) =>
-  Effect.map(saveDatabase(database), (program) =>
-    Object.fromEntries(
-      (program as Form[]).flatMap((form) =>
-        form[0] === "fact"
-          ? [[(form[1] as Form)[0] as string, JSON.stringify(form)]]
-          : []
-      )
-    )
-  );
+  Effect.map(saveDatabase(database), (program) => {
+    const rows: Record<string, Form[]> = {};
+    for (const form of program as Form[]) {
+      if (form[0] === "fact") {
+        for (const row of form.slice(1) as Form[]) {
+          rows[row[0] as string] ??= [];
+          rows[row[0] as string]?.push(row);
+        }
+      }
+    }
+    return Object.fromEntries(
+      Object.entries(rows).map(([name, list]) => [name, JSON.stringify(list)])
+    );
+  });
 
 const change = Arbitrary.all({
   form: element(["fact", "retract"]),

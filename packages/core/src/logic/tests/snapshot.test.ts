@@ -139,14 +139,18 @@ describe("snapshots", () => {
         ["relation", "edge", ["from", "to"]],
         ["relation", "path", ["from", "to"]],
         ["relation", "label", ["node", "text"], { key: ["node"] }],
-        ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
-        ["fact", ["label", "a", "start"]],
         ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
         [
           "rule",
           ["path", "?x", "?z"],
           ["path", "?x", "?y"],
           ["edge", "?y", "?z"],
+        ],
+        [
+          "fact",
+          ["edge", "a", "b"],
+          ["edge", "b", "c"],
+          ["label", "a", "start"],
         ],
       ]);
     })

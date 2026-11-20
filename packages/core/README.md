@@ -548,7 +548,7 @@ Fails with `Adding this fact breaks an invariant, so nothing changed. The invari
 - Invariants take only the `"assert"` option, read as written. `["retract", ["invariant", goal, options]]` takes one back. See [Taking rules back](#taking-rules-back).
 - A change to facts is checked against the invariants that read what it changed. An invariant that expects no answers, and whose goal matches the rows of the relation that changed, is asked about the new rows alone, so checking a write does not cost more as the relation grows. Which invariants are asked never changes whether a change is kept. An invariant that calls a function the host added is asked in full after every change, since Lion cannot see what such a function reads; see [Host functions in rules](#host-functions-in-rules).
 - When an invariant's goal says an answer fails a [schema](#schemas), the message ends with where the answer does not fit.
-- Snapshots write invariants after the rules, so loading one checks them against the whole database.
+- Snapshots write the rules, then every fact in one `fact` form, then the invariants, so loading one checks the facts and the invariants once, against the whole program, as the database was checked. A database whose facts hold only beside every rule, such as two registered mothers of twins that an equality rule makes one, loads as it was saved.
 
 ### Lists
 
@@ -773,7 +773,7 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
 
 ### Snapshots
 
-`["snapshot"]` returns a Lion program that rebuilds the current database: a `relation` form for every relation, a `schema` form for the schemas each `schema` form declared, a `fact` form with the facts of each relation, every `rule`, and every `invariant`. Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.
+`["snapshot"]` returns a Lion program that rebuilds the current database: a `relation` form for every relation, a `schema` form for the schemas each `schema` form declared, every `rule`, one `fact` form with every fact, and every `invariant`. Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.
 
 ```json
 ["begin",
@@ -784,7 +784,7 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
   ["snapshot"]]
 ```
 
-Evaluates to `["begin", ["relation", "edge", ["from", "to"]], ["relation", "path", ["from", "to"]], ["fact", ["edge", "a", "b"], ["edge", "b", "c"]], ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]]]`.
+Evaluates to `["begin", ["relation", "edge", ["from", "to"]], ["relation", "path", ["from", "to"]], ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]], ["fact", ["edge", "a", "b"], ["edge", "b", "c"]]]`.
 
 - Strings that would evaluate to something else when loaded, such as relation names, names bound in the environment, namespaced names like `"number/add"`, and `?variable` names, are written inside `quote`. So are lists and records.
 - Rules are written as they were evaluated. A name like `budget` in a rule appears as its value, and a function appears under the name the environment gives it: with `plus` defined as `number/add`, `["plus", "?x", 1]` is written `["number/add", "?x", 1]`.

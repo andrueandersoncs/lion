@@ -1,0 +1,36 @@
+{
+  "title": "A snapshot writes the rules, then every fact in one form, then the invariants",
+  "context": "A snapshot wrote each relation's facts in a fact form of its own, then each rule, then the invariants. Each form is a change checked on its own, and an equality rule is checked when it is added, so loading checked it against the facts and only the rules written before it. A database built rules first, such as twins a and b with mothers eve and fay registered for a, which an equality rule and the twins' rules make one only together, was saved and then failed to load with 'Adding this rule breaks an invariant'. The README said that loading checks invariants against the whole database. The weights session found this on 2026-11-20 and the user agreed to the change.",
+  "decision": "A snapshot writes the relations and schemas, then every rule, then one fact form with every fact, then the invariants. Loading it adds the rules to a database with no facts, then checks every fact once, as one change, against the whole program, and then the invariants, as the database the snapshot was taken of was checked when its facts came.",
+  "consequences": "A database whose facts hold only beside every rule loads as it was saved, and saving the loaded database gives the same program. A rule whose body holds with no facts, such as one of only not goals, is now added to a database with no facts; it is still checked, and refused only if it breaks a key or an invariant there. Programs that read a snapshot's forms find one fact form, after the rules.",
+  "alternatives": [
+    {
+      "option": "A fact form per relation, before the rules, as before",
+      "rejected": "The rules are then checked against facts without the rules that make them hold, so a valid database fails to load."
+    },
+    {
+      "option": "The facts after the rules, in a form per relation",
+      "rejected": "Facts of two relations that hold only together, such as a twin and a registered mother, would still be checked one relation at a time."
+    },
+    {
+      "option": "Load a snapshot without checking it",
+      "rejected": "A snapshot is ordinary Lion, and evaluating it as any program is evaluated is what makes it one."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A snapshot writes the relations and schemas, then every rule, then one fact form with every fact, then the invariants.",
+      "says": {
+        "decision": "snapshot-form-order",
+        "chose": "rules-then-one-fact-form",
+        "over": [
+          "fact-form-per-relation-first",
+          "fact-form-per-relation-after-rules",
+          "load-without-checks"
+        ],
+        "because": "loading checks the facts once against the whole program, as the database was checked, so every database a snapshot is taken of loads",
+        "area": "logic"
+      }
+    }
+  ]
+}

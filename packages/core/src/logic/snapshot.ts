@@ -3,8 +3,10 @@
  * schemas, facts, rules, and invariants as `relation`, `schema`, `fact`,
  * `rule`, and `invariant` forms. Evaluating the program into an empty
  * database rebuilds it, so a snapshot is both the save format and ordinary
- * Lion that can be read, edited, and run. Invariants come last, so loading
- * never checks them against a half-built database.
+ * Lion that can be read, edited, and run. The rules come before the facts,
+ * which are written in one `fact` form, and the invariants come last, so
+ * loading checks the facts and the invariants once, against the whole
+ * program, as the database they were taken from was checked.
  */
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
@@ -108,14 +110,6 @@ export const saveDatabase = (
         forms.push(relationForm(relation));
       }
       forms.push(...schemaForms(database, goal));
-      for (const [name, facts] of database.facts) {
-        if (facts.size > 0) {
-          forms.push([
-            "fact",
-            ...[...facts.values()].map((tuple) => [name, ...tuple.map(goal)]),
-          ]);
-        }
-      }
       // Alternatives of one `or` share their source, so each rule form is
       // written once.
       const seen = new Set<unknown>();
@@ -125,6 +119,17 @@ export const saveDatabase = (
           seen.add(rule.source);
           forms.push(["rule", ...(rule.definition ?? []).map(goal)]);
         }
+      }
+      // Facts that hold only together, or only beside every rule, are one
+      // change, as one `fact` form is.
+      const facts: unknown[] = [];
+      for (const [name, rows] of database.facts) {
+        for (const tuple of rows.values()) {
+          facts.push([name, ...tuple.map(goal)]);
+        }
+      }
+      if (facts.length > 0) {
+        forms.push(["fact", ...facts]);
       }
       for (const invariant of database.invariants) {
         forms.push([

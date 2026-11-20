@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 197 questions have been decided, 85 records explain them, and of what the records assert, 620 hold when Lion is run, 5 are broken, 341 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 198 questions have been decided, 86 records explain them, and of what the records assert, 620 hold when Lion is run, 5 are broken, 342 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -203,6 +203,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`solve-typed-variables`](#solve-typed-variables) | `exact-linear-decision-in-lion` | [A variable that a schema types and no goal binds is solved for: the filters about it become constraints, decided exactly in Lion](#solve-typed-variables) |
 | 2026-11-19 | [`eventually-rules`](#eventually-rules) | `questions-over-run-states` | [Rules about what must eventually happen are questions about the states of every run, which the solver decides for amounts of any size](#eventually-rules) |
 | 2026-11-19 | [`command-proofs`](#command-proofs) | `induction-as-a-question` | [A proof that every command keeps a rule is a question to the solver, and the solver's proofs come with certificates anyone can check](#command-proofs) |
+| 2026-11-20 | [`snapshot-form-order`](#snapshot-form-order) | `rules-then-one-fact-form` | [A snapshot writes the rules, then every fact in one form, then the invariants](#snapshot-rules-before-facts) |
 
 <a id="program-representation"></a>
 
@@ -4456,3 +4457,33 @@ Recorded 2026-11-19 in `history/notes/command-proofs.json`.
 - Holds when Lion is run: `solver-runs-closures` exists. "The solver runs a lambda written where it runs, closed over the values it works out, by its body"
 - Holds when Lion is run: `solver-library-call-wrong-arguments` is `error`. "and runs a library function only with as many arguments as the library says it takes"
 - Holds when Lion is run: `schema-includes-integer-in-number` is `included`. "['schema/includes?', a, b] says whether every value a allows fits b"
+
+<a id="snapshot-form-order"></a>
+
+## snapshot-form-order
+
+Now: `rules-then-one-fact-form`.
+
+- 2026-11-20 `snapshot-form-order`: `rules-then-one-fact-form` over `fact-form-per-relation-first`, `fact-form-per-relation-after-rules`, `load-without-checks`: "A snapshot writes the relations and schemas, then every rule, then one fact form with every fact, then the invariants." (`snapshot-rules-before-facts.json`)
+
+<a id="snapshot-rules-before-facts"></a>
+
+### A snapshot writes the rules, then every fact in one form, then the invariants
+
+Recorded 2026-11-20 in `history/notes/snapshot-rules-before-facts.json`.
+
+**Context.** A snapshot wrote each relation's facts in a fact form of its own, then each rule, then the invariants. Each form is a change checked on its own, and an equality rule is checked when it is added, so loading checked it against the facts and only the rules written before it. A database built rules first, such as twins a and b with mothers eve and fay registered for a, which an equality rule and the twins' rules make one only together, was saved and then failed to load with 'Adding this rule breaks an invariant'. The README said that loading checks invariants against the whole database. The weights session found this on 2026-11-20 and the user agreed to the change.
+
+**Decision.** A snapshot writes the relations and schemas, then every rule, then one fact form with every fact, then the invariants. Loading it adds the rules to a database with no facts, then checks every fact once, as one change, against the whole program, and then the invariants, as the database the snapshot was taken of was checked when its facts came.
+
+**Consequences.** A database whose facts hold only beside every rule loads as it was saved, and saving the loaded database gives the same program. A rule whose body holds with no facts, such as one of only not goals, is now added to a database with no facts; it is still checked, and refused only if it breaks a key or an invariant there. Programs that read a snapshot's forms find one fact form, after the rules.
+
+**Alternatives considered.**
+
+- A fact form per relation, before the rules, as before. The rules are then checked against facts without the rules that make them hold, so a valid database fails to load.
+- The facts after the rules, in a form per relation. Facts of two relations that hold only together, such as a twin and a registered mother, would still be checked one relation at a time.
+- Load a snapshot without checking it. A snapshot is ordinary Lion, and evaluating it as any program is evaluated is what makes it one.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `snapshot-form-order`: `rules-then-one-fact-form`. "A snapshot writes the relations and schemas, then every rule, then one fact form with every fact, then the invariants."

@@ -1,0 +1,25 @@
+{
+  "claims": [
+    {
+      "quote": "A database whose facts hold only beside every rule, such as two registered mothers of twins that an equality rule makes one, loads as it was saved, and saving the loaded database gives the same program; before, loading it failed with 'Adding this rule breaks an invariant'.",
+      "says": {
+        "behavior": "snapshot-of-valid-database",
+        "is": "loads",
+        "area": "logic",
+        "fixes": true,
+        "was": "error"
+      },
+      "decisions": ["snapshot-rules-before-facts"]
+    },
+    {
+      "quote": "A property draws programs from the weights properties' generators, derives each from nothing, saves it, loads the snapshot, and checks that the loaded database answers the same and is saved the same. It failed within 1 to 4 runs on the old order.",
+      "says": {
+        "behavior": "snapshot-round-trip-property",
+        "is": "by-property",
+        "area": "tests",
+        "was": "untested"
+      },
+      "decisions": ["snapshot-rules-before-facts"]
+    }
+  ]
+}

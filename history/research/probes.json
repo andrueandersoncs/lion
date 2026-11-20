@@ -5213,8 +5213,8 @@
         [
           [
             "=",
-            ["array/slice", "heads", -4],
-            ["quote", ["rule", "rule", "invariant", "invariant"]]
+            ["array/slice", "heads", -5],
+            ["quote", ["rule", "rule", "fact", "invariant", "invariant"]]
           ],
           ["quote", "after-rules"]
         ],
@@ -19009,7 +19009,7 @@
           ["object/get", ["repo/run", "cli-database"], "output"],
           [
             "quote",
-            "store.json:\n[\"begin\",\n  [\"relation\",\"stock\",[\"item\",\"count\"]],\n  [\"relation\",\"low\",[\"item\"]],\n  [\"relation\",\"lows\",[\"count\"]],\n  [\"fact\",\n    [\"stock\",\"nails\",3],\n    [\"stock\",\"bolts\",9]],\n  [\"rule\",[\"low\",\"?item\"],[\"stock\",\"?item\",\"?count\"],[\"number/lessThan\",\"?count\",5]],\n  [\"rule\",[\"lows\",[\"aggregate/count\",\"?item\"]],[\"low\",\"?item\"]],\n  [\"invariant\",[\"and\",[\"stock\",\"?item\",\"?count\"],[\"number/lessThan\",\"?count\",0]],{\"assert\":\"none\"}]]\n"
+            "store.json:\n[\"begin\",\n  [\"relation\",\"stock\",[\"item\",\"count\"]],\n  [\"relation\",\"low\",[\"item\"]],\n  [\"relation\",\"lows\",[\"count\"]],\n  [\"rule\",[\"low\",\"?item\"],[\"stock\",\"?item\",\"?count\"],[\"number/lessThan\",\"?count\",5]],\n  [\"rule\",[\"lows\",[\"aggregate/count\",\"?item\"]],[\"low\",\"?item\"]],\n  [\"fact\",\n    [\"stock\",\"nails\",3],\n    [\"stock\",\"bolts\",9]],\n  [\"invariant\",[\"and\",[\"stock\",\"?item\",\"?count\"],[\"number/lessThan\",\"?count\",0]],{\"assert\":\"none\"}]]\n"
           ]
         ],
         ["quote", "one-form-and-fact-per-line"]

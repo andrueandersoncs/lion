@@ -31,7 +31,9 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { LogicDatabase } from "@/logic/database";
+import { loadDatabase, saveDatabase } from "@/logic/snapshot";
 import { keptBy } from "@/logic/weights";
+import { stdlib } from "@/modules";
 import { seed, shuffled } from "./merges";
 import { attempt, element, nearestSum, oneOf } from "./programs";
 
@@ -572,6 +574,46 @@ const told = (database: LogicDatabase) =>
     }
     return out;
   });
+
+describe("a snapshot of rows with weights", () => {
+  // A snapshot writes the rules, then every fact in one form, then the
+  // invariants, so loading it checks the facts against the whole program,
+  // as the database it was taken of checked them. A program whose facts
+  // hold only with every rule, such as two registered mothers of a twin an
+  // equality rule makes one, loads, answers the same, and is saved the same.
+  it.effect.prop(
+    "loads into a database that answers the same and is saved the same",
+    {
+      program: oneOf(
+        apart,
+        clashing,
+        Arbitrary.all({
+          keyed: program.keyed,
+          start: program.start,
+          ways: program.ways,
+        })
+      ),
+    },
+    ({ program: { keyed, start, ways } }) =>
+      Effect.gen(function* () {
+        const saved = yield* fromNothing(rulesOf(ways, keyed), start);
+        if (saved === undefined) {
+          return;
+        }
+        const snapshot = yield* saveDatabase(saved);
+        const loaded = yield* Effect.result(
+          loadDatabase(JSON.parse(JSON.stringify(snapshot)), stdlib)
+        );
+        expect(loaded._tag).toBe("Success");
+        if (loaded._tag !== "Success") {
+          return;
+        }
+        expect(yield* answers(loaded.success)).toEqual(yield* answers(saved));
+        expect(yield* saveDatabase(loaded.success)).toEqual(snapshot);
+      }),
+    OPTIONS
+  );
+});
 
 describe("why, told from the levels rows are held from", () => {
   it.effect.prop(

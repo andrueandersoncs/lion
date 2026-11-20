@@ -625,7 +625,7 @@
 ["snapshot"]
 </code-block>
 <ul>
-  <li>Returns a <code>begin</code> program that rebuilds the current database: a <code>relation</code> form per relation, a <code>schema</code> form for the schemas each <code>schema</code> form declared, a <code>fact</code> form per relation with facts, every <code>rule</code>, and every <code>invariant</code>, in that order.</li>
+  <li>Returns a <code>begin</code> program that rebuilds the current database: a <code>relation</code> form per relation, a <code>schema</code> form for the schemas each <code>schema</code> form declared, every <code>rule</code>, one <code>fact</code> form with every fact, and every <code>invariant</code>, in that order. Loading it checks the facts and the invariants once, against the whole program, as the database was checked, so facts that hold only beside every rule load as they were saved.</li>
   <li>A schema is written with the form of its shape, and schemas that one form declared are written in one form, so they can name each other when it is loaded. The schema of a relation's rows is written as the invariant it stands for.</li>
   <li>Strings that would evaluate to something else are written inside <code>quote</code>: logic variable names, relation names, names bound in the environment, and namespaced names such as <code>"number/add"</code>. Lists and records are quoted too.</li>
   <li>A function is written by the name the environment binds it to, so a rule that calls <code>number/add</code> under another name is written with <code>number/add</code>.</li>
