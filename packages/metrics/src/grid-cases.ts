@@ -564,6 +564,32 @@ const expectedFacts = (model: Model) => [
   ),
 ];
 
+/**
+ * Goals that let the solver work out `?x` for itself, by type and bounds
+ * rather than from facts: a whole number from the least `n` to the
+ * greatest, and none of those between that `n` lacks.
+ */
+const solvedFor = (model: Model): unknown[] => {
+  const xs = model.map(([x]) => x as number);
+  if (xs.length === 0) {
+    return [
+      ["schema/fits?", X, "value/integer?"],
+      ["=", 0, 1],
+    ];
+  }
+  const [least, most] = [Math.min(...xs), Math.max(...xs)];
+  const lacking = Array.from(
+    { length: most - least + 1 },
+    (_, at) => least + at
+  ).filter((x) => !xs.includes(x));
+  return [
+    ["schema/fits?", X, "value/integer?"],
+    ["number/greaterThanOrEqualTo", X, least],
+    ["number/lessThanOrEqualTo", X, most],
+    ...lacking.map((x) => ["boolean/not", ["number/equals?", X, x]]),
+  ];
+};
+
 export const POSITIONS: readonly Position[] = [
   {
     name: "query",
@@ -617,6 +643,15 @@ export const POSITIONS: readonly Position[] = [
     name: "find",
     question: (expression) => ["find", ["array/make", X, expression], ["n", X]],
     expected: pairs,
+  },
+  {
+    name: "solved for",
+    question: (expression, model) => [
+      "query",
+      ["and", ...solvedFor(model), ["=", "?v", expression]],
+      ORDERED,
+    ],
+    expected: rows,
   },
   {
     name: "aggregate",

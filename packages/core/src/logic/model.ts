@@ -13,7 +13,7 @@
  * `not`, in a find, or as a value, it is asked for an answer whose variables
  * are fixed, and every other variable in it is the question's own.
  */
-import { Effect } from "effect";
+import { Effect, Result } from "effect";
 import { ArithmeticError, LogicError, logicError } from "@/errors/evaluation";
 import { aggregator } from "@/logic/aggregates";
 import {
@@ -24,11 +24,36 @@ import {
   type Literal,
   planLiterals,
   questionPlans,
+  Solved,
 } from "@/logic/compile";
 import { matching } from "@/logic/fit";
 import { candidatesOf } from "@/logic/listing";
 import { factsOf, originalName } from "@/logic/magic";
+import {
+  type Constraint,
+  enumerate,
+  add as plusRational,
+  type Rational,
+  type Sort,
+  solve as solveConstraints,
+  multiply as timesRational,
+} from "@/logic/solver";
 import { mentioned, type Stratum, strataOf } from "@/logic/strata";
+import {
+  formulaOf,
+  type Context as SymbolicContext,
+  shapeFor,
+  term as symbolicTerm,
+} from "@/logic/symbolic";
+import {
+  and,
+  type Cases,
+  concrete as concreteOf,
+  type Formula,
+  leavesOf,
+  MOST_WAYS,
+  TRUE,
+} from "@/logic/symbols";
 import {
   Atom,
   callsOf,
@@ -1153,6 +1178,422 @@ const listed = (model: Model, value: unknown, schema: unknown, vars: Vars) =>
     return out;
   });
 
+/** The name of the variable a solver's variable stands in, by where it stands. */
+const LEAF_PARTS = /[.#/]/;
+
+/** The length a name of a list's shape ends with. */
+const LENGTH_MARK = /#\d+$/;
+
+const symbolOf = (leaf: string) => leaf.split(LEAF_PARTS)[0] as string;
+
+/** A goal the solver cannot decide, which waits for values, and why. */
+interface Waiting {
+  readonly goal: Literal;
+  readonly why: string;
+}
+
+/**
+ * What a solver step works out for one combination of shapes of the
+ * variables it types: what each variable it reasons about stands for, the
+ * formula of the goals it decides, and the goals it cannot, in order, which
+ * run once it gives their variables values.
+ */
+interface Choice {
+  readonly formula: Formula;
+  readonly symbols: ReadonlyMap<string, Cases>;
+  readonly waiting: readonly Waiting[];
+}
+
+/** An effect's value, or the message it fails or dies with. */
+const attempt = <A>(work: Effect.Effect<A, unknown>) =>
+  Effect.result(
+    work.pipe(
+      Effect.mapError((error) =>
+        error instanceof Error ? error.message : String(error)
+      ),
+      Effect.catchDefect((defect) =>
+        Effect.fail(defect instanceof Error ? defect.message : String(defect))
+      )
+    )
+  );
+
+/**
+ * What a solver step works out for an answer: each combination of shapes
+ * of the variables it types, with the sorts of the solver's variables. A
+ * goal the solver cannot decide, and every goal that needs a variable such
+ * a goal defines, waits for values instead.
+ */
+const stepFormulas = (model: Model, step: Solved, vars: Vars) =>
+  Effect.gen(function* () {
+    const sorts = new Map<string, Sort>();
+    const base: SymbolicContext = {
+      evaluate: (part) =>
+        term(model, part, vars) as unknown as Effect.Effect<unknown, Error>,
+      sorts,
+      symbols: new Map(),
+    };
+    const typing = (literal: unknown) =>
+      isForm(literal, "schema/fits?") &&
+      step.symbols.includes((literal.parts[0] as LogicVariable).name);
+    const typed: [string, Cases][] = [];
+    for (const literal of step.parts) {
+      if (typing(literal)) {
+        const form = literal as LogicForm;
+        const name = (form.parts[0] as LogicVariable).name;
+        const schema = yield* term(model, form.parts[1], vars);
+        typed.push([name, (yield* shapeFor(name, schema, base)).cases]);
+      }
+    }
+    const goals = (step.parts as readonly Literal[]).filter(
+      (literal) =>
+        !(typing(literal) || step.defines.some(([, , by]) => by === literal))
+    );
+    const choices: Choice[] = [];
+    for (const shapes of shapeChoices(typed)) {
+      choices.push(yield* choiceOf(step, goals, shapes, base));
+    }
+    return { choices, sorts };
+  });
+
+/**
+ * What a solver step's goals make for one shape of each variable it types.
+ * A goal the solver cannot work out on the symbols waits, and so does every
+ * goal that needs a variable such a goal defines.
+ */
+const choiceOf = (
+  step: Solved,
+  goals: readonly Literal[],
+  shapes: readonly (readonly [string, Cases[number]])[],
+  base: SymbolicContext
+) =>
+  Effect.gen(function* () {
+    const symbols = new Map<string, Cases>(
+      shapes.map(([name, each]) => [name, [{ sym: each.sym, when: TRUE }]])
+    );
+    const context: SymbolicContext = { ...base, symbols };
+    const waiting: Waiting[] = [];
+    // The variables that waiting goals give values to.
+    const pending = new Set<string>();
+    const worked = <A>(
+      goal: Literal,
+      value: unknown,
+      work: Effect.Effect<A, unknown>
+    ) =>
+      Effect.gen(function* () {
+        const before =
+          value instanceof LogicValue
+            ? value.variables.find((name) => pending.has(name))
+            : undefined;
+        if (before !== undefined) {
+          const why = `It needs the value of ?${before}, which a goal the solver cannot decide gives.`;
+          waiting.push({ goal, why });
+          return undefined;
+        }
+        const done = yield* attempt(work);
+        if (Result.isFailure(done)) {
+          waiting.push({ goal, why: done.failure });
+          return undefined;
+        }
+        return done.success;
+      });
+    for (const [name, value, by] of step.defines) {
+      const cases = yield* worked(by, value, symbolicTerm(value, context));
+      if (cases === undefined) {
+        pending.add(name);
+      } else {
+        symbols.set(name, cases);
+      }
+    }
+    let formula: Formula = shapes.reduce<Formula>(
+      (f, [, each]) => and(f, each.when),
+      TRUE
+    );
+    for (const goal of goals) {
+      const decided = yield* worked(
+        goal,
+        goal,
+        Effect.flatMap(symbolicTerm(goal, context), formulaOf)
+      );
+      if (decided !== undefined) {
+        formula = and(formula, decided);
+      }
+    }
+    return { formula, symbols, waiting } satisfies Choice;
+  });
+
+/** The sorts of the solver's variables that some constraints and values hold. */
+const sortsFor = (
+  constraints: readonly Constraint[],
+  extra: readonly string[],
+  sorts: ReadonlyMap<string, Sort>
+) =>
+  new Map(
+    [
+      ...new Set([
+        ...constraints.flatMap((c) => [...c.linear.coefficients.keys()]),
+        ...extra,
+      ]),
+    ].map((name) => [name, sorts.get(name) ?? "real"] as const)
+  );
+
+/** What the variables a step solves for have, for some values of the solver's variables. */
+const valuesOf = (
+  names: readonly string[],
+  symbols: ReadonlyMap<string, Cases>,
+  values: ReadonlyMap<string, Rational>
+) =>
+  new Map(
+    names.map((name) => {
+      const cases = symbols.get(name) ?? [];
+      const chosen =
+        cases.find((each) => holdsUnder(each.when, values)) ?? cases[0];
+      return [
+        name,
+        chosen === undefined ? undefined : concreteOf(chosen.sym, values),
+      ] as const;
+    })
+  );
+
+/** The solver's variables that the values of some variables are made of. */
+const leavesFor = (
+  names: readonly string[],
+  symbols: ReadonlyMap<string, Cases>
+) => [
+  ...new Set(
+    names.flatMap((name) =>
+      (symbols.get(name) ?? []).flatMap((each) => leavesOf(each.sym))
+    )
+  ),
+];
+
+/** Why a variable with infinitely many values fails a step. */
+const infinitely = (
+  leaf: string,
+  shown: string,
+  choice: Choice,
+  answered: readonly string[]
+) => {
+  const name = `?${symbolOf(leaf)}`;
+  const waiter = choice.waiting.find(({ goal }) =>
+    leavesFor(goal.variables, choice.symbols).includes(leaf)
+  );
+  if (waiter === undefined || answered.includes(leaf)) {
+    return `${name} stands for infinitely many values that meet ${shown}, so they cannot each be an answer. Bound it on both sides, or ask only whether one exists, with exists or not.`;
+  }
+  return `${name} stands for infinitely many values that meet ${shown}, and ${show(waiter.goal)} waits for its value. ${waiter.why} Bound ${name} on both sides, or bind it with a relation goal.`;
+};
+
+/**
+ * The answers one case of one choice of a solver step gives an answer,
+ * with the variables `names` bound: one for each combination of values of
+ * the solver's variables that they and the waiting goals need, each with
+ * those goals run on it. With `first`, the variables `names` only need some
+ * values, and the first answer is enough. Fails when a variable it must
+ * list has infinitely many values.
+ */
+const caseAnswers = (
+  model: Model,
+  step: Solved,
+  vars: Vars,
+  choice: Choice,
+  constraints: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  names: readonly string[],
+  first: boolean
+): LogicEffect<readonly Vars[]> =>
+  Effect.gen(function* () {
+    const needs = [
+      ...new Set(choice.waiting.flatMap(({ goal }) => goal.variables)),
+    ].filter((name) => choice.symbols.has(name));
+    const answered = first ? [] : leavesFor(names, choice.symbols);
+    const listedLeaves = [
+      ...new Set([...answered, ...leavesFor(needs, choice.symbols)]),
+    ];
+    const known = sortsFor(constraints, listedLeaves, sorts);
+    const listed = yield* solving(() =>
+      enumerate(constraints, known, listedLeaves)
+    );
+    if ("infinite" in listed) {
+      return yield* logicError(
+        infinitely(
+          listed.infinite,
+          show(instantiate(step, vars)),
+          choice,
+          answered
+        )
+      );
+    }
+    const given = [...new Set([...names, ...needs])].filter((name) =>
+      choice.symbols.has(name)
+    );
+    const out: Vars[] = [];
+    for (const solution of listed.solutions) {
+      // The other variables' values, to tell which case a value is in.
+      const others = new Map(
+        [...known].filter(([name]) => !solution.has(name))
+      );
+      const rest =
+        given.length === 0
+          ? new Map()
+          : ((yield* solving(() =>
+              solveConstraints(fixed(constraints, solution), others)
+            )) ?? new Map());
+      let answers: readonly Vars[] = [
+        new Map([
+          ...vars,
+          ...valuesOf(given, choice.symbols, new Map([...rest, ...solution])),
+        ]),
+      ];
+      for (const { goal } of choice.waiting) {
+        answers = yield* testEach(model, goal, answers);
+      }
+      out.push(...answers);
+      if (first && out.length > 0) {
+        return out;
+      }
+    }
+    return out;
+  }) as LogicEffect<readonly Vars[]>;
+
+/**
+ * The answers of a solver step for an answer. With nothing to keep, the
+ * answer is kept once when there are values that meet its goals. Otherwise
+ * each combination of values of the variables it keeps gives an answer,
+ * and a variable with infinitely many fails.
+ */
+const solvedAnswers = (
+  model: Model,
+  step: Solved,
+  vars: Vars
+): LogicEffect<readonly Vars[]> =>
+  Effect.gen(function* () {
+    const { choices, sorts } = yield* stepFormulas(model, step, vars);
+    const first = step.keeps.length === 0;
+    const out = new Map<string, Vars>();
+    for (const choice of choices) {
+      for (const constraints of choice.formula) {
+        for (const answer of yield* caseAnswers(
+          model,
+          step,
+          vars,
+          choice,
+          constraints,
+          sorts,
+          step.keeps,
+          first
+        )) {
+          if (first) {
+            return [vars];
+          }
+          const values = step.keeps.map((name) => answer.get(name));
+          out.set(
+            valueKey(values),
+            new Map([
+              ...vars,
+              ...step.keeps.map((name, at) => [name, values[at]] as const),
+            ])
+          );
+        }
+      }
+    }
+    return [...out.values()];
+  }).pipe(
+    Effect.mapError((error) =>
+      error instanceof LogicError
+        ? error
+        : new LogicError({ message: String(error) })
+    )
+  ) as LogicEffect<readonly Vars[]>;
+
+/**
+ * Values that meet a solver step's goals for an answer, for every variable
+ * it solves for, as `why` shows them; undefined when none do.
+ */
+export const exampleOf = (model: Model, step: Solved, vars: Vars) =>
+  Effect.gen(function* () {
+    const { choices, sorts } = yield* stepFormulas(model, step, vars);
+    const names = [...step.symbols, ...step.defines.map(([name]) => name)];
+    for (const choice of choices) {
+      for (const constraints of choice.formula) {
+        const [answer] = yield* caseAnswers(
+          model,
+          step,
+          vars,
+          choice,
+          constraints,
+          sorts,
+          names,
+          true
+        );
+        if (answer !== undefined) {
+          return Object.fromEntries(
+            names.map((name) => [
+              `?${name.replace(LENGTH_MARK, "")}`,
+              answer.get(name),
+            ])
+          );
+        }
+      }
+    }
+    return undefined;
+  }).pipe(
+    Effect.mapError((error) =>
+      error instanceof LogicError
+        ? error
+        : new LogicError({ message: String(error) })
+    )
+  ) as LogicEffect<Record<string, unknown> | undefined>;
+
+/** Runs the solver, as an effect that fails with a LogicError when the question is too hard. */
+const solving = <A>(work: () => A) =>
+  Effect.try({
+    try: work,
+    catch: (error) =>
+      error instanceof LogicError
+        ? error
+        : new LogicError({ message: String(error) }),
+  });
+
+/** Every way of choosing one shape for each variable a solver step types. */
+const shapeChoices = (typed: readonly [string, Cases][]) => {
+  let out: (readonly [string, Cases[number]])[][] = [[]];
+  for (const [name, cases] of typed) {
+    // Counted before they are made, so too many are never built.
+    if (out.length * cases.length > MOST_WAYS) {
+      throw new LogicError({
+        message: `The values no goal binds can be shaped in more than ${MOST_WAYS.toLocaleString("en")} ways together. Narrow their schemas.`,
+      });
+    }
+    out = out.flatMap((sofar) =>
+      cases.map((each) => [...sofar, [name, each] as const])
+    );
+  }
+  return out;
+};
+
+const fixed = (
+  constraints: readonly Constraint[],
+  values: ReadonlyMap<string, Rational>
+) =>
+  constraints.map((c) => {
+    let linear = c.linear;
+    for (const [name, value] of values) {
+      const k = linear.coefficients.get(name);
+      if (k !== undefined) {
+        const coefficients = new Map(linear.coefficients);
+        coefficients.delete(name);
+        linear = {
+          coefficients,
+          constant: plusRational(linear.constant, timesRational(k, value)),
+        };
+      }
+    }
+    return { linear, relation: c.relation };
+  });
+
+const holdsUnder = (formula: Formula, values: ReadonlyMap<string, Rational>) =>
+  concreteOf({ formula, kind: "truth" }, values) === true;
+
 /**
  * The answers a goal that can bind gives for an answer that leaves it a
  * variable to bind, each with what it bound; undefined when nothing is left
@@ -1251,6 +1692,10 @@ const testEach = (model: Model, literal: Literal, answers: readonly Vars[]) =>
   Effect.gen(function* () {
     const out: Vars[] = [];
     for (const vars of answers) {
+      if (literal instanceof Solved) {
+        out.push(...(yield* solvedAnswers(model, literal, vars)));
+        continue;
+      }
       const found = isForm(literal, "=", "in", "schema/fits?")
         ? yield* bound(model, literal, vars)
         : undefined;

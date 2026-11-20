@@ -7,6 +7,7 @@ import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import { aggregateCall } from "@/logic/aggregates";
 import { unlisted } from "@/logic/listing";
+import { symbolic } from "@/logic/symbols";
 import {
   Atom,
   callsOf,
@@ -38,6 +39,43 @@ import {
  * filter, or a question such as a goal under "not".
  */
 export type Literal = Exclude<Goal, boolean>;
+
+/**
+ * Goals about variables that a schema types and no goal binds, solved
+ * together once what else they need is bound. It is an `and` of those
+ * goals: the schema checks that type the variables, the "=" that give other
+ * variables values made of them, and the filters about them.
+ */
+/** A variable a solver step defines, what it equals, and the "=" that says so. */
+export type Define = readonly [string, unknown, Literal];
+
+export class Solved extends LogicForm {
+  /** The variables the schema checks type, by name. */
+  readonly symbols: readonly string[];
+  /**
+   * The variables "=" gives values made of the symbols, in order, each with
+   * what it equals and the "=" that says so.
+   */
+  readonly defines: readonly Define[];
+  /** The variables the step binds, since something after it needs their values. */
+  readonly keeps: readonly string[];
+  /** The other variables its goals need, bound before it runs. */
+  readonly inputs: readonly string[];
+
+  constructor(
+    literals: readonly Literal[],
+    symbols: readonly string[],
+    defines: readonly Define[],
+    keeps: readonly string[],
+    inputs: readonly string[]
+  ) {
+    super("and", literals);
+    this.symbols = symbols;
+    this.defines = defines;
+    this.keeps = keeps;
+    this.inputs = inputs;
+  }
+}
 
 export interface CompiledRule {
   /** Head positions that hold an aggregate; empty for an ordinary rule. */
@@ -378,6 +416,9 @@ const questionsIn = (term: unknown): readonly LogicValue[] => {
  * bind.
  */
 const binders = (goal: unknown): readonly string[] => {
+  if (goal instanceof Solved) {
+    return goal.keeps;
+  }
   if (isForm(goal, "and", "or")) {
     return goal.parts.flatMap(binders);
   }
@@ -416,26 +457,14 @@ export const isEvaluable = (
   scope: ReadonlySet<string>
 ) => wants(term, scope).every((name) => bound.has(name));
 
-const isReady = (
-  literal: Literal,
-  bound: ReadonlySet<string>,
-  scope: ReadonlySet<string>
-) => {
-  const known = (term: unknown) => isEvaluable(term, bound, scope);
-  // A value can be matched against a variable, or against a pattern once
-  // everything in it but its variables is known.
-  const free = (term: unknown, asSchema = false) =>
-    (term instanceof LogicVariable ||
-      patternParts(term, asSchema) !== undefined) &&
-    needs(term, asSchema, scope).every((name) => bound.has(name));
-  if (literal instanceof Atom) {
-    // A relation goal binds its variables, except the inputs of a computed
-    // relation, which another goal must bind first.
-    const inputs = literal.relation.computed?.inputs ?? 0;
-    return literal.args.every(
-      (arg, position) => (free(arg, true) && position >= inputs) || known(arg)
-    );
-  }
+type Ready = (term: unknown, asSchema?: boolean) => boolean;
+
+/**
+ * Whether a goal that is not a relation goal can run: "in", "=", and
+ * schema/fits? bind a variable from what is known; anything else is a test,
+ * which needs every variable it waits for.
+ */
+const formReady = (literal: Literal, known: Ready, free: Ready) => {
   const [first, second] = literal.parts;
   if (isForm(literal, "in")) {
     return known(second) && (free(first) || known(first));
@@ -444,20 +473,45 @@ const isReady = (
     const [left, right] = [known(first), known(second)];
     return (left || free(first)) && (right || free(second)) && (left || right);
   }
-  if (isForm(literal, "schema/fits?")) {
-    if (known(first)) {
-      return free(second, true) || known(second);
-    }
-    // A known schema that lists the values it allows binds the value to
-    // each in turn. One computed from variables lists them when it runs.
-    return (
-      free(first) &&
-      known(second) &&
-      (second instanceof LogicValue || unlisted(second) === undefined)
-    );
+  if (!isForm(literal, "schema/fits?")) {
+    return known(literal);
   }
-  // Anything else is a test, which needs every variable it waits for.
-  return known(literal);
+  if (known(first)) {
+    return free(second, true) || known(second);
+  }
+  // A known schema that lists the values it allows binds the value to
+  // each in turn. One computed from variables lists them when it runs.
+  return (
+    free(first) &&
+    known(second) &&
+    (second instanceof LogicValue || unlisted(second) === undefined)
+  );
+};
+
+const isReady = (
+  literal: Literal,
+  bound: ReadonlySet<string>,
+  scope: ReadonlySet<string>
+) => {
+  if (literal instanceof Solved) {
+    return literal.inputs.every((name) => bound.has(name));
+  }
+  const known = (term: unknown) => isEvaluable(term, bound, scope);
+  // A value can be matched against a variable, or against a pattern once
+  // everything in it but its variables is known.
+  const free = (term: unknown, asSchema = false) =>
+    (term instanceof LogicVariable ||
+      patternParts(term, asSchema) !== undefined) &&
+    needs(term, asSchema, scope).every((name) => bound.has(name));
+  if (!(literal instanceof Atom)) {
+    return formReady(literal, known, free);
+  }
+  // A relation goal binds its variables, except the inputs of a computed
+  // relation, which another goal must bind first.
+  const inputs = literal.relation.computed?.inputs ?? 0;
+  return literal.args.every(
+    (arg, position) => (free(arg, true) && position >= inputs) || known(arg)
+  );
 };
 
 /**
@@ -481,7 +535,11 @@ export const bindVariables = (
     }
   };
   const [first, second] = literal.parts;
-  if (literal instanceof Atom) {
+  if (literal instanceof Solved) {
+    for (const name of literal.keeps) {
+      bound.add(name);
+    }
+  } else if (literal instanceof Atom) {
     for (const arg of literal.args) {
       bind(arg, true, true);
     }
@@ -522,19 +580,12 @@ export const columnOf = (relation: string, position: number) =>
  * from: taking a part of a value makes nothing new, and computing does.
  */
 export const valueOrigins = (body: readonly Literal[]) => {
-  const origins = new Map<string, Origin>();
+  const origins = columnOrigins(body);
   for (const literal of body) {
-    if (!(literal instanceof Atom)) {
-      continue;
-    }
-    for (const [position, arg] of literal.args.entries()) {
-      for (const name of holes(arg, true)) {
-        const columns = new Map(origins.get(name)?.columns);
-        const { name: relation } = literal.relation;
-        origins.set(name, {
-          columns: columns.set(columnOf(relation, position), relation),
-          made: false,
-        });
+    if (literal instanceof Solved) {
+      // What the solver finds is made, not read.
+      for (const name of literal.keeps) {
+        origins.set(name, { columns: new Map(), made: true });
       }
     }
   }
@@ -557,6 +608,27 @@ export const valueOrigins = (body: readonly Literal[]) => {
     } else if (isForm(literal, "schema/fits?")) {
       take(second, of(first), true);
       take(first, of(second));
+    }
+  }
+  return origins;
+};
+
+/** The columns each variable a relation goal of the body binds stands in. */
+const columnOrigins = (body: readonly Literal[]) => {
+  const origins = new Map<string, Origin>();
+  for (const literal of body) {
+    if (!(literal instanceof Atom)) {
+      continue;
+    }
+    const { name: relation } = literal.relation;
+    for (const [position, arg] of literal.args.entries()) {
+      for (const name of holes(arg, true)) {
+        const columns = new Map(origins.get(name)?.columns);
+        origins.set(name, {
+          columns: columns.set(columnOf(relation, position), relation),
+          made: false,
+        });
+      }
     }
   }
   return origins;
@@ -674,34 +746,130 @@ const checkQuestions = (
  */
 export const planLiterals = (
   literals: readonly Literal[],
-  initiallyBound: Iterable<string> = []
+  initiallyBound: Iterable<string> = [],
+  needed?: ReadonlySet<string>
 ): Literal[] => {
   const remaining = [...literals];
   const ordered: Literal[] = [];
   const bound = new Set<string>(initiallyBound);
   const scope = scopeOf(literals, bound);
   for (let [stuck] = remaining; stuck !== undefined; [stuck] = remaining) {
-    const next = nextReady(remaining, bound, scope);
+    const next =
+      nextReady(remaining, bound, scope) ??
+      solvable(remaining, bound, scope, needed);
     if (next === undefined) {
       const unbound = (isBinder(stuck) ? stuck.parts : [stuck])
         .flatMap((part) => wants(part, scope))
         .filter((name) => !(bound.has(name) || name.startsWith("_")));
       return problem(
-        `Unsafe goal ${show(stuck)}: ${variableNames(unbound) || "its inputs"} must first be bound by a relation, "=", "in", or "schema/fits?".${unlistedNote(stuck)}`
+        `Unsafe goal ${show(stuck)}: ${variableNames(unbound) || "its inputs"} must first be bound by a relation, "=", "in", or "schema/fits?", or typed by a schema that says what kind its values are, such as value/integer?.${unlistedNote(stuck)}`
       );
     }
-    checkQuestions(next instanceof Atom ? next.args : [next], bound);
-    remaining.splice(remaining.indexOf(next), 1);
+    if (next instanceof Solved) {
+      for (const literal of next.parts) {
+        remaining.splice(remaining.indexOf(literal as Literal), 1);
+      }
+    } else {
+      checkQuestions(next instanceof Atom ? next.args : [next], bound);
+      remaining.splice(remaining.indexOf(next), 1);
+    }
     ordered.push(next);
     bindVariables(next, bound);
   }
   return ordered;
 };
 
+/**
+ * When nothing else can run: the variables that schema checks type and no
+ * goal binds, those "=" gives values made of them, and the goals about
+ * them, as one step the solver takes. It binds the variables `needed`
+ * holds, all of them when it is not given, and those the goals after it
+ * need. Undefined when no schema check types a variable it can solve for.
+ */
+const solvable = (
+  remaining: readonly Literal[],
+  bound: ReadonlySet<string>,
+  scope: ReadonlySet<string>,
+  needed: ReadonlySet<string> | undefined
+): Solved | undefined => {
+  const typing = remaining.filter(
+    (literal): literal is LogicForm =>
+      isForm(literal, "schema/fits?") &&
+      literal.parts[0] instanceof LogicVariable &&
+      !literal.parts[0].anonymous &&
+      !bound.has(literal.parts[0].name) &&
+      !(literal.parts[1] instanceof LogicValue) &&
+      symbolic(literal.parts[1]) === undefined
+  );
+  if (typing.length === 0) {
+    return undefined;
+  }
+  const symbols = typing.map(
+    (literal) => (literal.parts[0] as LogicVariable).name
+  );
+  const made = new Set(symbols);
+  const known = (term: unknown) =>
+    wants(term, scope).every((name) => bound.has(name) || made.has(name));
+  const about = (term: unknown) =>
+    term instanceof LogicValue && term.variables.some((name) => made.has(name));
+  const defines: Define[] = [];
+  const defining: Literal[] = [];
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const literal of remaining) {
+      if (!isForm(literal, "=") || defining.includes(literal)) {
+        continue;
+      }
+      const [a, b] = literal.parts;
+      for (const [side, other] of [
+        [a, b],
+        [b, a],
+      ] as const) {
+        if (
+          side instanceof LogicVariable &&
+          !side.anonymous &&
+          !bound.has(side.name) &&
+          !made.has(side.name) &&
+          known(other) &&
+          about(other)
+        ) {
+          defines.push([side.name, other, literal]);
+          defining.push(literal);
+          made.add(side.name);
+          grew = true;
+          break;
+        }
+      }
+    }
+  }
+  const constraints = remaining.filter(
+    (literal) =>
+      !(typing.includes(literal as LogicForm) || defining.includes(literal)) &&
+      about(literal) &&
+      known(literal)
+  );
+  const group = [...typing, ...defining, ...constraints];
+  const later = remaining.filter((literal) => !group.includes(literal));
+  const keeps = [...made].filter(
+    (name) =>
+      needed === undefined ||
+      needed.has(name) ||
+      later.some((literal) => literal.variables.includes(name))
+  );
+  const inputs = [
+    ...new Set(group.flatMap((literal) => wants(literal, scope))),
+  ].filter((name) => !(made.has(name) || name.startsWith("_")));
+  return new Solved(group, symbols, defines, keeps, inputs);
+};
+
 /** A goal's alternatives, each planned, with the variables it binds. */
-const plan = (goal: unknown, outer: readonly string[] = []) =>
+const plan = (
+  goal: unknown,
+  outer: readonly string[] = [],
+  needed?: ReadonlySet<string>
+) =>
   alternatives(prepare(goal)).map((literals): Plan => {
-    const body = planLiterals(literals, outer);
+    const body = planLiterals(literals, outer, needed);
     const bound = new Set(outer);
     for (const literal of body) {
       bindVariables(literal, bound);
@@ -735,10 +903,11 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
     return planAssuming(question, outer);
   }
   if (!isForm(question, "find")) {
-    return plan(question, outer);
+    // A question asks only whether its goal has a match.
+    return plan(question, outer, NOTHING);
   }
   const [template, goal] = question.parts;
-  const planned = plan(goal, outer);
+  const planned = plan(goal, outer, new Set(termVariables(template)));
   for (const { bound } of planned) {
     checkValues(
       question,
@@ -952,7 +1121,13 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
               : undefined
           ) as Atom)
     );
-    const planned = plan(new LogicForm("and", body));
+    const planned = plan(
+      new LogicForm("and", body),
+      [],
+      new Set(
+        [...heads, ...sides].flatMap((call) => call.args.flatMap(termVariables))
+      )
+    );
     for (const { bound } of planned) {
       const taken = invented.find((name) => bound.has(name));
       if (taken !== undefined) {
@@ -1032,10 +1207,11 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
 export const compileQuery = (goal: unknown) =>
   compiling((): CompiledQuery => {
     const bindable = new Set(binders(goal));
+    const outputs = [...new Set(termVariables(goal))].filter(
+      (name) => bindable.has(name) && !name.startsWith("_")
+    );
     return {
-      bodies: plan(goal).map(({ body }) => body),
-      outputs: [...new Set(termVariables(goal))].filter(
-        (name) => bindable.has(name) && !name.startsWith("_")
-      ),
+      bodies: plan(goal, [], new Set(outputs)).map(({ body }) => body),
+      outputs,
     };
   });

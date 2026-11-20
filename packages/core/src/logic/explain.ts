@@ -26,12 +26,14 @@ import {
   type Literal,
   planLiterals,
   questionPlans,
+  Solved,
 } from "@/logic/compile";
 import {
   answerKey,
   compareMatches,
   complete,
   ensure,
+  exampleOf,
   hasFree,
   holds,
   type LogicEffect,
@@ -488,6 +490,17 @@ const held = (
   Effect.gen(function* () {
     if (isForm(goal, "not")) {
       return yield* missing(telling, goal.parts[0], vars);
+    }
+    if (goal instanceof Solved) {
+      // A step the solver took shows values that meet its goals.
+      const example = yield* exampleOf(telling.model, goal, vars);
+      return marked(
+        {
+          check: instantiate(goal, vars),
+          ...(example === undefined ? {} : { example }),
+        },
+        false
+      );
     }
     if (!(goal instanceof Atom)) {
       return marked(

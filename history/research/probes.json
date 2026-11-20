@@ -3547,6 +3547,23 @@
     "program": ["value/function?", "object/new"]
   },
   {
+    "feature": "solving-typed-variables",
+    "kind": "capability",
+    "program": [
+      "schema/fits?",
+      [
+        "find",
+        "?x",
+        [
+          "and",
+          ["schema/fits?", "?x", "value/integer?"],
+          ["=", 7, ["number/add", "?x", 3]]
+        ]
+      ],
+      ["quote", [4]]
+    ]
+  },
+  {
     "feature": "schema/arrayOf-most",
     "kind": "option",
     "program": [
@@ -21410,6 +21427,117 @@
         [["ProbeLoop", 2], ["quote", "fits"]],
         ["else", ["quote", "no-fit"]]
       ]
+    ]
+  },
+  {
+    "case": "filter-typed-variable",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          [
+            "find",
+            "?x",
+            [
+              "and",
+              ["schema/fits?", "?x", "value/integer?"],
+              ["number/greaterThan", "?x", 2],
+              ["number/lessThan", "?x", 6]
+            ]
+          ],
+          ["quote", [3, 4, 5]]
+        ],
+        ["quote", "solved"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "solver-proves-none",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          [
+            "query",
+            [
+              "not",
+              [
+                "exists",
+                ["?n"],
+                [
+                  "and",
+                  ["schema/fits?", "?n", "value/integer?"],
+                  ["=", ["number/multiply", 2, "?n"], 7]
+                ]
+              ]
+            ]
+          ],
+          ["quote", [{}]]
+        ],
+        ["quote", "proved"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "solver-product-of-unknowns",
+    "area": "logic",
+    "program": [
+      "find",
+      "?x",
+      [
+        "and",
+        ["schema/fits?", "?x", "value/integer?"],
+        ["schema/fits?", "?y", "value/integer?"],
+        ["=", ["number/multiply", "?x", "?y"], 6]
+      ]
+    ]
+  },
+  {
+    "case": "solver-infinitely-many",
+    "area": "logic",
+    "program": [
+      "find",
+      "?x",
+      [
+        "and",
+        ["schema/fits?", "?x", "value/integer?"],
+        ["number/greaterThan", "?x", 2]
+      ]
+    ]
+  },
+  {
+    "case": "solver-waiting-goal",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          [
+            "find",
+            ["array/make", "?x", "?y"],
+            [
+              "and",
+              ["schema/fits?", "?x", "value/integer?"],
+              ["schema/fits?", "?y", "value/integer?"],
+              ["number/greaterThanOrEqualTo", "?x", 1],
+              ["number/lessThanOrEqualTo", "?x", 6],
+              ["number/greaterThanOrEqualTo", "?y", 1],
+              ["number/lessThanOrEqualTo", "?y", 6],
+              ["=", ["number/multiply", "?x", "?y"], 6]
+            ]
+          ],
+          ["quote", [[1, 6], [2, 3], [3, 2], [6, 1]]]
+        ],
+        ["quote", "solved"]
+      ],
+      ["else", ["quote", "other"]]
     ]
   },
   {

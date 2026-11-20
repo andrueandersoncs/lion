@@ -1,0 +1,64 @@
+{
+  "sources": [
+    {
+      "id": "lion-probes-solver",
+      "url": "research/probes/",
+      "title": "Lion programs run after a variable a schema types could be solved for (build step 2)",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261120000000
+    }
+  ],
+  "claims": [
+    {
+      "id": "co-s1",
+      "source": "lion-probes-solver",
+      "where": "program built-solver.json: fv-solve-for with ?x typed by value/integer?",
+      "quote": "\"solved for\": [ 2 ],",
+      "says": {
+        "lion": "values that satisfy constraints over unbound variables",
+        "has": true
+      }
+    },
+    {
+      "id": "co-s2",
+      "source": "lion-probes-solver",
+      "where": "program built-solver.json: the careless withdrawal, its own lambda run on every account and amount",
+      "quote": "\"careless withdrawal, any account it overdraws\": [ {} ],",
+      "says": {
+        "lion": "running a program's own code on symbolic values",
+        "has": true
+      }
+    },
+    {
+      "id": "co-s3",
+      "source": "lion-probes-solver",
+      "where": "program built-solver.json: no account of any balance and no amount the careful withdrawal overdraws",
+      "quote": "\"careful withdrawal, any account it overdraws\": [],",
+      "says": {
+        "lion": "a proof that a goal has no answer for any value",
+        "has": true
+      }
+    },
+    {
+      "id": "co-s4",
+      "source": "lion-probes-solver",
+      "where": "program fv-unbound-filter.json, whose variable no schema types",
+      "quote": "Unsafe goal [\"number/lessThan\",\"?balance\",0]: ?balance must first be bound by a relation",
+      "says": {
+        "lion": "filters refused over a variable no goal binds",
+        "has": true
+      }
+    },
+    {
+      "id": "co-s5",
+      "source": "lion-probes-solver",
+      "where": "program built-solver.json: a product of two unknowns, between bounds",
+      "quote": "\"factors of 6, waiting for the values listed\": [ [ 1, 6 ],",
+      "says": {
+        "lion": "goals a solver cannot decide, run on each value it lists",
+        "has": true
+      }
+    }
+  ]
+}

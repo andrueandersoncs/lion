@@ -20,6 +20,7 @@ import { run } from "@/evaluation/evaluate";
 import { LogicVariable } from "@/logic/terms";
 import { element } from "@/logic/tests/programs";
 import { stdlib } from "@/modules";
+import { SPECIAL_FORM_NAMES } from "@/schemas/evaluation";
 import {
   BOUND,
   type Expression,
@@ -345,9 +346,16 @@ describe("analyze: a schema form", () => {
 const SHORT_WORD = /^[a-z]{2,6}$/;
 
 describe("analyze: the head of a call", () => {
+  // A name that is neither a library function nor a special form, such as
+  // "or" or "in", which a call's head reads as the form wherever no scope
+  // binds the name.
   const word = Arbitrary.filter(
     Arbitrary.schema(Schema.String.check(Schema.isPattern(SHORT_WORD))),
-    (name) => !Object.hasOwn(stdlib, name)
+    (name) =>
+      !(
+        Object.hasOwn(stdlib, name) ||
+        (SPECIAL_FORM_NAMES as readonly string[]).includes(name)
+      )
   );
 
   it.effect.prop(

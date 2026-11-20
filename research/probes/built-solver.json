@@ -1,0 +1,117 @@
+[
+  "begin",
+  [
+    "define",
+    "careful",
+    [
+      "lambda",
+      ["account", "amount"],
+      [
+        "cond",
+        [
+          ["number/lessThan", ["object/get", "account", "balance"], "amount"],
+          "account"
+        ],
+        [
+          "else",
+          {
+            "balance": [
+              "number/subtract",
+              ["object/get", "account", "balance"],
+              "amount"
+            ]
+          }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careless",
+    [
+      "lambda",
+      ["account", "amount"],
+      {
+        "balance": [
+          "number/subtract",
+          ["object/get", "account", "balance"],
+          "amount"
+        ]
+      }
+    ]
+  ],
+  [
+    "define",
+    "overdraws",
+    [
+      "lambda",
+      ["withdraw"],
+      [
+        "query",
+        [
+          "exists",
+          ["?account", "?amount"],
+          [
+            "and",
+            ["schema/fits?", "?account", { "balance": "value/integer?" }],
+            ["schema/fits?", "?amount", "value/integer?"],
+            [
+              "number/greaterThanOrEqualTo",
+              ["object/get", "?account", "balance"],
+              0
+            ],
+            ["number/greaterThan", "?amount", 0],
+            [
+              "number/lessThan",
+              ["object/get", ["withdraw", "?account", "?amount"], "balance"],
+              0
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  {
+    "solved for": [
+      "find",
+      "?x",
+      [
+        "and",
+        ["schema/fits?", "?x", "value/integer?"],
+        ["=", "?y", ["number/add", "?x", 1]],
+        ["=", "?y", 3]
+      ]
+    ],
+    "careful withdrawal, any account it overdraws": ["overdraws", "careful"],
+    "careless withdrawal, any account it overdraws": ["overdraws", "careless"],
+    "no whole number doubles to 7": [
+      "query",
+      [
+        "not",
+        [
+          "exists",
+          ["?n"],
+          [
+            "and",
+            ["schema/fits?", "?n", "value/integer?"],
+            ["=", ["number/multiply", 2, "?n"], 7]
+          ]
+        ]
+      ]
+    ],
+    "factors of 6, waiting for the values listed": [
+      "find",
+      ["array/make", "?x", "?y"],
+      [
+        "and",
+        ["schema/fits?", "?x", "value/integer?"],
+        ["schema/fits?", "?y", "value/integer?"],
+        ["number/greaterThanOrEqualTo", "?x", 1],
+        ["number/lessThanOrEqualTo", "?x", 6],
+        ["number/greaterThanOrEqualTo", "?y", 1],
+        ["number/lessThanOrEqualTo", "?y", 6],
+        ["=", ["number/multiply", "?x", "?y"], 6]
+      ]
+    ]
+  }
+]

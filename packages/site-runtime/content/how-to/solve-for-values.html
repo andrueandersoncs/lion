@@ -1,0 +1,100 @@
+<article id="solve-for-values" data-title="Solve for values and prove rules" data-summary="Let a schema type a variable no goal binds, and Lion solves for the values that meet your filters, says whether one exists, or proves that none does, for every number; what it cannot decide waits for the values it lists.">
+<p>This guide shows how to ask about every value of a type, not only the values your facts hold. A variable that a schema such as <code>value/integer?</code> types, and that no relation goal binds, is solved for: the filters about it become constraints, and Lion works out exactly which numbers meet them.</p>
+
+<h2>Solve for the values that meet some filters</h2>
+<p>Type the variable with <code>schema/fits?</code>, then filter it as you would a bound one. When the filters leave finitely many whole numbers, each is an answer:</p>
+<lion-example name="Values that meet some filters">
+{"between": ["find", "?x",
+   ["and", ["schema/fits?", "?x", "value/integer?"],
+     ["number/greaterThan", "?x", 2], ["number/lessThan", "?x", 6]]],
+ "solved for": ["find", "?x",
+   ["and", ["schema/fits?", "?x", "value/integer?"],
+     ["=", 7, ["number/add", ["number/multiply", 2, "?x"], 1]]]],
+ "pairs": ["find", ["array/make", "?x", "?y"],
+   ["and", ["schema/fits?", "?x", "value/integer?"], ["schema/fits?", "?y", "value/integer?"],
+     ["number/greaterThanOrEqualTo", "?x", 0], ["number/greaterThanOrEqualTo", "?y", 0],
+     ["=", ["number/add", "?x", "?y"], 3]]]}
+</lion-example>
+<p>The filters can add, subtract, multiply and divide by known numbers, compare, and use <code>number/min</code>, <code>number/max</code>, <code>number/absolute</code>, and <code>cond</code>. <code>value/number?</code> types a variable that may be any number.</p>
+
+<h2>Ask whether a value exists, or prove that none does</h2>
+<p>When there are infinitely many values, they cannot each be an answer, but <code>exists</code> can still ask whether there is one, and <code>not</code> whether there is none. Lion decides it for every number, not only the ones it tried:</p>
+<lion-example name="Whether a value exists">
+{"an odd number above 10": ["query",
+   ["exists", ["?n", "?k"],
+     ["and", ["schema/fits?", "?n", "value/integer?"], ["number/greaterThan", "?n", 10],
+       ["=", ["number/subtract", "?n", ["number/multiply", 2, "?k"]], 1],
+       ["schema/fits?", "?k", "value/integer?"]]]],
+ "no whole number doubles to 7": ["query",
+   ["not", ["exists", ["?n"],
+     ["and", ["schema/fits?", "?n", "value/integer?"],
+       ["=", ["number/multiply", 2, "?n"], 7]]]]]}
+</lion-example>
+<p>Each query gives <code>[{}]</code> when its goal holds and <code>[]</code> when it does not.</p>
+
+<h2>Check what a function does for every input</h2>
+<p>A lambda you defined runs on the values the solver stands for, by its body, so a rule about what it returns is checked for every input at once. A schema of a record with typed fields stands for every such record. Here a careful withdrawal never leaves an open account below zero, for any balance and any amount, while a careless one can:</p>
+<lion-example name="Every input of a function">
+["begin",
+  ["define", "careful", ["lambda", ["account", "amount"],
+    ["cond", [["number/lessThan", ["object/get", "account", "balance"], "amount"], "account"],
+             ["else", {"balance": ["number/subtract", ["object/get", "account", "balance"], "amount"]}]]]],
+  ["define", "careless", ["lambda", ["account", "amount"],
+    {"balance": ["number/subtract", ["object/get", "account", "balance"], "amount"]}]],
+  ["define", "overdraws", ["lambda", ["withdraw"],
+    ["query", ["exists", ["?account", "?amount"],
+      ["and",
+        ["schema/fits?", "?account", {"balance": "value/integer?"}],
+        ["schema/fits?", "?amount", "value/integer?"],
+        ["number/greaterThanOrEqualTo", ["object/get", "?account", "balance"], 0],
+        ["number/greaterThan", "?amount", 0],
+        ["number/lessThan", ["object/get", ["withdraw", "?account", "?amount"], "balance"], 0]]]]]],
+  {"careful": ["overdraws", "careful"],
+   "careless": ["overdraws", "careless"]}]
+</lion-example>
+
+<h2>See an example</h2>
+<p><code>why</code> explains a row a rule gave through the solver with values that meet its goals:</p>
+<lion-example name="An example in why">
+["begin",
+  ["relation", "limit", ["n"]],
+  ["relation", "room", ["n"]],
+  ["fact", ["limit", 5], ["limit", 1]],
+  ["rule", ["room", "?n"], ["limit", "?n"],
+    ["exists", ["?x"],
+      ["and", ["schema/fits?", "?x", "value/integer?"],
+        ["number/greaterThan", "?x", 2], ["number/lessThan", "?x", "?n"]]]],
+  {"rooms": ["find", "?n", ["room", "?n"]],
+   "why": ["why", ["room", 5]]}]
+</lion-example>
+
+<h2>Know what it cannot decide</h2>
+<p>Lion decides sums of numbers times known numbers, comparisons of them, and equality of values, so every question it decides has one answer. Anything else, such as a product of two unknowns or a string function, waits for values: the solver lists the values of the variables it needs, from what it can decide, and runs it on each, as plain code would:</p>
+<lion-example name="Waiting for the values the solver lists">
+{"factors of 6": ["find", ["array/make", "?x", "?y"],
+   ["and", ["schema/fits?", "?x", "value/integer?"], ["schema/fits?", "?y", "value/integer?"],
+     ["number/greaterThanOrEqualTo", "?x", 1], ["number/lessThanOrEqualTo", "?x", 6],
+     ["number/greaterThanOrEqualTo", "?y", 1], ["number/lessThanOrEqualTo", "?y", 6],
+     ["=", ["number/multiply", "?x", "?y"], 6]]],
+ "names": ["find", "?name",
+   ["and", ["schema/fits?", "?x", "value/integer?"],
+     ["number/greaterThan", "?x", 7], ["number/lessThan", "?x", 11],
+     ["=", "?name", ["string/concat", "room ", ["number/toString", "?x"]]]]]}
+</lion-example>
+<p>When the values a waiting goal needs are infinitely many, they cannot each be tried, and the question fails, naming what the solver cannot reason about. A variable whose filters allow infinitely many values cannot be an answer either:</p>
+<lion-example name="A product of two unknowns" expect="error">
+["query", ["exists", ["?x", "?y"],
+  ["and", ["schema/fits?", "?x", "value/integer?"], ["schema/fits?", "?y", "value/integer?"],
+    ["=", ["number/multiply", "?x", "?y"], 6]]]]
+</lion-example>
+<lion-example name="Infinitely many values" expect="error">
+["find", "?x", ["and", ["schema/fits?", "?x", "value/integer?"], ["number/greaterThan", "?x", 2]]]
+</lion-example>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#take-data-apart">Take data apart</a>: a schema that lists its values binds the value it checks to each of them.</li>
+  <li><a href="#logic-solving">Solving for values</a>: what the solver decides, exactly.</li>
+  <li><a href="#enforce-rules">Enforce rules on your data</a>: invariants check the facts you have.</li>
+</ul>
+</article>

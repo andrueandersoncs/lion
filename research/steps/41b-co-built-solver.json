@@ -1,0 +1,199 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-solver"
+   ],
+   [
+    "quote",
+    "research/probes/"
+   ],
+   [
+    "quote",
+    "Lion programs run after a variable a schema types could be solved for (build step 2)"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261120000000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-s1"
+   ],
+   [
+    "quote",
+    "lion-probes-solver"
+   ],
+   [
+    "quote",
+    "\"solved for\": [ 2 ],"
+   ],
+   [
+    "quote",
+    {
+     "lion": "values that satisfy constraints over unbound variables",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-s1"
+   ],
+   [
+    "quote",
+    "program built-solver.json: fv-solve-for with ?x typed by value/integer?"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-s2"
+   ],
+   [
+    "quote",
+    "lion-probes-solver"
+   ],
+   [
+    "quote",
+    "\"careless withdrawal, any account it overdraws\": [ {} ],"
+   ],
+   [
+    "quote",
+    {
+     "lion": "running a program's own code on symbolic values",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-s2"
+   ],
+   [
+    "quote",
+    "program built-solver.json: the careless withdrawal, its own lambda run on every account and amount"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-s3"
+   ],
+   [
+    "quote",
+    "lion-probes-solver"
+   ],
+   [
+    "quote",
+    "\"careful withdrawal, any account it overdraws\": [],"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a proof that a goal has no answer for any value",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-s3"
+   ],
+   [
+    "quote",
+    "program built-solver.json: no account of any balance and no amount the careful withdrawal overdraws"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-s4"
+   ],
+   [
+    "quote",
+    "lion-probes-solver"
+   ],
+   [
+    "quote",
+    "Unsafe goal [\"number/lessThan\",\"?balance\",0]: ?balance must first be bound by a relation"
+   ],
+   [
+    "quote",
+    {
+     "lion": "filters refused over a variable no goal binds",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-s4"
+   ],
+   [
+    "quote",
+    "program fv-unbound-filter.json, whose variable no schema types"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-s5"
+   ],
+   [
+    "quote",
+    "lion-probes-solver"
+   ],
+   [
+    "quote",
+    "\"factors of 6, waiting for the values listed\": [ [ 1, 6 ],"
+   ],
+   [
+    "quote",
+    {
+     "lion": "goals a solver cannot decide, run on each value it lists",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-s5"
+   ],
+   [
+    "quote",
+    "program built-solver.json: a product of two unknowns, between bounds"
+   ]
+  ]
+ ],
+ "recorded"
+]

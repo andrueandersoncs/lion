@@ -1,0 +1,192 @@
+Lion programs run for research with @lionlang/cli 0.13.1 built at commit 12c6665 (core 0.14.1), 2026-11-20.
+
+== program built-solver.json
+[
+  "begin",
+  [
+    "define",
+    "careful",
+    [
+      "lambda",
+      ["account", "amount"],
+      [
+        "cond",
+        [
+          ["number/lessThan", ["object/get", "account", "balance"], "amount"],
+          "account"
+        ],
+        [
+          "else",
+          {
+            "balance": [
+              "number/subtract",
+              ["object/get", "account", "balance"],
+              "amount"
+            ]
+          }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careless",
+    [
+      "lambda",
+      ["account", "amount"],
+      {
+        "balance": [
+          "number/subtract",
+          ["object/get", "account", "balance"],
+          "amount"
+        ]
+      }
+    ]
+  ],
+  [
+    "define",
+    "overdraws",
+    [
+      "lambda",
+      ["withdraw"],
+      [
+        "query",
+        [
+          "exists",
+          ["?account", "?amount"],
+          [
+            "and",
+            ["schema/fits?", "?account", { "balance": "value/integer?" }],
+            ["schema/fits?", "?amount", "value/integer?"],
+            [
+              "number/greaterThanOrEqualTo",
+              ["object/get", "?account", "balance"],
+              0
+            ],
+            ["number/greaterThan", "?amount", 0],
+            [
+              "number/lessThan",
+              ["object/get", ["withdraw", "?account", "?amount"], "balance"],
+              0
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  {
+    "solved for": [
+      "find",
+      "?x",
+      [
+        "and",
+        ["schema/fits?", "?x", "value/integer?"],
+        ["=", "?y", ["number/add", "?x", 1]],
+        ["=", "?y", 3]
+      ]
+    ],
+    "careful withdrawal, any account it overdraws": ["overdraws", "careful"],
+    "careless withdrawal, any account it overdraws": ["overdraws", "careless"],
+    "no whole number doubles to 7": [
+      "query",
+      [
+        "not",
+        [
+          "exists",
+          ["?n"],
+          [
+            "and",
+            ["schema/fits?", "?n", "value/integer?"],
+            ["=", ["number/multiply", 2, "?n"], 7]
+          ]
+        ]
+      ]
+    ],
+    "factors of 6, waiting for the values listed": [
+      "find",
+      ["array/make", "?x", "?y"],
+      [
+        "and",
+        ["schema/fits?", "?x", "value/integer?"],
+        ["schema/fits?", "?y", "value/integer?"],
+        ["number/greaterThanOrEqualTo", "?x", 1],
+        ["number/lessThanOrEqualTo", "?x", 6],
+        ["number/greaterThanOrEqualTo", "?y", 1],
+        ["number/lessThanOrEqualTo", "?y", 6],
+        ["=", ["number/multiply", "?x", "?y"], 6]
+      ]
+    ]
+  }
+]
+== gives
+{
+  "solved for": [
+    2
+  ],
+  "careful withdrawal, any account it overdraws": [],
+  "careless withdrawal, any account it overdraws": [
+    {}
+  ],
+  "no whole number doubles to 7": [
+    {}
+  ],
+  "factors of 6, waiting for the values listed": [
+    [
+      1,
+      6
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      6,
+      1
+    ]
+  ]
+}
+
+== program fv-solve-for.json
+["find", "?x", ["and", ["=", "?y", ["number/add", "?x", 1]], ["=", "?y", 3]]]
+== gives
+
+ERROR
+  Unsafe goal ["=","?y",["number/add","?x",1]]: ?x must first be bound by a relation, "=", "in", or "schema/fits?", or typed by a schema that says what kind its values are, such as value/integer?.
+
+== program fv-unbound-filter.json
+["find", "?balance", ["number/lessThan", "?balance", 0]]
+== gives
+
+ERROR
+  Unsafe goal ["number/lessThan","?balance",0]: ?balance must first be bound by a relation, "=", "in", or "schema/fits?", or typed by a schema that says what kind its values are, such as value/integer?.
+
+== program fv-unknown-arithmetic.json
+[
+  "begin",
+  ["relation", "account", ["id"]],
+  ["relation", "balance", ["account", "amount"], { "key": "account" }],
+  ["fact", ["account", "a"]],
+  ["rule", ["exists", ["?b"], ["balance", "?a", "?b"]], ["account", "?a"]],
+  ["define", "held", ["query", ["balance", "?account", "?amount"]]],
+  [
+    "define",
+    "overdrawn",
+    [
+      "query",
+      [
+        "and",
+        ["balance", "?account", "?amount"],
+        ["number/lessThan", "?amount", 0]
+      ]
+    ]
+  ],
+  { "held": "held", "overdrawn": "overdrawn" }
+]
+== gives
+
+ERROR
+  ["number/lessThan",["some","?b",["balance","a","?b"]],0] failed: Expected number at [0]

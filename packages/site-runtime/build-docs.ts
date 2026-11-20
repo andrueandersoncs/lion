@@ -80,6 +80,7 @@ const KINDS: readonly Kind[] = [
       "summarize-groups",
       "graph-questions",
       "enforce-rules",
+      "solve-for-values",
       "check-data",
       "take-data-apart",
       "explain-results",

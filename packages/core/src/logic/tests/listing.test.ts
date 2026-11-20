@@ -16,7 +16,9 @@ import { attempt, type Outcome } from "./programs";
 import {
   bindings,
   candidates,
+  countOf,
   finite,
+  fits,
   holeAt,
   type Json,
   keyOf,
@@ -34,7 +36,13 @@ const OPTIONS = { timeout: 120_000, arbitrary: { runs: 300 } };
 /** Listings the model can work out quickly; larger ones are left out. */
 const MOST_IN_A_RUN = 5000;
 
-const REFUSED = "A schema binds the value it checks only when it can stand";
+/**
+ * What a goal says when its schema cannot list the values it allows: that
+ * it cannot stand for them, or, for one that gives them a shape with
+ * numbers left open, that they are infinitely many.
+ */
+const REFUSED =
+  /A schema binds the value it checks only when it can stand|infinitely many values|cannot stand for it|The solver cannot reason/;
 
 const evaluate = (forms: readonly unknown[], database = new LogicDatabase()) =>
   attempt(["begin", ...PRELUDE, ...forms], database);
@@ -50,14 +58,14 @@ const succeeded = (outcome: Outcome): unknown => {
 
 /** True when the model can list a shape's values, and they are few. */
 const small = (shape: Shape) => {
-  const found = candidates(shape);
-  return found !== undefined && found.length <= MOST_IN_A_RUN;
+  const count = countOf(shape);
+  return count !== undefined && count <= MOST_IN_A_RUN;
 };
 
 /** A shape the model lists, with its values, or the shape it refuses. */
 const shapes = Arbitrary.filter(finite(2), (shape) => {
-  const found = candidates(shape);
-  return found === undefined || found.length <= MOST_IN_A_RUN;
+  const count = countOf(shape);
+  return count === undefined || count <= MOST_IN_A_RUN;
 });
 
 const listable = Arbitrary.filter(finite(2), small);
@@ -84,21 +92,38 @@ const find = (shape: Shape) => [
 describe("a schema that stands for each value it allows", () => {
   it.effect.prop(
     "binds the value to exactly the values that fit, or is refused when it cannot say which",
-    { shape: shapes },
-    ({ shape }) =>
+    {
+      tried: Arbitrary.flatMap(shapes, (shape) =>
+        Arbitrary.map(
+          Arbitrary.array(valueFor(shape), { maxLength: 6 }),
+          (values) => ({ shape, values })
+        )
+      ),
+    },
+    ({ tried: { shape, values } }) =>
       Effect.gen(function* () {
         const outcome = yield* evaluate([find(shape)]);
         const expected = listed(shape);
-        if (expected === undefined) {
-          expect(outcome).toMatchObject({
-            ok: false,
-            message: expect.stringContaining(REFUSED),
-          });
+        if (expected !== undefined) {
+          expect(keysOf(succeeded(outcome) as unknown[])).toEqual(
+            keysOf(expected)
+          );
           return;
         }
-        expect(keysOf(succeeded(outcome) as unknown[])).toEqual(
-          keysOf(expected)
-        );
+        // The model cannot list it. Lion refuses, or says the values are
+        // infinitely many, or, when the solver shows there are finitely
+        // many, such as none, lists them: each fits, and none is left out.
+        if (!outcome.ok) {
+          expect(outcome.message).toMatch(REFUSED);
+          return;
+        }
+        const found = new Set((outcome.value as Json[]).map(keyOf));
+        for (const value of outcome.value as Json[]) {
+          expect(fits(shape, value)).toBe(true);
+        }
+        for (const value of values.filter((v) => fits(shape, v))) {
+          expect(found.has(keyOf(value)), JSON.stringify(value)).toBe(true);
+        }
       }),
     OPTIONS
   );

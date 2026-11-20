@@ -251,7 +251,7 @@
 <h2 id="logic-patterns">Patterns</h2>
 <p>A schema with a logic variable in it is a pattern. Once the variable is bound it is its value, and until then any value fits it, and binds it. A pattern tests a value and takes it apart at once. These goals bind the variables of a pattern:</p>
 <ul>
-  <li><a href="#module-schema"><code>["schema/fits?", value, schema]</code></a> binds the variables in the schema. When nothing else binds the value, it binds the value too, to each value the schema allows, if the schema can list them: data lists itself, a record or list of schemas every way of choosing its parts, with and without a key whose schema is optional, <code>schema/anyOf</code> what its schemas list, <code>schema/allOf</code> what its first schema that can list lists, <code>value/boolean?</code> false and true, <code>value/null?</code> null, and <code>["schema/arrayOf", schema, most]</code> every list of at most <code>most</code> items. Each value is then checked, so the value takes exactly the values that fit.</li>
+  <li><a href="#module-schema"><code>["schema/fits?", value, schema]</code></a> binds the variables in the schema. When nothing else binds the value, it binds the value too, to each value the schema allows, if the schema can list them: data lists itself, a record or list of schemas every way of choosing its parts, with and without a key whose schema is optional, <code>schema/anyOf</code> what its schemas list, <code>schema/allOf</code> what its first schema that can list lists, <code>value/boolean?</code> false and true, <code>value/null?</code> null, and <code>["schema/arrayOf", schema, most]</code> every list of at most <code>most</code> items. Each value is then checked, so the value takes exactly the values that fit. A schema that cannot list its values but says what kind they are makes the value symbolic instead, and the goals about it are <a href="#logic-solving">solved for</a>.</li>
   <li>A relation call binds the variables in its arguments, each a schema for its column. An argument that is not data, such as a predicate or a variable that holds one, is a schema like any other.</li>
   <li><a href="#form-unify"><code>=</code></a> and <a href="#form-in"><code>in</code></a> bind the variables of a record or list, on either side of <code>=</code> or as the element of <code>in</code>. They compare values, so a function in the record is a value there, and not a predicate.</li>
 </ul>
@@ -297,6 +297,33 @@
      ["and", ["reading", "?sensor", ["func/partial", "number/lessThan", "?least"]],
              ["=", "?least", 20]]],
    "a goal for query": ["query", ["schema/fits?", 1, "?x"]]}]
+</lion-example>
+
+<h2 id="logic-solving">Solving for values</h2>
+<p>A schema stands for every value it allows. When nothing else binds the value <code>schema/fits?</code> checks, a schema that lists finitely many values binds it to each (see <a href="#logic-patterns">Patterns</a>). A schema that cannot list them, but says what kind they are, makes the value symbolic instead: the goals about it are solved for.</p>
+<ul>
+  <li><code>value/integer?</code> stands for a whole number, and <code>value/number?</code> for any number. A record or list of schemas stands for a record or list of what its parts stand for, <code>schema/anyOf</code> for any of its schemas' values, <code>["schema/arrayOf", schema, most]</code> for a list of each length up to <code>most</code>, and <code>schema/allOf</code> for what its first part stands for that fits the others. Data, <code>value/boolean?</code>, and <code>value/null?</code> stand for their values. A predicate alone, such as a lambda, says no kind, so a variable it types is still unbound.</li>
+  <li>A goal that waits only for such variables joins one step that runs after every other goal its variables need. <code>=</code> with such a variable on one side gives it the value of the other.</li>
+  <li>The step works the goals out on the values: <code>number/add</code>, <code>number/subtract</code>, <code>number/multiply</code> by a known number, and <code>number/divide</code> by one make sums; <code>number/lessThan</code>, <code>number/lessThanOrEqualTo</code>, <code>number/greaterThan</code>, <code>number/greaterThanOrEqualTo</code>, <code>number/equals?</code>, and <code>=</code> make constraints; <code>cond</code>, <code>number/min</code>, <code>number/max</code>, <code>number/absolute</code>, <code>boolean/and</code>, <code>boolean/or</code>, <code>boolean/not</code>, and <code>not</code> make cases; <code>object/get</code> reads a record; a lambda runs by its body. Anything else on such a value, such as a product of two unknowns, a string function, or a question, waits: the step lists the values of the variables it needs and runs it on each, as plain code does. When those are infinitely many, the step fails and names what <em>the solver cannot reason about</em>.</li>
+  <li>The solver decides with exact numbers, so every question gets yes or no on every machine: Fourier and Motzkin's method for numbers that may be any number, and Pugh's Omega test for whole ones. Plain code computes with floating-point numbers, which can round where the solver does not.</li>
+  <li>The step binds the variables something after it needs: a rule's head, a query's answer, a <code>find</code>'s template. Each combination of values they take is an answer, when they are finitely many: a whole number bounded on both sides, or any number the goals fix to one value. A variable with infinitely many fails the step, and says so. Variables nothing needs, such as a rule body's own, those <code>exists</code> lists, and a question's own under <code>not</code>, only need some values to exist, so <code>exists</code> asks whether one does and <code>not</code> proves that none does, for every value.</li>
+  <li><code>why</code> explains a row the step gave with an <code>example</code>: values that meet its goals.</li>
+  <li>A step gives at most 100,000 answers, splits into at most 4,096 cases, and makes at most 20,000 constraints while it eliminates its variables. Past those it is refused, so every question ends soon.</li>
+</ul>
+<lion-example name="Solving for values">
+["begin",
+  ["define", "fee", ["lambda", ["amount"],
+    ["cond", [["number/lessThan", "amount", 100], 2],
+             ["else", ["number/divide", "amount", 50]]]]],
+  {"amounts with a fee of 3": ["find", "?amount",
+     ["and", ["schema/fits?", "?amount", "value/integer?"],
+       ["number/lessThanOrEqualTo", "?amount", 200],
+       ["=", ["fee", "?amount"], 3]]],
+   "is the fee ever below 2": ["query",
+     ["exists", ["?amount"],
+       ["and", ["schema/fits?", "?amount", "value/number?"],
+         ["number/greaterThanOrEqualTo", "?amount", 0],
+         ["number/lessThan", ["fee", "?amount"], 2]]]]}]
 </lion-example>
 
 <h2 id="form-fact"><code>fact</code></h2>

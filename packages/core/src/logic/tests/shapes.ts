@@ -950,6 +950,62 @@ export const checkedMany = (depth = 2): Arbitrary.Arbitrary<Cases> =>
   );
 
 /**
+ * At least as many as `candidates` gives, counted without listing them, so
+ * a generator can set aside a shape with too many values before it lists
+ * them: a list schema with many items of many values can stand for
+ * millions. Undefined exactly where `candidates` is.
+ */
+export const countOf = (shape: Shape): number | undefined => {
+  switch (shape.kind) {
+    case "record":
+      return productOf(
+        shape,
+        Object.values(shape.fields).map((field) => {
+          const n = countOf(field.shape);
+          return n === undefined ? undefined : n + (field.optional ? 1 : 0);
+        })
+      );
+    case "tuple":
+      return productOf(shape, shape.items.map(countOf));
+    case "arrayOf": {
+      const items = countOf(shape.item);
+      if (shape.most === undefined || items === undefined) {
+        return undefined;
+      }
+      let total = 0;
+      for (let length = 0; length <= shape.most; length += 1) {
+        total += items ** length;
+      }
+      return total;
+    }
+    case "anyOf": {
+      const parts = shape.parts.map(countOf);
+      return parts.includes(undefined)
+        ? undefined
+        : (parts as number[]).reduce((sum, n) => sum + n, 0);
+    }
+    case "allOf":
+      return shape.parts.map(countOf).find((part) => part !== undefined);
+    default:
+      return candidates(shape)?.length;
+  }
+};
+
+/** The count of a record's or a list's parts together, and its rest's. */
+const productOf = (
+  shape: Extract<Shape, { kind: "record" | "tuple" }>,
+  parts: readonly (number | undefined)[]
+) => {
+  if (shape.open && shape.rest === undefined) {
+    return undefined;
+  }
+  const rest = shape.open && shape.rest !== undefined ? countOf(shape.rest) : 1;
+  return rest === undefined || parts.includes(undefined)
+    ? undefined
+    : (parts as number[]).reduce((product, n) => product * n, rest);
+};
+
+/**
  * The values a shape stands for, as the model sees it, before they are
  * checked: undefined when the shape cannot say which values it allows,
  * because they are infinitely many or a predicate keeps them to itself.

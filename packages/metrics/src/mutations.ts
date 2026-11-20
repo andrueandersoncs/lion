@@ -32,6 +32,10 @@ const REST_TESTS = [
   "src/logic/tests/schemas.test.ts",
   "src/logic/tests/patterns.test.ts",
 ];
+/** The properties of the solver, against brute force. */
+const SOLVER_TESTS = ["src/logic/tests/solver.test.ts"];
+/** The properties of solving for a variable a schema types, against listing. */
+const SOLVING_TESTS = ["src/logic/tests/solving.test.ts"];
 /** The properties of a schema that stands for each value it allows. */
 const LISTING_TESTS = ["src/logic/tests/listing.test.ts"];
 /** The properties of a schema that asks about itself. */
@@ -1017,6 +1021,137 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "      return true ||",
     tests: MERGE_TESTS,
   },
+  // The solver: whether values meet linear constraints, and which.
+  {
+    name: "a strict constraint over whole numbers is read as one that is not",
+    file: core("logic/solver.ts"),
+    find: '  return { coefficients, constant: c.relation === ">" ? value - 1n : value };',
+    replace: "  return { coefficients, constant: value };",
+    tests: SOLVER_TESTS,
+  },
+  {
+    name: "the Omega test's dark shadow is its real shadow",
+    file: core("logic/solver.ts"),
+    find: "  const dark = shadowOf(lower, upper, others, (a, b) => (a - 1n) * (b - 1n));",
+    replace: "  const dark = shadowOf(lower, upper, others, () => 0n);",
+    tests: SOLVER_TESTS,
+  },
+  {
+    name: "the Omega test never tries the grey shadow",
+    file: core("logic/solver.ts"),
+    find: "    for (let i = 0n; i <= last; i += 1n) {",
+    replace: "    for (let i = 0n; i < 0n; i += 1n) {",
+    tests: SOLVER_TESTS,
+  },
+  {
+    name: "a value that is not equal to another is only above it",
+    file: core("logic/solver.ts"),
+    find: '          { linear: times(c.linear, negate(ONE)), relation: ">" as const },',
+    replace: '          { linear: c.linear, relation: ">" as const },',
+    tests: SOLVER_TESTS,
+  },
+  {
+    name: "Fourier and Motzkin's method forgets that a bound is strict",
+    file: core("logic/solver.ts"),
+    find: '        relation: l.relation === ">" || u.relation === ">" ? ">" : ">=",',
+    replace: '        relation: ">=",',
+    tests: SOLVER_TESTS,
+  },
+  {
+    name: "an equation whose coefficients divide its constant unevenly can hold",
+    file: core("logic/solver.ts"),
+    find: "  if (w.constant % g !== 0n) {",
+    replace: "  if (false) {",
+    tests: SOLVER_TESTS,
+  },
+  {
+    name: "number/subtract on unknowns adds",
+    file: core("logic/symbolic.ts"),
+    find: "              : rest.reduce((a, b) => minus(a, b), first as Linear)",
+    replace:
+      "              : rest.reduce((a, b) => plus(a, b), first as Linear)",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "number/absolute of an unknown forgets the negative case",
+    file: core("logic/symbolic.ts"),
+    find: "        sym: numberSym(times(x, negate(ONE))),",
+    replace: "        sym: numberSym(x),",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "number/min and number/max of unknowns choose the other one",
+    file: core("logic/symbolic.ts"),
+    find: "              ? minus(chosen, other)\n              : minus(other, chosen);",
+    replace:
+      "              ? minus(other, chosen)\n              : minus(chosen, other);",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a cond on unknowns forgets that its earlier tests failed",
+    file: core("logic/symbolic.ts"),
+    find: "      before = and(before, not(holds));",
+    replace: "      before = and(before, TRUE);",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a solver step binds none of the variables a rule head needs",
+    file: core("logic/compile.ts"),
+    find: "      needed.has(name) ||",
+    replace: "      false ||",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a solver step with nothing to keep keeps every answer",
+    file: core("logic/model.ts"),
+    find: "    return [...out.values()];\n  }).pipe(",
+    replace: "    return first ? [vars] : [...out.values()];\n  }).pipe(",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a goal the solver cannot decide is refused instead of waiting for values",
+    file: core("logic/model.ts"),
+    find: "          waiting.push({ goal, why: done.failure });\n          return undefined;",
+    replace:
+      "          return yield* Effect.fail(new LogicError({ message: done.failure }));",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "the goals that wait for a solver step's values never run",
+    file: core("logic/model.ts"),
+    find: "        answers = yield* testEach(model, goal, answers);",
+    replace: "        answers = yield* Effect.succeed(answers);",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a goal that waits runs on one value of each variable it needs",
+    file: core("logic/model.ts"),
+    find: "      ...new Set([...answered, ...leavesFor(needs, choice.symbols)]),",
+    replace: "      ...new Set([...answered]),",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a second '=' about a variable a solver step defines is dropped",
+    file: core("logic/model.ts"),
+    find: "        !(typing(literal) || step.defines.some(([, , by]) => by === literal))",
+    replace: '        !(typing(literal) || isForm(literal, "="))',
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "a schema made from a value the solver works out is read as if it were known",
+    file: core("logic/symbolic.ts"),
+    find: "      if (mentions(second, context)) {",
+    replace: "      if (false) {",
+    tests: SOLVING_TESTS,
+  },
+  {
+    name: "choosing one case of each builds every way before it checks how many",
+    file: core("logic/symbols.ts"),
+    find: "        // Stops at the first way past the most, before making the rest.\n        if (next.length > MOST_WAYS) {",
+    replace:
+      "        // Stops at the first way past the most, before making the rest.\n        if (false) {",
+    tests: SOLVING_TESTS,
+  },
   // A schema that stands for each value it allows.
   {
     name: "a schema binds its value to a listed value without checking that it fits",
@@ -1070,8 +1205,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "schema/fits? never binds the value it checks",
     file: core("logic/compile.ts"),
-    find: "      (second instanceof LogicValue || unlisted(second) === undefined)",
-    replace: "      false",
+    find: "    (second instanceof LogicValue || unlisted(second) === undefined)",
+    replace: "    false",
     tests: LISTING_TESTS,
   },
   {
@@ -1842,9 +1977,9 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a relation call cannot run until the variables in a schema among its arguments are bound",
     file: core("logic/compile.ts"),
-    find: "      (arg, position) => (free(arg, true) && position >= inputs) || known(arg)",
+    find: "    (arg, position) => (free(arg, true) && position >= inputs) || known(arg)",
     replace:
-      "      (arg, position) => (free(arg) && position >= inputs) || known(arg)",
+      "    (arg, position) => (free(arg) && position >= inputs) || known(arg)",
     tests: ["src/logic/tests/patterns.test.ts"],
   },
   {
@@ -3405,8 +3540,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a logic form's parts are compiled in the scope it runs in",
     file: core("evaluation/special-forms/logic.ts"),
-    find: "        code = compile(expression, scope);",
-    replace: "        code = compile(expression, environment);",
+    find: "      toEffect(compile(expression, scope ?? environment)(environment, 0))",
+    replace: "      toEffect(compile(expression, environment)(environment, 0))",
     tests: [SCOPE_TESTS],
   },
   {

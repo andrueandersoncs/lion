@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 193 questions have been decided, 81 records explain them, and of what the records assert, 600 hold when Lion is run, 5 are broken, 335 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 194 questions have been decided, 82 records explain them, and of what the records assert, 605 hold when Lion is run, 5 are broken, 336 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -199,6 +199,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`logic-form-strings`](#logic-form-strings) | `written-scope` | [Logic forms, forms that wait, and code that `eval` runs read strings by the scopes they are written in](#logic-forms-read-by-scope) |
 | 2026-11-19 | [`sum-rounding`](#sum-rounding) | `nearest-exact-sum` | [A sum is rounded once, so the order of its values never changes it](#exact-sums) |
 | 2026-11-19 | [`schema-binds-its-value`](#schema-binds-its-value) | `list-finite-schemas` | [A schema stands for each value it allows: schema/fits? binds the value it checks when its schema can list them](#schemas-list-their-values) |
+| 2026-11-19 | [`solve-typed-variables`](#solve-typed-variables) | `exact-linear-decision-in-lion` | [A variable that a schema types and no goal binds is solved for: the filters about it become constraints, decided exactly in Lion](#solve-typed-variables) |
 
 <a id="program-representation"></a>
 
@@ -4308,3 +4309,41 @@ Recorded 2026-11-19 in `history/notes/schemas-list-their-values.json`.
 - Holds when Lion is run: rule `schema-binds-its-value` holds. "When nothing else binds the value schema/fits? checks, and its schema can list the values it allows, the goal binds the value to each of them that fits, as in binds its element to each item of a list."
 - Holds when Lion is run: `schema/arrayOf-most` exists. "schema/arrayOf takes the most items a list may have as a second argument, and then lists every such list."
 - Holds when Lion is run: `schemas-listing-their-values` exists. "A schema lists its values only where no relation goal, '=', or 'in' can bind the value first, and at most 100,000 of them."
+
+<a id="solve-typed-variables"></a>
+
+## solve-typed-variables
+
+Now: `exact-linear-decision-in-lion`.
+
+- 2026-11-19 `solve-typed-variables`: `exact-linear-decision-in-lion` over `z3-in-webassembly`, `formula-terms`, `bounded-labelling`, `real-relaxation`, `limited-listing`: "The solver is Lion's own, with exact rationals: Fourier and Motzkin's method for numbers that may be any number, Pugh's Omega test for whole numbers." (`solve-typed-variables.json`)
+
+<a id="solve-typed-variables"></a>
+
+### A variable that a schema types and no goal binds is solved for: the filters about it become constraints, decided exactly in Lion
+
+Recorded 2026-11-19 in `history/notes/solve-typed-variables.json`.
+
+**Context.** Lion refused every filter over a variable no goal binds: 'Every variable in a rule head or a filter must first be bound by a relation goal, =, in, or schema/fits?'. So it could check the facts it had, and search every case up to a bound, but never ask about every value: not whether some whole number meets some constraints, nor prove that none does. The research run on formal verification ranked a solver for the values a question leaves open first of ten ideas, since proofs that every command keeps the invariants, invariant inference, proof certificates, and the CIRT run's schema inclusion all build on it. Step 1 let a schema that lists finitely many values bind the value it checks; this is the same rule for schemas whose values cannot be listed. The user allowed the rule change on 2026-11-19: 'you have my permission to change the documented rule that the solver build needs'.
+
+**Decision.** A variable that a schema/fits? types with a schema that says what kind its values are, such as value/integer? or a record of such schemas, and that no relation goal, '=', or 'in' binds, stands for every value the schema allows. Every goal that waits only for such variables joins one step that runs after the goals its other variables need, and the solver decides it: sums of numbers times known numbers, comparisons, equality, and choices between cases, made by running the goals and the lambdas they call on symbolic values. The solver is Lion's own, with exact rationals: Fourier and Motzkin's method for numbers that may be any number, Pugh's Omega test for whole numbers. A goal the solver cannot decide, such as a product of two unknowns, a string function, or a question, waits for values: the step lists the values of the variables it needs from what the solver decides, and runs the goal on each, as plain code does; when they are infinitely many, it fails and names what the solver cannot reason about. The step binds only the variables a rule's head, a query's answer, or a find's template needs, to each combination of values they take when those are finitely many, and fails, saying so, when they are infinitely many. Variables nothing needs only need some values to exist, so exists asks whether one does and not proves that none does, for every value, and why explains a row with an example.
+
+**Consequences.** The documented safety rule changes: a filter may use a variable that a schema types and no goal binds; a variable that nothing binds or types still fails as before. No program that worked changes, since the step runs only where the goals were stuck. A proof that every command keeps the invariants is now one Lion question with not and exists, over records whose fields a schema types, with the command's own lambda run on them. Bounded whole numbers no longer need a schema that lists each: their bounds are constraints, and a goal about them the solver cannot decide runs on each value they take. The solver reasons with exact numbers and plain code with floating-point numbers, which can round where the solver does not. A step gives at most 100,000 answers, splits into at most 4,096 cases, and makes at most 20,000 constraints, so every question ends soon. A number that may be any number and is tied to a whole number nothing needs counts as having infinitely many values when its range is an interval.
+
+**Alternatives considered.**
+
+- Z3 compiled to WebAssembly. It answers 'unknown' for some questions, which breaks one answer to every question, and it needs threads with SharedArrayBuffer, cross-origin headers in a browser, asynchronous calls, and Node rather than Bun, which Lion's tests run on.
+- Formulas as values with a solver function, as Formulog does. It gives a subset of what solving the goals themselves gives, and asks programs to build formulas instead of writing the filters they already write.
+- Whole numbers in a bounded range only, labelled one by one. It can check every value in a box but never prove a rule for every value, which the command proofs need.
+- Treat whole numbers as numbers that may be any number. It can say a value exists where no whole one does: 2·x = 7 has a solution among the reals and none among whole numbers.
+- List the answers of a variable with infinitely many values up to a limit. A list that silently stops would make a find look complete when it is not.
+- Refuse every goal the solver cannot decide. A bounded question about a product of two unknowns, or about the string of a number, would fail where listing the same values succeeds, so where a filter stands would change its answer.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `solve-typed-variables`: `exact-linear-decision-in-lion`. "The solver is Lion's own, with exact rationals: Fourier and Motzkin's method for numbers that may be any number, Pugh's Omega test for whole numbers."
+- Holds when Lion is run: rule `safe-rules` holds. "The documented safety rule changes: a filter may use a variable that a schema types and no goal binds; a variable that nothing binds or types still fails as before."
+- Holds when Lion is run: `filter-typed-variable` is `solved`. "A variable that a schema/fits? types with a schema that says what kind its values are, such as value/integer? or a record of such schemas, and that no relation goal, '=', or 'in' binds, stands for every value the schema allows."
+- Holds when Lion is run: rule `solved-questions` holds. "Variables nothing needs only need some values to exist, so exists asks whether one does and not proves that none does, for every value, and why explains a row with an example."
+- Holds when Lion is run: `solving-typed-variables` exists. "Every goal that waits only for such variables joins one step that runs after the goals its other variables need, and the solver decides it"
+- Holds when Lion is run: `solver-waiting-goal` is `solved`. "A goal the solver cannot decide, such as a product of two unknowns, a string function, or a question, waits for values"

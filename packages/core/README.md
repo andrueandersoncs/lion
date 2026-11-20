@@ -815,8 +815,8 @@ const program = Effect.gen(function* () {
 
 Rules are checked when they are added:
 
-- Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`, unless the head lists it in [`exists`](#existential-rules). So must every input of an algorithm goal, and an input must be data.
-- `schema/fits?` binds the value it checks only where nothing else can, and only when its schema [lists the values it allows](#taking-data-apart), at most 100,000 of them. A schema that cannot, such as `value/integer?`, a lambda, or `schema/arrayOf` with no most length, leaves the value unbound, and the message says why.
+- Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`, or typed by a schema that says what kind its values are, such as `value/integer?`, so that it is [solved for](#solving-for-values), unless the head lists it in [`exists`](#existential-rules). So must every input of an algorithm goal, and an input must be data.
+- `schema/fits?` binds the value it checks only where nothing else can. A schema that [lists the values it allows](#taking-data-apart) binds it to each, at most 100,000 of them. One that says what kind they are, such as `value/integer?`, makes the variable symbolic: the filters about it are [solved for](#solving-for-values), and the ones the solver cannot decide wait for the values it lists. A variable no goal binds and no such schema types stays unbound, and the message says why.
 - A question, a goal under `not`, a goal used as a value, or a `find`, waits for the variables the rule binds. Any other variable in it is its own, and the question must bind it itself.
 - A rule cannot ask a question about a relation that depends on its own head, so every program has a single well-defined answer. Negation is one such question.
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
@@ -968,7 +968,7 @@ Evaluates to `{ "stock": true, "allOf": false, "problems": [{ "path": ["rush"], 
 
 A logic variable in a schema stands for a value. Once it is bound it is that value, and until then any value fits it, and binds it. So in a rule or query a schema is also a pattern: it tests a value and takes it apart at once. These goals bind the variables in a pattern:
 
-- `["schema/fits?", value, schema]` binds the variables in the schema. When nothing else binds the value, it binds the value too, to each value the schema allows, if the schema can list them, as `in` binds its element to each item of a list. Data lists itself, a record or list of schemas every way of choosing its parts, with and without a key whose schema is optional, `schema/anyOf` what its schemas list, `schema/allOf` what its first schema that can list lists, `value/boolean?` false and true, `value/null?` null, and `["schema/arrayOf", schema, most]` every list of at most `most` items. Each is then checked, so the value takes exactly the values that fit: `["find", "?run", ["schema/fits?", "?run", ["schema/arrayOf", ["schema/anyOf", 2, -1], 2]]]` gives the seven runs of at most two moves.
+- `["schema/fits?", value, schema]` binds the variables in the schema. When nothing else binds the value, it binds the value too, to each value the schema allows, if the schema can list them, as `in` binds its element to each item of a list. Data lists itself, a record or list of schemas every way of choosing its parts, with and without a key whose schema is optional, `schema/anyOf` what its schemas list, `schema/allOf` what its first schema that can list lists, `value/boolean?` false and true, `value/null?` null, and `["schema/arrayOf", schema, most]` every list of at most `most` items. Each is then checked, so the value takes exactly the values that fit: `["find", "?run", ["schema/fits?", "?run", ["schema/arrayOf", ["schema/anyOf", 2, -1], 2]]]` gives the seven runs of at most two moves. A schema that cannot list its values but says what kind they are, such as `value/integer?`, makes the value symbolic instead, and the goals about it are [solved for](#solving-for-values).
 - A relation call binds the variables in its arguments. Each argument is a schema for its column, so `["inbox", {"type": "refund", "id": "?id"}]` asks for the rows that fit.
 - `["=", a, b]` and `["in", element, list]` bind the variables in a record or list, on either side of `=` or as the element. They compare values, so a function in the record is a value there, and not a predicate.
 
@@ -1002,6 +1002,37 @@ Evaluates to `{ "refunds": [{ "id": 3 }], "orders": [{ "id": 1 }, { "id": 2 }], 
 - `["schema/open", "?shape"]` does not bind `?shape`: it waits for another goal to bind it to a record of schemas.
 - In plain code, where no rule or query is there to bind anything, a check with a variable in it is a goal, like `=` with one: `["schema/fits?", 1, "?x"]` evaluates to the goal, and `["query", ["schema/fits?", 1, "?x"]]` to `[{ "x": 1 }]`.
 - `why` explains a rule's answer by the rows its goals matched, also when a goal says which rows with a schema.
+
+### Solving for values
+
+A schema stands for every value it allows. When nothing else binds the value `schema/fits?` checks and the schema cannot list its values, but says what kind they are, the value is symbolic, and the goals about it are solved for. Lion works out exactly which values meet them, says whether any does, or proves that none does, for every number.
+
+```json
+["begin",
+  ["define", "careful", ["lambda", ["account", "amount"],
+    ["cond", [["number/lessThan", ["object/get", "account", "balance"], "amount"], "account"],
+             ["else", {"balance": ["number/subtract", ["object/get", "account", "balance"], "amount"]}]]]],
+  {"between": ["find", "?x",
+     ["and", ["schema/fits?", "?x", "value/integer?"],
+       ["number/greaterThan", "?x", 2], ["number/lessThan", "?x", 6]]],
+   "never overdrawn": ["query",
+     ["not", ["exists", ["?account", "?amount"],
+       ["and",
+         ["schema/fits?", "?account", {"balance": "value/integer?"}],
+         ["schema/fits?", "?amount", "value/integer?"],
+         ["number/greaterThanOrEqualTo", ["object/get", "?account", "balance"], 0],
+         ["number/greaterThan", "?amount", 0],
+         ["number/lessThan", ["object/get", ["careful", "?account", "?amount"], "balance"], 0]]]]]}]
+```
+
+Evaluates to `{ "between": [3, 4, 5], "never overdrawn": [{}] }`: for every whole balance of at least 0 and every positive amount, the careful withdrawal leaves the balance at least 0.
+
+- `value/integer?` stands for a whole number and `value/number?` for any number. A record or list of schemas stands for a record or list of what its parts stand for, `schema/anyOf` for any of its schemas' values, `["schema/arrayOf", schema, most]` for a list of each length up to `most`, and `schema/allOf` for what its first part stands for that fits the others. A predicate alone, such as a lambda, says no kind.
+- A goal that waits only for such variables joins one step that runs after the goals its other variables need. `=` with such a variable on one side gives it the value of the other.
+- The step works the goals out on the values: `number/add`, `number/subtract`, `number/multiply` and `number/divide` by a known number, comparisons, `number/equals?`, `=`, `cond`, `number/min`, `number/max`, `number/absolute`, `boolean/and`, `boolean/or`, `boolean/not`, `not`, `object/get` on a record, and a lambda by its body. Anything else on such a value, such as a product of two unknowns, a string function, or a question, waits: the step lists the values of the variables it needs and runs it on each, as plain code does. When those are infinitely many, the step fails and names what the solver cannot reason about.
+- The solver decides with exact numbers: Fourier and Motzkin's method for any number and Pugh's Omega test for whole numbers. Every question gets yes or no, the same on every machine. Plain code computes with floating-point numbers, which can round where the solver does not.
+- The step binds the variables something after it needs, a rule's head, a query's answer, or a `find`'s template, to each combination of values they take, when those are finitely many: a whole number bounded on both sides, or a number the goals fix. One with infinitely many fails, and says so. Variables nothing needs, a rule body's own, those `exists` lists, and a question's own under `not`, only need some values to exist. `why` explains a row the step gave with an `example` that meets its goals.
+- A step gives at most 100,000 answers, splits into at most 4,096 cases, and makes at most 20,000 constraints while eliminating its variables; past those it is refused, so every question ends soon.
 
 ### Schemas in rules and queries
 
