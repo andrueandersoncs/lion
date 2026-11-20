@@ -1,0 +1,32 @@
+{
+  "claims": [
+    {
+      "quote": "The property that the head of a call is a name, never data, draws only names that are neither a library function nor a special form. It drew `or` now and then, and `[\"or\", 0]` is the `or` form, not a call, so the analysis rightly read it as the form and the property failed: in 207 of 1,000 seeded runs of 300 cases, and in none now.",
+      "says": {
+        "behavior": "call-head-property-special-form-name",
+        "is": "left-out",
+        "area": "tests",
+        "fixes": true,
+        "was": "drawn"
+      }
+    },
+    {
+      "quote": "The property that the head of a call is a name, never data, draws only names that are neither a library function nor a special form. It drew `or` now and then, and `[\"or\", 0]` is the `or` form, not a call, so the analysis rightly read it as the form and the property failed: in 207 of 1,000 seeded runs of 300 cases, and in none now.",
+      "says": {
+        "measured": "call-head-property-failing-runs-per-1000",
+        "before": 207,
+        "after": 0,
+        "area": "tests"
+      }
+    },
+    {
+      "quote": "A property checks that every string in a relation's columns and options, and in a query's and an invariant's options, is data to the analysis, and that the run does not read it by scope either: defining each one first, even `some`, `in`, or `aggregate/max`, changes nothing the run gives. Until now only the property about the head of a call caught the mutation that reads those parts as expressions, and only in a run that drew `or`; this one catches it on its first run.",
+      "says": {
+        "behavior": "analysis-written-parts-tested",
+        "is": "by-property",
+        "area": "tests",
+        "was": "caught-by-chance"
+      }
+    }
+  ]
+}
