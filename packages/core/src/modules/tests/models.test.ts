@@ -4,7 +4,7 @@
  * library does, and return plain Lion values.
  */
 import { describe, expect, it } from "@effect/vitest";
-import { Arbitrary, Effect, Schema } from "effect";
+import { Arbitrary, Effect, Result, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
 
@@ -160,10 +160,6 @@ describe("value/object? and value/array?", () => {
 
 const record = Arbitrary.schema(Schema.Record(Name, Schema.Int));
 
-/** What JavaScript property access gives, with undefined as null. */
-const property = (data: Record<string, unknown>, key: string) =>
-  (data as Record<string, unknown>)[key] ?? null;
-
 describe("value/integer? and value/any?", () => {
   const whole = Arbitrary.schema(
     Schema.Int.check(Schema.isBetween({ minimum: -1000, maximum: 1000 }))
@@ -211,11 +207,12 @@ describe("value/integer? and value/any?", () => {
   );
 });
 
-describe("object/get", () => {
+describe("object/get and object/has?", () => {
   it.effect.prop(
-    "returns the value under a key, or null when there is none",
+    "give the value under a key the record has, null among them, and for any other key the value given for it, or fail, as get-path does",
     {
-      // Present keys come from the record; absent ones from fresh names.
+      // Present keys come from the record; absent ones are fresh names, or
+      // names JavaScript gives every object, which a record does not have.
       pair: Arbitrary.flatMap(record, (data) =>
         Arbitrary.map(
           Arbitrary.all([
@@ -223,18 +220,47 @@ describe("object/get", () => {
             Arbitrary.schema(
               Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 9 }))
             ),
+            Arbitrary.schema(
+              Schema.Literals(["toString", "constructor", "hasOwnProperty"])
+            ),
+            Arbitrary.schema(Schema.Boolean),
+            Arbitrary.schema(Schema.Boolean),
           ]),
-          ([fresh, at]): [Record<string, number>, string] => [
-            data,
-            Object.keys(data)[at] ?? fresh,
-          ]
+          ([fresh, at, inherited, useInherited, nullFirst]): [
+            Record<string, unknown>,
+            string,
+          ] => {
+            const keys = Object.keys(data);
+            const held: Record<string, unknown> =
+              nullFirst && keys[0] !== undefined
+                ? { ...data, [keys[0]]: null }
+                : data;
+            return [held, keys[at] ?? (useInherited ? inherited : fresh)];
+          }
         )
       ),
+      fallback: Arbitrary.schema(Schema.Boolean),
     },
-    ({ pair: [data, key] }) =>
+    ({ pair: [data, key], fallback }) =>
       Effect.gen(function* () {
-        const result = yield* evaluate(["object/get", quote(data), quote(key)]);
-        expect(result).toBe(property(data, key));
+        const given = fallback ? ["missing"] : [];
+        const result = yield* Effect.result(
+          evaluate(["object/get", quote(data), quote(key), ...given])
+        );
+        const has = Object.hasOwn(data, key);
+        if (has) {
+          expect(result).toStrictEqual(Result.succeed(data[key]));
+        } else if (fallback) {
+          expect(result).toStrictEqual(Result.succeed("missing"));
+        } else {
+          expect(Result.isFailure(result) && result.failure).toMatchObject({
+            _tag: "KeyNotFoundError",
+            key,
+          });
+        }
+        expect(yield* evaluate(["object/has?", quote(data), quote(key)])).toBe(
+          has
+        );
       })
   );
 });

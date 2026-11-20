@@ -1,0 +1,94 @@
+{
+  "title": "object/get fails on a key a record does not have, unless it is given the value to use instead",
+  "context": "`[\"object/get\", record, key]` gave `null` both for a key the record does not have and for a key that holds `null`, while patterns, `schema/optional`, and Lion's own `object/get-path` tell the two apart: `object/get-path` fails with `KeyNotFoundError` on a key that is not there. It also read keys a record does not hold itself, from JavaScript's prototype: `[\"object/get\", {}, \"toString\"]` gave a function. The Clef run (`research/runs/clef/`) found the first, and the user decided on 2026-11-20 to fix every surprise it found.",
+  "decision": "`object/get` takes a record, a key, and maybe a value to give when the record does not have the key, as Racket's `hash-ref` takes a failure result. It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. Only a record's own keys count. `[\"object/has?\", record, key]` says whether the record has the key, as Racket's `hash-has-key?` does. The solver reads both on records whose shape it knows.",
+  "consequences": "A program that read a missing key as `null` fails until it gives the value to use, `[\"object/get\", record, key, null]`, or asks `object/has?`. The proof pattern of the how-to that proves commands asks `[\"object/has?\", \"c\", \"deposit\"]` where it asked `[\"value/number?\", [\"object/get\", \"c\", \"deposit\"]]`. `object/get` and `object/get-path` follow one rule.",
+  "alternatives": [
+    {
+      "option": "Keep `null` for a missing key, and add a value to give instead",
+      "rejected": "A program that forgets the value still cannot tell a missing key from one that holds null, and `object/get` and `object/get-path` would keep two rules."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does.",
+      "says": {
+        "decision": "object-get-missing-key",
+        "chose": "fails-unless-given-a-value",
+        "over": ["null"],
+        "area": "library",
+        "because": "a missing key and one that holds null are different, as patterns and object/get-path say"
+      }
+    },
+    {
+      "quote": "It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does.",
+      "says": {
+        "behavior": "object-get-missing-key",
+        "is": "error",
+        "area": "library",
+        "was": "null",
+        "follows": "racket"
+      }
+    },
+    {
+      "quote": "Only a record's own keys count.",
+      "says": {
+        "behavior": "object-get-inherited-key",
+        "is": "error",
+        "area": "library",
+        "was": "javascript-property"
+      }
+    },
+    {
+      "quote": "`[\"object/has?\", record, key]` says whether the record has the key, as Racket's `hash-has-key?` does.",
+      "says": {
+        "feature": "object/has?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does.",
+      "says": {
+        "rule": "values-are-json",
+        "holds": true,
+        "statement": "Lion's values are JSON, so the standard library never gives undefined, NaN, or Infinity: a key a record does not have is an error, or the value a call gives for it",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "division-by-zero",
+            "is": "error"
+          },
+          {
+            "behavior": "number-overflow",
+            "is": "error"
+          },
+          {
+            "behavior": "object-get-missing-key",
+            "is": "error"
+          },
+          {
+            "behavior": "array-head-empty-list",
+            "is": "null"
+          },
+          {
+            "behavior": "value-object-list",
+            "is": "false"
+          },
+          {
+            "behavior": "zero-equals-negative-zero",
+            "is": "true"
+          },
+          {
+            "behavior": "query-answer-non-json",
+            "is": "error"
+          },
+          {
+            "behavior": "derived-row-non-json",
+            "is": "error"
+          }
+        ]
+      }
+    }
+  ]
+}

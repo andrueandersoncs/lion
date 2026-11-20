@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 200 questions have been decided, 88 records explain them, and of what the records assert, 626 hold when Lion is run, 5 are broken, 345 are stated but not checked by running Lion, and 25 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 200 questions have been decided, 89 records explain them, and of what the records assert, 627 hold when Lion is run, 5 are broken, 346 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -17,7 +17,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2025-12-26 | [`test-runner`](#test-runner) | `vitest` |  |
 | 2025-12-28 | [`evaluator-structure`](#evaluator-structure) | `unit-per-form` |  |
 | 2025-12-29 | [`special-form-dispatch`](#special-form-dispatch) | `form-schemas` |  |
-| 2025-12-31 | [`object-get-missing-key`](#object-get-missing-key) | `null` | [Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`](#values-are-json) |
+| 2025-12-31 | [`object-get-missing-key`](#object-get-missing-key) | `fails-unless-given-a-value` | [object/get fails on a key a record does not have, unless it is given the value to use instead](#object-get-tells-missing-keys), [Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`](#values-are-json) |
 | 2026-01-01 | [`test-location`](#test-location) | `tests-folder` |  |
 | 2026-03-20 | [`evaluation-runtime`](#evaluation-runtime) | `run-to-completion` | [Evaluation runs to its end in one pass, and does not pause at host calls to resume from a log](#no-resumable-evaluation) |
 | 2026-03-20 | [`host-operation-effectfulness`](#host-operation-effectfulness) | `effectful-by-default` |  |
@@ -477,11 +477,36 @@ Now: `form-schemas`.
 
 ## object-get-missing-key
 
-Now: `null`.
+Now: `fails-unless-given-a-value`.
 
 - 2025-12-31 `object-get-missing-key`: `error` over `undefined`: "Effect.flatMap(Option.getOrElse(() => Effect.fail(new Error("Key not found"))))" (`c6c1f39`)
 - 2026-03-31 `object-get-missing-key`: `undefined` over `error`: "should return undefined for missing keys" (`c11efe8`)
-- 2026-11-11 `object-get-missing-key`: `null` over `undefined`, was `undefined`: "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list." (`values-are-json.json`)
+- 2026-11-11 `object-get-missing-key`: `null` over `undefined`: "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list." (`values-are-json.json`)
+- 2026-11-20 `object-get-missing-key`: `fails-unless-given-a-value` over `null`, was `undefined`: "It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does." (`object-get-tells-missing-keys.json`)
+
+<a id="object-get-tells-missing-keys"></a>
+
+### object/get fails on a key a record does not have, unless it is given the value to use instead
+
+Recorded 2026-11-20 in `history/notes/object-get-tells-missing-keys.json`.
+
+**Context.** `["object/get", record, key]` gave `null` both for a key the record does not have and for a key that holds `null`, while patterns, `schema/optional`, and Lion's own `object/get-path` tell the two apart: `object/get-path` fails with `KeyNotFoundError` on a key that is not there. It also read keys a record does not hold itself, from JavaScript's prototype: `["object/get", {}, "toString"]` gave a function. The Clef run (`research/runs/clef/`) found the first, and the user decided on 2026-11-20 to fix every surprise it found.
+
+**Decision.** `object/get` takes a record, a key, and maybe a value to give when the record does not have the key, as Racket's `hash-ref` takes a failure result. It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. Only a record's own keys count. `["object/has?", record, key]` says whether the record has the key, as Racket's `hash-has-key?` does. The solver reads both on records whose shape it knows.
+
+**Consequences.** A program that read a missing key as `null` fails until it gives the value to use, `["object/get", record, key, null]`, or asks `object/has?`. The proof pattern of the how-to that proves commands asks `["object/has?", "c", "deposit"]` where it asked `["value/number?", ["object/get", "c", "deposit"]]`. `object/get` and `object/get-path` follow one rule.
+
+**Alternatives considered.**
+
+- Keep `null` for a missing key, and add a value to give instead. A program that forgets the value still cannot tell a missing key from one that holds null, and `object/get` and `object/get-path` would keep two rules.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `object-get-missing-key`: `fails-unless-given-a-value`. "It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does."
+- Holds when Lion is run: `object-get-missing-key` is `error`. "It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does."
+- Holds when Lion is run: `object-get-inherited-key` is `error`. "Only a record's own keys count."
+- Stated, not checked by running Lion: `object/has?` exists. "`["object/has?", record, key]` says whether the record has the key, as Racket's `hash-has-key?` does."
+- Holds when Lion is run: rule `values-are-json` holds. "It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does."
 
 <a id="values-are-json"></a>
 
@@ -509,17 +534,17 @@ Recorded 2026-11-11 in `history/notes/values-are-json.json`.
 - Holds when Lion is run: `zero-equals-negative-zero` is `true`. "`["=", 0, -0]` is `true`, since JSON writes both as `0`"
 - Holds when Lion is run: `non-finite-number-failure-point` is `function-that-made-it`. "a number that is not finite fails at the function that made it instead of where it is used later"
 - Holds when Lion is run: `division-by-zero` is `error`. "Programs that relied on `Infinity`, `undefined`, or `value/object?` of a list behave differently."
-- Holds when Lion is run: `object-get-missing-key` is `null`. "Programs that relied on `Infinity`, `undefined`, or `value/object?` of a list behave differently."
+- Replaced by a later word: `object-get-missing-key` is `null`. "Programs that relied on `Infinity`, `undefined`, or `value/object?` of a list behave differently."
 - Holds when Lion is run: `value-object-list` is `false`. "Programs that relied on `Infinity`, `undefined`, or `value/object?` of a list behave differently."
 - Holds when Lion is run: `query-answer-variable-bound-to-function` is `error`. "A query whose answer binds a variable to a function, which used to leave the variable out, now fails and shows the answer."
 - Stated, not checked by running Lion: decided `non-finite-arithmetic`: `arithmetic-error`. "Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`"
-- Stated, not checked by running Lion: decided `object-get-missing-key`: `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
+- Replaced by a later word: decided `object-get-missing-key`: `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
 - Holds when Lion is run: rule `values-are-json` holds. "Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`"
 - Holds when Lion is run: `division-by-zero` is `error`. "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`"
 - Holds when Lion is run: `number-overflow` is `error`. "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`"
 - Holds when Lion is run: `ArithmeticError` exists. "fails with the new `ArithmeticError`"
 - Holds when Lion is run: `aggregate-sum-non-finite` is `error`. "this covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list"
-- Holds when Lion is run: `object-get-missing-key` is `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
+- Replaced by a later word: `object-get-missing-key` is `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
 
 <a id="test-location"></a>
 

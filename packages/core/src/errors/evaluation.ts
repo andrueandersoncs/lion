@@ -230,6 +230,20 @@ export const leaving = <E>(error: E, name: string): E => {
 };
 
 /**
+ * Raised when a record does not have a key a function needs: `object/get`
+ * given no value to use instead, or a key `object/get-path` follows.
+ */
+export class KeyNotFoundError extends Schema.TaggedError<KeyNotFoundError>()(
+  "KeyNotFoundError",
+  { key: Schema.String, record: Schema.optional(Schema.Unknown) }
+) {
+  override get message() {
+    const where = this.record === undefined ? "" : ` in ${show(this.record)}`;
+    return `There is no key "${this.key}"${where}.`;
+  }
+}
+
+/**
  * Raised when arithmetic has no finite result, such as division by zero.
  * Lion's numbers are JSON numbers, which cannot be Infinity or NaN.
  */

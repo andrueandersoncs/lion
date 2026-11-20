@@ -507,8 +507,8 @@
     [
       "ships",
       "?r",
-      ["object/get", "?item", "name"],
-      ["object/get", "?item", "version"]
+      ["object/get", "?item", "name", null],
+      ["object/get", "?item", "version", null]
     ],
     [
       "release",

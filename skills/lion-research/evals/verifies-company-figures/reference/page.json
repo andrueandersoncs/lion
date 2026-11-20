@@ -15,7 +15,7 @@
         [
           "and",
           ["meant", ["quote", { "revenue": "tarnwell" }], "?q"],
-          ["=", "wanted", ["object/get", "?q", "period"]],
+          ["=", "wanted", ["object/get", "?q", "period", null]],
           ["backing", "?q", "?usd_m", "?_"],
           [
             "=",
@@ -25,7 +25,7 @@
               "$",
               ["number/toString", "?usd_m", ","],
               " million ",
-              ["object/get", "?q", "basis"]
+              ["object/get", "?q", "basis", null]
             ]
           ]
         ]

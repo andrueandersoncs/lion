@@ -632,7 +632,7 @@ describe("the research skill's core rules", () => {
             "rule",
             ["answer", ["object/remove", "?says", "value"], "?v", "?c"],
             ["claim", "?c", "?_", "?_", "?says"],
-            ["=", "?v", ["object/get", "?says", "value"]],
+            ["=", "?v", ["object/get", "?says", "value", null]],
           ],
           {
             ambiguous: rows(
@@ -1651,7 +1651,7 @@ describe("the research skill's page check", () => {
             "rule",
             ["answer", ["object/remove", "?says", "value"], "?v", "?c"],
             ["claim", "?c", "?_", "?_", "?says"],
-            ["=", "?v", ["object/get", "?says", "value"]],
+            ["=", "?v", ["object/get", "?says", "value", null]],
           ],
           namedReadingsOf(plan),
         ]);

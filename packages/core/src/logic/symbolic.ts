@@ -17,7 +17,7 @@
  * string function on one, is refused by name.
  */
 import { Effect } from "effect";
-import { logicError } from "@/errors/evaluation";
+import { KeyNotFoundError, logicError } from "@/errors/evaluation";
 import { type Environment, lookup, UNBOUND } from "@/evaluation/environment";
 import { call } from "@/evaluation/special-forms/function";
 import { fits } from "@/logic/fit";
@@ -158,7 +158,8 @@ const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "number/min": [1, ANY],
   "number/multiply": [1, ANY],
   "number/subtract": [2, 2],
-  "object/get": [2, 2],
+  "object/get": [2, 3],
+  "object/has?": [2, 2],
   "value/integer?": [1, 1],
   "value/number?": [1, 1],
 };
@@ -255,8 +256,10 @@ const LIBRARY: Readonly<
     ),
   "boolean/not": (args) =>
     Effect.map(truthOf(args[0] as Sym, args[0]), (f) => one(truthSym(not(f)))),
+  // A record of a known shape has its keys known, so these are known too:
+  // a missing key fails, as in plain code, unless a value is given for it.
   "object/get": (args) => {
-    const [record, key] = args;
+    const [record, key, missing] = args;
     const fields = fieldsOf(record as Sym);
     if (
       fields === undefined ||
@@ -265,7 +268,22 @@ const LIBRARY: Readonly<
     ) {
       return refused("object/get");
     }
-    return Effect.succeed(one(fields.get(key.value) ?? fromValue(null)));
+    const found = fields.get(key.value) ?? missing;
+    return found === undefined
+      ? Effect.fail(new KeyNotFoundError({ key: key.value }))
+      : Effect.succeed(one(found));
+  },
+  "object/has?": (args) => {
+    const [record, key] = args;
+    const fields = fieldsOf(record as Sym);
+    if (
+      fields === undefined ||
+      key?.kind !== "value" ||
+      typeof key.value !== "string"
+    ) {
+      return refused("object/has?");
+    }
+    return Effect.succeed(one(truthSym(fields.has(key.value) ? TRUE : FALSE)));
   },
   "value/number?": (args) =>
     Effect.succeed(one(truthSym(args[0]?.kind === "number" ? TRUE : FALSE))),

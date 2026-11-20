@@ -244,7 +244,7 @@
     ["claim", "?c", "?_", "?words", "?says"],
     ["in", "?field", ["object/keys", "?says"]],
     ["not", ["context", "?field"]],
-    ["=", "?value", ["object/get", "?says", "?field"]],
+    ["=", "?value", ["object/get", "?says", "?field", null]],
     ["value/number?", "?value"],
     ["not", ["in", "?value", ["string/numbers", "?words", ","]]]
   ],
@@ -303,7 +303,7 @@
     ["readings", "?base", "?key", ["aggregate/unique", "?stated"]],
     ["base", "?q", "?base"],
     ["reading", "?key"],
-    ["=", "?stated", ["object/get", "?q", "?key"]]
+    ["=", "?stated", ["object/get", "?q", "?key", null]]
   ],
   [
     "rule",
@@ -317,7 +317,7 @@
     ["set_aside", "?q", "?key", "?stated", "?chosen"],
     ["base", "?q", "?_"],
     ["decided", "?key", "?chosen", "?_"],
-    ["=", "?stated", ["object/get", "?q", "?key"]],
+    ["=", "?stated", ["object/get", "?q", "?key", null]],
     ["not", ["=", "?stated", null]],
     ["not", ["=", "?stated", "?chosen"]]
   ],

@@ -31,7 +31,7 @@
       [
         "cond",
         [
-          ["value/number?", ["object/get", "c", "deposit"]],
+          ["object/has?", "c", "deposit"],
           ["number/add", "balance", ["object/get", "c", "deposit"]]
         ],
         [
@@ -54,7 +54,7 @@
       [
         "cond",
         [
-          ["value/number?", ["object/get", "c", "deposit"]],
+          ["object/has?", "c", "deposit"],
           ["number/add", "balance", ["object/get", "c", "deposit"]]
         ],
         [

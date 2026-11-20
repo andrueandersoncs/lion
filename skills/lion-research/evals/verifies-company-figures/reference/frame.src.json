@@ -125,8 +125,8 @@
     "rule",
     ["gross_margin", "?co", "?p", "?b", "?percent"],
     ["meant", { "revenue": "?co" }, "?q"],
-    ["=", "?p", ["object/get", "?q", "period"]],
-    ["=", "?b", ["object/get", "?q", "basis"]],
+    ["=", "?p", ["object/get", "?q", "period", null]],
+    ["=", "?b", ["object/get", "?q", "basis", null]],
     ["backing", "?q", "?revenue", "?_"],
     ["backing", { "cost of services": "?co", "period": "?p" }, "?cost", "?_"],
     [

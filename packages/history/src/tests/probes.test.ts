@@ -443,7 +443,7 @@ describe("the observations of a build", () => {
             {
               area: "x",
               case: "said",
-              program: ["object/get", ["repo/run", "say"], "output"],
+              program: ["object/get", ["repo/run", "say"], "output", null],
             },
             ...features.map(({ feature, program }) => ({
               feature,

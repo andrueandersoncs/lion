@@ -23,7 +23,7 @@
         "cond",
         [["string/equals?", ["object/get", "s", "status"], "closed"], "s"],
         [
-          ["value/number?", ["object/get", "c", "deposit"]],
+          ["object/has?", "c", "deposit"],
           {
             "status": "open",
             "balance": [
@@ -75,7 +75,7 @@
         "cond",
         [["string/equals?", ["object/get", "s", "status"], "closed"], "s"],
         [
-          ["value/number?", ["object/get", "c", "deposit"]],
+          ["object/has?", "c", "deposit"],
           {
             "status": "open",
             "balance": [

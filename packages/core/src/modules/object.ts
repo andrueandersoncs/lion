@@ -1,5 +1,10 @@
 import { Effect, flow, Record, Schema } from "effect";
-import { atLeast, logicError, takes } from "@/errors/evaluation";
+import {
+  atLeast,
+  KeyNotFoundError,
+  logicError,
+  takes,
+} from "@/errors/evaluation";
 import { show as written } from "@/logic/terms";
 import { over } from "@/modules/lib/shared";
 import { RecordKeySchema } from "@/schemas/lion-expression";
@@ -20,15 +25,6 @@ class NotAnObjectError extends Schema.TaggedError<NotAnObjectError>()(
 ) {
   override get message() {
     return `Expected an object, but found ${show(this.actual)}.`;
-  }
-}
-
-class KeyNotFoundError extends Schema.TaggedError<KeyNotFoundError>()(
-  "KeyNotFoundError",
-  { key: Schema.String }
-) {
-  override get message() {
-    return `There is no key "${this.key}".`;
   }
 }
 
@@ -142,7 +138,7 @@ const validateKeyExists = (current: unknown, key: string) =>
         });
       }
     } else if (!(key in (current as object))) {
-      return yield* new KeyNotFoundError({ key });
+      return yield* new KeyNotFoundError({ key, record: current });
     }
   });
 
@@ -232,14 +228,30 @@ const applied =
 export const module = {
   symbol: Symbol("object"),
 
-  /** The value under a key, or null when there is none. */
-  get: takes(2, (obj: unknown, key: string) =>
+  /**
+   * The value under a key the record has, null among them. For a key it
+   * does not have, the value given as the third argument, as Racket's
+   * `hash-ref` takes a failure result; without one the call fails, as
+   * `get-path` does. Only a record's own keys count.
+   */
+  get: takes([2, 3], (obj: unknown, key: string, ...missing: unknown[]) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
         return yield* new NotAnObjectError({ actual: obj });
       }
-      return (obj as Record<string, unknown>)[key] ?? null;
+      if (Object.hasOwn(obj, key)) {
+        return (obj as Record<string, unknown>)[key];
+      }
+      if (missing.length > 0) {
+        return missing[0];
+      }
+      return yield* new KeyNotFoundError({ key, record: obj });
     })
+  ),
+
+  /** Whether a record has a key of its own, as Racket's `hash-has-key?`. */
+  "has?": over([Entries, Schema.String], (record, key) =>
+    Object.hasOwn(record, key)
   ),
 
   "get-path": takes(2, (obj: unknown, path: string) =>

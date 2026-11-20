@@ -256,7 +256,8 @@
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
-    <tr data-entry="object/get"><td><code>["object/get", object, key]</code></td><td>The value under <code>key</code>, or <code>null</code> when there is none. Fails with <code>NotAnObjectError</code> for a non-object.</td></tr>
+    <tr data-entry="object/get"><td><code>["object/get", object, key, missing?]</code></td><td>The value under a <code>key</code> the object has, <code>null</code> among them. For a key it does not have, <code>missing</code>, as Racket's <code>hash-ref</code> takes a failure result; without it the call fails with <code>KeyNotFoundError</code>, as <code>object/get-path</code> does. Only the object's own keys count. Fails with <code>NotAnObjectError</code> for a non-object.</td></tr>
+    <tr data-entry="object/has?"><td><code>["object/has?", record, key]</code></td><td>Whether the record has the key, as Racket's <code>hash-has-key?</code> says: <code>true</code> for a key that holds <code>null</code>, and <code>false</code> for one it does not have.</td></tr>
     <tr data-entry="object/get-path"><td><code>["object/get-path", object, path]</code></td><td>The value at <code>path</code>, such as <code>"users.1.name"</code>. Fails with <code>KeyNotFoundError</code>, <code>IndexOutOfBoundsError</code>, <code>NotAnArrayError</code>, or <code>PathTraversalError</code> when the path does not lead to a value.</td></tr>
     <tr data-entry="object/keys"><td><code>["object/keys", record]</code></td><td>The record's keys</td></tr>
     <tr data-entry="object/values"><td><code>["object/values", record]</code></td><td>The record's values</td></tr>
@@ -281,7 +282,9 @@
    "remove": ["object/remove", ["quote", {"a": 1, "b": 2}], "a"],
    "keys without port": ["object/keys", ["object/remove", "data", "port"]],
    "json-stringify": ["object/json-stringify", ["quote", {"a": [1, 2]}], null, 0],
-   "missing": ["object/get", "data", "host"],
+   "missing, with a value to use": ["object/get", "data", "host", "localhost"],
+   "has?": ["object/has?", "data", "port"],
+   "has? a key that holds null": ["object/has?", ["quote", {"host": null}], "host"],
    "call-method": ["object/call-method", "lion", "toUpperCase"],
    "call-method-path": ["object/call-method-path", "data", "users.0.name.toUpperCase"],
    "get-method": [["object/get-method", ["array/make", 1, 2], "join"], "+"],

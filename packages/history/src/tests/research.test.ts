@@ -473,29 +473,37 @@ const QUESTIONS = {
       [
         "cond",
         [
-          ["value/string?", ["object/get", "?q", "feature"]],
-          ["string/concat", "feature ", ["object/get", "?q", "feature"]],
+          ["value/string?", ["object/get", "?q", "feature", null]],
+          ["string/concat", "feature ", ["object/get", "?q", "feature", null]],
         ],
         [
-          ["value/string?", ["object/get", "?q", "behavior"]],
-          ["string/concat", "behavior ", ["object/get", "?q", "behavior"]],
+          ["value/string?", ["object/get", "?q", "behavior", null]],
+          [
+            "string/concat",
+            "behavior ",
+            ["object/get", "?q", "behavior", null],
+          ],
         ],
         [
-          ["value/string?", ["object/get", "?q", "rule"]],
-          ["string/concat", "rule ", ["object/get", "?q", "rule"]],
+          ["value/string?", ["object/get", "?q", "rule", null]],
+          ["string/concat", "rule ", ["object/get", "?q", "rule", null]],
         ],
         [
-          ["value/string?", ["object/get", "?q", "decision"]],
-          ["string/concat", "decision ", ["object/get", "?q", "decision"]],
+          ["value/string?", ["object/get", "?q", "decision", null]],
+          [
+            "string/concat",
+            "decision ",
+            ["object/get", "?q", "decision", null],
+          ],
         ],
         [
           "else",
           [
             "string/concat",
             "measured ",
-            ["object/get", "?q", "measured"],
+            ["object/get", "?q", "measured", null],
             " ",
-            ["object/get", "?q", "at"],
+            ["object/get", "?q", "at", null],
           ],
         ],
       ],
@@ -597,7 +605,7 @@ const findingsProgram = (sets: {
         ];
   const asked = (relation: string) => [
     "find",
-    ["string/concat", "?a", " ", ["object/get", "?w", "case"]],
+    ["string/concat", "?a", " ", ["object/get", "?w", "case", null]],
     [relation, "?a", "?w"],
   ];
   return [

@@ -4010,4 +4010,32 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "false",
     tests: ["src/modules/tests/finite-numbers.test.ts"],
   },
+  {
+    name: "object/get reads a key a record inherits",
+    file: core("modules/object.ts"),
+    find: "      if (Object.hasOwn(obj, key)) {",
+    replace: "      if (key in obj) {",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "object/get ignores the value given for a missing key",
+    file: core("modules/object.ts"),
+    find: "      if (missing.length > 0) {",
+    replace: "      if (missing.length > 1) {",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "the solver says every record has every key",
+    file: core("logic/symbolic.ts"),
+    find: "    return Effect.succeed(one(truthSym(fields.has(key.value) ? TRUE : FALSE)));",
+    replace: "    return Effect.succeed(one(truthSym(TRUE)));",
+    tests: ["src/logic/tests/solving.test.ts"],
+  },
+  {
+    name: "the solver reads a missing key as null",
+    file: core("logic/symbolic.ts"),
+    find: "    const found = fields.get(key.value) ?? missing;",
+    replace: "    const found = fields.get(key.value) ?? fromValue(null);",
+    tests: ["src/logic/tests/solving.test.ts"],
+  },
 ];

@@ -35,6 +35,7 @@
 - The solver runs a lambda written where it runs, closed over the values it works out, by its body (`solver-runs-closures` added)
 - The research model weighs what Lion can take from Clef, an F#-family language with units of measure, delimited continuations, incremental computation, and verification designed into its compiler. Its page, `research/runs/clef/`, ranks first checking a match's cases with schema inclusion, then proofs that notice premises allowing no state, contracts on lambdas with blame, and refusing extra arguments to a lambda. Its probes found that a function that changes a binding gives one number for three items in a rule body and three in plain code, that a failure for an argument of the wrong kind names neither the function nor its caller, and that integers past 2^53 are rounded without a word. The shared frame gains `{"designed": technique, "in": system}` for what a system plans but does not say it has built, which is not a precedent. (`research-clef` added)
 - A `define` names a Lion function that has no name yet, as Racket names the function a `define` binds, so its failures say which function they left. (`define-names-lambda` added)
+- `["object/has?", record, key]` says whether the record has the key, as Racket's `hash-has-key?` does. (`object/has?` added)
 
 ### Removed
 
@@ -96,6 +97,7 @@
 - Integers a JSON number holds exactly, those from -9007199254740991 to 9007199254740991 (2^53 - 1), do exact arithmetic, as Scheme's exact integers do: a sum, difference, product, power, or `aggregate/sum` of them is exact, or fails with `ArithmeticError` where a JSON number cannot hold the exact result, so `["number/add", 9007199254740991, 2]` fails with `number/add: 9007199254740991 + 2 is 9007199254740993, but a JSON number would hold it as 9007199254740992: …` instead of rounding without a word. (`integer-arithmetic-past-exact-range` is `error`, was `rounded`)
 - A program's text, and a database file the `lion` command reads, may not write an integer that would come back as another when Lion writes it: `9007199254740993` would read as `9007199254740992`, so the text is refused, naming the integer and where it stands. (`integer-literal-past-exact-range` is `error`, was `rounded`)
 - `number/fromString` and `string/numbers` leave out such an integer, as they leave out a number past the largest one. (`number-from-string-past-exact-range` is `null`, was `rounded`)
+- Only a record's own keys count. (`object-get-inherited-key` is `error`, was `javascript-property`)
 
 ### Fixed
 
@@ -147,6 +149,7 @@
 - A group whose rows break a key keeps them, exactly as deriving from nothing gives them, and keeps why: a question that reads the group, or a group derived from it, fails with it at once. The clash is told from the rows there are (`key-clash-told-from-rows`: `rows-there-are` over `derive-from-nothing`, `followed-run`, `no-rule`, `counts-by-rule`, `broken-group-again`)
 - `func/callback`, where host code meets a Lion function, gives the function as many of the host's arguments as it takes (`callback-arity`: `as-many-as-it-takes` over `all-host-arguments`)
 - A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses (`lambda-arity`: `strict` over `extra-arguments-ignored`, was `extra-arguments-ignored`)
+- It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (`object-get-missing-key`: `fails-unless-given-a-value` over `null`, was `undefined`)
 
 ### Rules
 
@@ -1184,7 +1187,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - Values computed by functions never drive the rewrite inside a rule, so it still finishes. (`rule-computed-values-in-rewrite`: `never-drive` over `drive-rewrite`)
 - Lion's features and semantics are designed by the principle of least astonishment (`feature-design-principle`: `least-astonishment`)
 - Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. (`javascript-json-disagreement`: `follow-json` over `follow-javascript`)
-- An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list. (`object-get-missing-key`: `null` over `undefined`, was `undefined`)
+- An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list. (`object-get-missing-key`: `null` over `undefined`)
 - For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed. (`aggregate-representation`: `waiting-call` over `aggregate-class`; `logic-form-classes`: `one-logic-form-class` over `class-per-form`; `which-functions-wait`: `every-function` over `pure-functions-only`)
 - `and` and `or` stop at the first argument that decides them, as in Scheme, so `["and", false, ["number/divide", 1, 0]]` is `false`. (`and-or-evaluation`: `short-circuit` over `evaluate-all`)
 - A filter that is not true or false is an error instead of being read as truthy. (`filter-truthiness`: `strict-boolean` over `truthy`)
@@ -2020,7 +2023,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - combine one or more arguments from left to right, as their Scheme counterparts do (`add-more-than-two-arguments` is `sum`)
 - Effect.map(Array.reduce(0, add)) (`add-no-arguments` is `zero`)
 - export * from "./src/modules/math.ts"; (`core-exports-library-modules` is `exported`)
-- Effect.flatMap(Option.getOrElse(() => Effect.fail(new Error("Key not found")))) (`object-get-missing-key` is `error`, was `undefined`)
+- It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (`object-get-missing-key` is `error`, was `null`)
 - Schema.decodeUnknown(Schema.Record({ key: Schema.String, value: Schema.Unknown })), (`object-keys-non-object` is `error`)
 - A program that wants shorter names binds them itself, as the agent does with `["define", "[]", "array/make"]` (`library-function-bound-to-short-name` is `allowed`)
 - "./modules": "./src/modules/index.ts", (`core-package-entry` is `subpath-exports`)
@@ -2185,7 +2188,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - An array is always a special form or a call, never a list that evaluates to itself (rule `arrays-are-never-data`)
 - // Automatic currying (rule `automatic-currying`)
 - The evaluator is written with Effect, and evaluating a program gives an Effect (rule `evaluate-with-effect`)
-- Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity` (rule `values-are-json`)
+- It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (rule `values-are-json`)
 - Library functions are named `module/name`, with modules named for the kind of value they work on, such as `number/add` (rule `library-names-module-slash-name`)
 - breaks every form case out into its own testable unit (rule `unit-per-form`)
 - moved tests into dedicated folders (rule `tests-in-tests-folders`)

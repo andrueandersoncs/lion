@@ -1182,11 +1182,11 @@ A model of commands is checked by asking about every run of them up to a length,
   ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
   ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
   ["define", "careful", ["lambda", ["balance", "c"],
-    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+    ["cond", [["object/has?", "c", "deposit"], ["number/add", "balance", ["object/get", "c", "deposit"]]],
              [["number/lessThan", "balance", ["object/get", "c", "withdraw"]], "balance"],
              ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
   ["define", "careless", ["lambda", ["balance", "c"],
-    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+    ["cond", [["object/has?", "c", "deposit"], ["number/add", "balance", ["object/get", "c", "deposit"]]],
              ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
   ["define", "overdraws", ["lambda", ["step"],
     ["query", ["exists", ["?run", "?balance"],
@@ -1220,7 +1220,7 @@ A rule is kept by a step function when no state the rule allows, and no command,
   ["schema", "Account", {"balance": "value/integer?", "limit": "value/integer?"}],
   ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
   ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
-  ["define", "step", ["lambda", ["a", "c"], ["cond", [["value/number?", ["object/get", "c", "deposit"]], {"balance": ["number/add", ["object/get", "a", "balance"], ["object/get", "c", "deposit"]], "limit": ["object/get", "a", "limit"]}], [["number/lessThan", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], ["object/get", "c", "withdraw"]], "a"], ["else", {"balance": ["number/subtract", ["object/get", "a", "balance"], ["object/get", "c", "withdraw"]], "limit": ["object/get", "a", "limit"]}]]]],
+  ["define", "step", ["lambda", ["a", "c"], ["cond", [["object/has?", "c", "deposit"], {"balance": ["number/add", ["object/get", "a", "balance"], ["object/get", "c", "deposit"]], "limit": ["object/get", "a", "limit"]}], [["number/lessThan", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], ["object/get", "c", "withdraw"]], "a"], ["else", {"balance": ["number/subtract", ["object/get", "a", "balance"], ["object/get", "c", "withdraw"]], "limit": ["object/get", "a", "limit"]}]]]],
   ["define", "within limit", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["number/add", ["object/get", "a", "balance"], ["object/get", "a", "limit"]], 0]]],
   ["define", "limit not negative", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "limit"], 0]]],
   ["define", "not overdrawn", ["lambda", ["a"], ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0]]],
@@ -1436,6 +1436,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 
 ```json
 ["object/get", {"a": 1}, "a"]
+["object/get", {"a": 1}, "b", 0]
+["object/has?", {"a": null}, "a"]
 ["object/get-path", {"a": {"b": {"c": 42}}}, "a.b.c"]
 ["object/keys", {"a": 1, "b": 2}]
 ["object/values", {"a": 1, "b": 2}]
@@ -1448,6 +1450,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["object/call-method-path", "obj", "nested.methodName", 1, 2]
 ["object/new", "SomeClass", "arg1", "arg2"]
 ```
+
+`object/get` gives the value under a key the record has, `null` among them. For a key it does not have, it gives its third argument, as Racket's `hash-ref` gives a failure result, so `["object/get", {"a": 1}, "b", 0]` is `0`; without one it fails with `KeyNotFoundError`, `There is no key "b" in {"a":1}.`, as `object/get-path` does. Only a record's own keys count, so `"toString"` is not a key of `{}`. `object/has?` says whether a record has a key, as `hash-has-key?` does in Racket: `["object/has?", {"a": null}, "a"]` is `true`. The solver reads both on a record whose shape it knows, so a proof can ask which kind of command it was given with `["object/has?", "c", "deposit"]`.
 
 `object/get-path` understands dot paths and numeric array segments such as `"users.1.name"`.
 

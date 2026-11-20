@@ -486,13 +486,13 @@
       "measure_at",
       "?m",
       "?p",
-      ["object/get", "?says", ["quote", "before"]],
-      ["object/get", "?says", "after"],
+      ["object/get", "?says", ["quote", "before"],null],
+      ["object/get", "?says", "after",null],
       "?s"
     ],
     ["claim", "?_", "?s", "?_", "?says"],
-    ["value/string?", ["object/get", "?says", "measured"]],
-    ["=", "?m", ["object/get", "?says", "measured"]],
+    ["value/string?", ["object/get", "?says", "measured",null]],
+    ["=", "?m", ["object/get", "?says", "measured",null]],
     ["commit_source", "?s", "?p"]
   ],
   [

@@ -954,3 +954,56 @@ describe("the cases of symbolic values", () => {
     OPTIONS
   );
 });
+
+/** A command: a deposit or a withdrawal, of a whole number in the box. */
+const COMMAND = [
+  "schema/anyOf",
+  { deposit: "value/integer?" },
+  { withdraw: "value/integer?" },
+];
+
+/** Each command in the box, as a schema that lists them binds one. */
+const COMMANDS = [
+  "schema/anyOf",
+  ...range.flatMap((n) => [{ deposit: n }, { withdraw: n }]),
+];
+
+describe("records whose keys depend on their shape", () => {
+  it.effect.prop(
+    "object/has? and object/get with a value for a missing key give what listing the records gives",
+    { tests: filters, either: Arbitrary.schema(Schema.Boolean) },
+    ({ tests, either }) =>
+      Effect.gen(function* () {
+        // ?x is a deposit's amount and ?y a withdrawal's, 0 where the
+        // command has no such key.
+        const amounts = [
+          ["=", "?x", ["object/get", "?c", "deposit", 0]],
+          ["=", "?y", ["object/get", "?c", "withdraw", 0]],
+        ];
+        const shaped = either
+          ? [["object/has?", "?c", "deposit"]]
+          : [["boolean/not", ["object/has?", "?c", "deposit"]]];
+        const body = (typing: Code) => [
+          "and",
+          typing,
+          ...amounts,
+          ...inBox("?x"),
+          ...inBox("?y"),
+          ...shaped,
+          ...tests,
+        ];
+        const bySolver = yield* evaluate([
+          "find",
+          "?c",
+          body(["schema/fits?", "?c", COMMAND]),
+        ]);
+        const byListing = yield* evaluate([
+          "find",
+          "?c",
+          body(["schema/fits?", "?c", COMMANDS]),
+        ]);
+        expect(keys(resultOf(bySolver))).toEqual(keys(resultOf(byListing)));
+      }),
+    OPTIONS
+  );
+});

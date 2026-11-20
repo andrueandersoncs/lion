@@ -45,7 +45,10 @@ Status: `todo`, `doing`, `done (<commit>)`.
    - `evaluation/reading.ts` (`readJson`, `inexactInteger`) refuses text that writes an integer that would not read as itself; used by the CLI (file and `--database`), the site runtime, and the REPL. `number/fromString` and `string/numbers` leave such an integer out.
    - Arithmetic on integers whose result is an integer past ±(2^53−1) fails with an `ArithmeticError`, as a result past the finite numbers fails now.
    - A program's text with an integer literal past that range is refused when it is read, naming the literal: a check over the JSON text's number tokens, in one reader every host uses (CLI, site runtime, REPL, `--database` files).
-4. **`object/get` tells a missing key from one that holds null** — todo. A decision (breaking).
+4. **`object/get` tells a missing key from one that holds null** — done (commit "fix(core)!: object/get fails on a key a record does not have"). Decision `object-get-missing-key` in `history/notes/object-get-tells-missing-keys.json`.
+   - Built as designed, with `KeyNotFoundError` moved to `errors/evaluation.ts` (it names the record now) and the solver reading `object/has?` and `object/get`'s value for a missing key on records of known shape.
+   - Every two-argument `object/get` in the repo's Lion programs (history/core.json, history/outputs.json, history/research/steps, research/steps, skills/lion-research/assets/core.json, skill eval references, packages/examples) got an explicit `null`, by `scratchpad/get-null.py` (a layout-keeping rewrite), so each behaves as before. Proof patterns in the docs and research probes ask `["object/has?", "c", "deposit"]` instead.
+   - The rule `values-are-json` is restated to predict an error for a missing key.
    - As Racket's `hash-ref` and Lion's own `object/get-path`: a missing key fails (`KeyNotFoundError`), and a third argument is the value to give instead. Only a record's own keys count (today `["object/get", {}, "toString"]` gives a JavaScript function).
    - Add `object/has?` (Racket `hash-has-key?`). Update every program in the docs that relied on null.
 5. **No `set!` where the engine picks the order** — todo. A decision.

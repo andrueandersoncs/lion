@@ -7,7 +7,7 @@
 ["array/reductions",
   ["quote", [{"deposit": 5}, {"withdraw": 3}, {"withdraw": 4}]], 0,
   ["lambda", ["balance", "c"],
-    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+    ["cond", [["object/has?", "c", "deposit"], ["number/add", "balance", ["object/get", "c", "deposit"]]],
              ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]]
 </lion-example>
 
@@ -18,11 +18,11 @@
   ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
   ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
   ["define", "careful", ["lambda", ["balance", "c"],
-    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+    ["cond", [["object/has?", "c", "deposit"], ["number/add", "balance", ["object/get", "c", "deposit"]]],
              [["number/lessThan", "balance", ["object/get", "c", "withdraw"]], "balance"],
              ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
   ["define", "careless", ["lambda", ["balance", "c"],
-    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+    ["cond", [["object/has?", "c", "deposit"], ["number/add", "balance", ["object/get", "c", "deposit"]]],
              ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
   ["define", "overdraws", ["lambda", ["step"],
     ["query", ["exists", ["?run", "?balance"],
@@ -40,7 +40,7 @@
   ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
   ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
   ["define", "careless", ["lambda", ["balance", "c"],
-    ["cond", [["value/number?", ["object/get", "c", "deposit"]], ["number/add", "balance", ["object/get", "c", "deposit"]]],
+    ["cond", [["object/has?", "c", "deposit"], ["number/add", "balance", ["object/get", "c", "deposit"]]],
              ["else", ["number/subtract", "balance", ["object/get", "c", "withdraw"]]]]]],
   ["relation", "breaks", ["length"]],
   ["rule", ["breaks", "?n"],

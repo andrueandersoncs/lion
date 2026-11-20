@@ -86,7 +86,7 @@
 
   [
     "rule",
-    ["rejected", "?id", ["object/get", "?problem", "path"]],
+    ["rejected", "?id", ["object/get", "?problem", "path", null]],
     ["inbox", "?doc"],
     ["schema/fits?", "?doc", ["schema/open", { "id": "?id" }]],
     ["in", "?problem", ["schema/problems", "?doc", "Order"]]

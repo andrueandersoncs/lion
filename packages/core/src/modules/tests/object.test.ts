@@ -21,12 +21,6 @@ describe("object", () => {
           }
         })
     );
-    it.effect("should return null for missing keys", () =>
-      Effect.gen(function* () {
-        const result = yield* object.get({ a: 1 }, "b");
-        expect(result).toBeNull();
-      })
-    );
   });
 
   describe("get-path", () => {

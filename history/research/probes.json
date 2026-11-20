@@ -3018,7 +3018,8 @@
               "array/head",
               ["array/tail", ["object/get", "tree", ["quote", "because"]]]
             ],
-            ["quote", "but"]
+            ["quote", "but"],
+            null
           ]
         ]
       ],
@@ -3030,10 +3031,10 @@
             "and",
             [
               "=",
-              ["object/get", "again", ["quote", "absent"]],
+              ["object/get", "again", ["quote", "absent"], null],
               ["quote", ["path", "a", "d"]]
             ],
-            ["value/null?", ["object/get", "again", ["quote", "because"]]]
+            ["value/null?", ["object/get", "again", ["quote", "because"], null]]
           ],
           ["quote", "told-once"]
         ],
@@ -3085,7 +3086,8 @@
             [
               "object/get",
               ["why", ["mother", "ada", "fay"]],
-              ["quote", "assumed"]
+              ["quote", "assumed"],
+              null
             ],
             true
           ],
@@ -23312,5 +23314,10 @@
       ],
       ["else", ["quote", "other"]]
     ]
+  },
+  {
+    "case": "object-get-inherited-key",
+    "area": "library",
+    "program": ["object/get", ["quote", {}], "toString"]
   }
 ]
