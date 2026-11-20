@@ -60,6 +60,8 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "func/catch": [2, 2],
   "func/partial": [1, ANY],
   "func/raise": [1, 1],
+  "func/reset": [1, 1],
+  "func/shift": [1, 1],
   "graph/components": [3, 3],
   "graph/pageRank": [3, 3],
   "graph/shortestPath": [5, 5],

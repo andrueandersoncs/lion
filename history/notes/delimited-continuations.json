@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "`func/reset` and `func/shift` are delimited continuations, as Racket's `reset` and `shift` are",
+      "says": { "feature": "func/reset", "kind": "function", "present": true }
+    },
+    {
+      "quote": "`func/reset` and `func/shift` are delimited continuations, as Racket's `reset` and `shift` are",
+      "says": { "feature": "func/shift", "kind": "function", "present": true }
+    },
+    {
+      "quote": "Unlike Racket's, a continuation resumes once: a second call of one `k` fails, `A continuation was resumed a second time: …`, since the delimited part runs in a fiber of its own that can only go on once.",
+      "says": {
+        "behavior": "continuation-resumed-twice",
+        "is": "error",
+        "area": "evaluation"
+      }
+    }
+  ]
+}

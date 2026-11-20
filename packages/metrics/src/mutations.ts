@@ -4211,4 +4211,18 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "          const removed: unknown[] = [];",
     tests: ["src/logic/tests/watch.test.ts"],
   },
+  {
+    name: "a continuation resumes twice",
+    file: core("modules/lib/continuations.ts"),
+    find: "          if (resumed) {",
+    replace: "          if (false) {",
+    tests: ["src/modules/tests/continuations.test.ts"],
+  },
+  {
+    name: "a resumed continuation tells its shifts to the first reset",
+    file: core("modules/lib/continuations.ts"),
+    find: "          prompt.target = next;",
+    replace: "          void next;",
+    tests: ["src/modules/tests/continuations.test.ts"],
+  },
 ];

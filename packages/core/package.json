@@ -65,6 +65,7 @@
     "./modules/console": "./dist/modules/console.mjs",
     "./modules/func": "./dist/modules/func.mjs",
     "./modules/graph": "./dist/modules/graph.mjs",
+    "./modules/lib/continuations": "./dist/modules/lib/continuations.mjs",
     "./modules/lib/expected": "./dist/modules/lib/expected.mjs",
     "./modules/lib/guard": "./dist/modules/lib/guard.mjs",
     "./modules/lib/numerals": "./dist/modules/lib/numerals.mjs",

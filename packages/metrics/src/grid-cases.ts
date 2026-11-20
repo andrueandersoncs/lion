@@ -277,6 +277,21 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
   },
   {
+    name: "a continuation resumed",
+    form: [
+      "func/reset",
+      [
+        "lambda",
+        [],
+        [
+          "number/add",
+          1,
+          ["func/shift", ["lambda", ["k"], ["number/multiply", 10, ["k", X]]]],
+        ],
+      ],
+    ],
+  },
+  {
     name: "a failure caught",
     form: [
       "func/catch",

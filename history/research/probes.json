@@ -23559,5 +23559,17 @@
       ],
       ["else", ["quote", "other"]]
     ]
+  },
+  {
+    "case": "continuation-resumed-twice",
+    "area": "evaluation",
+    "program": [
+      "func/reset",
+      [
+        "lambda",
+        [],
+        ["func/shift", ["lambda", ["k"], ["array/make", ["k", 1], ["k", 2]]]]
+      ]
+    ]
   }
 ]

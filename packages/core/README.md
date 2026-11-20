@@ -1422,9 +1422,12 @@ Evaluates to `{"speed": {"value": 15, "unit": {"m": 1, "s": -1}}, "no unit left"
 ["func/partial", "fn", 1, 2]
 ["func/catch", ["lambda", [], ["number/divide", 1, 0]], ["lambda", ["failure"], "failure"]]
 ["func/raise", "out of stock"]
+["func/reset", ["lambda", [], ["number/add", 1, ["func/shift", ["lambda", ["k"], ["number/multiply", 10, ["k", 5]]]]]]]
 ```
 
 `func/catch` calls a function of no arguments and gives its value; when it fails, it calls the handler with the failure as data and gives that, as Racket's `with-handlers` does: `["func/catch", ["lambda", [], ["number/divide", 1, 0]], ["lambda", ["failure"], "failure"]]` is `{"failure": "ArithmeticError", "message": "number/divide: 1 ÷ 0 has no finite result."}`. `func/raise` fails with any value, as Racket's `raise` does: its message is the value, a string as it is, and a catch gives back the `value`, with `"failure": "raised"`. A call that waits for a logic variable is not a failure, so a catch in a rule or a `find` gives for each value what plain code gives with the value in place.
+
+`func/reset` and `func/shift` are delimited continuations, as Racket's `reset` and `shift` are: `func/reset` runs a function of no arguments, the delimited part, and `func/shift`, inside it, stops the delimited part where it stands and has the reset give what its handler gives, called with `k`, the rest of the delimited part. A call of `k` with a value resumes it there, as the value of the shift, and gives what the rest gives: the example above is `60`, ten times one more than 5. Generators, coroutines, and early exits are each one use of the two. Unlike Racket's, a continuation resumes once: a second call of one `k` fails, `A continuation was resumed a second time: …`, since the delimited part runs in a fiber of its own that can only go on once.
 
 `func/callback` is especially useful for turning Lion lambdas into JavaScript callbacks while preserving access to the Lion environment.
 

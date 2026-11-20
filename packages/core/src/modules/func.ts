@@ -10,6 +10,7 @@ import {
 } from "@/errors/evaluation";
 import { apply, call } from "@/evaluation/special-forms/function";
 import { builtBy, type LionFunction, logicFunction } from "@/logic/terms";
+import { reset, shift } from "@/modules/lib/continuations";
 
 /**
  * A function with its first arguments filled in, which takes what the
@@ -99,6 +100,20 @@ export const module = {
       call(handler, failureRecord(error))
     )
   ),
+
+  /**
+   * Runs `thunk`, a function of no arguments, as the delimited part of a
+   * continuation, and gives what it gives, or what the handler of a
+   * `func/shift` inside it gives, as Racket's `reset` does.
+   */
+  reset: takes(1, reset),
+
+  /**
+   * Stops the delimited part where it stands: its `func/reset` gives what
+   * `handler` gives for `k`, the rest of the delimited part, which a call
+   * with a value resumes once, as Racket's `shift` does.
+   */
+  shift: takes(1, shift),
 
   /**
    * Fails with a value, as Racket's `raise` does: its message is the value,

@@ -48,6 +48,7 @@
 - `func/raise` fails with any value, as Racket's `raise` does: its message is the value, a string as it is, and a catch gives back the `value`, with `"failure": "raised"`. (`func/raise` added)
 - Numbers that carry their units, checked when the program runs, as Pint checks them. A quantity is data, a record of a `value` and a `unit` from each base unit to its whole exponent, so a schema can say what unit a value has, a fact can hold one, and a snapshot saves it (`quantity` added)
 - Host code can be told when a query's answers change. `watch` runs a query, such as a `find`, against a database, and after each change a `fact`, `retract`, `rule`, or `invariant` form makes that adds or takes away an answer, calls back with the answers that came and went. (`watch` added)
+- `func/reset` and `func/shift` are delimited continuations, as Racket's `reset` and `shift` are (`func/reset` added; `func/shift` added)
 
 ### Removed
 
@@ -121,6 +122,7 @@
 - `quantity/add` and `quantity/subtract` need one unit, and fail with `ArithmeticError` otherwise, as `quantity/add: 120 {"m":1} and 8 {"s":1} have different units.` (`quantity-add-different-units` is `error`)
 - A plain number is a quantity with no unit, and a result with no unit left is its plain number. (`quantity-with-no-unit` is `number`)
 - a change an invariant refuses, and what `assuming` asks, tell nothing (`watched-query-after-refused-change` is `not-told`)
+- Unlike Racket's, a continuation resumes once: a second call of one `k` fails, `A continuation was resumed a second time: …`, since the delimited part runs in a fiber of its own that can only go on once. (`continuation-resumed-twice` is `error`)
 
 ### Fixed
 

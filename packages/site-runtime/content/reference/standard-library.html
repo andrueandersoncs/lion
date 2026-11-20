@@ -340,6 +340,8 @@
     <tr data-entry="func/partial"><td><code>["func/partial", function, argument, ...]</code></td><td>A function that calls <code>function</code> with these arguments followed by its own, exactly as a call written out in full would. Made from a relation, it builds goals, as the relation does. Made from a logic variable in a rule or query, it waits for the variable, so <code>["func/partial", "number/lessThan", "?max"]</code> is a <a href="#logic-patterns">predicate</a> for values above <code>?max</code>.</td></tr>
     <tr data-entry="func/catch"><td><code>["func/catch", thunk, handler]</code></td><td>What <code>thunk</code>, a function of no arguments, gives; when it fails, what <code>handler</code> gives for the failure as data, as Racket's <code>with-handlers</code>: <code>{"failure": kind, "message": text}</code>, and for a failure <code>func/raise</code> made, <code>"failure": "raised"</code> and the <code>value</code>. A call that waits for a logic variable is no failure</td></tr>
     <tr data-entry="func/raise"><td><code>["func/raise", value]</code></td><td>Fails with <code>value</code>, as Racket's <code>raise</code>: its message is the value, a string as it is, and <code>func/catch</code> gives back the value</td></tr>
+    <tr data-entry="func/reset"><td><code>["func/reset", thunk]</code></td><td>What <code>thunk</code>, a function of no arguments, gives, or what the handler of a <code>func/shift</code> inside it gives: the delimited part of a continuation, as Racket's <code>reset</code></td></tr>
+    <tr data-entry="func/shift"><td><code>["func/shift", handler]</code></td><td>Stops the delimited part where it stands; its <code>func/reset</code> gives what <code>handler</code> gives for <code>k</code>, the rest of the delimited part. A call of <code>k</code> with a value resumes it there, once, and gives what the rest gives, as Racket's <code>shift</code>, but resumed once</td></tr>
     <tr data-entry="func/apply"><td><code>["func/apply", function, this, argument, ...]</code></td><td>What calling <code>function</code> with <code>this</code> and the arguments returns</td></tr>
     <tr data-entry="func/bind"><td><code>["func/bind", function, this, argument, ...]</code></td><td><code>function</code> with <code>this</code> and leading arguments fixed</td></tr>
     <tr data-entry="func/callback"><td><code>["func/callback", function]</code></td><td>A JavaScript function that calls <code>function</code> with as many of the arguments it is given as <code>function</code> takes, and returns its result, or a Promise of it when the work is asynchronous. The callback keeps the environment and database it was created in.</td></tr>
@@ -350,6 +352,20 @@
  "apply": ["func/apply", "number/subtract", null, 10, 4],
  "bind": [["func/bind", "number/multiply", null, 3], 7],
  "callback": ["value/function?", ["func/callback", "number/add"]]}
+</lion-example>
+<p>A continuation stops a computation and resumes it later: an early exit, a resumed one, and a generator that yields its items one at a time:</p>
+<lion-example name="func/reset and func/shift">
+["begin",
+  ["define", "generator", ["lambda", ["items"],
+    ["func/reset", ["lambda", [],
+      ["begin",
+        ["array/map", "items", ["lambda", ["item"], ["func/shift", ["lambda", ["k"], {"value": "item", "rest": "k"}]]]],
+        {"value": null, "rest": null}]]]]],
+  ["define", "first", ["generator", ["array/make", "a", "b"]]],
+  ["define", "second", [["object/get", "first", "rest"], null]],
+  {"early exit": ["func/reset", ["lambda", [], ["number/add", 1, ["func/shift", ["lambda", ["k"], 42]]]]],
+   "resumed": ["func/reset", ["lambda", [], ["number/add", 1, ["func/shift", ["lambda", ["k"], ["number/multiply", 10, ["k", 5]]]]]]],
+   "yielded": ["array/make", ["object/get", "first", "value"], ["object/get", "second", "value"]]}]
 </lion-example>
 <p>A failure is data a program can catch, read, and raise:</p>
 <lion-example name="func/catch">
