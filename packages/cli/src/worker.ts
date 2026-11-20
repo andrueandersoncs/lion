@@ -1,20 +1,42 @@
-// The Lion evaluator as a Web Worker, for the explorer page. It holds one
-// logic database, loaded from a snapshot, and runs each program against it.
-//
-// The built bundle is assets/lion-engine.js. After a change to @lionlang/core,
-// rebuild it from the root of the Lion repository:
-//
-//   bun build skills/lion-research/scripts/engine.ts --target browser \
-//     --format iife --minify --outfile skills/lion-research/assets/lion-engine.js
+// The lion command for a page: a Web Worker that holds one logic database,
+// loaded from a saved database as `--database` loads one, and runs each
+// program against it. The build writes it for a browser as dist/worker.js,
+// and `lion worker` prints it, so a page that embeds it runs the same Lion as
+// the lion command that checks the page.
 import { run } from "@lionlang/core/evaluation/evaluate";
 import { LogicDatabase } from "@lionlang/core/logic/database";
 import { loadDatabase } from "@lionlang/core/logic/snapshot";
 import { stdlib } from "@lionlang/core/modules";
 import { Cause, Effect, Exit, Scheduler } from "effect";
 
-type Request =
+/** What a page asks: to load a saved database, or to run a program on it. */
+export type Request =
   | { readonly id: number; readonly type: "load"; readonly snapshot: unknown }
   | { readonly id: number; readonly type: "run"; readonly program: unknown };
+
+/** The answer to one request: its value as JSON, or why it failed. */
+export type Response =
+  | {
+      readonly id: number;
+      readonly ok: true;
+      readonly json: string;
+      readonly ms: number;
+    }
+  | {
+      readonly id: number;
+      readonly ok: false;
+      readonly error: string;
+      readonly ms?: number;
+    };
+
+/** The worker's global scope, as much of it as this file uses. */
+declare const self: {
+  addEventListener(
+    type: "message",
+    listener: (event: { readonly data: Request }) => void
+  ): void;
+  postMessage(message: Response): void;
+};
 
 let database = new LogicDatabase();
 
@@ -36,7 +58,7 @@ const evaluate = <A>(effect: Effect.Effect<A, unknown>) =>
     effect.pipe(Effect.provideService(Scheduler.PreventSchedulerYield, true))
   );
 
-const handle = async (request: Request) => {
+const handle = async (request: Request): Promise<Response> => {
   const started = performance.now();
   const exit =
     request.type === "load"
@@ -58,7 +80,7 @@ const handle = async (request: Request) => {
       };
 };
 
-self.addEventListener("message", (event: MessageEvent<Request>) => {
+self.addEventListener("message", (event) => {
   handle(event.data).then(
     (response) => self.postMessage(response),
     (error: unknown) =>

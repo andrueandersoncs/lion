@@ -5777,17 +5777,6 @@
       }
     },
     {
-      "id": "doc-readme-506",
-      "source": "doc-readme",
-      "quote": "The explorer page runs a bundle of `@lionlang/core`. After changing the core evaluator, rebuild it:",
-      "says": {
-        "rule": "rebuild-research-engine-after-core-change",
-        "holds": true,
-        "statement": "After changing the core evaluator, rebuild the research skill's engine bundle.",
-        "area": "skills"
-      }
-    },
-    {
       "id": "doc-readme-507",
       "source": "doc-readme",
       "quote": "`researches-recent-outage` researches a live event on the web.",

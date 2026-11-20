@@ -11,6 +11,10 @@
 // text of each source a claim quotes, from sources/ beside the model, so a
 // reader can see each quote where it stands.
 //
+// The engine is the one the lion command gives with `lion worker`: the same
+// command, found as lion.mjs finds it, that built the model and that checks
+// the page.
+//
 // It also writes page-check.json beside the page: every query the plan asks,
 // as one Lion record, so they can all be run at once with the lion command.
 // Runs under node or bun.
@@ -18,6 +22,7 @@ import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { claimsOf, whereIn } from "./check-quotes.mjs";
+import { lion, lionCommand } from "./lion.mjs";
 
 const USAGE =
   "Usage: node build-explorer.mjs <model.json> --page page.json [--out explorer.html]";
@@ -267,8 +272,15 @@ export const passagesOf = (database, textOf) => {
 /**
  * The page for a model: the shell, with the data, engine, and script added.
  * `passages`, from `passagesOf`, lets the page show each quote in its source.
+ * `engine` is the script of the Web Worker that runs Lion, as text or bytes.
  */
-export const buildExplorer = ({ database, page, generated, passages }) => {
+export const buildExplorer = ({
+  database,
+  page,
+  generated,
+  passages,
+  engine,
+}) => {
   const data = embedJson({
     generated,
     database,
@@ -276,13 +288,12 @@ export const buildExplorer = ({ database, page, generated, passages }) => {
     words: words(),
     ...passages,
   });
-  const engine = asset("lion-engine.js").toString("base64");
   const script = asset("explorer.js")
     .toString("utf8")
     .replaceAll("</script", "<\\/script");
   const scripts = [
     `<script type="application/json" id="lion-data">${data}</script>`,
-    `<script type="text/plain" id="lion-engine">${engine}</script>`,
+    `<script type="text/plain" id="lion-engine">${Buffer.from(engine).toString("base64")}</script>`,
     `<script>${script}</script>`,
   ];
   const title = String(page?.title ?? "Research model");
@@ -294,6 +305,21 @@ export const buildExplorer = ({ database, page, generated, passages }) => {
       () => `<title>${escapeHtml(title)}</title>`
     )
     .replace("<!--LION:SCRIPTS-->", () => scripts.join("\n"));
+};
+
+/**
+ * The Lion engine of the lion command, as the bytes of a Web Worker script.
+ * The page runs it, so the page runs the Lion that checks it.
+ */
+const engineOf = () => {
+  const made = lion(["worker"], "buffer");
+  if (made.status !== 0) {
+    const said = `${made.error?.message ?? ""}${made.stderr ?? ""}${made.stdout ?? ""}`;
+    return fail(
+      `${lionCommand()} worker did not give the Lion engine for the page: ${said.trim()}\nThe page runs the Lion of the command that checks it, which has \`lion worker\` in @lionlang/cli after 0.13.1. Run \`bunx @lionlang/cli@latest --version\` once, or name a lion command in LION_CLI.`
+    );
+  }
+  return made.stdout;
 };
 
 /** Splits the arguments into the `--name value` options and the paths. */
@@ -332,6 +358,7 @@ const main = (args) => {
     );
   }
   const out = resolve(options.out ?? join(dirname(path), "explorer.html"));
+  const engine = engineOf();
   const passages = passagesOf(database, (source) => {
     const saved = join(dirname(path), "sources", `${source}.txt`);
     return existsSync(saved) ? readFileSync(saved, "utf8") : undefined;
@@ -341,6 +368,7 @@ const main = (args) => {
     page,
     generated: new Date().toISOString().slice(0, 10),
     passages,
+    engine,
   });
   writeFileSync(out, html);
   const check = join(dirname(out), "page-check.json");
@@ -350,7 +378,7 @@ const main = (args) => {
     `${out} (${Math.round(html.length / 1024)} KB, with the saved text of ${Object.keys(passages.texts).length} sources, so ${Object.keys(passages.marks).length} quotes show where they stand)`
   );
   console.log(
-    `${check} (${Object.keys(checks).length} texts, queries, and checks)`
+    `${check} (${Object.keys(checks).length} texts, queries, and checks). The page runs the Lion of \`${lionCommand()}\`; check it with the same: ${lionCommand()} ${check} --database ${resolve(path)}`
   );
   if (Object.keys(namedReadingsOf(page)).length > 0) {
     console.log(

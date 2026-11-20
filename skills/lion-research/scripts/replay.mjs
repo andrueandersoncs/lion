@@ -10,7 +10,6 @@
 // steps/<name>.json, with each "@utc-minutes" and "@utc-text" in it replaced
 // by the function of that name from this skill's assets, so a frame can use
 // the time functions without holding a copy of them. Runs under node or bun.
-import { spawnSync } from "node:child_process";
 import {
   existsSync,
   readdirSync,
@@ -22,9 +21,7 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-
-/** What separates the words of a command. */
-const SPACES = /\s+/;
+import { lion } from "./lion.mjs";
 
 const SOURCE = /\.src\.json$/;
 const assets = join(dirname(fileURLToPath(import.meta.url)), "..", "assets");
@@ -49,24 +46,6 @@ export const expanded = (program, helpers) => {
         ])
       )
     : program;
-};
-
-/**
- * Runs the Lion command: the one `LION_CLI` names, such as
- * "bun ~/lion/packages/cli/dist/bin.mjs", or else the published one.
- */
-const lion = (args) => {
-  const named = process.env.LION_CLI?.trim().split(SPACES) ?? [];
-  if (named.length > 0 && named[0] !== "") {
-    const [command = "", ...rest] = named;
-    return spawnSync(command, [...rest, ...args], { encoding: "utf8" });
-  }
-  const first = spawnSync("bunx", ["@lionlang/cli", ...args], {
-    encoding: "utf8",
-  });
-  return first.error
-    ? spawnSync("npx", ["-y", "@lionlang/cli", ...args], { encoding: "utf8" })
-    : first;
 };
 
 const main = () => {

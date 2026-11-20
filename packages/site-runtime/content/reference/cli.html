@@ -1,4 +1,4 @@
-<article id="cli" data-title="Command line" data-summary="The lion command from @lionlang/cli: evaluating files, keeping a database file, and serving the graph editor.">
+<article id="cli" data-title="Command line" data-summary="The lion command from @lionlang/cli: evaluating files, keeping a database file, serving the graph editor, and printing Lion as a Web Worker.">
 <p>Install with <code>bun add --dev @lionlang/cli</code>. The package provides the <code>lion</code> command.</p>
 
 <h2 id="cli-evaluate"><code>lion &lt;file&gt;</code></h2>
@@ -26,6 +26,33 @@ lion repl [--host &lt;address&gt;] [--port &lt;number&gt;]
     <tr data-entry="--port"><td><code>--port</code></td><td><code>3000</code></td><td>Port to listen on, from 1 to 65535.</td></tr>
   </tbody>
 </table>
+
+<h2 id="cli-worker"><code>lion worker</code></h2>
+<code-block lang="shell">
+lion worker &gt; lion-worker.js
+</code-block>
+<p>Prints the command's own Lion as a Web Worker script, for a page that runs Lion in a browser. The worker holds one logic database. Each message posted to it has an <code>id</code>, and each answer it posts back has the same <code>id</code>, <code>ok</code>, the value as JSON text in <code>json</code> or the reason in <code>error</code>, and <code>ms</code>, how long it took.</p>
+<table>
+  <thead><tr><th>Message</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr data-entry="load"><td><code>{"type": "load", "snapshot": saved}</code></td><td>Loads a database from a saved one, as <code>--database</code> loads its file, in place of the one the worker held.</td></tr>
+    <tr data-entry="run"><td><code>{"type": "run", "program": program}</code></td><td>Runs a program against the database, as <code>lion &lt;file&gt; --database</code> does. A program can change the database.</td></tr>
+  </tbody>
+</table>
+<p>These are the answers the worker gives to a database of edges and the paths they make, and two programs run against it, without <code>ms</code>:</p>
+<code-block lang="text">
+{"id":1,"type":"load","snapshot":["begin",
+  ["relation","edge",["from","to"]],["relation","path",["from","to"]],
+  ["fact",["edge","a","b"],["edge","b","c"]],
+  ["rule",["path","?x","?y"],["edge","?x","?y"]],
+  ["rule",["path","?x","?z"],["path","?x","?y"],["edge","?y","?z"]]]}
+  answers {"id":1,"ok":true,"json":"null"}
+{"id":2,"type":"run","program":["find","?to",["path","a","?to"]]}
+  answers {"id":2,"ok":true,"json":"[\"b\",\"c\"]"}
+{"id":3,"type":"run","program":["path","a"]}
+  answers {"id":3,"ok":false,"error":"\"path\" takes 2 arguments (from, to) but got 1."}
+</code-block>
+<p>A page that carries the script runs the Lion of the command that printed it, so running the page's programs with that command checks the page.</p>
 
 <h2 id="cli-global">Global flags</h2>
 <table>
