@@ -1,6 +1,7 @@
 import { Effect } from "effect";
 import {
   ArgumentMismatchError,
+  leaving,
   type UnboundNameError,
 } from "@/errors/evaluation";
 import { nameOrString, readsAsName } from "@/evaluation/base-forms/primitive";
@@ -90,6 +91,8 @@ interface Lambda {
   /** The names its body defines, which a call declares from its start. */
   readonly defined: readonly string[];
   readonly environment: Environment | undefined;
+  /** The name the `define` that bound it gave it, for its failures. */
+  name: string | undefined;
   readonly parameters: readonly string[];
   /** The scope its form is written in, which settles what its strings mean. */
   readonly scope: Scope | undefined;
@@ -100,6 +103,24 @@ const LAMBDAS = new WeakMap<object, Lambda>();
 /** The compiled form of a Lion function, when a value is one. */
 export const lambdaOf = (value: unknown): Lambda | undefined =>
   typeof value === "function" ? LAMBDAS.get(value) : undefined;
+
+/**
+ * Names a Lion function that has no name yet, as the `define` that binds it
+ * does, so a failure that leaves its body says it did.
+ */
+export const nameLambda = (value: unknown, name: string) => {
+  const lambda = lambdaOf(value);
+  if (lambda !== undefined && lambda.name === undefined) {
+    lambda.name = name;
+  }
+};
+
+/**
+ * What a call gave that needs Effect. A body that gives it back as it is
+ * made the call in tail position, so its own frame is gone, as in Scheme:
+ * it adds nothing to the call, not even its name to a failure.
+ */
+class Called extends Pending {}
 
 /**
  * Calls a Lion function from compiled code that is `depth` calls deep. Its
@@ -113,7 +134,7 @@ export const enter = (
   depth: number
 ): unknown => {
   if (depth >= DEEPEST) {
-    return new Pending(Effect.suspend(() => toEffect(enter(lambda, args, 0))));
+    return new Called(Effect.suspend(() => toEffect(enter(lambda, args, 0))));
   }
   const { parameters } = lambda;
   if (args.length < parameters.length) {
@@ -130,7 +151,16 @@ export const enter = (
     parent: lambda.environment,
   };
   lambda.compiled ??= compile(lambda.body, asWritten(scope));
-  return lambda.compiled(scope, depth + 1);
+  const result = lambda.compiled(scope, depth + 1);
+  if (!(result instanceof Pending) || result instanceof Called) {
+    return result;
+  }
+  const { name } = lambda;
+  return new Called(
+    name === undefined
+      ? result.effect
+      : Effect.mapError(result.effect, (error) => leaving(error, name))
+  );
 };
 
 /**
@@ -155,6 +185,7 @@ export const makeLambda = (
     compiled,
     defined,
     environment,
+    name: undefined,
     parameters,
     scope,
   };

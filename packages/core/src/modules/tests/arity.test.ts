@@ -170,7 +170,8 @@ const refusal = (fn: string, got: number) =>
     `${literal(`"${fn}" takes ${describeTakes(TAKES[fn] as [number, number])}`)}( \\([^)]*\\))? but got ${got}\\.`
   );
 
-const SAYS_HOW_MANY = /takes .*arguments? .*but got \d+\./;
+const SAYS_HOW_MANY =
+  /takes \d+( to \d+| or more)? arguments?( \([^)]*\))? but got \d+\./;
 
 /** The message a program fails with, also when it throws; null when it runs. */
 const failure = (program: unknown) =>

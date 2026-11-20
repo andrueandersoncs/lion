@@ -1,4 +1,5 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
+import { logicError } from "@/errors/evaluation";
 import { answer, isWriting } from "@/evaluation/asking";
 import {
   andThen,
@@ -11,11 +12,8 @@ import { compile } from "@/evaluation/evaluate";
 import { applyIn } from "@/evaluation/special-forms/function";
 import { suspend } from "@/evaluation/special-forms/lambda";
 import { fits } from "@/logic/fit";
-import { isWaiting, LogicValue } from "@/logic/terms";
-import {
-  LionFunctionValueSchema,
-  type MatchFormSchema,
-} from "@/schemas/evaluation";
+import { isWaiting, LogicValue, show } from "@/logic/terms";
+import type { MatchFormSchema } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
 import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult } from "@/types/evaluation";
@@ -24,7 +22,11 @@ import type { EvaluateResult } from "@/types/evaluation";
 ["match", <value>, [<schema>, <fn>], ..., <fallback-fn>]
 */
 
-const functionOf = Schema.decodeUnknownEffect(LionFunctionValueSchema);
+/** A case's function, which a value that is not one cannot be, as a call says. */
+const functionOf = (fn: unknown) =>
+  typeof fn === "function"
+    ? Effect.succeed(fn)
+    : logicError(`${show(fn)} is not a function, so it cannot be called.`);
 
 /**
  * Applies the function of the first pattern whose schema the value fits, or

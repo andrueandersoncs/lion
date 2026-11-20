@@ -124,7 +124,7 @@ With `owns` facts `a→b`, `b→c`, and `x→c`, `["find", "?o", ["controls", "?
 - Several rules with the same head are alternatives: the relation holds what any of them derives.
 - Every variable in the head must be bound by a relation goal, `=`, or `in` in the body.
 - The head can compute: `["elapsed", "?a", "?b", ["number/subtract", "?tb", "?ta"]]`. So can `=` in the body: `["=", "?age", ["number/subtract", 2026, "?year"]]`.
-- Filters run in the order written once their variables are bound, so a guard goes first: `["value/number?", "?x"], ["number/greaterThan", "?x", 1]`. Without the guard, a row holding `"n/a"` fails the whole query: `["number/greaterThan",["quote","n/a"],1] failed: Expected number at [0]`.
+- Filters run in the order written once their variables are bound, so a guard goes first: `["value/number?", "?x"], ["number/greaterThan", "?x", 1]`. Without the guard, a row holding `"n/a"` fails the whole query: `"number/greaterThan" takes a number as argument 1 but got "n/a".`
 - A rule can ask a question with `not`, with `find`, or by using a goal as a value. Variables that the rule has bound keep their values inside it; any other variable belongs to the question.
 - Names are fixed when the rule is written. A `define` used in a rule must come before it in the same program.
 
@@ -237,7 +237,7 @@ Every later `fact`, `retract`, and `rule` is checked against it, and one that wo
 | `Nothing is bound to "…"` | A misspelled function, or text that looks like one. | Correct the name, or quote the text. |
 | `"a" takes 2 arguments (x, y) but got 1.` | A relation call with the wrong number of columns. | Give every column; use `"?_"` for the ones you do not need. |
 | `Unsafe rule head […]: ?y never appears in a relation in the body.` | A head variable nothing binds. | Bind it in the body. |
-| `… failed: Expected number at [0]` | A filter met a value of the wrong type. | Put a guard before it, such as `["value/number?", "?x"]`. |
+| `"number/greaterThan" takes a number as argument 1 but got "n/a".` | A filter met a value of the wrong type. | Put a guard before it, such as `["value/number?", "?x"]`. |
 | `Rule […] asks about "p", which depends on "p".` | A `not`, `find`, or goal-as-value inside a recursion that leads back to the rule's own head. | Ask about a relation the rule does not feed. |
 | `Relation "a" is already declared with columns […].` | A relation declared again with different columns. | Change the step that declared it, and replay. |
 | `["find", "?x", [goal], [goal]] is not a call: its first element must be a special form or evaluate to a function.` | `find` or `query` was given two goals. The message points at the head, which is not what is wrong. | Wrap the goals in `["and", …]`. |

@@ -12,6 +12,7 @@
  * gets a number, which it cannot call in turn.
  */
 import { Arbitrary, Effect, Schema } from "effect";
+import { raisedAs } from "@/errors/evaluation";
 import { run } from "@/evaluation/evaluate";
 import { LogicValue, LogicVariable } from "@/logic/terms";
 import { element, oneOf } from "@/logic/tests/programs";
@@ -332,6 +333,8 @@ export const outcome = (expression: Expression) =>
         ? { value: comparable(result.success) }
         : {
             error: (result.failure as { _tag: string })._tag,
-            message: (result.failure as Error).message,
+            // A static diagnostic says what the failure said where it was
+            // raised, not the functions it left on its way out.
+            message: raisedAs(result.failure as Error),
           }
   );

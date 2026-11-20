@@ -14,7 +14,12 @@
  * are fixed, and every other variable in it is the question's own.
  */
 import { Effect, Result } from "effect";
-import { ArithmeticError, LogicError, logicError } from "@/errors/evaluation";
+import {
+  ArithmeticError,
+  LogicError,
+  logicError,
+  steers,
+} from "@/errors/evaluation";
 import { aggregator } from "@/logic/aggregates";
 import { type Certificate, refute } from "@/logic/certificate";
 import {
@@ -2124,9 +2129,11 @@ export const matches = (
  * about an argument that is not data, such as a schema a variable holds,
  * and only data can be looked up. The query is then answered in full.
  */
-export const UNDIRECTED = new LogicError({
-  message: "A goal-directed query asked about a value that is not data.",
-});
+export const UNDIRECTED = steers(
+  new LogicError({
+    message: "A goal-directed query asked about a value that is not data.",
+  })
+);
 
 /** Why a row a rule derived cannot hold: it must be JSON data. */
 export const rowProblem = (rule: CompiledRule, tuple: readonly unknown[]) => {

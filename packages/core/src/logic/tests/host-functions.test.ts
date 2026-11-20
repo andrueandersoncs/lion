@@ -159,7 +159,7 @@ const mixed = Arbitrary.array(
 
 describe("a filter over values it cannot take", () => {
   it.effect.prop(
-    "fails naming the call and its values, unless a guard written first holds it back",
+    "fails naming the function and the value it does not take, unless a guard written first holds it back",
     { values: mixed, limit: small },
     ({ limit, values }) =>
       Effect.gen(function* () {
@@ -183,7 +183,7 @@ describe("a filter over values it cannot take", () => {
           expect(yield* run(ask(above, isNumber), host)).toEqual(guarded);
         } else {
           expect(yield* message(ask(above, isNumber))).toContain(
-            `["number/greaterThan","${firstText}",${limit}] failed: Expected number`
+            `"number/greaterThan" takes a number as argument 1 but got ${JSON.stringify(firstText)}.`
           );
         }
       }),

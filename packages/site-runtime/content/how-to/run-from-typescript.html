@@ -38,7 +38,7 @@ await Effect.runPromise(
 <p>A failed evaluation is a typed failure, not a thrown exception. Run with <code>Effect.runPromiseExit</code>, or catch by tag:</p>
 <code-block lang="ts">
 const safe = run(["number/add", "one", 2], stdlib).pipe(
-  Effect.catchTag("SchemaError", (error) => Effect.succeed(`Bad input: ${error.message}`))
+  Effect.catchTag("LogicError", (error) => Effect.succeed(`Bad input: ${error.message}`))
 );
 </code-block>
 <p>See <a href="#errors">Errors</a> for every error a program can fail with.</p>

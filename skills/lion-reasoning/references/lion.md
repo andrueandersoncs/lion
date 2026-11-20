@@ -164,7 +164,7 @@ Use invariants for the model's integrity: the shape of a kind of observation, so
 | `Nothing is bound to "…"` | A misspelled function, or text that looks like one. | Correct the name, or quote the text. |
 | `"a" takes 2 arguments (x, y) but got 1.` | A relation called with the wrong number of columns. | Give every column; use `"?_"` for the ones you do not need. |
 | `Unsafe rule head […]: ?y never appears in a relation in the body.` | A head variable nothing binds. | Bind it in the body. |
-| `… failed: Expected number at [0]` | A filter met a value of the wrong type. | Put a guard before it. |
+| `"number/greaterThan" takes a number as argument 1 but got "n/a".` | A filter met a value of the wrong type. | Put a guard before it. |
 | `Rule […] asks about "p", which depends on "p".` | A `not`, `find`, or goal-as-value in a recursion that leads back to the rule's own head. | Ask about a relation the rule does not feed. |
 | `Relation "a" is already declared with columns […].` | A relation declared again differently, or a name the core uses. | Rename yours, or change the step that declared it, and replay. |
 | `[…] is not a call: its first element must be a special form or evaluate to a function.` | `find` or `query` was given two goals. | Wrap the goals in `["and", …]`. |

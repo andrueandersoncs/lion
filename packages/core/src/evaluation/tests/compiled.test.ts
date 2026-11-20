@@ -9,6 +9,7 @@
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Cause, Effect, Exit, Schema } from "effect";
+import { raisedAs } from "@/errors/evaluation";
 import { run } from "@/evaluation/evaluate";
 import { LogicDatabase } from "@/logic/database";
 import { show } from "@/logic/terms";
@@ -31,11 +32,13 @@ const outcome = (effect: Effect.Effect<unknown, unknown>) =>
     if (Exit.isSuccess(exit)) {
       return { value: show(exit.value) };
     }
-    const error = Cause.squash(exit.cause) as {
+    const error = Cause.squash(exit.cause) as Error & {
       readonly _tag?: string;
-      readonly message?: string;
     };
-    return { error: `${error._tag ?? "Error"}: ${String(error.message)}` };
+    // The functions a failure left are told by the properties of
+    // failures.test.ts; the interpreter is the model of what it says where
+    // it was raised.
+    return { error: `${error._tag ?? "Error"}: ${String(raisedAs(error))}` };
   });
 
 /** The program's outcome under the compiler and under the interpreter. */

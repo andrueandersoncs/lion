@@ -343,7 +343,9 @@ describe("goal-directed queries", () => {
       ];
       expect(yield* runWith(program, true)).toEqual([{}]);
       const error = yield* runWith(program, false).pipe(Effect.flip);
-      expect(String(error)).toContain("Expected number");
+      expect(String(error)).toContain(
+        '"number/greaterThan" takes a number as argument 1 but got "lots".'
+      );
     })
   );
 

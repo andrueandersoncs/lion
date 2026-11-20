@@ -3925,4 +3925,40 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "            ? notACall(value)",
     tests: ASSUMING_TESTS,
   },
+  {
+    name: "a library function's wrong argument fails with the decoder's words",
+    file: core("modules/lib/shared.ts"),
+    find: "        (values) => operate(...values),\n        refuse\n",
+    replace: "        (values) => operate(...values)\n",
+    tests: [
+      "src/modules/tests/guard.test.ts",
+      "src/evaluation/tests/failures.test.ts",
+    ],
+  },
+  {
+    name: "a wrong argument names the argument after it",
+    file: core("errors/evaluation.ts"),
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    find: "as argument ${at + 1} but got",
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    replace: "as argument ${at + 2} but got",
+    tests: [
+      "src/modules/tests/guard.test.ts",
+      "src/evaluation/tests/failures.test.ts",
+    ],
+  },
+  {
+    name: "a failure leaving a named function does not say so",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "      : Effect.mapError(result.effect, (error) => leaving(error, name))",
+    replace: "      : result.effect",
+    tests: ["src/evaluation/tests/failures.test.ts"],
+  },
+  {
+    name: "a function that called in tail position is named as a caller",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "  if (!(result instanceof Pending) || result instanceof Called) {",
+    replace: "  if (!(result instanceof Pending)) {",
+    tests: ["src/evaluation/tests/failures.test.ts"],
+  },
 ];

@@ -1,0 +1,39 @@
+{
+  "claims": [
+    {
+      "quote": "A library function given an argument it does not take fails in the form of the message for the wrong number of arguments, naming the function, the argument, what it takes there, and what it got: `[\"number/add\", \"seven\", 1]` fails with `\"number/add\" takes a number as argument 1 but got \"seven\".`, where it failed with `Expected number at [0]`. The failure is a `LogicError`, as an arity failure is, in plain code and where the call waits in a rule, a query, or a `find`.",
+      "says": {
+        "behavior": "library-function-wrong-argument",
+        "is": "names-function-and-argument",
+        "area": "library",
+        "was": "decoder-message"
+      }
+    },
+    {
+      "quote": "A failure that leaves the body of a function a `define` bound ends with the functions it left, innermost first: `[\"label\", \"seven\"]`, where `label` calls `next` and `next` adds 1, fails with `\"number/add\" takes a number as argument 1 but got \"seven\". (in \"next\", called from \"label\")`. A function that made its call in tail position has no frame left to name, as in Scheme, and a function no `define` bound has no name. The failure keeps its kind.",
+      "says": {
+        "behavior": "failure-names-callers",
+        "is": "named-frames-not-in-tail-position",
+        "area": "evaluation",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "A `define` names a Lion function that has no name yet, as Racket names the function a `define` binds, so its failures say which function they left.",
+      "says": {
+        "feature": "define-names-lambda",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "A match case whose function is not a function fails as a call on it does: `5 is not a function, so it cannot be called.`",
+      "says": {
+        "behavior": "match-case-not-a-function",
+        "is": "call-message",
+        "area": "evaluation",
+        "was": "decoder-message"
+      }
+    }
+  ]
+}

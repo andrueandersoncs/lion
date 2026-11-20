@@ -13,6 +13,7 @@
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Cause, Effect, Exit, Schema } from "effect";
+import { show } from "@/logic/terms";
 import { guardOf } from "@/modules/lib/guard";
 import { combining, decode, over, slicing } from "@/modules/lib/shared";
 import { RecordKeySchema } from "@/schemas/lion-expression";
@@ -337,6 +338,93 @@ const itemAndArguments = Arbitrary.flatMap(shapeOf(1), (shape) =>
 const ran = (result: unknown) =>
   Effect.runSyncExit(result as Effect.Effect<unknown, unknown>);
 
+/** What each leaf takes, as a library function's message says it. */
+const LEAF_TAKES: Record<Leaf, readonly [one: string, many: string]> = {
+  any: ["any value", "any values"],
+  unknown: ["any value", "any values"],
+  string: ["a string", "strings"],
+  number: ["a number", "numbers"],
+  boolean: ["a boolean", "booleans"],
+  int: ["an integer", "integers"],
+  key: ["a string", "strings"],
+  short: [
+    "a string with a length of at most 3",
+    "strings with a length of at most 3",
+  ],
+  int32: [
+    "a number that is a 32-bit integer",
+    "numbers that are each a 32-bit integer",
+  ],
+  positive: ["an integer greater than 0", "integers greater than 0"],
+  throwing: ["a number", "numbers"],
+};
+
+const OTHER_TAKES: Record<Other, readonly [one: string, many: string]> = {
+  record: ["a record", "records"],
+  struct: ["a record", "records"],
+  union: ["a number or a string", "numbers or strings"],
+  transform: ["a number", "numbers"],
+  optional: ["a list", "lists"],
+  literal: ['"a" or 1', '"a" or 1'],
+  null: ["null", "null"],
+};
+
+/** What a shape takes, as one value and as many. */
+const takesOf = (shape: Shape): readonly [string, string] => {
+  switch (shape.kind) {
+    case "leaf":
+      return LEAF_TAKES[shape.name];
+    case "other":
+      return OTHER_TAKES[shape.name];
+    case "list": {
+      const anything =
+        shape.item.kind === "leaf" &&
+        (shape.item.name === "any" || shape.item.name === "unknown");
+      const list = anything ? "a list" : `a list of ${takesOf(shape.item)[1]}`;
+      const some = shape.some ? " with a length of at least 1" : "";
+      return [`${list}${some}`, `lists${some}`];
+    }
+    default:
+      // A tuple of no items and a rest is a list of the rest.
+      return shape.items.length === 0 && shape.rest !== undefined
+        ? takesOf({ kind: "list", item: shape.rest, some: false })
+        : ["a list", "lists"];
+  }
+};
+
+/**
+ * What a library function's call fails with when its arguments do not all
+ * fit: the first argument that its own parameter's decoder refuses, named
+ * as the message for the wrong number of arguments names a count.
+ */
+const refused = (
+  fn: unknown,
+  parameters: readonly Schema.Top[],
+  takes: (at: number) => string,
+  args: readonly unknown[]
+) => {
+  const at = args.findIndex((arg, index) =>
+    Exit.isFailure(decoded(parameters[index] as Schema.Top, arg))
+  );
+  return {
+    errors: [
+      `LogicError: ${show(fn)} takes ${takes(at)} as argument ${at + 1} but got ${show(args[at])}.`,
+    ],
+  };
+};
+
+/** What a call gives: the decoder's value, or the failure that names the argument. */
+const expectedOf = (
+  fn: unknown,
+  parameters: readonly Schema.Top[],
+  takes: (at: number) => string,
+  args: readonly unknown[],
+  model: Exit.Exit<unknown, unknown>
+) =>
+  Exit.isSuccess(model) || !model.cause.reasons.some(Cause.isFailReason)
+    ? outcome(model)
+    : refused(fn, parameters, takes, args);
+
 describe("a library function built on the guard", () => {
   it.prop(
     "over: runs on what the decoder gives for the arguments a call gives, or fails as it does",
@@ -347,7 +435,13 @@ describe("a library function built on the guard", () => {
         ...args: unknown[]
       ) => unknown;
       expect(outcome(ran(fn(...args)))).toStrictEqual(
-        outcome(decoded(Schema.Tuple(parameters.slice(0, args.length)), args))
+        expectedOf(
+          fn,
+          parameters,
+          (at) => takesOf(shapes[at] as Shape)[0],
+          args,
+          decoded(Schema.Tuple(parameters.slice(0, args.length)), args)
+        )
       );
     },
     OPTIONS
@@ -362,7 +456,13 @@ describe("a library function built on the guard", () => {
         ...args: unknown[]
       ) => unknown;
       expect(outcome(ran(fn(...args)))).toStrictEqual(
-        outcome(decoded(Schema.Array(item), args))
+        expectedOf(
+          fn,
+          args.map(() => item as Schema.Top),
+          () => takesOf(shape)[0],
+          args,
+          decoded(Schema.Array(item), args)
+        )
       );
     },
     OPTIONS
@@ -402,7 +502,15 @@ describe("a library function built on the guard", () => {
           return cut.slice(start, end);
         }
       );
-      expect(outcome(ran(fn(...args)))).toStrictEqual(outcome(model));
+      const takes = (at: number) => {
+        if (at > 0) {
+          return "an integer";
+        }
+        return kind === "string" ? "a string" : "a list";
+      };
+      expect(outcome(ran(fn(...args)))).toStrictEqual(
+        expectedOf(fn, parameters, takes, args, model)
+      );
     },
     OPTIONS
   );

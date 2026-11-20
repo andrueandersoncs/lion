@@ -16,7 +16,7 @@
 <ul>
   <li>A value computed from a logic variable is what the same expression gives with the variable's value in its place. This holds for every function, for <code>cond</code>, <code>match</code>, <code>eval</code>, and records, for lambdas, and for the questions an expression asks: a goal used as a value and a <code>find</code> give in a rule what they give in plain code.</li>
   <li>A filter must be <code>true</code> or <code>false</code>. The rows a rule derives and the answers a query gives must be data: JSON values and <a href="#form-some">unknowns</a>. Anything else fails with an error that shows the call or the value.</li>
-  <li>A function that fails while a rule or query runs it fails the rule or query, with an error that names the call and the values it ran on.</li>
+  <li>A function that fails while a rule or query runs it fails the rule or query. A function given a value it does not take names itself, the argument, and the value, as in plain code; any other failure names the call and the values it ran on.</li>
   <li>Whether a value <a href="#schema-fitting">fits</a> a schema is the same wherever it is asked: in plain code, under the schema's name, in a rule or query, in <code>match</code>, as an argument of a relation call, and as the schema of a relation's rows.</li>
   <li>A goal that binds variables through a <a href="#logic-patterns">pattern</a> gives what the same goal gives when another goal has bound those variables first, so the answers of a body do not depend on the order of its goals.</li>
 </ul>

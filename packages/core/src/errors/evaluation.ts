@@ -150,6 +150,70 @@ export const takes = <A extends unknown[], B, E, R>(
 };
 
 /**
+ * The failure of a call that gives a function an argument it does not
+ * take, in the form of the message for the wrong number of arguments: which
+ * argument, what the function takes there, and what it got.
+ */
+export const wrongArgument = (
+  fn: unknown,
+  at: number,
+  expected: string,
+  got: unknown
+) =>
+  new LogicError({
+    message: `${show(fn)} takes ${expected} as argument ${at + 1} but got ${show(got)}.`,
+  });
+
+/** Failures that steer evaluation, which pass out of a call as they are. */
+const STEERING = new WeakSet<object>();
+
+/** Marks a failure that steers evaluation, so no call adds to it. */
+export const steers = <A extends object>(error: A) => {
+  STEERING.add(error);
+  return error;
+};
+
+/** The message a failure had before calls added the functions it left. */
+const TRAILS = new WeakMap<
+  object,
+  { readonly message: string; readonly names: readonly string[] }
+>();
+
+/** A failure's message as it was raised, before any call added to it. */
+export const raisedAs = (error: Error) =>
+  TRAILS.get(error)?.message ?? error.message;
+
+/**
+ * The failure as it leaves the body of the function named `name`: the same
+ * kind of failure, whose message ends with the named functions it has left,
+ * innermost first, as `(in "next", called from "label")`. A failure that
+ * steers evaluation, such as a call that waits, passes as it is.
+ */
+export const leaving = <E>(error: E, name: string): E => {
+  if (
+    !(error instanceof Error) ||
+    error instanceof WaitingError ||
+    STEERING.has(error)
+  ) {
+    return error;
+  }
+  const known = TRAILS.get(error);
+  const message = known?.message ?? error.message;
+  const names = [...(known?.names ?? []), name];
+  const copy = Object.create(
+    Object.getPrototypeOf(error),
+    Object.getOwnPropertyDescriptors(error)
+  ) as E & Error;
+  Object.defineProperty(copy, "message", {
+    configurable: true,
+    value: `${message} (in ${names.map((each) => JSON.stringify(each)).join(", called from ")})`,
+    writable: true,
+  });
+  TRAILS.set(copy, { message, names });
+  return copy;
+};
+
+/**
  * Raised when arithmetic has no finite result, such as division by zero.
  * Lion's numbers are JSON numbers, which cannot be Infinity or NaN.
  */
