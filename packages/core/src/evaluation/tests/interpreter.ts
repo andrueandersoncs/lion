@@ -32,6 +32,7 @@ import {
   UNBOUND,
 } from "@/evaluation/environment";
 import { declaredIn, definedIn } from "@/evaluation/hoisting";
+import { isBegin } from "@/evaluation/special-forms/begin";
 import { notTruth } from "@/evaluation/special-forms/cond";
 import {
   suspendArguments,
@@ -363,12 +364,41 @@ const binding =
         : yield* test(values);
     });
 
+/**
+ * Evaluates a `begin`'s expressions in order, and gives the last one's
+ * value. One before the last makes the whole form wait as a condition makes
+ * `cond` wait, unless the form is a program's own, `spliced`, whose forms
+ * run one at a time.
+ */
+const evaluateBegin = (expression: Form, spliced: boolean): EvaluateResult =>
+  Effect.gen(function* () {
+    const [_, ...args] = expression as readonly LionExpressionType[];
+    let value: unknown = [];
+    for (const [at, arg] of args.entries()) {
+      value = yield* spliced ? evaluateProgram(arg) : evaluate(arg);
+      const waits =
+        !spliced &&
+        at < args.length - 1 &&
+        value instanceof LogicValue &&
+        (isWaiting(value) || (yield* isWriting));
+      if (waits) {
+        return yield* suspend(expression as LionExpressionType);
+      }
+    }
+    return value;
+  });
+
+/** Evaluates a program: a `begin` there runs its forms one at a time. */
+const evaluateProgram = (program: LionExpressionType): EvaluateResult =>
+  Effect.flatMap(scope, (environment) =>
+    isBegin(program, environment)
+      ? evaluateBegin(program as Form, true)
+      : evaluate(program)
+  );
+
 const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
   {
-    begin: ([_, ...args]: Form) =>
-      Effect.map(evaluateAll(args), (values) =>
-        values.length === 0 ? [] : values.at(-1)
-      ),
+    begin: (expression: Form) => evaluateBegin(expression, false),
     define: ([_, id, expression]: Form) =>
       Effect.gen(function* () {
         const environment = yield* LionEnvironmentService;
@@ -486,7 +516,7 @@ export const run = (
           ...definedIn(program, top),
           ...declaredIn(program, top),
         ]);
-        return evaluate(program).pipe(
+        return evaluateProgram(program).pipe(
           Effect.provideService(LionEnvironmentService, top)
         );
       }),

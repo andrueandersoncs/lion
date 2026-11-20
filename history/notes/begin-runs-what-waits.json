@@ -1,0 +1,26 @@
+{
+  "claims": [
+    {
+      "quote": "A `begin` in a rule body, a query, or a `find` runs every expression before its last, also one that waits for a logic variable: with `pair` checking its argument with `schema/assert` first, `[\"find\", [\"pair\", \"?item\"], [\"in\", \"?item\", [\"array/make\", 3, \"three\"]]]` fails with `\"three\" does not fit \"value/number?\".`, as `[\"pair\", \"three\"]` does. It gave `[[3,3],[\"three\",\"three\"]]`.",
+      "says": {
+        "behavior": "begin-expression-before-last-that-waits",
+        "is": "error",
+        "was": "dropped",
+        "fixes": true,
+        "area": "evaluation"
+      },
+      "decisions": ["begin-waits-as-a-whole", "waiting-rule"]
+    },
+    {
+      "quote": "A question before a `begin`'s last expression in a rule, a query, or a `find` is not asked, but what it holds runs, as in plain code: `[\"begin\", [\"even\", [\"number/divide\", 1, \"?x\"]], 3]` fails for 0, where it gave 3.",
+      "says": {
+        "behavior": "begin-question-before-last-holding-a-call",
+        "is": "error",
+        "was": "dropped",
+        "fixes": true,
+        "area": "evaluation"
+      },
+      "decisions": ["begin-waits-as-a-whole"]
+    }
+  ]
+}

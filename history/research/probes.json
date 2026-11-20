@@ -23277,5 +23277,87 @@
       ],
       ["else", ["quote", "other"]]
     ]
+  },
+  {
+    "case": "begin-expression-before-last-that-waits",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      [
+        "define",
+        "pair",
+        [
+          "lambda",
+          ["n"],
+          [
+            "begin",
+            ["schema/assert", "n", "value/number?"],
+            ["array/make", "n", "n"]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "value/array?",
+            [
+              "find",
+              ["pair", "?item"],
+              ["in", "?item", ["array/make", 3, ["quote", "three"]]]
+            ]
+          ],
+          ["quote", "dropped"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "begin-question-before-last-holding-a-call",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      ["relation", "even", ["n"]],
+      ["fact", ["even", 2]],
+      [
+        "cond",
+        [
+          [
+            "value/array?",
+            [
+              "query",
+              [
+                "and",
+                ["in", "?x", ["array/make", 0, 1]],
+                ["=", "?y", ["begin", ["even", ["number/divide", 1, "?x"]], 3]]
+              ]
+            ]
+          ],
+          ["quote", "dropped"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "program-begin-after-a-definition-that-waits",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      ["define", "half", ["number/divide", "?n", 2]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            ["find", "half", ["in", "?n", ["array/make", 2, 4]]],
+            ["quote", [1, 2]]
+          ],
+          ["quote", "runs-on"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

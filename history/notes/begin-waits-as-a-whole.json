@@ -1,0 +1,52 @@
+{
+  "title": "A begin waits as a whole for an expression before its last",
+  "context": "A `begin` in a rule body, a query, or a `find` gave its last expression's value and dropped an earlier one that waited for a logic variable, so that expression never ran. With `pair` defined as `[\"lambda\", [\"n\"], [\"begin\", [\"schema/assert\", \"n\", \"value/number?\"], [\"array/make\", \"n\", \"n\"]]]`, the program `[\"find\", [\"pair\", \"?item\"], [\"in\", \"?item\", [\"array/make\", 3, \"three\"]]]` gave `[[3,3],[\"three\",\"three\"]]`, while `[\"pair\", \"three\"]` fails. A question before the last was dropped too, and with it the calls in its arguments and a `find`'s whole search. But a program is a `begin` as well, and its forms often name a value that waits, such as `[\"define\", \"half\", [\"number/divide\", \"?n\", 2]]`, for a later query to read.",
+  "decision": "A `begin` waits for an expression before its last as `cond` waits for a condition: one that waits for a logic variable, or a question while a rule, a query, or a `find` is written, makes the whole form wait, and the form runs every expression once the variables are bound, leaving a question it does not need unasked, as plain code does. A program's own `begin`, and a `begin` among its forms, runs its forms one at a time instead, as Scheme splices a top-level `begin` into the program, so a definition there of a value that waits names it and the forms after it run.",
+  "consequences": "In every place an expression can stand, a `begin` now gives what plain code gives with the variables' values in place, and a function that checks its argument first checks it in a rule, a query, and a `find`. The expressions before the one that waited ran once when the rule was written, and run again for each answer, as a `cond`'s conditions do. A program's forms run as before. In plain code outside any rule, a question before the last is still given up without waiting, so a term built there leaves out the calls in such a question's arguments.",
+  "alternatives": [
+    {
+      "option": "Wait as a whole everywhere, the program's own begin too",
+      "rejected": "A program that names a value that waits, or a logic variable, as `[\"define\", \"again\", \"?x\"]`, would wait at that definition and never run its later forms."
+    },
+    {
+      "option": "Wait only while a rule, a query, or a find is written",
+      "rejected": "Every place a rule holds would agree with plain code, but a term built in plain code, such as `[\"define\", \"pairs\", [\"pair\", \"?item\"]]`, would leave the check out, and a later `find` that reads `pairs` would skip it, where a `cond` in its place waits."
+    },
+    {
+      "option": "Leave out a definition's value, since its name keeps it",
+      "rejected": "A rule's `begin` that defines a name nobody reads would never run the definition: `[\"begin\", [\"define\", \"t\", [\"number/divide\", 1, \"?x\"]], 3]` would give 3 where plain code fails for 0. And the exception would be kept by the names of two forms."
+    },
+    {
+      "option": "Wait only from the expression that waits on",
+      "rejected": "The expressions before it would run once, when the rule is written, where plain code runs them for each answer, and each place the form can wait would need the rest of the form compiled on its own."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A `begin` waits for an expression before its last as `cond` waits for a condition",
+      "says": {
+        "decision": "begin-waits-as-a-whole",
+        "chose": "whole-form-but-the-program",
+        "over": [
+          "whole-form-everywhere",
+          "only-while-written",
+          "definitions-left-out",
+          "from-the-waiting-expression"
+        ],
+        "because": "an expression before the last that waits has not run yet, so the form gives what plain code gives only if it runs it, and a program's forms are run one at a time, as Scheme runs the forms of a top-level begin",
+        "area": "evaluation"
+      },
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "A program's own `begin`, and a `begin` among its forms, runs its forms one at a time instead, as Scheme splices a top-level `begin` into the program",
+      "says": {
+        "behavior": "program-begin-after-a-definition-that-waits",
+        "is": "runs-on",
+        "area": "evaluation",
+        "follows": "scheme"
+      },
+      "decisions": ["begin-waits-as-a-whole"]
+    }
+  ]
+}

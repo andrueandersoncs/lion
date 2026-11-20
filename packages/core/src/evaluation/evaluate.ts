@@ -10,6 +10,7 @@ import {
   type Scope,
 } from "@/evaluation/environment";
 import { declaredIn, definedIn } from "@/evaluation/hoisting";
+import { compileBegin, isBegin } from "@/evaluation/special-forms/begin.ts";
 import {
   LogicDatabase,
   relationBindings,
@@ -59,6 +60,18 @@ export const evaluate = (expression: LionExpressionType): EvaluateResult =>
   );
 
 /**
+ * Compiles a program. A `begin` there is the program's own: it runs its
+ * forms one at a time, and never waits as a whole.
+ */
+const compileProgram = (
+  program: LionExpressionType,
+  scope: Scope | undefined
+) =>
+  isBegin(program, scope)
+    ? compileBegin(program, scope, true)
+    : compile(program, scope);
+
+/**
  * The top scope of a run: the environment's bindings, the database's
  * relations and schemas, and every name the program defines or declares,
  * from the start.
@@ -100,9 +113,9 @@ export const run = (
           ...schemaBindings(database),
           ...environment,
         });
-        return evaluate(program).pipe(
-          Effect.provideService(LionEnvironmentService, top)
-        );
+        return Effect.suspend(() =>
+          toEffect(compileProgram(program, asWritten(top))(top, 0))
+        ).pipe(Effect.provideService(LionEnvironmentService, top));
       }),
       Effect.provideService(LionDatabaseService, database)
     );

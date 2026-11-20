@@ -148,6 +148,27 @@ Evaluates expressions in order and returns the last result.
 ["begin", ["define", "x", 1], ["define", "x", 2], "x"]
 ```
 
+Every expression before the last runs, also one that waits for a logic variable. Such an expression, or a question in a rule, a query, or a `find`, makes the whole `begin` wait, as a condition makes `cond` wait, and the `begin` then runs every expression for each answer, as plain code would with the values in place. So a function that checks its argument first checks it in a `find` too:
+
+```json
+["begin",
+  ["define", "pair", ["lambda", ["n"],
+    ["begin", ["schema/assert", "n", "value/number?"], ["array/make", "n", "n"]]]],
+  ["find", ["pair", "?item"], ["in", "?item", ["array/make", 3, "three"]]]]
+```
+
+Fails with `"three" does not fit "value/number?".`, as `["pair", "three"]` does.
+
+A program's own `begin`, and a `begin` among its forms, runs its forms one at a time instead, as Scheme splices a top-level `begin` into the program. A definition there of a value that waits names it, and the forms after it run:
+
+```json
+["begin",
+  ["define", "half", ["number/divide", "?n", 2]],
+  ["find", "half", ["in", "?n", ["array/make", 2, 4]]]]
+```
+
+Evaluates to `[1, 2]`.
+
 ### `define`
 
 Evaluates a value, binds the name to it in the body the form stands in, a lambda's or the program's, and returns the value. The body declares the name from its start, so it means this definition everywhere in the body, and a define inside a lambda never changes a name outside it.
@@ -341,7 +362,7 @@ Evaluates to `{ "absent": ["eligible", "bo"], "because": [{ "rule": [...], "beca
 A rule or query is written before its variables have values, so anything that needs a variable's value waits, and runs once for each answer that binds the variable:
 
 - A function call with a logic variable among its arguments. That is every function: the standard library, functions the host adds, and functions made by `func/partial`.
-- `cond` when a condition is not known yet, `match` when its value is not, and `eval` when its code is not.
+- `cond` when a condition is not known yet, `match` when its value is not, `eval` when its code is not, and `begin` when an expression before its last is not.
 - A record or list with a logic variable in it. Where a goal can bind variables it is a pattern: see [Taking data apart](#taking-data-apart).
 
 ```json
