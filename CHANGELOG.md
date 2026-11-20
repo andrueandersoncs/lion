@@ -46,6 +46,7 @@
 - `value/force` of any other value gives the value, and `value/promise?` tells a promise apart. (`value/force` added; `value/promise?` added)
 - `func/catch` calls a function of no arguments and gives its value; when it fails, it calls the handler with the failure as data and gives that, as Racket's `with-handlers` does (`func/catch` added)
 - `func/raise` fails with any value, as Racket's `raise` does: its message is the value, a string as it is, and a catch gives back the `value`, with `"failure": "raised"`. (`func/raise` added)
+- Numbers that carry their units, checked when the program runs, as Pint checks them. A quantity is data, a record of a `value` and a `unit` from each base unit to its whole exponent, so a schema can say what unit a value has, a fact can hold one, and a snapshot saves it (`quantity` added)
 
 ### Removed
 
@@ -116,6 +117,8 @@
 - Where the call waits for a logic variable, in a rule or a `find`, the check waits too and runs when the variable is bound, as plain code would run it (`lambda-contract-in-rule` is `checked-when-bound`)
 - Makes a promise of an expression, as Racket's `delay` does: nothing runs until `value/force` asks for its value, the first force runs the expression and keeps the value, and every force after gives it without running the expression again. (`delay-forced-twice` is `runs-once`)
 - A call that waits for a logic variable is not a failure, so a catch in a rule or a `find` gives for each value what plain code gives with the value in place. (`catch-in-a-find` is `like-plain-code`)
+- `quantity/add` and `quantity/subtract` need one unit, and fail with `ArithmeticError` otherwise, as `quantity/add: 120 {"m":1} and 8 {"s":1} have different units.` (`quantity-add-different-units` is `error`)
+- A plain number is a quantity with no unit, and a result with no unit left is its plain number. (`quantity-with-no-unit` is `number`)
 
 ### Fixed
 

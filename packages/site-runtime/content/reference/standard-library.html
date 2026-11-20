@@ -300,6 +300,38 @@
 ["object/new", 42]
 </lion-example>
 
+<h2 id="module-quantity">quantity</h2>
+<p>Numbers that carry their units, checked when the program runs, as Pint checks them. A quantity is data: a record of a <code>value</code> and a <code>unit</code>, the unit a record from each base unit's name to its whole exponent, so <code>{"value": 15, "unit": {"m": 1, "s": -1}}</code> is 15 metres a second. A plain number is a quantity with no unit, and a result with no unit left is its plain number. Units are equal when their records are; to convert, multiply by a quantity such as <code>{"value": 1000, "unit": {"m": 1, "km": -1}}</code>. A quantity is a record, so a schema says what unit a value has: <code>{"value": "value/number?", "unit": {"m": 1}}</code>.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+  <tbody>
+    <tr data-entry="quantity/add"><td><code>["quantity/add", a, b, ...]</code></td><td>The sum of quantities of one unit, in that unit; quantities of different units fail with <code>ArithmeticError</code></td></tr>
+    <tr data-entry="quantity/subtract"><td><code>["quantity/subtract", a, b]</code></td><td>The difference of two quantities of one unit</td></tr>
+    <tr data-entry="quantity/multiply"><td><code>["quantity/multiply", a, b, ...]</code></td><td>The product: the values multiplied, each base unit's exponents added</td></tr>
+    <tr data-entry="quantity/divide"><td><code>["quantity/divide", a, b]</code></td><td>The quotient: the values divided, the divisor's exponents taken away</td></tr>
+    <tr data-entry="quantity/power"><td><code>["quantity/power", a, n]</code></td><td><code>a</code> to the whole power <code>n</code>: each exponent multiplied by <code>n</code></td></tr>
+    <tr data-entry="quantity/in"><td><code>["quantity/in", a, unit]</code></td><td>The number <code>a</code> is in <code>unit</code>, when that is its unit; any other unit fails</td></tr>
+  </tbody>
+</table>
+<lion-example name="quantity">
+["begin",
+  ["define", "distance", ["quote", {"value": 120, "unit": {"m": 1}}]],
+  ["define", "duration", ["quote", {"value": 8, "unit": {"s": 1}}]],
+  ["define", "metres per km", ["quote", {"value": 1000, "unit": {"m": 1, "km": -1}}]],
+  {"speed": ["quantity/divide", "distance", "duration"],
+   "twice as far": ["quantity/add", "distance", "distance"],
+   "a little less": ["quantity/subtract", "distance", ["quote", {"value": 20, "unit": {"m": 1}}]],
+   "back to a distance": ["quantity/multiply", ["quantity/divide", "distance", "duration"], "duration"],
+   "no unit left": ["quantity/divide", "distance", "distance"],
+   "area": ["quantity/power", "distance", 2],
+   "in km": ["quantity/in", ["quantity/divide", "distance", "metres per km"], {"km": 1}],
+   "farther than 100 m?": ["number/greaterThan", ["quantity/in", "distance", {"m": 1}], 100]}]
+</lion-example>
+<p>A length and a time cannot be added:</p>
+<lion-example name="quantity/add of different units" expect="error">
+["quantity/add", ["quote", {"value": 120, "unit": {"m": 1}}], ["quote", {"value": 8, "unit": {"s": 1}}]]
+</lion-example>
+
 <h2 id="module-func">func</h2>
 <p>For working with functions, especially host functions.</p>
 <table>

@@ -23531,5 +23531,33 @@
       ],
       ["else", ["quote", "other"]]
     ]
+  },
+  {
+    "case": "quantity-add-different-units",
+    "area": "library",
+    "program": [
+      "quantity/add",
+      ["quote", { "value": 1, "unit": { "m": 1 } }],
+      ["quote", { "value": 1, "unit": { "s": 1 } }]
+    ]
+  },
+  {
+    "case": "quantity-with-no-unit",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "value/number?",
+          [
+            "quantity/divide",
+            ["quote", { "value": 6, "unit": { "m": 1 } }],
+            ["quote", { "value": 3, "unit": { "m": 1 } }]
+          ]
+        ],
+        ["quote", "number"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
   }
 ]

@@ -7,6 +7,7 @@ import { module as func } from "./func.ts";
 import { module as graph } from "./graph.ts";
 import { module as number } from "./number.ts";
 import { module as object } from "./object.ts";
+import { module as quantity } from "./quantity.ts";
 import { module as schema } from "./schema.ts";
 import { module as string } from "./string.ts";
 import { module as value } from "./value.ts";
@@ -37,6 +38,7 @@ export const stdlib = {
   ...namespaceEntries("graph", graph),
   ...namespaceEntries("number", number),
   ...namespaceEntries("object", object),
+  ...namespaceEntries("quantity", quantity),
   ...namespaceEntries("schema", schema),
   ...namespaceEntries("string", string),
   ...namespaceEntries("value", value),

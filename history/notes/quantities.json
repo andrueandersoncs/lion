@@ -1,0 +1,24 @@
+{
+  "claims": [
+    {
+      "quote": "Numbers that carry their units, checked when the program runs, as Pint checks them. A quantity is data, a record of a `value` and a `unit` from each base unit to its whole exponent, so a schema can say what unit a value has, a fact can hold one, and a snapshot saves it",
+      "says": { "feature": "quantity", "kind": "module", "present": true }
+    },
+    {
+      "quote": "`quantity/add` and `quantity/subtract` need one unit, and fail with `ArithmeticError` otherwise, as `quantity/add: 120 {\"m\":1} and 8 {\"s\":1} have different units.`",
+      "says": {
+        "behavior": "quantity-add-different-units",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "A plain number is a quantity with no unit, and a result with no unit left is its plain number.",
+      "says": {
+        "behavior": "quantity-with-no-unit",
+        "is": "number",
+        "area": "library"
+      }
+    }
+  ]
+}

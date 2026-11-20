@@ -1524,6 +1524,21 @@ Algorithm goals over an edge relation; see [Graph algorithms](#graph-algorithms)
 ["graph/topologicalOrder", "edge", "?node", "?position"]
 ```
 
+### `quantity`
+
+Numbers that carry their units, checked when the program runs, as Pint checks them. A quantity is data, a record of a `value` and a `unit` from each base unit to its whole exponent, so a schema can say what unit a value has, a fact can hold one, and a snapshot saves it:
+
+```json
+["begin",
+  ["define", "distance", ["quote", {"value": 120, "unit": {"m": 1}}]],
+  ["define", "duration", ["quote", {"value": 8, "unit": {"s": 1}}]],
+  {"speed": ["quantity/divide", "distance", "duration"],
+   "no unit left": ["quantity/divide", "distance", "distance"],
+   "in km": ["quantity/in", ["quantity/divide", "distance", ["quote", {"value": 1000, "unit": {"m": 1, "km": -1}}]], {"km": 1}]}]
+```
+
+Evaluates to `{"speed": {"value": 15, "unit": {"m": 1, "s": -1}}, "no unit left": 1, "in km": 0.12}`. `quantity/multiply`, `quantity/divide`, and `quantity/power` add, take away, and multiply the exponents; `quantity/add` and `quantity/subtract` need one unit, and fail with `ArithmeticError` otherwise, as `quantity/add: 120 {"m":1} and 8 {"s":1} have different units.`; `quantity/in` gives a quantity's number once its unit is the one asked for. A plain number is a quantity with no unit, and a result with no unit left is its plain number. There is no table of units: converting is multiplying by a quantity such as `{"value": 1000, "unit": {"m": 1, "km": -1}}`.
+
 ### `func`
 
 ```json

@@ -90,7 +90,7 @@ Status: `todo`, `doing`, `done (<commit>)`.
 
 9. **`delay` and `force`** — done (commit "feat(core): delay makes a promise"). `Delayed` in `evaluation/special-forms/delay.ts`; `value/force` and `value/promise?` in the value module; grid row "delay and force", every place like plain code. As Racket: `["delay", expr]` makes a promise, which `force` runs once and keeps; `force` of any other value gives it back.
 10. **Failures a program can catch and read as data** — done (commit "feat(core): func/catch and func/raise"). `raised`, `isCatchable`, `failureRecord` in `errors/evaluation.ts`; `func/catch` and `func/raise` in the func module. History probes now check item 1's message through a catch. As Racket's `with-handlers` and `raise`: a failure caught as a record (its kind and message, and the data it was raised with). Never catches waiting or asking, which are not failures.
-11. **Numbers that carry their units** — todo. Pint's way, checked when the program runs: a quantity is a JSON record of a value and a unit, the unit a record from base unit to whole exponent, equal when the JSON is. Arithmetic checks units; schemas say what unit a value has; the solver solves for exponents.
+11. **Numbers that carry their units** — done (commit "feat(core): the quantity module"). `modules/quantity.ts`: add, subtract, multiply, divide, power, in; a quantity is a JSON record, a unit a record of whole exponents, no unit table (convert by multiplying). The solver refuses quantity functions by name (they are not in its library), so the waiting rule lists values. Pint's way, checked when the program runs: a quantity is a JSON record of a value and a unit, the unit a record from base unit to whole exponent, equal when the JSON is. Arithmetic checks units; schemas say what unit a value has; the solver solves for exponents.
 12. **Host code that watches a query** — todo. The database keeps derived rows up to date already; add a way for host code (and Lion code) to be told the answers that came and went after each change.
 13. **Delimited continuations** — todo. `reset` and `shift`, one-shot: the body after `shift` runs in a fiber that `k` resumes, so generators, coroutines, and early exit are one construct. A second resume of one `k` fails by name.
 
@@ -100,6 +100,7 @@ Status: `todo`, `doing`, `done (<commit>)`.
 - `compiled.test.ts` compares the compiled evaluator with `evaluation/tests/interpreter.ts`: change the interpreter with the evaluator. Messages are compared as raised (`raisedAs`), without the trail of callers.
 - Build core (`bunx turbo build --filter=@lionlang/core --filter=@lionlang/cli`) before `bun run --cwd packages/site-runtime docs`: the docs run the built core, and `bun run history check`'s probes do too.
 - A settled finding must leave `history/research/known.json`, or the check fails.
+- `measure`, `bench`, and `scale --against HEAD` share one checkout of HEAD under `out/metrics/`: run them one after another, never at once. They measure the working tree as it is while they run, so do not edit core meanwhile.
 
 ## Found while building
 

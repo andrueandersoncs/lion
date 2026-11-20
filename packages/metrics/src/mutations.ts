@@ -4169,4 +4169,25 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "  !STEERING.has(error);",
     tests: ["src/modules/tests/catch.test.ts"],
   },
+  {
+    name: "quantities of different units add",
+    file: core("modules/quantity.ts"),
+    find: "      return other === undefined",
+    replace: "      return true",
+    tests: ["src/modules/tests/quantity.test.ts"],
+  },
+  {
+    name: "a quotient adds the divisor's exponents",
+    file: core("modules/quantity.ts"),
+    find: "times(top.unit, bottom.unit, -1)",
+    replace: "times(top.unit, bottom.unit, 1)",
+    tests: ["src/modules/tests/quantity.test.ts"],
+  },
+  {
+    name: "a quantity with no unit left stays a record",
+    file: core("modules/quantity.ts"),
+    find: "  Object.keys(unit).length === 0 ? value : { value, unit };",
+    replace: "  ({ value, unit });",
+    tests: ["src/modules/tests/quantity.test.ts"],
+  },
 ];

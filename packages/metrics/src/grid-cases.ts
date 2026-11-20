@@ -285,6 +285,18 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
   },
   {
+    name: "a quantity's units",
+    form: [
+      "quantity/in",
+      [
+        "quantity/multiply",
+        { value: X, unit: { m: 1, s: -1 } },
+        { value: 2, unit: { s: 1 } },
+      ],
+      { m: 1 },
+    ],
+  },
+  {
     name: "delay and force",
     form: ["value/force", ["delay", ["number/add", X, 1]]],
   },

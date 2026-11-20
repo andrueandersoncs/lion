@@ -70,6 +70,7 @@
     "./modules/lib/shared": "./dist/modules/lib/shared.mjs",
     "./modules/number": "./dist/modules/number.mjs",
     "./modules/object": "./dist/modules/object.mjs",
+    "./modules/quantity": "./dist/modules/quantity.mjs",
     "./modules/schema": "./dist/modules/schema.mjs",
     "./modules/string": "./dist/modules/string.mjs",
     "./modules/value": "./dist/modules/value.mjs",
