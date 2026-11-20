@@ -7,9 +7,11 @@ import {
 } from "@/errors/evaluation";
 import { nameOrString, readsAsName } from "@/evaluation/base-forms/primitive";
 import {
+  andThen,
   type Compiled,
   DEEPEST,
   Pending,
+  runAll,
   toEffect,
 } from "@/evaluation/compiled";
 import {
@@ -24,6 +26,7 @@ import {
 } from "@/evaluation/environment";
 import { compile } from "@/evaluation/evaluate";
 import { bodyNames } from "@/evaluation/hoisting";
+import { applyIn } from "@/evaluation/special-forms/function";
 import {
   buildOf,
   DeferredCall,
@@ -39,7 +42,12 @@ import {
   recordMaker,
   registerLambda,
 } from "@/logic/terms";
-import { isSpecialFormName, type LambdaFormSchema } from "@/schemas/evaluation";
+import {
+  isSpecialFormName,
+  type LambdaFormSchema,
+  parameterNames,
+  parameterSchemas,
+} from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
 
 /** The strings a form mentions; true for those only ever inside `quote`. */
@@ -56,9 +64,14 @@ const collect = (form: unknown, quoted: boolean, into: References) => {
   }
   const [head, parameters, body] = Array.isArray(form) ? form : [];
   if (!quoted && head === "lambda" && Array.isArray(parameters)) {
-    // A lambda's parameters shadow the names around it.
+    // A lambda's parameters shadow the names around it in its body; the
+    // schemas of its contracts are read where the lambda is written.
+    const names = parameterNames(parameters);
+    for (const schema of parameterSchemas(parameters)) {
+      collect(schema, false, into);
+    }
     for (const [name, isQuoted] of references(body)) {
-      if (!parameters.includes(name)) {
+      if (!names.includes(name)) {
         collect(name, isQuoted, into);
       }
     }
@@ -90,6 +103,8 @@ const references = (form: unknown): References => {
 interface Lambda {
   readonly body: LionExpressionType;
   compiled: Compiled | undefined;
+  /** Its contracts: the parameters as written, and each one's schema. */
+  readonly contract: Contract | undefined;
   /** The names its body defines, which a call declares from its start. */
   readonly defined: readonly string[];
   readonly environment: Environment | undefined;
@@ -100,7 +115,63 @@ interface Lambda {
   readonly scope: Scope | undefined;
 }
 
+/**
+ * What a lambda's parameters must fit: the parameters as written, names
+ * and names with schemas, and the value of each one's schema, where it has
+ * one, made where the lambda is.
+ */
+interface Contract {
+  readonly checks: readonly unknown[];
+  readonly written: readonly unknown[];
+}
+
 const LAMBDAS = new WeakMap<object, Lambda>();
+
+/** How a contract checks an argument: `schema/assert`, which its module gives. */
+let assertFit: unknown;
+
+/** Sets the function a contract checks an argument with. */
+export const checkContractsWith = (assert: unknown) => {
+  assertFit = assert;
+};
+
+/**
+ * The arguments of a call, each that a contract covers checked as
+ * `schema/assert` checks it, where the call is made: a misfit fails before
+ * the body runs, so the failure leaves the caller first. A check of a value
+ * that waits for a logic variable waits too, as any call does.
+ */
+const checked = (
+  lambda: Lambda,
+  contract: Contract,
+  args: readonly unknown[],
+  depth: number
+): unknown => {
+  const values = [...args];
+  const from = (start: number, now: number): unknown => {
+    for (let at = start; at < values.length; at += 1) {
+      const schema = contract.checks[at];
+      if (schema !== undefined) {
+        const result = applyIn(
+          assertFit,
+          [values[at], schema],
+          "schema/assert",
+          lambda.environment,
+          now
+        );
+        if (result instanceof Pending) {
+          return andThen(result, now, (value, later) => {
+            values[at] = value;
+            return from(at + 1, later);
+          });
+        }
+        values[at] = result;
+      }
+    }
+    return values;
+  };
+  return from(0, depth);
+};
 
 /** The compiled form of a Lion function, when a value is one. */
 export const lambdaOf = (value: unknown): Lambda | undefined =>
@@ -132,7 +203,13 @@ class Called extends Pending {}
 const refused = (lambda: Lambda, got: number) => {
   const count = lambda.parameters.length;
   return wrongCount(
-    JSON.stringify(lambda.name ?? ["lambda", lambda.parameters, lambda.body]),
+    JSON.stringify(
+      lambda.name ?? [
+        "lambda",
+        lambda.contract?.written ?? lambda.parameters,
+        lambda.body,
+      ]
+    ),
     [count, count],
     got
   );
@@ -153,10 +230,27 @@ export const enter = (
   if (depth >= DEEPEST) {
     return new Called(Effect.suspend(() => toEffect(enter(lambda, args, 0))));
   }
-  const { parameters } = lambda;
+  const { contract, parameters } = lambda;
   if (args.length !== parameters.length) {
     return new Pending(Effect.fail(refused(lambda, args.length)));
   }
+  if (contract !== undefined) {
+    return andThen(
+      checked(lambda, contract, args, depth),
+      depth,
+      (values, now) => run(lambda, values as readonly unknown[], now)
+    );
+  }
+  return run(lambda, args, depth);
+};
+
+/** Runs a Lion function's body on arguments it takes. */
+const run = (
+  lambda: Lambda,
+  args: readonly unknown[],
+  depth: number
+): unknown => {
+  const { parameters } = lambda;
   const bindings = new Map<string, unknown>();
   for (const [at, parameter] of parameters.entries()) {
     bindings.set(parameter, args[at]);
@@ -193,7 +287,8 @@ export const makeLambda = (
   body: LionExpressionType,
   environment?: Environment,
   compiled?: Compiled,
-  scope: Scope | undefined = environment
+  scope: Scope | undefined = environment,
+  contract?: Contract
 ) => {
   const defined = bodyNames(parameters, body, scope).filter(
     (name) => !parameters.includes(name)
@@ -202,6 +297,7 @@ export const makeLambda = (
     body,
     compiled,
     defined,
+    contract,
     environment,
     name: undefined,
     parameters,
@@ -210,7 +306,12 @@ export const makeLambda = (
   const fn = registerLambda(
     (...args: unknown[]) =>
       Effect.suspend(() => toEffect(enter(lambda, args, 0))),
-    { parameters, body, environment }
+    {
+      parameters,
+      body,
+      environment,
+      ...(contract === undefined ? {} : { written: contract.written }),
+    }
   );
   LAMBDAS.set(fn, lambda);
   return counted(fn, parameters.length);
@@ -225,12 +326,30 @@ export const compileLambda = (
   [_, parameters, body]: typeof LambdaFormSchema.Type,
   scope: Scope | undefined
 ): Compiled => {
+  const names = parameterNames(parameters);
   const compiled = compile(
     body,
-    scopeWith(bodyNames(parameters, body, scope), scope)
+    scopeWith(bodyNames(names, body, scope), scope)
   );
-  return (environment) =>
-    makeLambda(parameters, body, environment, compiled, scope);
+  const schemas = parameterSchemas(parameters);
+  if (schemas.every((schema) => schema === undefined)) {
+    return (environment) =>
+      makeLambda(names, body, environment, compiled, scope);
+  }
+  // The schemas of the contracts are made where the lambda is, once.
+  const made = schemas.map(
+    (schema): Compiled =>
+      schema === undefined
+        ? () => undefined
+        : compile(schema as LionExpressionType, scope)
+  );
+  return (environment, depth) =>
+    andThen(runAll(made, environment, depth), depth, (checks) =>
+      makeLambda(names, body, environment, compiled, scope, {
+        checks: checks as readonly unknown[],
+        written: parameters,
+      })
+    );
 };
 
 /** Makes a list of its arguments, as `array/make` does. */
@@ -300,7 +419,11 @@ const close = (
   closed.set(value, value);
   const lambda = lambdaOf(value);
   return suspendIn(
-    ["lambda", info.parameters, info.body] as LionExpressionType,
+    [
+      "lambda",
+      info.written ?? info.parameters,
+      info.body,
+    ] as LionExpressionType,
     info.environment,
     closed,
     (environment) =>
@@ -308,7 +431,9 @@ const close = (
         info.parameters,
         info.body as LionExpressionType,
         environment,
-        lambda?.compiled
+        lambda?.compiled,
+        environment,
+        lambda?.contract
       ),
     lambda?.scope
   ).pipe(Effect.tap((copy) => Effect.sync(() => closed.set(value, copy))));

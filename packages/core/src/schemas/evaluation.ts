@@ -98,11 +98,37 @@ export const QuoteFormSchema = form("quote", Expression);
 export const BeginFormSchema = formWithMore("begin");
 export const DefineFormSchema = form("define", NameSchema, Expression);
 export const SetFormSchema = form("set!", NameSchema, Expression);
+/**
+ * A lambda's parameter: a name, or a name and the schema its argument must
+ * fit, a contract the call checks as `schema/assert` does.
+ */
+export const ParameterSchema = Schema.Union([
+  NameSchema,
+  Schema.Tuple([NameSchema, Expression]),
+]);
+
 export const LambdaFormSchema = form(
   "lambda",
-  Schema.Array(NameSchema),
+  Schema.Array(ParameterSchema),
   Expression
 );
+
+/** A lambda form's parameters, as written: names, or names with schemas. */
+export type Parameters = (typeof LambdaFormSchema.Type)[1];
+
+/** The names a lambda's parameters bind. */
+export const parameterNames = (parameters: readonly unknown[]) =>
+  parameters.map((parameter) =>
+    typeof parameter === "string" ? parameter : (parameter as [string])[0]
+  );
+
+/** The schema each parameter's argument must fit, where it has one. */
+export const parameterSchemas = (parameters: readonly unknown[]) =>
+  parameters.map((parameter) =>
+    typeof parameter === "string"
+      ? undefined
+      : (parameter as [string, unknown])[1]
+  );
 export const CondFormSchema = Schema.TupleWithRest(form("cond", Pair), [Pair]);
 // ["match", <value>, [<schema>, <fn>], ..., <fallback-fn>], where the
 // fallback may be left out: a last part that is a pair is a case.
@@ -211,7 +237,7 @@ export const USAGE: Record<SpecialFormName, string> = {
   eval: 'eval takes one expression, whose value it evaluates, as in ["eval", ["quote", ["number/add", 1, 2]]].',
   quote: 'quote takes one value, as in ["quote", ["a", "b"]].',
   lambda:
-    'lambda takes a list of parameter names and a body, as in ["lambda", ["x"], ["number/add", "x", 1]].',
+    'lambda takes a list of parameters, each a name or a name and a schema, and a body, as in ["lambda", ["x", ["y", "value/number?"]], ["number/add", "x", "y"]].',
   cond: 'cond takes one or more cases, each a condition and a result, as in ["cond", [["number/greaterThan", "x", 0], "positive"], ["else", "other"]].',
   match:
     'match takes a value, one or more cases of a schema and a function, and maybe a fallback function, as in ["match", "x", ["value/number?", "value/identity"], ["lambda", ["v"], null]].',

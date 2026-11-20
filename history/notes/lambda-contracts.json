@@ -1,0 +1,29 @@
+{
+  "claims": [
+    {
+      "quote": "A parameter written as a name and a schema, `[\"n\", \"value/number?\"]`, is a contract: a call checks the argument as `schema/assert` does, before the body runs, so a misfit fails with `schema/assert`'s words and the functions it left start with the caller, as Racket blames the party that broke a contract.",
+      "says": {
+        "feature": "lambda-contracts",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Where the call waits for a logic variable, in a rule or a `find`, the check waits too and runs when the variable is bound, as plain code would run it",
+      "says": {
+        "behavior": "lambda-contract-in-rule",
+        "is": "checked-when-bound",
+        "area": "logic",
+        "follows": "racket"
+      }
+    },
+    {
+      "quote": "A match with no fallback on a parameter with a contract is checked to cover every value the contract allows: `lion check` and the graph editor warn when its cases leave one out.",
+      "says": {
+        "feature": "match-coverage-warning",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import { logicError, takes } from "@/errors/evaluation";
+import { checkContractsWith } from "@/evaluation/special-forms/lambda";
 import { builders, checking, fitsValue, misfit, problemsOf } from "@/logic/fit";
 import { includes } from "@/logic/inclusion";
 
@@ -38,3 +39,6 @@ export const module = {
 
   ...builders,
 };
+
+// A lambda's contract checks an argument as schema/assert does.
+checkContractsWith(module.assert);

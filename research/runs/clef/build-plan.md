@@ -72,7 +72,9 @@ Status: `todo`, `doing`, `done (<commit>)`.
    - Proof video: `out/proof/match-warning.mp4`.
    - A match with no fallback fails, naming the value, when no case fits, as Racket's `match` does.
    - `analyze` reports a case that an earlier case includes (it can never be reached), and a match without a fallback whose subject has a known schema (a contract's) that its cases do not cover. Both decided by `schema/includes?`.
-8. **Contracts on lambdas, with blame** — todo.
+8. **Contracts on lambdas, with blame** — done (commit "feat(core): a lambda's parameter may carry a contract").
+   - As built: a parameter `[name, schema]` (`ParameterSchema`, `parameterNames`, `parameterSchemas` in `schemas/evaluation.ts`) checks its argument as `schema/assert` does, at the call (`checked` in `lambda.ts`, through `applyIn`, so a check of a waiting value waits). The schema is made where the lambda is. The trail starts with the caller (blame). The solver refuses contracted lambdas by name, so the waiting rule lists values. The analysis reads a contract's schema in the scope around the lambda. Item 7's coverage check is here: a match with no fallback on a contracted parameter is warned of when its cases leave out a value of the contract.
+   - Not done: a result contract (Racket's range). The message is schema/assert's, not one naming the contracted function: a check that waits in a rule must be a call a snapshot can write.
    - A parameter may be `[name, schema]`: the call checks the argument by the one fitting rule, and a failure blames the caller: `"label" called "next" with "seven" as argument 1, which does not fit value/number?.`
    - Maybe a result schema, blamed on the function. Decide when building, by Racket's `->`.
 
@@ -95,4 +97,5 @@ Status: `todo`, `doing`, `done (<commit>)`.
 
 (Surprises met on the way, to fix in the item they belong to or list here.)
 
-- `["object/get", {}, "toString"]` reads a JavaScript method off the record's prototype (item 4).
+- `["object/get", {}, "toString"]` reads a JavaScript method off the record's prototype (item 4). Fixed in item 4.
+- `begin` in a rule body, a query, or a `find` drops a call that waits for a logic variable when it is not the last part: `["find", ["f", "?x"], ...]` with `f`'s body `["begin", ["schema/assert", "n", S], body]` never runs the assert, so a misfit passes where plain code fails (found while testing item 8). Not fixed yet: a `begin` that waits should run every part when it runs.

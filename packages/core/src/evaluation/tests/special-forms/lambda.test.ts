@@ -3,12 +3,20 @@ import { Arbitrary, Array as Arr, Effect, Result, Schema } from "effect";
 import type { InvalidFunctionCallError } from "@/errors/evaluation";
 import { run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
-import { LambdaFormSchema } from "@/schemas/evaluation";
+import { NameSchema } from "@/schemas/evaluation";
+import { LionExpressionSchema } from "@/schemas/lion-expression";
+
+/** A lambda form whose parameters are names, with no contracts. */
+const PlainLambdaSchema = Schema.Tuple([
+  Schema.Literal("lambda"),
+  Schema.Array(NameSchema),
+  LionExpressionSchema,
+]);
 
 describe("lambda special form", () => {
   it.effect.prop(
     "should evaluate to a function",
-    [LambdaFormSchema],
+    [PlainLambdaSchema],
     ([expression]) =>
       Effect.gen(function* () {
         const result = yield* run(expression, {});
@@ -17,7 +25,7 @@ describe("lambda special form", () => {
   );
   it.effect.prop(
     "should evaluate to a function, calling the function with correct arguments should not produce an error",
-    [LambdaFormSchema],
+    [PlainLambdaSchema],
     ([expression]) =>
       Effect.gen(function* () {
         const result = yield* run(expression, {});

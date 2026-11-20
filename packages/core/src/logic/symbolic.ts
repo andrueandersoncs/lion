@@ -633,6 +633,11 @@ const applyCases = (
     (all) => all.flat()
   );
 
+/** Whether a lambda form's parameters hold a contract. */
+const contracted = (parameters: unknown) =>
+  Array.isArray(parameters) &&
+  parameters.some((parameter) => typeof parameter !== "string");
+
 /** Runs a lambda's body on symbolic values. */
 const inline = (
   info: LambdaInfo,
@@ -642,6 +647,9 @@ const inline = (
 ): Result => {
   if (depth > MOST_DEPTH) {
     return refused("a function that calls itself");
+  }
+  if (info.written !== undefined) {
+    return refused("a lambda with a contract");
   }
   const scope = new Map<string, Cases>(
     info.parameters.map((name, at) => [name, one(args[at] ?? fromValue(null))])
@@ -790,7 +798,9 @@ const expressionAt = (code: unknown, where: Where): Result => {
   }
   const [head, ...rest] = code as unknown[];
   if (Array.isArray(head) && head[0] === "lambda") {
-    return lambdaCall(head as [string, string[], unknown], rest, where);
+    return contracted(head[1])
+      ? refused("a lambda with a contract")
+      : lambdaCall(head as [string, string[], unknown], rest, where);
   }
   const special =
     typeof head === "string" && !isName(head, where.scope, where.environment);
@@ -803,7 +813,9 @@ const expressionAt = (code: unknown, where: Where): Result => {
     case "cond":
       return conditional(rest, where);
     case "lambda":
-      return Effect.succeed(one(closureOf(rest, where)));
+      return contracted(rest[0])
+        ? refused("a lambda with a contract")
+        : Effect.succeed(one(closureOf(rest, where)));
     default:
       return head.includes("/")
         ? callOf(head, rest, where)

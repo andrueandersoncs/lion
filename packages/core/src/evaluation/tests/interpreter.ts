@@ -87,11 +87,14 @@ import {
   show,
   termVariables,
 } from "@/logic/terms";
+import { module as schemaModule } from "@/modules/schema";
 import {
   fitsForm,
   isMatchCase,
   isSpecialFormName,
   LionFunctionValueSchema,
+  parameterNames,
+  parameterSchemas,
   type SpecialFormName,
   USAGE,
 } from "@/schemas/evaluation";
@@ -164,15 +167,31 @@ const NAMES = new WeakMap<object, string>();
 const makeLambda = (
   parameters: readonly string[],
   body: LionExpressionType,
-  environment: Environment
+  environment: Environment,
+  contract?: {
+    readonly checks: readonly unknown[];
+    readonly written: readonly unknown[];
+  }
 ) => {
   const fn: (...args: unknown[]) => EvaluateResult = registerLambda(
-    Effect.fn(function* (...args: unknown[]) {
-      if (args.length !== parameters.length) {
+    Effect.fn(function* (...given: unknown[]) {
+      if (given.length !== parameters.length) {
         return yield* wrongCount(
-          JSON.stringify(NAMES.get(fn) ?? ["lambda", parameters, body]),
+          JSON.stringify(
+            NAMES.get(fn) ?? ["lambda", contract?.written ?? parameters, body]
+          ),
           [parameters.length, parameters.length],
-          args.length
+          given.length
+        );
+      }
+      // Each argument a contract covers is checked as schema/assert checks it.
+      const args: unknown[] = [];
+      for (const [at, arg] of given.entries()) {
+        const schema = contract?.checks[at];
+        args.push(
+          schema === undefined
+            ? arg
+            : yield* apply(schemaModule.assert, [arg, schema])
         );
       }
       const frame = makeEnvironment(
@@ -185,7 +204,12 @@ const makeLambda = (
         Effect.provideService(LionEnvironmentService, frame)
       );
     }),
-    { parameters, body, environment }
+    {
+      parameters,
+      body,
+      environment,
+      ...(contract === undefined ? {} : { written: contract.written }),
+    }
   );
   return fn;
 };
@@ -418,13 +442,27 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
     eval: (form: Form) => evaluateEval(form),
     quote: ([_, quoted]: Form) => Effect.succeed(quoted),
     lambda: ([_, parameters, body]: Form) =>
-      Effect.map(scope, (environment) =>
-        makeLambda(
-          parameters as readonly string[],
-          body as LionExpressionType,
-          environment
-        )
-      ),
+      Effect.gen(function* () {
+        const environment = yield* scope;
+        const written = parameters as readonly unknown[];
+        const schemas = parameterSchemas(written);
+        const names = parameterNames(written);
+        if (schemas.every((schema) => schema === undefined)) {
+          return makeLambda(names, body as LionExpressionType, environment);
+        }
+        const checks: unknown[] = [];
+        for (const schema of schemas) {
+          checks.push(
+            schema === undefined
+              ? undefined
+              : yield* evaluate(schema as LionExpressionType)
+          );
+        }
+        return makeLambda(names, body as LionExpressionType, environment, {
+          checks,
+          written,
+        });
+      }),
     cond: (form: Form) => evaluateCond(form),
     match: (form: Form) => evaluateMatch(form),
     relation: (form) => evaluateRelation(form),

@@ -1344,8 +1344,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a lambda written where the solver runs is refused",
     file: core("logic/symbolic.ts"),
-    find: '    case "lambda":\n      return Effect.succeed(one(closureOf(rest, where)));',
-    replace: '    case "lambda":\n      return refused("the form lambda");',
+    find: "        : Effect.succeed(one(closureOf(rest, where)));",
+    replace: '        : refused("the form lambda");',
     tests: SOLVING_TESTS,
   },
   {
@@ -4111,5 +4111,26 @@ export const MUTATIONS: readonly Mutation[] = [
       "src/analysis/tests/match-cases.test.ts",
       "src/logic/tests/inclusion.test.ts",
     ],
+  },
+  {
+    name: "a contract does not check its argument",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "      if (schema !== undefined) {\n        const result = applyIn(",
+    replace: "      if (false) {\n        const result = applyIn(",
+    tests: ["src/evaluation/tests/contracts.test.ts"],
+  },
+  {
+    name: "a contract is checked inside the body, naming the function first",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "  if (!(result instanceof Pending) || result instanceof Called) {",
+    replace: "  if (!(result instanceof Pending)) {",
+    tests: ["src/evaluation/tests/failures.test.ts"],
+  },
+  {
+    name: "a match on a contract is not checked to cover it",
+    file: core("analysis/analyze.ts"),
+    find: "  return covered === false",
+    replace: "  return covered === undefined",
+    tests: ["src/analysis/tests/match-cases.test.ts"],
   },
 ];

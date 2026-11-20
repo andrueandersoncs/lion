@@ -23434,5 +23434,29 @@
       ],
       ["else", ["quote", "false"]]
     ]
+  },
+  {
+    "case": "lambda-contract-in-rule",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "next",
+        ["lambda", [["n", "value/number?"]], ["number/add", "n", 1]]
+      ],
+      [
+        "cond",
+        [
+          [
+            "=",
+            ["find", ["next", "?x"], ["in", "?x", ["array/make", 1]]],
+            ["quote", [2]]
+          ],
+          ["quote", "checked-when-bound"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

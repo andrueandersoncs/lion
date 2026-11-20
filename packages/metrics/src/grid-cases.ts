@@ -277,6 +277,10 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
   },
   {
+    name: "lambda with a contract",
+    form: [["lambda", [["v", "value/number?"]], ["number/add", "v", 1]], X],
+  },
+  {
     name: "form's name as a parameter",
     form: [["lambda", ["in"], ["number/add", "in", 1]], X],
   },

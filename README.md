@@ -336,6 +336,17 @@ Creates a Lion function with lexical scope.
 
 Lambdas close over surrounding scope, and see the value a name has when they run, so a `set!` or a later `define` of a name the program declares is seen.
 
+A parameter written as a name and a [schema](#schemas), `["n", "value/number?"]`, is a contract: a call checks the argument as `schema/assert` does, before the body runs, so a misfit fails with `schema/assert`'s words and the functions it left start with the caller, as Racket blames the party that broke a contract. The schema is made where the lambda is. Where the call waits for a logic variable, in a rule or a `find`, the check waits too and runs when the variable is bound, as plain code would run it:
+
+```json
+["begin",
+  ["define", "next", ["lambda", [["n", "value/number?"]], ["number/add", "n", 1]]],
+  ["define", "label", ["lambda", ["n"], ["string/concat", "item ", ["number/toString", ["next", "n"]]]]],
+  ["label", "seven"]]
+```
+
+fails with `"seven" does not fit "value/number?". (in "label")`. A [match](#match) with no fallback on a parameter with a contract is checked to cover every value the contract allows: `lion check` and the graph editor warn when its cases leave one out.
+
 Calls nest as deep as memory allows. A call in tail position keeps nothing of the call it is in, as in Scheme. A lambda's body is in tail position, and so are the result of a `cond` case and the last expression of a `begin` that are. A lambda that calls itself there is a loop, and runs in constant memory, so this counts to 100,000 in a fraction of a second:
 
 ```json

@@ -17,6 +17,7 @@ import {
   fitsForm,
   isMatchCase,
   isSpecialFormName,
+  parameterNames,
   type SpecialFormName,
   USAGE,
 } from "@/schemas/evaluation";
@@ -234,6 +235,8 @@ const bindingOf = (scope: Frame | undefined, name: string) => {
 
 /** Where a part is written. */
 interface Context {
+  /** The context a lambda is written in, for the parts of its own context. */
+  readonly around?: Context;
   /** The scope a `define` binds in: the nearest lambda's body, or the top. */
   readonly body: Frame;
   readonly quoted: boolean;
@@ -454,14 +457,14 @@ const lambdaContext = (
   path: StructuralPath,
   context: Context
 ): Context => {
-  const names = parameters as readonly string[];
+  const names = parameterNames(parameters as readonly unknown[]);
   const scope = frame(
     bodyNames(names, body, context.scope),
     (name) => (names.includes(name) ? "parameter" : "define"),
     pathToPointer(path),
     context.scope
   );
-  return { ...context, body: scope, scope };
+  return { ...context, around: context, body: scope, scope };
 };
 
 /**
@@ -517,6 +520,8 @@ const formPart = (
     return binding(form, value as string, at, context);
   }
   if (role === "parameters" || role === "variables") {
+    const parameter = (name: string, place: StructuralPath) =>
+      site(name, place, context.scope.bindings.get(name));
     return arrayNode(
       value as string[],
       at,
@@ -526,11 +531,7 @@ const formPart = (
         order: n,
         node:
           role === "parameters"
-            ? site(
-                name as string,
-                [...at, n],
-                context.scope.bindings.get(name as string)
-              )
+            ? contracted(name, [...at, n], parameter, context.around ?? context)
             : variable(name as string, [...at, n]),
       })
     );
@@ -552,6 +553,27 @@ const formPart = (
   }
   return analyzeNode(value, at, context);
 };
+
+/**
+ * A lambda's parameter: a name it binds, or a name and the schema of its
+ * contract, which is read where the lambda is written.
+ */
+const contracted = (
+  written: LionExpressionType,
+  at: StructuralPath,
+  parameter: (name: string, place: StructuralPath) => SemanticNode,
+  around: Context
+): SemanticNode =>
+  typeof written === "string"
+    ? parameter(written, at)
+    : arrayNode(written as LionExpressionType[], at, false, (part, k) => ({
+        role: k === 0 ? "parameter" : "contract",
+        order: k,
+        node:
+          k === 0
+            ? parameter(part as string, [...at, k])
+            : analyzeNode(part, [...at, k], around),
+      }));
 
 /** The parts of a well-formed special form, each read as the form reads it. */
 const formParts = (
@@ -718,9 +740,9 @@ const MOST_CASES = 12;
 
 /**
  * Whether every value `later` allows fits `earlier`, as `schema/includes?`
- * says it, run on the host's environment; false when it cannot say.
+ * says it, run on the host's environment; undefined when it cannot say.
  */
-const includes = (
+const included = (
   later: unknown,
   earlier: unknown,
   environment: Readonly<Record<string, unknown>>
@@ -728,7 +750,61 @@ const includes = (
   const exit = Effect.runSyncExit(
     run(["schema/includes?", later, earlier], environment)
   );
-  return Exit.isSuccess(exit) && exit.value === true;
+  return Exit.isSuccess(exit) ? exit.value === true : undefined;
+};
+
+const includes = (
+  later: unknown,
+  earlier: unknown,
+  environment: Readonly<Record<string, unknown>>
+) => included(later, earlier, environment) === true;
+
+/**
+ * The schema of the contract of the parameter a match's subject names, when
+ * it is one: the second part of the pair that binds it.
+ */
+const contractOf = (
+  subject: SemanticNode | undefined,
+  expression: LionExpressionType,
+  nodes: ReadonlyMap<string, SemanticNode>
+): SemanticNode | undefined => {
+  const binding =
+    subject?.meaning?.kind === "name" ? subject.meaning.binding : undefined;
+  const [site] = binding?.kind === "parameter" ? binding.at : [];
+  if (site === undefined || !site.endsWith("/0")) {
+    return undefined;
+  }
+  const pair = site.slice(0, -2);
+  const node = nodes.get(`${pair}/1`);
+  const written =
+    node === undefined ? undefined : partAt(expression, node.path);
+  return written === undefined ? undefined : node;
+};
+
+/**
+ * The warning of a match with no fallback whose subject is a parameter
+ * with a contract, when its cases leave out values the contract allows.
+ */
+const uncovered = (
+  node: SemanticNode,
+  schemas: readonly unknown[],
+  expression: LionExpressionType,
+  nodes: ReadonlyMap<string, SemanticNode>,
+  environment: Readonly<Record<string, unknown>>
+) => {
+  if (node.children.some((child) => child.role === "fallback")) {
+    return undefined;
+  }
+  const subject = node.children.find((child) => child.role === "subject");
+  const contract = contractOf(subject?.node, expression, nodes);
+  if (contract === undefined || !closed(contract, contract.pointer)) {
+    return undefined;
+  }
+  const schema = partAt(expression, contract.path);
+  const covered = included(schema, ["schema/anyOf", ...schemas], environment);
+  return covered === false
+    ? `The cases leave out values "${subject?.node.value}" can have: some value of its contract, ${JSON.stringify(schema)}, fits no case, and the match has no fallback.`
+    : undefined;
 };
 
 /**
@@ -742,6 +818,9 @@ const withCaseWarnings = (
   expression: LionExpressionType,
   environment: Readonly<Record<string, unknown>>
 ): SemanticNode => {
+  const nodes = new Map(
+    flattenAnalysis(root).map((node) => [node.pointer, node] as const)
+  );
   const warn = (node: SemanticNode): SemanticNode => {
     const children = node.children.map((child) => ({
       ...child,
@@ -761,6 +840,13 @@ const withCaseWarnings = (
     if (!checked) {
       return { ...node, children };
     }
+    const leftOut = uncovered(
+      node,
+      cases.map((child) => partAt(expression, schemaOf(child).path)),
+      expression,
+      nodes,
+      environment
+    );
     const warned = children.map((child) => {
       const at = cases.indexOf(child);
       const later = partAt(expression, schemaOf(child)?.path ?? []);
@@ -779,7 +865,11 @@ const withCaseWarnings = (
             },
           };
     });
-    return { ...node, children: warned };
+    return {
+      ...node,
+      children: warned,
+      ...(leftOut === undefined ? {} : { warning: leftOut }),
+    };
   };
   return warn(root);
 };

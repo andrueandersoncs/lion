@@ -8,9 +8,10 @@
  * is a form's name that no scope around it declares. What is inside `quote`
  * is data, and a lambda inside the body is a body of its own.
  */
+
 import { Schema } from "effect";
 import { declares, type Scope, scopeWith } from "@/evaluation/environment";
-import { ValidIdentifierSchema } from "@/schemas/evaluation";
+import { parameterNames, ValidIdentifierSchema } from "@/schemas/evaluation";
 
 /** A name a relation or schema can have: never a special form's. */
 const isIdentifier = Schema.is(ValidIdentifierSchema);
@@ -26,8 +27,14 @@ const lambdaParts = (form: readonly unknown[], scope: Scope | undefined) =>
   isFormHead(form, "lambda", scope) &&
   form.length === 3 &&
   Array.isArray(form[1]) &&
-  form[1].every((parameter) => typeof parameter === "string")
-    ? { body: form[2], parameters: form[1] as string[] }
+  form[1].every(
+    (parameter) =>
+      typeof parameter === "string" ||
+      (Array.isArray(parameter) &&
+        parameter.length === 2 &&
+        typeof parameter[0] === "string")
+  )
+    ? { body: form[2], parameters: parameterNames(form[1]) }
     : undefined;
 
 const BODIES = new WeakMap<object, readonly string[]>();

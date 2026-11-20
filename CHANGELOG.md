@@ -40,6 +40,8 @@
 - When the step denies a goal, as such a proof denies that the rule breaks, and the goals that contradict each other leave out every goal it denies, the other goals allow no values at all: the absent goal says `"vacuous": true`, since the proof holds of no state. (`why-vacuous` added)
 - The graph editor shows the warning, and `lion check` prints it. (`lion-check` added)
 - Reading a program without running it warns of a case whose schema an earlier case's schema includes, as `schema/includes?` decides, where both schemas have one value wherever the match runs. The graph editor shows the warning, and `lion check` prints it. (`unreachable-match-case-warning` added)
+- A parameter written as a name and a schema, `["n", "value/number?"]`, is a contract: a call checks the argument as `schema/assert` does, before the body runs, so a misfit fails with `schema/assert`'s words and the functions it left start with the caller, as Racket blames the party that broke a contract. (`lambda-contracts` added)
+- A match with no fallback on a parameter with a contract is checked to cover every value the contract allows: `lion check` and the graph editor warn when its cases leave one out. (`match-coverage-warning` added)
 
 ### Removed
 
@@ -107,6 +109,7 @@
 - The same goes for an `exists` under `not` that the solver decides as a whole, as a proof that a rule is kept is, which `why` told only as absent. (`why-solved-exists-under-not` is `certificate-and-contradiction`, was `absent-only`)
 - A match with no fallback fails on a value no case fits, as Racket's `match` does: `No case of the match fits 5, and it has no fallback: …`. (`match-without-fallback` is `error`, was `malformed`)
 - A schema includes itself. (`schema-includes-itself` is `true`, was `refused-for-strings`)
+- Where the call waits for a logic variable, in a rule or a `find`, the check waits too and runs when the variable is bound, as plain code would run it (`lambda-contract-in-rule` is `checked-when-bound`)
 
 ### Fixed
 

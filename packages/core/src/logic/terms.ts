@@ -592,6 +592,8 @@ export interface LambdaInfo {
   /** The scope the lambda closes over; undefined when it closes over none. */
   readonly environment: Environment | undefined;
   readonly parameters: readonly string[];
+  /** The parameters as written, when some have contracts: names with schemas. */
+  readonly written?: readonly unknown[];
 }
 
 const LAMBDAS = new WeakMap<object, LambdaInfo>();
@@ -693,9 +695,9 @@ export interface Writer {
   readonly variable?: (variable: LogicVariable) => unknown;
 }
 
-const lambdaForm = ({ body, parameters }: LambdaInfo) => [
+const lambdaForm = ({ body, parameters, written }: LambdaInfo) => [
   "lambda",
-  parameters,
+  written ?? parameters,
   body,
 ];
 

@@ -69,3 +69,59 @@ describe("a match case no value can reach", () => {
     }
   );
 });
+
+/** Finite schemas, each with the values it allows. */
+const FINITE = {
+  one: [1, [1]],
+  two: [2, [2]],
+  oneOrTwo: [
+    ["schema/anyOf", 1, 2],
+    [1, 2],
+  ],
+  sale: [{ kind: ["quote", "sale"] }, ["sale"]],
+  refund: [{ kind: ["quote", "refund"] }, ["refund"]],
+  saleOrRefund: [
+    [
+      "schema/anyOf",
+      { kind: ["quote", "sale"] },
+      { kind: ["quote", "refund"] },
+    ],
+    ["sale", "refund"],
+  ],
+} as const;
+
+type Finite = keyof typeof FINITE;
+
+const finiteNames = Object.keys(FINITE) as Finite[];
+
+describe("a match on a parameter with a contract, with no fallback", () => {
+  it.prop(
+    "is warned of exactly when its cases leave out a value the contract allows",
+    {
+      contract: element(finiteNames),
+      cases: Arbitrary.array(element(finiteNames), {
+        minLength: 1,
+        maxLength: 3,
+      }),
+    },
+    ({ contract, cases }) => {
+      const program = [
+        "lambda",
+        [["x", FINITE[contract][0]]],
+        [
+          "match",
+          "x",
+          ...cases.map((name) => [FINITE[name][0], ["lambda", ["v"], name]]),
+        ],
+      ];
+      const match = flattenAnalysis(analyze(program as never, stdlib)).find(
+        (node) => node.specialForm === "match"
+      );
+      const covered = new Set(cases.flatMap((name) => FINITE[name][1]));
+      const leaves = FINITE[contract][1].some(
+        (value: unknown) => !covered.has(value as never)
+      );
+      expect(match?.warning !== undefined).toBe(leaves);
+    }
+  );
+});
