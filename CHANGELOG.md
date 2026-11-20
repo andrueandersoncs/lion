@@ -36,6 +36,8 @@
 - The research model weighs what Lion can take from Clef, an F#-family language with units of measure, delimited continuations, incremental computation, and verification designed into its compiler. Its page, `research/runs/clef/`, ranks first checking a match's cases with schema inclusion, then proofs that notice premises allowing no state, contracts on lambdas with blame, and refusing extra arguments to a lambda. Its probes found that a function that changes a binding gives one number for three items in a rule body and three in plain code, that a failure for an argument of the wrong kind names neither the function nor its caller, and that integers past 2^53 are rounded without a word. The shared frame gains `{"designed": technique, "in": system}` for what a system plans but does not say it has built, which is not a precedent. (`research-clef` added)
 - A `define` names a Lion function that has no name yet, as Racket names the function a `define` binds, so its failures say which function they left. (`define-names-lambda` added)
 - `["object/has?", record, key]` says whether the record has the key, as Racket's `hash-has-key?` does. (`object/has?` added)
+- Where the solver's step stopped a rule, its `absent` also has `contradicting`: the fewest of the step's goals that already have no values together, each with the answer's values, such as `[["number/greaterThanOrEqualTo", "?balance", 0], ["number/lessThan", "?balance", 0]]`. The same goes for an `exists` under `not` that the solver decides as a whole, as a proof that a rule is kept is, which `why` told only as absent. (`why-contradicting` added)
+- When the step denies a goal, as such a proof denies that the rule breaks, and the goals that contradict each other leave out every goal it denies, the other goals allow no values at all: the absent goal says `"vacuous": true`, since the proof holds of no state. (`why-vacuous` added)
 
 ### Removed
 
@@ -100,6 +102,7 @@
 - Only a record's own keys count. (`object-get-inherited-key` is `error`, was `javascript-property`)
 - While a rule, query, or find is written or run, `set!` fails when the binding it would change was made before that began: `set! cannot change "calls" while a rule, query, or find runs: …`. (`set-outside-binding-in-rule-body` is `error`, was `once-when-written`)
 - A binding the evaluation made for itself, such as a counter a helper defines, it changes as it would anywhere. (`set-own-binding-in-rule-body` is `changed`)
+- The same goes for an `exists` under `not` that the solver decides as a whole, as a proof that a rule is kept is, which `why` told only as absent. (`why-solved-exists-under-not` is `certificate-and-contradiction`, was `absent-only`)
 
 ### Fixed
 

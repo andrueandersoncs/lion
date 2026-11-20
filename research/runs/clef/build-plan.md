@@ -58,7 +58,9 @@ Status: `todo`, `doing`, `done (<commit>)`.
 
 ### B. Proofs
 
-6. **Proofs that notice premises allowing no state** — todo.
+6. **Proofs that notice premises allowing no state** — done (commit "feat(core): why names the goals that contradict each other").
+   - As built: `contradictionOf` in `logic/model.ts` (deletion over the step's filters, goals under `not` first, so `vacuous` is exact), `stepOf` and `refuted` in `logic/explain.ts`. `why` now also tells an `exists` the solver decides whole, which it told only as absent. Goals fixed when the rule is written (constants) are no goals of the step.
+   - Mutation run: "a relation goal reads a relation's rows before they are derived" was already stale on main; "why explains a row a key made again by the first answer found" was missed once and caught in two reruns (a randomized property).
    - Today `cl-vacuous-proof` proves a rule no account meets, and `cl-why-absent`'s `why` says only "absent".
    - Rule: when the solver proves `not exists` because the conditions other than the one negated allow no value at all, `why` says so (a `vacuous` premise naming the contradicting conditions, an unsatisfiable core), and a certificate's lines name the premises the refutation used. Read `logic/solver.ts`, `logic/certificate.ts`, `logic/explain.ts` first.
 

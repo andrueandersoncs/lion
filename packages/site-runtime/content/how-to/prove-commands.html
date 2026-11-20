@@ -34,6 +34,23 @@
   ["object/get", ["array/head", ["object/get", ["why", ["breaks", ["quote", "not overdrawn"]]], "because"]], "example"]]
 </lion-example>
 
+<h2>Notice a proof that holds of no state</h2>
+<p>A proof that a rule is kept asks whether any state the rule allows, and any command, break it. When the rule allows no state at all, no state breaks it, and the proof holds of nothing. Write the proof as a rule, and <code>why</code> says which goals contradict each other, and <code>"vacuous": true</code> when they leave out the goal the proof denies:</p>
+<lion-example name="A proof that holds of no state">
+["begin",
+  ["schema", "Account", {"balance": "value/integer?", "limit": "value/integer?"}],
+  ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+  ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
+  ["define", "step", ["lambda", ["a", "c"], ["cond", [["object/has?", "c", "deposit"], {"balance": ["number/add", ["object/get", "a", "balance"], ["object/get", "c", "deposit"]], "limit": ["object/get", "a", "limit"]}], ["else", {"balance": ["number/subtract", ["object/get", "a", "balance"], ["object/get", "c", "withdraw"]], "limit": ["object/get", "a", "limit"]}]]]],
+  ["define", "never and always overdrawn", ["lambda", ["a"], ["boolean/and", ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0], ["number/lessThan", ["object/get", "a", "balance"], 0]]]],
+  ["relation", "kept", ["rule"]],
+  ["rule", ["kept", ["quote", "never and always overdrawn"]],
+    ["not", ["exists", ["?a", "?c"], ["and", ["schema/fits?", "?a", "Account"], ["never and always overdrawn", "?a"], ["schema/fits?", "?c", "Command"], ["not", ["never and always overdrawn", ["step", "?a", "?c"]]]]]]],
+  ["define", "told", ["array/head", ["object/get", ["why", ["kept", ["quote", "never and always overdrawn"]]], "because"]]],
+  {"vacuous": ["object/get", "told", "vacuous"], "contradicting": ["object/get", "told", "contradicting"]}]
+</lion-example>
+<p>The withdrawals have no limit here, so the proof that the account is never overdrawn and always overdrawn holds; <code>why</code> shows it holds only because no account meets the rule.</p>
+
 <h2>Find the rules a proof needs</h2>
 <p>A rule may be kept only together with others. Houdini's way finds the largest set of candidate rules that keeps itself: drop each candidate that some state the others allow, and some command, break, and ask again, until none is dropped. In Lion it is a few lines over the same question:</p>
 <lion-example name="The rules a proof needs">

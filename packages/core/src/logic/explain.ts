@@ -33,6 +33,7 @@ import {
   certificateOf,
   compareMatches,
   complete,
+  contradictionOf,
   ensure,
   exampleOf,
   hasFree,
@@ -716,11 +717,9 @@ const missing = (
     }
     const absent = asAsked(goal, vars);
     const node = marked({ absent }, yield* opens(telling, goal, vars));
-    if (goal instanceof Solved) {
-      // No values meet the step's goals: a certificate for each case the
-      // solver split them into says why, in arithmetic anyone can check.
-      const certificate = yield* certificateOf(telling.model, goal, vars);
-      return certificate === undefined ? node : { ...node, certificate };
+    const step = goal instanceof Solved ? goal : yield* stepOf(goal, vars);
+    if (step !== undefined) {
+      return { ...node, ...(yield* refuted(telling, step, vars)) };
     }
     const key = JSON.stringify(absent);
     if (!hasRoutes(goal) || telling.told.has(key)) {
@@ -728,6 +727,56 @@ const missing = (
     }
     telling.told.add(key);
     return { ...node, because: yield* ways(telling, goal, vars) };
+  });
+
+/**
+ * The one solver step a goal made only of goals about values plans to, if
+ * it plans to one: an `exists` or an `and` the solver decides as a whole.
+ */
+const stepOf = (goal: unknown, vars: Vars): LogicEffect<Solved | undefined> =>
+  isForm(goal, "and", "exists") && !hasRoutes(goal)
+    ? Effect.map(
+        compiling(() => questionPlans(goal, (name) => vars.has(name))),
+        (plans) => {
+          const [plan, ...others] = plans;
+          const [only, ...rest] = plan?.body ?? [];
+          return others.length === 0 &&
+            rest.length === 0 &&
+            only instanceof Solved
+            ? only
+            : undefined;
+        }
+      ).pipe(Effect.catch(() => Effect.succeed(undefined)))
+    : Effect.succeed(undefined);
+
+/**
+ * Why no values meet a solver step's goals: a certificate for each case the
+ * solver split them into, in arithmetic anyone can check, and the fewest of
+ * the goals that already contradict each other. When the step denies a
+ * goal, as a proof that a rule is kept denies that the rule breaks, and the
+ * goals that contradict each other are not among those it denies, the
+ * other goals allow no values at all: the proof is vacuous.
+ */
+const refuted = (telling: Telling, step: Solved, vars: Vars) =>
+  Effect.gen(function* () {
+    const certificate = yield* certificateOf(telling.model, step, vars);
+    const contradicting = yield* contradictionOf(telling.model, step, vars);
+    const denies = step.parts.some((literal) => isForm(literal, "not"));
+    const vacuous =
+      contradicting !== undefined &&
+      denies &&
+      !contradicting.some((literal) => isForm(literal, "not"));
+    return {
+      ...(certificate === undefined ? {} : { certificate }),
+      ...(contradicting === undefined
+        ? {}
+        : {
+            contradicting: contradicting.map((literal) =>
+              instantiate(literal, vars)
+            ),
+          }),
+      ...(vacuous ? { vacuous: true } : {}),
+    };
   });
 
 /** How a fact holds, or why it does not. */

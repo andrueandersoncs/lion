@@ -23370,5 +23370,47 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "case": "why-solved-exists-under-not",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "proved", ["claim"]],
+      [
+        "rule",
+        ["proved", "p"],
+        [
+          "not",
+          [
+            "exists",
+            ["?b"],
+            [
+              "and",
+              ["schema/fits?", "?b", "value/integer?"],
+              ["number/greaterThanOrEqualTo", "?b", 0],
+              ["number/lessThan", "?b", 0]
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "told",
+        ["array/head", ["object/get", ["why", ["proved", "p"]], "because"]]
+      ],
+      [
+        "cond",
+        [
+          [
+            "boolean/and",
+            ["object/has?", "told", "certificate"],
+            ["object/has?", "told", "contradicting"]
+          ],
+          ["quote", "certificate-and-contradiction"]
+        ],
+        ["else", ["quote", "absent-only"]]
+      ]
+    ]
   }
 ]

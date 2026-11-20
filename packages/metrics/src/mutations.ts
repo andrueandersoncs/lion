@@ -1407,8 +1407,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "why never shows a certificate",
     file: core("logic/explain.ts"),
-    find: "      return certificate === undefined ? node : { ...node, certificate };",
-    replace: "      return node;",
+    find: "      ...(certificate === undefined ? {} : { certificate }),",
+    replace: "      ...{},",
     tests: SOLVING_TESTS,
   },
   // A schema that stands for each value it allows.
@@ -4058,5 +4058,27 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "    made: makingScope(),",
     replace: "    made: 0,",
     tests: ["src/evaluation/tests/ordered-effects.test.ts"],
+  },
+  {
+    name: "the goals that contradict each other keep one more than they need",
+    file: core("logic/model.ts"),
+    find: "        if (!(yield* none(without(dropped)))) {\n          dropped.delete(literal);",
+    replace:
+      "        if (yield* none(without(dropped))) {\n          dropped.delete(literal);",
+    tests: ["src/logic/tests/contradiction.test.ts"],
+  },
+  {
+    name: "the goals a proof denies are dropped last",
+    file: core("logic/model.ts"),
+    find: "    for (const literal of [...denied, ...others]) {",
+    replace: "    for (const literal of asked.parts) {",
+    tests: ["src/logic/tests/contradiction.test.ts"],
+  },
+  {
+    name: "why tells only the step of a rule body, not an exists the solver decides",
+    file: core("logic/explain.ts"),
+    find: '  isForm(goal, "and", "exists") && !hasRoutes(goal)',
+    replace: "  false",
+    tests: ["src/logic/tests/contradiction.test.ts"],
   },
 ];

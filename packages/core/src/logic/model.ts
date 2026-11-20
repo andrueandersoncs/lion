@@ -1814,6 +1814,56 @@ export const certificateOf = (model: Model, asked: Solved, vars: Vars) =>
     Effect.catchDefect(() => Effect.succeed(undefined))
   ) as LogicEffect<readonly Certificate[] | undefined>;
 
+/**
+ * The goals of a solver step that already have no values that meet them
+ * together, for an answer the step has none for: as few as dropping them
+ * one at a time keeps, the goals under `not` first and then the others in
+ * the order written. So the goals under `not` are among them only when the
+ * other goals allow values. Each schema check that types a variable stays,
+ * as do the "=" that define one, so only the filters are dropped.
+ * Undefined when the step has values after all, or the solver cannot say.
+ */
+export const contradictionOf = (model: Model, asked: Solved, vars: Vars) =>
+  Effect.gen(function* () {
+    const typing = (literal: unknown) =>
+      (isForm(literal, "schema/fits?") &&
+        asked.symbols.includes((literal.parts[0] as LogicVariable).name)) ||
+      asked.defines.some(([, , by]) => by === literal);
+    const without = (dropped: ReadonlySet<unknown>) =>
+      new Solved(
+        (asked.parts as Literal[]).filter((literal) => !dropped.has(literal)),
+        asked.symbols,
+        asked.defines,
+        [],
+        asked.inputs
+      );
+    const none = (step: Solved) =>
+      Effect.map(
+        firstAnswer(model, step, vars),
+        (found) => found === undefined
+      );
+    if (!(yield* none(without(new Set())))) {
+      return undefined;
+    }
+    const dropped = new Set<unknown>();
+    const denied = asked.parts.filter((literal) => isForm(literal, "not"));
+    const others = asked.parts.filter((literal) => !isForm(literal, "not"));
+    for (const literal of [...denied, ...others]) {
+      if (!typing(literal)) {
+        dropped.add(literal);
+        if (!(yield* none(without(dropped)))) {
+          dropped.delete(literal);
+        }
+      }
+    }
+    return (asked.parts as Literal[]).filter(
+      (literal) => !(typing(literal) || dropped.has(literal))
+    );
+  }).pipe(
+    Effect.catch(() => Effect.succeed(undefined)),
+    Effect.catchDefect(() => Effect.succeed(undefined))
+  ) as LogicEffect<readonly Literal[] | undefined>;
+
 /** Runs the solver, as an effect that fails with a LogicError when the question is too hard. */
 const solving = <A>(work: () => A) =>
   Effect.try({

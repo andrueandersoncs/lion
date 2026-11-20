@@ -1,0 +1,29 @@
+{
+  "claims": [
+    {
+      "quote": "Where the solver's step stopped a rule, its `absent` also has `contradicting`: the fewest of the step's goals that already have no values together, each with the answer's values, such as `[[\"number/greaterThanOrEqualTo\", \"?balance\", 0], [\"number/lessThan\", \"?balance\", 0]]`. The same goes for an `exists` under `not` that the solver decides as a whole, as a proof that a rule is kept is, which `why` told only as absent.",
+      "says": {
+        "feature": "why-contradicting",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "When the step denies a goal, as such a proof denies that the rule breaks, and the goals that contradict each other leave out every goal it denies, the other goals allow no values at all: the absent goal says `\"vacuous\": true`, since the proof holds of no state.",
+      "says": {
+        "feature": "why-vacuous",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The same goes for an `exists` under `not` that the solver decides as a whole, as a proof that a rule is kept is, which `why` told only as absent.",
+      "says": {
+        "behavior": "why-solved-exists-under-not",
+        "is": "certificate-and-contradiction",
+        "area": "logic",
+        "was": "absent-only"
+      }
+    }
+  ]
+}
