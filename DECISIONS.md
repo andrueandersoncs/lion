@@ -198,11 +198,11 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`form-name-definition-in-own-body`](#form-name-definition-in-own-body) | `error-that-says-why` | [A body cannot define the name of a form it uses](#form-name-definition) |
 | 2026-11-19 | [`logic-form-strings`](#logic-form-strings) | `written-scope` | [Logic forms, forms that wait, and code that `eval` runs read strings by the scopes they are written in](#logic-forms-read-by-scope) |
 | 2026-11-19 | [`sum-rounding`](#sum-rounding) | `nearest-exact-sum` | [A sum is rounded once, so the order of its values never changes it](#exact-sums) |
+| 2026-11-19 | [`research-page-engine`](#research-page-engine) | `lion-command-worker` | [A research page runs the Lion of the lion command that checks it](#research-page-runs-checking-lion) |
 | 2026-11-19 | [`schema-binds-its-value`](#schema-binds-its-value) | `list-finite-schemas` | [A schema stands for each value it allows: schema/fits? binds the value it checks when its schema can list them](#schemas-list-their-values) |
 | 2026-11-19 | [`solve-typed-variables`](#solve-typed-variables) | `exact-linear-decision-in-lion` | [A variable that a schema types and no goal binds is solved for: the filters about it become constraints, decided exactly in Lion](#solve-typed-variables) |
 | 2026-11-19 | [`eventually-rules`](#eventually-rules) | `questions-over-run-states` | [Rules about what must eventually happen are questions about the states of every run, which the solver decides for amounts of any size](#eventually-rules) |
 | 2026-11-19 | [`command-proofs`](#command-proofs) | `induction-as-a-question` | [A proof that every command keeps a rule is a question to the solver, and the solver's proofs come with certificates anyone can check](#command-proofs) |
-| 2026-11-20 | [`research-page-engine`](#research-page-engine) | `lion-command-worker` | [A research page runs the Lion of the lion command that checks it](#research-page-runs-checking-lion) |
 
 <a id="program-representation"></a>
 
@@ -4278,6 +4278,41 @@ Recorded 2026-11-19 in `history/notes/exact-sums.json`.
 - Stated, not checked by running Lion: decided `sum-rounding`: `nearest-exact-sum`. "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308."
 - Holds when Lion is run: `sum-exactly-rounded` is `nearest`. "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308."
 
+<a id="research-page-engine"></a>
+
+## research-page-engine
+
+Now: `lion-command-worker`.
+
+- 2026-11-19 `research-page-engine`: `lion-command-worker` over `bundled-engine`, `page-check-through-bundle`: "`build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion." (`research-page-runs-checking-lion.json`)
+
+<a id="research-page-runs-checking-lion"></a>
+
+### A research page runs the Lion of the lion command that checks it
+
+Recorded 2026-11-19 in `history/notes/research-page-runs-checking-lion.json`.
+
+**Context.** The research skill's page ran `assets/lion-engine.js`, a bundle of `@lionlang/core` that was rebuilt by hand at a release, while `page-check.json`, the model, and every check ran on the lion command. On 2026-11-19 the two disagreed: a page whose plan defined a name `rule` passed its check and failed in the browser, since the bundle still read `rule` as a form, and the bundle took `cond` conditions that are not true or false, which core now refuses. Outside this repository the published CLI that checks a page and the bundle the skill ships could differ the same way.
+
+**Decision.** The lion command gives its own Lion for a browser: `lion worker` prints a Web Worker script, built with the command from the same core, that loads a saved database as `--database` does and runs programs against it. `build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion. The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone, and nothing needs rebuilding after a change to core.
+
+**Consequences.** Building a page needs a lion command that has `lion worker`, which the CLI has after 0.13.1; until a release has it, a page built outside this repository needs `LION_CLI` to name a built CLI. A property in `packages/cli/src/tests/worker.test.ts` checks that the worker answers every program as the lion command does, against the same saved database, among them a definition named as a form and a condition that is not true or false; run on the old bundle, it fails at once on `["begin", ["define", "rule", 0], "rule"]`. A property of the skill checks that the page carries exactly what its lion command gives for `lion worker`, and that no page is built when the command gives nothing. Run on the lion command's worker, the summary of `research/runs/lion-improvements/page.json` failed, as its check did, since it asked `cond` whether a count was true; the bundle had shown it, so the plan now asks whether the count is greater than 0.
+
+**Alternatives considered.**
+
+- Keep the bundle, and fail a test when it is not built from the core in the tree. Two engines would stay, every change to core would carry a new bundle, and outside this repository the published CLI that checks a page would still differ from the bundle the skill ships.
+- Run the page check through the bundle instead of the lion command. The page and its check would agree, but the model would be built and checked by another Lion than the one the page shows, and the bundle would still be rebuilt by hand.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `research-page-engine`: `lion-command-worker`. "`build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion."
+- Holds when Lion is run: rule `research-page-runs-checking-lion` holds. "A research page runs the Lion of the lion command that checks it"
+- Stated, not checked by running Lion: rule `rebuild-research-engine-after-core-change` is withdrawn. "The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone, and nothing needs rebuilding after a change to core."
+- Holds when Lion is run: `research-page-engine` is `lion-worker`. "`build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion."
+- Stated, not checked by running Lion: `research-engine-core-version` is `lion-command`. "Building a page needs a lion command that has `lion worker`, which the CLI has after 0.13.1"
+- Holds when Lion is run: `lion-worker` exists. "`lion worker` prints a Web Worker script, built with the command from the same core, that loads a saved database as `--database` does and runs programs against it."
+- Holds when Lion is run: `research-engine-bundle` is removed. "The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone"
+
 <a id="schema-binds-its-value"></a>
 
 ## schema-binds-its-value
@@ -4421,38 +4456,3 @@ Recorded 2026-11-19 in `history/notes/command-proofs.json`.
 - Holds when Lion is run: `solver-runs-closures` exists. "The solver runs a lambda written where it runs, closed over the values it works out, by its body"
 - Holds when Lion is run: `solver-library-call-wrong-arguments` is `error`. "and runs a library function only with as many arguments as the library says it takes"
 - Holds when Lion is run: `schema-includes-integer-in-number` is `included`. "['schema/includes?', a, b] says whether every value a allows fits b"
-
-<a id="research-page-engine"></a>
-
-## research-page-engine
-
-Now: `lion-command-worker`.
-
-- 2026-11-20 `research-page-engine`: `lion-command-worker` over `bundled-engine`, `page-check-through-bundle`: "`build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion." (`research-page-runs-checking-lion.json`)
-
-<a id="research-page-runs-checking-lion"></a>
-
-### A research page runs the Lion of the lion command that checks it
-
-Recorded 2026-11-20 in `history/notes/research-page-runs-checking-lion.json`.
-
-**Context.** The research skill's page ran `assets/lion-engine.js`, a bundle of `@lionlang/core` that was rebuilt by hand at a release, while `page-check.json`, the model, and every check ran on the lion command. On 2026-11-19 the two disagreed: a page whose plan defined a name `rule` passed its check and failed in the browser, since the bundle still read `rule` as a form, and the bundle took `cond` conditions that are not true or false, which core now refuses. Outside this repository the published CLI that checks a page and the bundle the skill ships could differ the same way.
-
-**Decision.** The lion command gives its own Lion for a browser: `lion worker` prints a Web Worker script, built with the command from the same core, that loads a saved database as `--database` does and runs programs against it. `build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion. The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone, and nothing needs rebuilding after a change to core.
-
-**Consequences.** Building a page needs a lion command that has `lion worker`, which the CLI has after 0.13.1; until a release has it, a page built outside this repository needs `LION_CLI` to name a built CLI. A property in `packages/cli/src/tests/worker.test.ts` checks that the worker answers every program as the lion command does, against the same saved database, among them a definition named as a form and a condition that is not true or false; run on the old bundle, it fails at once on `["begin", ["define", "rule", 0], "rule"]`. A property of the skill checks that the page carries exactly what its lion command gives for `lion worker`, and that no page is built when the command gives nothing. Run on the lion command's worker, the summary of `research/runs/lion-improvements/page.json` failed, as its check did, since it asked `cond` whether a count was true; the bundle had shown it, so the plan now asks whether the count is greater than 0.
-
-**Alternatives considered.**
-
-- Keep the bundle, and fail a test when it is not built from the core in the tree. Two engines would stay, every change to core would carry a new bundle, and outside this repository the published CLI that checks a page would still differ from the bundle the skill ships.
-- Run the page check through the bundle instead of the lion command. The page and its check would agree, but the model would be built and checked by another Lion than the one the page shows, and the bundle would still be rebuilt by hand.
-
-**What it asserts, checked.**
-
-- Stated, not checked by running Lion: decided `research-page-engine`: `lion-command-worker`. "`build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion."
-- Holds when Lion is run: rule `research-page-runs-checking-lion` holds. "A research page runs the Lion of the lion command that checks it"
-- Stated, not checked by running Lion: rule `rebuild-research-engine-after-core-change` is withdrawn. "The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone, and nothing needs rebuilding after a change to core."
-- Holds when Lion is run: `research-page-engine` is `lion-worker`. "`build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion."
-- Stated, not checked by running Lion: `research-engine-core-version` is `lion-command`. "Building a page needs a lion command that has `lion worker`, which the CLI has after 0.13.1"
-- Holds when Lion is run: `lion-worker` exists. "`lion worker` prints a Web Worker script, built with the command from the same core, that loads a saved database as `--database` does and runs programs against it."
-- Holds when Lion is run: `research-engine-bundle` is removed. "The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone"

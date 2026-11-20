@@ -301,5 +301,80 @@
       ["string/startsWith", "?belief", "tz-"],
       ["answer", "?question", "?value", "?statement"]
     ]
+  ],
+  "Join gap: every time and growth measured for the triangle workloads": [
+    "query",
+    [
+      "and",
+      [
+        "or",
+        [
+          "and",
+          ["answer", { "lion measured": "?workload" }, "?value", "?claim"],
+          ["=", "?unit", "ms"]
+        ],
+        [
+          "and",
+          ["answer", { "lion grows": "?workload" }, "?value", "?claim"],
+          ["=", "?unit", "power of n"]
+        ]
+      ],
+      ["string/includes", "?workload", "triangles"]
+    ],
+    { "order": ["workload", "unit", "claim"] }
+  ],
+  "Join gap: the hub-graph gap before and now, what the join takes of it, and the joins verdict": [
+    "query",
+    [
+      "and",
+      ["gap", "joins", "?workload", "?now_ms"],
+      ["answer", { "lion measured": "?workload" }, "?first_ms", "li-l27"],
+      [
+        "stated",
+        {
+          "lion measured": [
+            "string/concat",
+            "?workload",
+            ", published CLI v0.12.0"
+          ]
+        },
+        "?v0_12_today_exact_ms"
+      ],
+      ["=", "?v0_12_today_ms", ["number/round", "?v0_12_today_exact_ms"]],
+      [
+        "stated",
+        {
+          "lion measured": "start-up and loading a graph with two hubs, 19,983 edges, no triangles asked"
+        },
+        "?load_ms"
+      ],
+      [
+        "=",
+        "?join_ms",
+        ["number/round", ["number/subtract", "?now_ms", "?load_ms"]]
+      ],
+      [
+        "=",
+        "?v0_12_today_over_now",
+        [
+          "number/divide",
+          [
+            "number/round",
+            [
+              "number/multiply",
+              100,
+              ["number/divide", "?v0_12_today_exact_ms", "?now_ms"]
+            ]
+          ],
+          100
+        ]
+      ],
+      ["=", "?closed", ["find", "?w", ["closed", "joins", "?w", "?_", "?_"]]],
+      ["=", "?closed_at_or_below_ms", ["number/divide", "?first_ms", 2]],
+      ["verdict", "joins", "?verdict"],
+      ["rank", "joins", "?rank"],
+      ["net_rank", "joins", "?net_rank"],
+      ["stage", "joins", "?stage"]
+    ]
   ]
 }

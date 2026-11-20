@@ -4,7 +4,7 @@ Run `consolidation` (2026-11-19), steps `40-co-frame` and `40a-co-lion-now`, wit
 
 ## Update: what has been built since
 
-The user agreed a build order from this report on 2026-11-19; `build-plan.md` beside it keeps its status. Step 1, a schema that lists the values it allows, is built, and step `41a-co-built-listing` records it: bounded search with inputs drawn from schemas is now "Lion does this already", so the model lists ten ideas left to build. The figures below are as they were when the report was written.
+The user agreed a build order from this report on 2026-11-19; `build-plan.md` beside it keeps its status. All four steps are built, and steps `41a-co-built-listing` to `41d-co-built-proofs` record them: schemas that list their values, the solver, rules about what must eventually happen, and proofs that a command keeps a rule with schema inclusion, invariant inference, and certificates. Every formal-verification idea Lion could build is now "Lion does this already", so the model lists four ideas left to build ("Every run: what is left to build, by stage and rank"): annotated relations and worst-case optimal joins, tied first, then a schema of valid programs, then a held-out eval case. The `join-gap` run (step `41-jg-hubs-now`, `runs/join-gap/report.md`) timed the hub-graph join gap again, and it still holds. The figures below are as they were when the report was written.
 
 ## The answer
 

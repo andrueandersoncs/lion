@@ -1,0 +1,25 @@
+The triangle workloads of the 2026-11-17 lion-improvements run (source lion-bench), timed again on 2026-11-19 on the same machine (16 cores, load average about 4.5 from other sessions). @lionlang/cli 0.13.1 built at commit 54f7b11 (core 0.14.1; packages/core and packages/cli are as at f07d583), run with node v26.7.0. The hub programs are written by research/probes/hubs/hubs.mjs, the generator the 2026-11-17 run used, and timed by research/probes/hubs/time.mjs: three runs at each size, wall time including the CLI's start-up, and the median.
+
+$ node research/probes/hubs/time.mjs 3 node packages/cli/dist/bin.mjs   (the CLI built from the working tree; m nodes each linked to and from 2 hub nodes, plus m random edges; counts triangles with one find over three edge goals)
+2,484 edges, 2,953 triangles: real 0.45 s, 0.45 s, 0.45 s; median 0.45 s
+4,980 edges, 5,930 triangles: real 1.13 s, 1.13 s, 1.14 s; median 1.13 s
+9,982 edges, 11,941 triangles: real 3.99 s, 4.00 s, 3.92 s; median 3.99 s
+19,983 edges, 23,950 triangles: real 14.89 s, 15.01 s, 16.19 s; median 15.01 s
+time grows about n^1.9 between the two largest sizes
+
+$ node research/probes/hubs/time.mjs 3 bunx @lionlang/cli@0.12.0   (the published CLI the 2026-11-17 run timed, run again now beside the tree, so the two days' machines can be compared)
+2,484 edges, 2,953 triangles: real 0.52 s, 0.49 s, 0.48 s; median 0.49 s
+4,980 edges, 5,930 triangles: real 1.20 s, 1.20 s, 1.19 s; median 1.20 s
+9,982 edges, 11,941 triangles: real 4.04 s, 3.89 s, 4.18 s; median 4.04 s
+19,983 edges, 23,950 triangles: real 16.33 s, 16.43 s, 16.32 s; median 16.33 s
+time grows about n^2.0 between the two largest sizes
+
+$ node research/probes/hubs/hubs.mjs 4000 load > hubs-4000-load.json; /usr/bin/time -p node packages/cli/dist/bin.mjs hubs-4000-load.json   (the largest hub program without its triangles: start-up and loading the 19,983 edges only; three runs)
+{   "edges": 19983 } real 0.35 user 0.43 sys 0.07
+{   "edges": 19983 } real 0.27 user 0.37 sys 0.04
+{   "edges": 19983 } real 0.29 user 0.38 sys 0.05
+
+$ bun run scale --sizes 1000,4000,16000 --limit 60 triangles   (the same tree; the workload without hubs, two runs)
+workload                                      n = 1,000  n = 4,000  n = 16,000  grows   peak  kept
+join: triangles among n edges over n/4 nodes       6 ms      11 ms       36 ms  n^0.9  19 MB  5 MB
+join: triangles among n edges over n/4 nodes       5 ms      11 ms       38 ms  n^0.9  11 MB  5 MB

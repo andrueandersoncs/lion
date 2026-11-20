@@ -1,0 +1,12 @@
+{
+  "claims": [
+    {
+      "quote": "The research model times again the join gap behind worst-case optimal joins, after the weights engine and compiled evaluation. It still holds: counting the triangles on a graph with two hub nodes and 19,983 edges takes 15,010 ms and grows about n^1.9, as on 2026-11-17 (14,220 ms), against 36 ms and n^0.9 without hubs. The join is 14,720 ms of it, and the published v0.12.0 took 16,330 ms on the same machine the same day. So `joins` is still worth adopting, ranked 2 of what is left to build, and can start now. `research/probes/hubs/` keeps the generator and a timing script, so the gap can be measured again; the run is `research/runs/join-gap/`.",
+      "says": {
+        "feature": "join-gap-research",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}
