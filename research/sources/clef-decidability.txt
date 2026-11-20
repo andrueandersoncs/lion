@@ -1,0 +1,560 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot DTS: A Distinct Formal Category
+Design-Time Verification
+From Conflicting Constraints to Actionable Diagnostics
+The Hoare Logic View
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+DTS: A Distinct Formal Category
+Design-Time Verification
+The Gravitational Force Example
+Dimensionally Polymorphic Inference
+Deprecating the “Double Annotation”
+From Conflicting Constraints to Actionable Diagnostics
+Closure Under Differentiation
+The Hoare Logic View
+Scroll to top
+Documentation
+Compiler Internals
+Transparent Verification
+The Decidability Sweet Spot
+The Decidability Sweet Spot
+DTS: A Distinct Formal Category
+The Dimensional Type System (DTS) is restricted to a specific algebraic niche that general dependent type systems cannot exploit.
+A dimensional type system assigns to each numeric value a dimension drawn from a finitely generated free abelian group. The base dimensions (length, time, mass, temperature, electric current, luminous intensity, amount of substance) generate the group under multiplication, with integer exponents. Formally, let D = Z n \mathcal{D} = \mathbb{Z}^n D = Z n be the dimension space. Each dimension d ∈ D d \in \mathcal{D} d ∈ D is a vector of integer exponents:
+d velocity = ( 1 , − 1 , 0 , 0 , … ) (length 1 ⋅ time − 1 ) d_{\text{velocity}} = (1, -1, 0, 0, \ldots) \quad \text{(length}^1 \cdot \text{time}^{-1}\text{)} d velocity ​ = ( 1 , − 1 , 0 , 0 , … ) (length 1 ⋅ time − 1 ) d force = ( 1 , − 2 , 1 , 0 , … ) (length 1 ⋅ time − 2 ⋅ mass 1 ) d_{\text{force}} = (1, -2, 1, 0, \ldots) \quad \text{(length}^1 \cdot \text{time}^{-2} \cdot \text{mass}^1\text{)} d force ​ = ( 1 , − 2 , 1 , 0 , … ) (length 1 ⋅ time − 2 ⋅ mass 1 ) Dimensional consistency of an arithmetic expression reduces to linear algebra over Z \mathbb{Z} Z : addition requires operand dimensions to be equal; multiplication adds exponent vectors; division subtracts them; exponentiation scales them. These operations are closed in Z n \mathbb{Z}^n Z n and decidable in O ( n ) O(n) O ( n ) per operation.
+Dependent types differ here. A dependent type can encode an arbitrary predicate over values, so checking whether two dependent types are equal may require proving an arbitrary theorem. Dimensional consistency checking is only a comparison of two integer vectors, a constant-time operation per base dimension.
+General dependent type systems have decidable type checking when the developer supplies the type, but type inference and proof search are undecidable, which is why production systems built on them require manual annotations, fuel limits, and timeout heuristics during SMT solving. DTS needs none of that for its dimensions. CCS solves dimensional constraints inside type inference by abelian-group unification, the method Kennedy’s units of measure established. The solver never searches for a dimension; it only re-checks each settled relation as a ground QF_LIA fact. The unification step is polynomial-time, which is what real-time language server responses require. Obligations beyond dimensions, such as value ranges, machine widths and layouts, land in SMT-LIB’s guaranteed-decidable fragments : QF_LIA for integer ranges, QF_BV for fixed-width arithmetic and bit layout, and QF_LRA for real-valued bounds. The eBPF target’s admissibility obligations use the first two, and the Linux kernel’s own verifier re-derives at load what CCS discharged at design time.
+Property DTS Dependent Types
+Type inference Decidable (linear algebra over Z \mathbb{Z} Z ) Undecidable in general
+Inference Complete and principal Incomplete; requires annotations
+Runtime representation No runtime cost; metadata only May require runtime witnesses
+Expressiveness Abelian group constraints on numeric types Arbitrary predicates over values
+Proof obligations Derived automatically from PSG structure May require interactive proof
+Compilation model Attributes that guide code generation Types that participate in code generation
+The analogy is to regular expressions and context-free grammars. Regular expressions form their own formal class, with closure properties, recognition algorithms, and applications unlike those of the grammars above them. DTS occupies the analogous position relative to dependent types, a separate formal class that overlaps in expressive power for a specific domain but differs in the computational properties practical tooling depends on: decidability, inference completeness, and runtime cost.
+The decidability holds because every quantity in the paragraphs above lives in a finitely-generated free abelian group, where the order of composition never changes the result and consistency reduces to comparing integer vectors. The check stays cheap because composition commutes, and that commutativity holds only inside a boundary. Concurrent work whose crossing order the runtime can observe does not commute, and the group governing its rearrangement is the non-abelian braid group B n B_n B n ​ , not Z n \mathbb{Z}^n Z n . Ordinary code remains inside the abelian interior with no additional obligation. The abelian projection of a crossing, its writhe, stays a Tier 1 quantity decided by the same integer linear algebra, and only observable crossing structure carries a heavier obligation, one discharged by reusing proofs the staged discharge has already produced. The braid as a fourth sheaf is the proposed, non-normative design for that boundary: the sweet spot is the abelian interior, and the non-abelian edge is something we are taking some care to treat appropriately.
+Design-Time Verification
+Transparent verification is designed to happen continuously at design time. As the developer types, Lattice will traverse the PSG while CCS settles dimensions by unification. The NTU derives proof obligations from the PSG’s structure and hands them to the integrated SMT solver in the background. Every arithmetic operation in the PSG produces a dimensional constraint, governed by the fixed rules of dimensional algebra. The developer writes zero proof code.
+The Gravitational Force Example
+Consider a developer writing a standard gravitational force calculation:
+[< Measure >] type kg
+[< Measure >] type m
+[< Measure >] type s
+[< Measure >] type N = kg * m / s ^ 2
+let computeForce mass1 mass2 distance =
+let g = 6 . 674e - 11 < m ^ 3 kg ^- 1 s ^- 2 >
+g * mass1 * mass2 / ( distance * distance )
+// Earth and Moon
+let force : float < N > = computeForce 5 . 972e24 < kg > 7 . 348e22 < kg > 3 . 844e8 < m >
+The developer provides no proofs and no dependent-type annotations. The constant carries its measure on the literal, because a literal’s digits supply no unit by themselves. Here is what CCS is designed to do silently as it builds the PSG nodes, writing each dimension as an exponent vector over (length, time, mass):
+Step 1: Dimension Variables. CCS assigns a dimension variable to each argument: d m 1 d_{m_1} d m 1 ​ ​ , d m 2 d_{m_2} d m 2 ​ ​ and d r d_r d r ​ . The literal fixes the constant’s dimension: d g = ( 3 , − 2 , − 1 ) d_g = (3, -2, -1) d g ​ = ( 3 , − 2 , − 1 ) .
+Step 2: Operation Constraints. Multiplication adds exponent vectors, and division subtracts them. For distance * distance , the denominator’s dimension is 2 d r 2 d_r 2 d r ​ , so the return dimension is:
+d ret = d g + d m 1 + d m 2 − 2 d r d_{\text{ret}} = d_g + d_{m_1} + d_{m_2} - 2 d_r d ret ​ = d g ​ + d m 1 ​ ​ + d m 2 ​ ​ − 2 d r ​ Step 3: Boundary Constraints. At the call site, the arguments’ units fix d m 1 = d m 2 = ( 0 , 0 , 1 ) d_{m_1} = d_{m_2} = (0, 0, 1) d m 1 ​ ​ = d m 2 ​ ​ = ( 0 , 0 , 1 ) and d r = ( 1 , 0 , 0 ) d_r = (1, 0, 0) d r ​ = ( 1 , 0 , 0 ) .
+Step 4: Resolution. Substitution gives:
+d ret = ( 3 , − 2 , − 1 ) + ( 0 , 0 , 1 ) + ( 0 , 0 , 1 ) − 2 ⋅ ( 1 , 0 , 0 ) = ( 1 , − 2 , 1 ) d_{\text{ret}} = (3, -2, -1) + (0, 0, 1) + (0, 0, 1) - 2 \cdot (1, 0, 0) = (1, -2, 1) d ret ​ = ( 3 , − 2 , − 1 ) + ( 0 , 0 , 1 ) + ( 0 , 0 , 1 ) − 2 ⋅ ( 1 , 0 , 0 ) = ( 1 , − 2 , 1 ) That vector is kg ⋅ m ⋅ s − 2 \text{kg} \cdot \text{m} \cdot \text{s}^{-2} kg ⋅ m ⋅ s − 2 , the newton, so the float<N> annotation on force holds.
+Every step is integer addition and subtraction on exponent vectors, solved inside type inference with no solver call. If an argument arrived in the wrong dimension, unification would fail at the operation that exposed the conflict. Had the literal carried no measure, g would be dimensionless and the result would come out in kg 2 ⋅ m − 2 \text{kg}^2 \cdot \text{m}^{-2} kg 2 ⋅ m − 2 , which the float<N> annotation on force would reject.
+Dimensionally Polymorphic Inference
+Without any annotations on its arguments, the function remains dimensionally polymorphic. The DTS inference assigns dimension variables 'd_m1 , 'd_m2 , 'd_dist and propagates constraints through the expression tree via extended Hindley-Milner unification. The inferred return type is float<m^3 kg^-1 s^-2 'd_m1 'd_m2 'd_dist^-2> , a parametric family. Only when the function is called with concrete dimensional types does unification resolve the full system.
+A function let scale factor value = factor * value infers type float<'d1> -> float<'d2> -> float<'d1 * 'd2> without any annotation. The inference is complete (every dimensionally consistent program can be typed without annotation), principal (the inferred type is the most general), and decidable (the constraint system is finite and the solution algorithm terminates). These properties are shared with standard Hindley-Milner inference and are not shared with dependent type inference in general.
+Deprecating the “Double Annotation”
+If a developer were to attempt a dependent-type-style annotation in Clef, something like [<Requires(dim_a = dim_b + dim_c)>] , the DTS would make it redundant. CCS would have already generated that exact constraint from the arithmetic operations in the code.
+If a developer explicitly annotates a boundary (the “push model”), like (m1: float<kg>) , CCS treats that as a fixed constraint in unification. If it conflicts with the constraints derived from the code’s operations, unification fails, and Lattice will highlight the exact line of code where the physics broke down.
+Because the NTU derives these constraints from standard arithmetic operators, the developer is isolated from theorem proving entirely.
+From Conflicting Constraints to Actionable Diagnostics
+Because dimensional constraints are resolved at design time within the saturated PSG, Lattice will be able to exploit them for precise diagnostics.
+When unification fails, the plan is for Lattice to report the exact subset of conflicting constraints. CCS generated each constraint from a specific PSG edge, so it can translate that subset back into the edges that caused the conflict.
+If an engineer attempts to accumulate gradients of dimension ⟨ newtons / meters ⟩ \langle \text{newtons} / \text{meters} \rangle ⟨ newtons / meters ⟩ with ⟨ joules / seconds ⟩ \langle \text{joules} / \text{seconds} \rangle ⟨ joules / seconds ⟩ , Lattice will highlight the exact operation and explain the physical impossibility, backed by the conflicting constraints themselves, all without leaving the editor.
+Closure Under Differentiation
+This capability extends naturally to auto-differentiation. The dimensional algebra is closed under differentiation: if f : R ⟨ d 1 ⟩ → R ⟨ d 2 ⟩ f : \mathbb{R}^{\langle d_1 \rangle} \to \mathbb{R}^{\langle d_2 \rangle} f : R ⟨ d 1 ​ ⟩ → R ⟨ d 2 ​ ⟩ , then:
+∂ f ∂ x : R ⟨ d 2 ⋅ d 1 − 1 ⟩ \frac{\partial f}{\partial x} : \mathbb{R}^{\langle d_2 \cdot d_1^{-1} \rangle} ∂ x ∂ f ​ : R ⟨ d 2 ​ ⋅ d 1 − 1 ​ ⟩ The gradient of a loss function with dimension ⟨ loss ⟩ \langle \text{loss} \rangle ⟨ loss ⟩ with respect to a parameter with dimension ⟨ d ⟩ \langle d \rangle ⟨ d ⟩ carries dimension ⟨ loss ⋅ d − 1 ⟩ \langle \text{loss} \cdot d^{-1} \rangle ⟨ loss ⋅ d − 1 ⟩ . This follows from the abelian group structure: differentiation is division in the dimensional algebra, and division is closed in Z n \mathbb{Z}^n Z n . The inference algorithm extends to auto-differentiation graphs without modification. In a physics-informed model where the loss function includes terms with physical units (force residuals in newtons, energy conservation violations in joules), DTS would verify that gradient accumulation respects dimensional consistency, decidably, without annotation, and with no runtime overhead for the verified properties.
+The Hoare Logic View
+The mechanism above maps onto two standard constructions in program verification: weakest-precondition computation for the design-time discharge, and Hoare’s consequence rule for the build-time re-discharge.
+The design-time discharge is weakest-precondition computation in Dijkstra’s sense. Each PSG node carries a postcondition (the dimensional constraint the node’s output must satisfy), and CCS works backward through the constraint chain to compute the weakest precondition that suffices for the postcondition to hold. Hoare’s assignment axiom and sequential composition rule are the local steps. The engineer writes the program and CCS derives the precondition. That inference is decidable, complete, and principal because abelian-group unification solves it.
+The build-time re-discharge at each lowering pass is the consequence rule . Hoare’s consequence rule states that if P ′ → P P' \to P P ′ → P , { P }   C   { Q } \{P\}\, C\, \{Q\} { P } C { Q } , and Q → Q ′ Q \to Q' Q → Q ′ , then { P ′ }   C   { Q ′ } \{P'\}\, C\, \{Q'\} { P ′ } C { Q ′ } . At each lowering, the lowering pass is the command C C C that transforms one program representation into the next. The obligation at each edge is to verify that the precondition established at the higher dialect implies the precondition required at the lower dialect, and that the postcondition delivered by the lower dialect entails the postcondition the higher dialect promised. A pass with certified preservation carries that proof forward. Otherwise the solver checks each implication in the fragment its operation needs, QF_LIA for an integer range or QF_BV for a narrowing to a fixed machine width. The staged discharge is the consequence rule applied at every lowering boundary.
+Compositionality of the pipeline then reduces to local checks at each lowering, with no global re-verification required at the binary stage. The compilation sheaf design document makes that compositionality categorical, treating the design-time and build-time discharges together as the witnessing mechanism for a global section over the compilation poset. That design is deliberately open: any number of compatible sheaves can sit over the same poset and be checked at the same edges, and the non-abelian crossing structure of concurrent work is a proposed fourth such sheaf , assembled by the same staged discharge with a different stalk category.
+From Double Annotation to Discovery Memory Coeffect Algebra
+© 2025-2026 Braidpoint

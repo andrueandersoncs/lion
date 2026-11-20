@@ -1,0 +1,674 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations The Shape of “What Comes Next”
+Actors as Sugared Continuations
+Computation Expressions: The Unifying Syntax
+Platform-Aware Continuation Compilation
+From Type Resolution to Code Generation
+Behind the Scenes
+The Turning Point
+Continuations and Hardware Targets
+Integration Across the Framework
+The Path Forward
+Continuations as Compilation Philosophy
+Further Reading
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+The Shape of “What Comes Next”
+Actors as Sugared Continuations
+Computation Expressions: The Unifying Syntax
+Platform-Aware Continuation Compilation
+From Type Resolution to Code Generation
+Behind the Scenes
+The Turning Point
+Continuations and Hardware Targets
+Integration Across the Framework
+The Path Forward
+Continuations as Compilation Philosophy
+Further Reading
+Academic Papers
+Scroll to top
+Documentation
+Design
+Concurrency
+Delimited Continuations
+Delimited Continuations: Fidelity's Turning Point
+Every compiler must eventually represent “the rest of the computation.” In imperative languages, this question rarely surfaces explicitly. The call stack handles it through its own instrumentation, and programmers rarely think about what happens after the current statement. But in languages that embrace computation expressions as Clef does, this question moves from implicit mechanism to explicit design decision.
+For the Fidelity framework, this question became a turning point. Delimited continuations form the connective tissue between Clef’s async expressions, the actor model, and our native compilation strategy, and treating them as one primitive reshaped the compiler architecture around them.
+Special thanks to Paul Snively whose polyglot perspective on continuations, effects, and formal verification helped crystallize this synthesis of ideas through a series of spirited dialectic discussions.
+The Shape of “What Comes Next”
+Consider a simple async expression:
+let fetchAndProcess url = async {
+let! response = Http . getAsync url
+let! data = parseResponse response
+return summarize data
+}
+Each let! represents a suspension point: a place where computation pauses, waits for an external result, and then continues. But what exactly does “continue” mean? It means executing everything that follows: parsing the response, summarizing the data, returning the result. That “everything that follows” is the continuation.
+Delimited continuations make this notion precise. The reset operator establishes a boundary, and shift captures everything up to that boundary:
+// Conceptually, async { } becomes:
+reset ( fun () ->
+shift ( fun k1 -> // k1 = "parse response, then summarize, then return"
+Http . getAsync url |> continueWith ( fun response ->
+shift ( fun k2 -> // k2 = "summarize, then return"
+parseResponse response |> continueWith ( fun data ->
+k2 ( summarize data )
+)
+)
+)
+)
+)
+The transformation is verbose, but the structure underneath is simple:
+async expressions are syntax sugar over delimited continuations.
+The let! keyword hides the explicit continuation capture that happens underneath. This transformation lets Clef’s async syntax compile to native code with deterministic memory management, worked through in Platform-Aware Continuation Compilation below.
+Actors as Sugared Continuations
+The actor model is a different face of the same concept. An actor receives a message, processes it, and waits for the next message. That “waits for the next message” is itself a continuation: the computation that will execute when the next message arrives.
+Consider the relationship between Clef’s MailboxProcessor and an async workflow:
+// A basic actor loop
+let counterActor = MailboxProcessor . Start ( fun inbox ->
+let rec loop count = async {
+let! msg = inbox . Receive ()
+match msg with
+| Increment -> return ! loop ( count + 1 )
+| GetCount reply ->
+reply . Reply count
+return ! loop count
+}
+loop 0
+)
+The let! msg = inbox.Receive() line captures a continuation: everything that happens after the message arrives. The return! loop count tail call represents another continuation capture: suspend this actor, prepare to receive the next message, and when it arrives, execute the loop body again.
+This is why our Unified Actor Architecture can bridge Fidelity’s native Olivier actors with Cloudflare’s Durable Objects. Despite radically different runtimes, both are executing the same continuation-based pattern. The actor abstraction is syntactic sugar over delimited continuations with message-driven resumption.
+Coexponential Exploration , Sections 4.1–4.3, develops the service account when a handler suspends inside a request. The restricted model keeps the actor’s state unavailable to another request across that suspension and resumes a one-shot continuation at most once. Each foreign or asynchronous primitive needs a contract for completion, ownership and cleanup. Those are semantic obligations for the continuation representation , beyond the mechanics of storing a frame.
+Supervision hierarchies, explored in Actors Take Center Stage , are themselves continuation management structures. When a supervisor spawns a child, it captures a continuation for handling that child’s failure. When the child fails, the supervisor’s continuation resumes with a decision: restart, escalate, or terminate. Erlang made “let it crash” famous, but in the Fidelity framework it is actually “capture the failure continuation” by another name.
+Computation Expressions: The Unifying Syntax
+Clef’s computation expression mechanism provides the surface syntax that makes all this manageable. As The DCont/Inet Duality explores, the classifier is the region’s effect and data dependency, not the builder keyword. A region that sequences effects lowers through delimited continuations (DCont). A region of independent pure work lowers to a parallel target, and that target splits by shape: dense rectangular work goes to the tensor path, irregular higher-order reduction goes to interaction nets (Inet). The builder covers the common case, and the dependency structure determines the rest.
+// Sequential: each step depends on previous (DCont pattern)
+let sequential = async {
+let! a = fetchData ()
+let! b = transform a
+return combine a b
+}
+// Independent pure work: lowers to a parallel target
+let parallel = query {
+for item in items do
+where ( isValid item )
+select ( transform item )
+}
+The computation expression builder translates let! into Bind calls:
+async . Bind ( fetchData () , fun a ->
+async . Bind ( transform a , fun b ->
+async . Return ( combine a b )))
+Each Bind call is a continuation capture. The second argument to Bind (namely fun a -> ... ) is literally “what to do with the result.” The builder orchestrates how these continuations compose, whether they sequence (like async) or fan out (like query).
+This mechanism is central to our compilation strategy. The Composer compiler is designed to recognize computation expression patterns and classify their regions on the Program Semantic Graph. Sequential patterns lower through the DCont lane. Independent pure patterns lower to the tensor path when the work is dense and rectangular, and to Inet when the reduction is irregular. The computation expression syntax that developers write maps to optimized native execution patterns.
+Platform-Aware Continuation Compilation
+Our Composer design preserves the continuation structure of Clef’s async expressions through native code generation. An async description defers work until activation, with await expressing a suspension and resumption point. Incremental<'T> additionally specifies caching and dependency invalidation for demand-driven derivations. Observable<'T> specifies producer-driven event delivery. These constructs use continuation structure while retaining their distinct evaluation contracts.
+The approach combines delimited continuations with deterministic resource cleanup. Contract correction, 26 September 2026: the original example used a source stackalloc and returned a slice without establishing its backing storage’s lifetime. Clef does not expose that raw-pointer allocation surface. Its continuation contract requires explicit live-across-suspension state and valid frame residence; it does not promise stack placement for every async computation.
+A file-reading computation illustrates the obligations without prescribing an API:
+Acquire a handle and a bounded buffer through the target’s declared interfaces.
+Preserve both across the read suspension in storage that covers the continuation’s lifetime.
+On resumption, establish the initialized range from the number of bytes read.
+If a view is returned, prove its backing storage covers every consumer; otherwise return an owned result or finish consumption within the established lifetime.
+Release resources at their required exits, including admitted failure and cancellation paths.
+Stack placement is valid only when the covering activation survives every suspension and use. Other admitted lifetimes follow the declared storage and region contracts. Platform I/O and scheduling mechanisms realize the settled protocol below the portable middle-end boundary.
+The types themselves encode CPS structure. The async primitives make continuation capture explicit in their signatures, and the Composer compiler recognizes these patterns during type resolution, recording them in the Program Semantic Graph for code generation.
+The target representation is the graph itself. The design once placed a DCont dialect at this point in the pipeline — since retired — and the concepts have been elevated into native expression on the Program Semantic Graph, the story The DCont/Inet Duality tells in full. Saturation assembles each async expression into a continuation state machine aggregate: the boundary, each suspension point with its state index, the values live across suspensions, and the per-suspension resume code. The monad-law rewrites, frame elimination and continuation fusion, run over that aggregate during saturation, where the classification that justifies them resides. The witness then emits the settled form in the portable dialects, a function whose entry switches on the state index: the same primitive operations a transformed DCont dialect would have rendered at the end of its own pass pipeline. The continuation structure survives to code generation as graph structure, and nothing between the graph and the backend re-encodes it.
+From Type Resolution to Code Generation
+The zipper-based pipeline that correlates Clef’s typed tree with the Program Semantic Graph becomes essential when compiling continuations. During type resolution, the compiler identifies continuation points (suspension, capture, and boundary markers) and annotates the PSG accordingly. These annotations then guide code generation, determining the state indices, the resume blocks, and the boundary of the emitted state machine.
+The compiler must preserve the correspondence between the settled graph and emitted operations. Variables live across suspension occupy proved frame slots; external mutable captures retain their actual shared cells and their separate lifetime obligations. Boundary scopes map to the state machine’s entry and completion, and suspension points become resume blocks with the settled result types. The witness consumes these facts rather than choosing state indices or inferring residence during emission.
+Preserving source relationships gives later passes useful information; it does not by itself establish fewer passes or faster compilation than another compiler. Appel’s SSA is functional programming explains the connection between SSA and functional scope. Composer’s delivery obligation is to retain the relevant continuation, type, identity and scope facts through Baker settlement, actual-occurrence Alex composition and target lowering. Pass-count or timing improvements require measurements on the selected pipeline and workload; artifact checks must establish that the retained facts describe the emitted program.
+Behind the Scenes
+A central design goal is that developers should not need to think about continuation-passing style. The async { } syntax, the actor { } builder, the standard Clef patterns: these should feel familiar if not ’natural’. The CPS machinery operates invisibly.
+Consider what happens when a developer writes a simple actor:
+let counter = actor {
+let! msg = receive ()
+match msg with
+| Increment -> return ! loop ( state + 1 )
+| GetCount reply ->
+tell reply state
+return ! loop state
+}
+What they don’t see:
+The receive() compiles to a suspension point that captures the message-handling continuation
+The return! compiles to a tail call with continuation transfer
+The tell compiles to a non-blocking message send that doesn’t capture a continuation
+The entire actor loop compiles to a state machine with explicit continuation slots
+The compiler handles this translation. When developers use the Actors module, they get computation expression builders that produce the right continuation structure. The Composer compiler recognizes these patterns and generates efficient native code.
+Developers get familiar syntax; the continuation machinery stays inside the compiler.
+Delimited continuations are a sophisticated concept with substantial theoretical depth. But developers adopting Fidelity don’t need to understand continuation semantics to write correct, efficient code. The framework encapsulates that complexity.
+The Turning Point
+Why do we call this Fidelity’s “turning point”? Because recognizing the centrality of delimited continuations reframed our approach.
+Before this recognition, we treated async, actors, and computation expressions as separate features requiring separate compilation strategies. The async builder was one thing, the actor model another, computation expressions a third. Each had its own MLIR lowering path, its own optimization considerations, its own edge cases.
+The three then read as one construct: async expressions are delimited continuations with I/O-triggered resumption, actors the same with message-triggered resumption, and computation expressions the surface syntax for manipulating them. All three saturate to the same continuation aggregate on the graph, share its rewrites, and reach the same machine-level continuation representation.
+This unification enables:
+Shared optimization infrastructure : Continuation fusion, suspension point elimination, and closure conversion apply uniformly across async, actors, and custom CEs.
+Consistent memory model : As The Continuation Preservation Paradox explores, continuations can be stack-allocated when their scope is bounded, eliminating heap allocation regardless of whether they originate from async or actors.
+Compositional semantics : An async operation inside an actor message handler composes naturally because both are continuations. No impedance mismatch, no special cases.
+Principled extension : New computation expression builders automatically benefit from the continuation compilation infrastructure. Library authors can create domain-specific patterns that compile efficiently.
+Hardware diversity : The continuation model corresponds to dataflow architectures beyond Von Neumann machines: explicit control-flow boundaries where those machines expect explicit data dependencies. As explored in Hyping Hypergraphs and Advent of Neuromorphic AI , the explicit control flow boundaries that delimited continuations provide align with how CGRAs, neuromorphic processors, and other emerging architectures express computation: as graphs of operations with explicit data dependencies rather than sequential instruction streams.
+Continuations and Hardware Targets
+The DCont preservation strategy extends to hardware targeting. As noted in The Continuation Preservation Paradox , WebAssembly’s Stack Switching proposal provides first-class support for delimited continuations. The choice between preserving that structure and compiling it into a state machine is weighed per call site in Coroutines Versus Stack Switching . When targeting WASM, the Composer compiler can preserve continuation structure all the way to the runtime:
+// A suspension point maps to WASM stack switching
+suspension point (continuation aggregate)
+↓
+ssawasm.suspend $continuation_tag
+For LLVM targets (native x86-64, ARM, RISC-V), continuations compile to efficient state machines:
+// A suspension point compiles to state-machine dispatch for native targets
+suspension point (continuation aggregate)
+↓
+llvm.switch %state, %continuation_blocks
+The choice between preservation and compilation happens late in the pipeline, based on target capabilities. The PSG carries the continuation structure. The backend decides how to realize it.
+Beyond traditional architectures, continuation structure provides a natural fit for post-Von Neumann hardware. Coarse-Grained Reconfigurable Architectures (CGRAs) from companies like SambaNova and NextSilicon express computation as dataflow graphs, and delimited continuations are precisely dataflow graphs with explicit scheduling boundaries. Neuromorphic processors like Intel’s Loihi 2 and BrainChip’s Akida operate on spike-based event patterns that mirror continuation-triggered resumption. The explicit “what happens next” structure that DCont preserves maps more directly to these architectures than the implicit control flow of imperative code. This positions Fidelity for hardware targets that barely exist today.
+Integration Across the Framework
+Delimited continuations touch every part of the Fidelity framework:
+Reactivity ( Native Reactivity in Clef ) uses continuation structure for deferred computations and subscription callbacks. Incremental<'T> provides demand-driven cached derivations. Observable<'T> supplies producer-driven events. An observable emission invokes its registered observers , while invalidating an incremental node can leave its recomputation deferred until demand.
+BAREWire ( Getting the Signal with BAREWire ) delivers decoded values or an admitted borrowed view to a consumer continuation. Allocation and copying depend on the selected representation, transport and buffer lifetime.
+Olivier actors use continuations for both message receipt and supervision. A supervisor’s failure handler is a continuation captured when the child was spawned.
+Async I/O ( platform-aware continuation compilation ) resumes continuations through the platform’s own completion mechanism. On Windows, IOCP callbacks resume continuations. On Linux, io_uring completions do the same.
+This pervasive use of continuations creates architectural coherence. Different framework components speak the same language at the compilation level, enabling cross-cutting optimizations and uniform semantics.
+The Path Forward
+The centrality of delimited continuations to Fidelity’s architecture has implications for future development:
+Algebraic effects : The CE-based effect system described in The DCont/Inet Duality is essentially typed delimited continuations. As we extend Fidelity’s effect tracking, the continuation infrastructure is already in place.
+Formal verification : Continuation semantics are well-studied mathematically. The continuation-based compilation model gives our four-tier proof architecture a clean structure to verify against: obligations are built from the continuation structure already present in the graph, discharged by the SMT solver through Tier 3, with the Rocq kernel entering the trusted base only for the relational judgments at Tier 4.
+Novel hardware : Interaction nets and dataflow architectures benefit from explicit continuation representation. As Fidelity targets post-Von Neumann architectures, the continuation representation already carries the dataflow structure those machines execute.
+Recognizing that continuations unify our existing features was the first payoff. The larger one is that they provide the foundation for features we haven’t built yet.
+Continuations as Compilation Philosophy
+Fidelity’s turning point is a lesson in choosing unifying abstractions carefully and letting them inform the system. Delimited continuations could have remained an implementation detail, hidden from developers and compartmentalized in the compiler. Instead, by recognizing their centrality and designing around them explicitly, we achieved coherence that would otherwise require extensive special-casing.
+For developers, this means writing natural Clef code (async expressions, computation expressions, actor behaviors) while benefiting from a unified compilation strategy. For the framework, it means that improvements to continuation handling propagate across all features that use them. For the ecosystem, it demonstrates that programming language abstractions can serve as practical compilation targets, not just mathematical curiosities.
+Further Reading
+Why F# Is A Natural Fit for MLIR : SSA as functional programming and the compilation advantage
+The Continuation Preservation Paradox : How deep can continuations survive in compilation?
+Actors Take Center Stage : The actor model’s role in modern distributed systems
+Seeking Referential Transparency : How the PHG chooses between interaction nets and delimited continuations
+The DCont/Inet Duality : How computation expressions decompose into fundamental patterns
+A Unified Actor Architecture : Bridging native and edge actors through shared semantics
+Baker: A Key Ingredient to Composer : The zipper-based correlation pipeline
+Hyping Hypergraphs : Temporal program graphs and dataflow compilation strategies
+Advent of Neuromorphic AI : Spike-based computing and post-Von Neumann hardware targets
+Academic Papers
+SSA is Functional Programming , Appel (1998)
+A Monadic Framework for Delimited Continuations , Dybvig, Peyton Jones, Sabry (JFP 2007)
+The F# Asynchronous Programming Model , Syme, Petricek, Lomov (PADL 2011)
+The F# Computation Expression Zoo , Petricek, Syme (PADL 2014)
+Continuation Preservation DCont/Inet Duality
+© 2025-2026 Braidpoint

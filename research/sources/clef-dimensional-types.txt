@@ -1,0 +1,714 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety Hosting and Native Semantics
+The Dimensional Safety Imperative
+Historical Foundations: Ada’s Lesson
+VHDL
+FSharp.UMX
+Beyond Library to Intrinsic
+The SSA Bridge
+The Control-Flow to Dataflow Transform
+Random Updates and Memory Contracts
+The Program Hypergraph
+Ownership and Dimensional Identity
+Beyond the Abelian Fragment
+Validation Horizon
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+Hosting and Native Semantics
+The Dimensional Safety Imperative
+Historical Foundations: Ada’s Lesson
+VHDL
+FSharp.UMX
+Beyond Library to Intrinsic
+The SSA Bridge
+The Control-Flow to Dataflow Transform
+Random Updates and Memory Contracts
+The Program Hypergraph
+Ownership and Dimensional Identity
+Beyond the Abelian Fragment
+Validation Horizon
+Related Articles
+Scroll to top
+Documentation
+Design
+Type System
+Dimensional Type Safety
+Dimensional Type Safety Across Execution Models
+The Mars Climate Orbiter investigation traced the loss to a mismatch between ground software producing thrust data in pound-force seconds and navigation software expecting newton-seconds 1 . The numbers crossed the interface, but their intended meaning did not. A dimensional contract must connect the producer and consumer to catch that error. Naming the quantities in comments is insufficient when the interface accepts the same unqualified number on both sides.
+We are building our Fidelity framework toward a design goal: the same Clef source code can target CPUs, GPUs, NPUs, FPGAs, and CGRAs . This is a design consequence of choices we made when we hard-forked the F# compiler to create Clef . We integrate units of measure as a compiler intrinsic rather than a library feature. As Ada and VHDL demonstrated decades ago, dimensional type safety does more than catch unit conversion errors. It preserves quantity identity while the compiler analyzes the control-flow and dataflow requirements of a target.
+Hosting and Native Semantics
+Decidable By Construction §2 states the principal-inference foundation for integer-exponent measure equations under the usual generalization conditions. Its combined-analysis account keeps range, lifetime, blade-support and capability rules separately interpreted. Sharing the PSG lets those analyses exchange justified facts without extending the measure theorem to every property they record.
+Our Clef Compiler Service is hosted in .NET while we develop the native language and its toolchain. That hosting arrangement provides an implementation environment. Clef’s source contracts and native representations are specified independently of the host’s conventions.
+Our Fidelity framework targets programs that need explicit memory placement and hardware execution beyond managed IL. The Native Type Universe carries source kind and dimension. The PSG retains the facts needed for representation selection and later lowering. This is also why Clef tooling must report Clef dimensions, constraints, and proofs rather than interpret the program through F# defaults.
+The Dimensional Safety Imperative
+Type systems prevent bugs. Less appreciated is that different type system features prevent different classes of bugs in different execution contexts .
+Consider three execution models:
+Sequential (Von Neumann) : Instructions execute in order, with branching and loops providing control flow. Memory is a flat address space accessed through load/store operations.
+Parallel (GPU/SIMD) : Multiple execution units process data simultaneously. Control flow becomes expensive (divergent warps), while uniform data operations are cheap.
+Dataflow (FPGA/CGRA) : Computation is spatially organized. Data flows through configured logic blocks or reconfigurable processing elements. There is no “instruction pointer” - operations fire when their inputs are available. The parallelism a CPU gives up by imposing an instruction pointer on this kind of work is what flow loss analysis measures, reading the memory space and access pattern these same dimensional types make explicit.
+Ownership and dimensional identity describe different properties. Ownership tracks permitted uses and sharing of a resource. A dimension identifies the kind of quantity, such as length or duration. Both can matter in a parallel or spatial program.
+Clef’s units of measure retain their algebraic identity across execution models. A float<meters> remains a length when a CPU instruction, a GPU kernel, or a synthesized arithmetic unit computes it. The compiler still needs separate evidence for memory access, scheduling, and target capabilities.
+Historical Foundations: Ada’s Lesson
+The U.S. Department of Defense mandated Ada in 1983 after decades of dealing with software reliability problems in military systems 2 . One of Ada’s distinctive features was its derived type mechanism:
+type Meters is new Float ;
+type Feet is new Float ;
+type Kilograms is new Float ;
+type Pounds is new Float ;
+-- These are incompatible types despite both being Float internally
+distance_m : Meters := 100.0 ;
+distance_f : Feet := distance_m ; -- COMPILE ERROR : type mismatch
+The derived types make this implicit assignment between Meters and Feet a type mismatch. Carry those distinct types across a producer-consumer interface, and the compiler can expose the disagreement before execution. The interface then states the units its caller must supply.
+Ada’s derived types establish distinct nominal identities, and its generics can abstract over types. The derived-type mechanism is distinct from the Abelian-group equations used by Clef for products, quotients, and measure polymorphism: Ada’s derived-type rules are a precedent for preserving semantic identity, while its generics provide a separate abstraction mechanism.
+VHDL
+VHDL (VHSIC Hardware Description Language) emerged from the same DoD initiative as Ada, standardized as IEEE 1076 in 1987 for hardware description 3 . It inherited Ada’s type safety philosophy but extended it for a different execution model: concurrent hardware semantics .
+VHDL separates physical quantities from unadorned numbers. A physical type declares a base unit, a range in that unit, and optional scaled units. For example, this declaration expresses distance in micrometres:
+type distance is range 0 to 1000000
+units
+um ;
+mm = 1000 um ;
+cm = 10 mm ;
+end units ;
+That type-level quantity information is distinct from the representation selected by a particular implementation or foreign interface. For example, GHDL’s foreign-interface documentation specifies a 64-bit representation for physical types. That documents one implementation boundary. Clef quantities follow their own target declarations.
+The physical type must be used on the quantity being checked. A signal declared as distance carries that contract, while one declared merely REAL remains an unadorned number even if its name contains “meters.” Clef extends the quantity-based approach with Kennedy-style product and quotient inference under its units-of-measure algebra . That inference supplies relationships beyond VHDL’s physical-type declarations.
+Ada and VHDL provide architectural precedents for keeping quantity identity, legal ranges, and implementation constraints explicit. Clef combines that discipline with Kennedy-style measure inference and carries the resulting constraints into the PSG. The range and the selected representation are later coeffects, governed by Width Inference and Numeric Selection . Hardware synthesis requires a target realization with validated routing, timing, and resource allocation.
+FSharp.UMX
+FSharp.UMX 4 demonstrates a useful extension of F# units of measure to primitive non-numeric types. Our Fidelity design draws on that precedent.
+F# has supported units of measure since 2008, based on Andrew Kennedy’s academic work on dimensional analysis in ML-family languages 5 :
+[< Measure >] type meters
+[< Measure >] type seconds
+let distance : float < meters > = 100 . 0 < meters >
+let time : float < seconds > = 9 . 58 < seconds >
+let velocity = distance / time // float<meters/seconds>
+This applies only to numeric types ( float , decimal , int , etc.). FSharp.UMX extended this through the [<MeasureAnnotatedAbbreviation>] attribute:
+// FSharp.UMX approach (library-based)
+[< Measure >] type customerId
+[< MeasureAnnotatedAbbreviation >] type CustomerId = string < customerId >
+let processCustomer ( id : CustomerId ) =
+// id is typed distinctly from other strings
+...
+This approach works within standard F# and .NET. It provides non-numeric dimensional safety through the existing type system. It operates within the F# compiler and .NET representation model.
+Our Fidelity framework owes a conceptual debt to FSharp.UMX for demonstrating that units of measure extend beyond numerics.
+Our approach differs from .NET implementation but shares the same fundamental insight: dimensional constraints are too valuable to limit to numbers.
+Beyond Library to Intrinsic
+Clef specifies measured values as part of its native type universe, including non-numeric carriers. A measured identifier should retain its identity when passed through a function or stored in a collection, just as a measured force does during arithmetic. The source kind and dimension must survive until the relevant representation and preservation obligations have been established.
+The distinction from the .NET path is when and how the information is released. A library can use the F# compiler’s measure checking while the runtime carries only the underlying representation. Clef needs its dimensional facts available to the native analysis that establishes layout and lowering constraints.
+Our intended native path retains those facts through the stages that need them:
+Clef Source → CCS → PSG → Alex → MLIR → Target Backend
+↑ ↑
+Units preserved Units inform
+in type checking code generation
+Dimensions participate alongside other constraints in:
+Memory layout decisions : Region and access constraints distinguish peripheral access from writable local storage
+MLIR dialect selection : Shape, effects, and target capabilities determine available tensor lowerings
+Hardware synthesis : Established ranges and selected layouts constrain hardware resource requirements
+Consider how this works for memory regions :
+// Conceptual region/access contract; the platform declares physical layout
+type Ptr < ' T , ' Region , ' Access >
+[< Measure >] type Peripheral
+[< Measure >] type Flash
+[< Measure >] type Stack
+[< Measure >] type ReadOnly
+[< Measure >] type ReadWrite
+// These constraints flow through compilation
+let gpioReg : Ptr < int , Peripheral , ReadWrite > = ...
+let flashData : Ptr < int , Flash , ReadOnly > = ...
+let localBuffer : Ptr < float , Stack , ReadWrite > = ...
+// Required checks for an applicable target realization:
+// - Peripheral access uses appropriate memory barriers
+// - Flash reads don't attempt writes
+// - Stack allocations have appropriate lifetime
+Our PSG carries dimensional identity together with the distinct region, access, and range facts used by lowering. A peripheral access needs the platform’s memory contract, including any required ordering. A read-only view restricts writes. Those facts cannot be fabricated from a quantity’s unit name. Conformance §6 permits a source type representation to be released once its structural purpose has been served, provided the properties still needed below that edge are preserved or re-checked. Different backends may reach that boundary at different stages.
+The SSA Bridge
+Appel’s account of SSA and functional programming 6 provides a useful correspondence between SSA bindings and lexically scoped function parameters. It helps expose value dependencies across a control-flow graph.
+SSA makes each value definition explicit and represents control-flow joins through value parameters or phi functions.
+That representation supports dataflow analysis, while the graph still carries control dependencies and effects. A hardware realization must account for both.
+Consider a simple loop:
+// Control-flow view: sequential loop
+let mutable sum = 0 . 0 < meters >
+for i in 0 .. n - 1 do
+sum <- sum + distances .[ i ]
+In SSA form, this becomes:
+entry:
+sum_0 = 0.0<meters>
+br loop
+loop:
+i = phi [0, entry], [i_next, loop]
+sum = phi [sum_0, entry], [sum_next, loop]
+val = load distances[i]
+sum_next = add sum, val
+i_next = add i, 1
+cond = cmp i_next, n
+br cond, loop, exit
+exit:
+return sum
+The phi functions at loop headers express data dependencies. This SSA representation is simultaneously :
+A control-flow graph (basic blocks connected by branches)
+A dataflow graph (values flowing through phi functions and operations)
+The dimensional constraints ( <meters> ) are preserved throughout. sum , sum_next , and val all carry the meters dimension. The phi function’s type is float<meters> , ensuring dimensional consistency across loop iterations.
+Our target pathways can use these explicit dependencies when realizing a computation on a CPU or a dataflow target. The dimensional equations remain the same. Synthesizability additionally depends on bounded resources, effects, and a supported target mapping.
+The Control-Flow to Dataflow Transform
+High-Level Synthesis (HLS) tools have been performing this transform for decades 7 . Xilinx Vivado HLS, Intel oneAPI, and similar tools take C/C++ code and synthesize hardware:
+// Input: Sequential C with loop
+void vector_add ( float * a , float * b , float * c , int n ) {
+#pragma HLS DATAFLOW
+for ( int i = 0 ; i < n ; i ++ ) {
+#pragma HLS PIPELINE
+c [ i ] = a [ i ] + b [ i ];
+}
+}
+// Output: Pipelined dataflow hardware
+// - Streaming interfaces for a, b, c
+// - Fully pipelined loop body
+// - Concurrent read/compute/write stages
+HLS tools use dataflow and pipeline directives together with dependence analysis to construct concurrent hardware where the program permits it. The exact interfaces and schedule depend on the tool and target.
+SSA exposes value dependencies. Memory aliasing, observable effects, and loop-carried dependencies still constrain which operations can execute concurrently.
+Our Fidelity design retains source constraints alongside those dependencies. The compiler can use checked region and access facts without reconstructing them from an unqualified load or store. Dimensions continue to check quantity identity as the graph is transformed. With those facts available, the hardware pathway can assess the remaining dependencies and establish a valid schedule for the operations it supports.
+The Program Hypergraph design extends these joint relationships. Its lowering boundary exposes settled consequences to witnesses, with preservation evidence attached to the affected operations.
+Random Updates and Memory Contracts
+Irregular memory updates provide a useful test of this direction. The work is easy to describe, but the addresses being accessed make scheduling and memory behavior central to performance. NextSilicon’s GUPS demonstration 8 offers a concrete example on a dataflow-oriented processor. For our compiler, it motivates a practical question: which facts about an update can we retain so that a target pathway has enough information to realize it well?
+For a Clef version, a table index and a random-generator state can carry distinct dimensions. The operation that derives an index from that state must establish its own contract: the index is in range, and the conversion between the two domains is explicit. Scheduling also needs the dependencies of the random recurrence and the effects of table updates. Keeping those facts together lets the target assess which operations may proceed concurrently.
+Fact What it establishes
+Table-index dimension The value belongs to the index domain
+Bound relative to table length The indexed access is within the table
+Region and access contract The storage and operations permitted at that access
+Dependency and effect analysis Which updates may be reordered or scheduled concurrently
+These facts have distinct roles in our PSG. Keeping them together lets the target pathway consume the established memory contract while preserving the source quantity identities.
+The Program Hypergraph
+In our earlier article Hyping Hypergraphs , we described the evolution from the Program Semantic Graph (PSG) to the Program Hypergraph (PHG). This remains a future design goal - something “on the board” - but the architectural direction is clear.
+The PHG would naturally encode both control-flow and dataflow relationships:
+// Conceptual PHG representation
+type PHGHyperedge =
+| ControlFlow of {
+Source : BasicBlock
+Target : BasicBlock
+Condition : Option < PHGNode >
+}
+| DataFlow of {
+Producer : PHGNode
+Consumers : Set < PHGNode >
+DimensionalConstraint : DimensionalType
+}
+| Synchronization of {
+Barrier : PHGNode
+Participants : Set < PHGNode >
+}
+Pivotal to this is recognition that hyperedges can connect more than two nodes . A dataflow relationship might have one producer and multiple consumers. A synchronization barrier involves multiple participants. These multi-way relationships are awkward in traditional graphs but natural in hypergraphs.
+With dimensional types preserved:
+// PHG with dimensional annotations
+DataFlow {
+Producer = randomGeneratorNode
+Consumers = { tableAccess1 ; tableAccess2 ; ... }
+DimensionalConstraint = int < randomState > // Preserved!
+}
+The proposed hyperedge records the quantity shared by its consumers. Joint constraint solving must establish the compatible uses and reify the consequences on the graph before witnesses consume them. Recording a relationship does not by itself discharge its proof obligation.
+Ownership and Dimensional Identity
+Ownership and borrowing remain useful ways to describe permitted uses of storage. They do not determine a quantity’s dimension, and a dimension does not establish ownership. A dataflow target still needs rules for duplicated values, shared mutable state, and effects at memory boundaries.
+Our Fidelity design carries these constraints together. Immutable values can be copied or shared when the realization preserves their observable behavior. Mutable storage requires an explicit sharing and lifetime contract, including across closure capture and delayed demand. Gaining Closure describes that distinction for native flat environments.
+Beyond the Abelian Fragment
+Clef’s measure equality follows the free Abelian-group laws on its base units. Products and quotients normalize to exponent equations, which form the decidable measure-inference fragment described in Units of Measure and the DTS/DMM paper . Source-level numeric kind and dimension remain separate from the analyzed range and selected representation.
+That algebra checks dimensional consistency. A guarded range or a claim about mutation requires additional evidence. The tiered verification design distinguishes those obligations from the parametricity results available in the Abelian fragment. Our implementation must preserve the conditions under which each result applies across lowering.
+Non-Abelian symmetry and the negative and fractional type directions extend the research horizon. They motivate keeping constraint provenance and source identity available now, without claiming that the current dimensional implementation already decides those properties. The braid as a fourth sheaf develops one such proposed extension.
+Validation Horizon
+An engineer should be able to keep a quantity’s meaning intact while changing where its calculation runs. Our current dimensional work establishes that continuity through the supported native language surface: measures must survive elaboration, participate in type identity, and remain available to joint range and representation constraints. Compiler regressions and native acceptance cases exercise the implemented paths, with each additional CPU, GPU, or spatial pathway responsible for its own preservation checks.
+The next tooling step is to expose those actual Clef facts in the editor. A dimensional type, a pending range obligation, a selected physical layout, and a discharged proof should appear as distinct observations of the same program. That would let the developer inspect how a target choice affects the realization while continuing to write in the quantities of the problem.
+Related Articles
+Hyping Hypergraphs - The evolution from PSG to Program Hypergraph and targeting post-Von Neumann architectures
+Why Clef Fits MLIR - The theoretical foundation connecting concurrent programming to modern compilation
+The Abstract Machine Model Paradox - Why ownership semantics assume Von Neumann architectures
+Beyond Zero-Allocation - How async, arenas, and actors complete the Fidelity memory model
+Context-Aware Compilation - Coeffects and their role in optimization decisions
+Standing Art: Clef Metaprogramming in Composer - Computation expressions, active patterns, quotations, and units of measure
+Danger Close: Why Types Matter - Real near-disasters (a freezer monitor’s Fahrenheit/Celsius mix-up, the Mars Orbiter, microgram dosing errors) that Clef’s zero-cost units of measure catch at compile time
+Mars Climate Orbiter Mishap Investigation Board. (1999). Phase I Report . NASA. The spacecraft was lost due to a navigation error caused by ground software producing thrust data in pound-force seconds while the spacecraft expected newton-seconds. ↩︎
+U.S. Department of Defense. (1983). Reference Manual for the Ada Programming Language (MIL-STD-1815A). Ada’s derived types establish distinct nominal identities. See also: Ada - Wikipedia . ↩︎
+IEEE. (1987). IEEE Standard VHDL Language Reference Manual (IEEE Std 1076-1987). VHDL’s physical type system extended Ada’s strong typing to hardware description with concurrent dataflow semantics. Current standard: IEEE 1076-2019 . ↩︎
+Tsarpalis, E. (2019). FSharp.UMX: F# Units of Measure for primitive non-numeric types . GitHub. The library uses [<MeasureAnnotatedAbbreviation>] to extend F#’s unit of measure system to non-numeric types. ↩︎
+Kennedy, A. (1997). Relational Parametricity and Units of Measure . Proceedings of the 24th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages (POPL ‘97), pp. 442-455. This foundational work established the theoretical basis for F#’s units of measure system. Also available via Microsoft Research . ↩︎
+Appel, A. W. (1998). SSA is Functional Programming . ACM SIGPLAN Notices, 33(4), 17-20. This paper demonstrates the mathematical equivalence between SSA form and functional programming with lexical scope. ↩︎
+Cong, J., Liu, B., Neuendorffer, S., Noguera, J., Vissers, K., & Zhang, Z. (2011). High-Level Synthesis for FPGAs: From Prototyping to Deployment . IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, 30(4), 473-491. A landmark paper marking HLS’s transition from research to production deployment. ↩︎
+NextSilicon. (2025). Maverick-2 GUPS Demonstration . The demonstration showed 30x improvement on the GUPS benchmark through dataflow transformation of inherently sequential memory access patterns. NextSilicon’s “mill cores” are software-defined processing units that adapt to application-specific dataflow graphs. See also: NextSilicon Takes Aim At CPUs And GPUs . ↩︎
+ByRef Resolved Posit Arithmetic
+© 2025-2026 Braidpoint

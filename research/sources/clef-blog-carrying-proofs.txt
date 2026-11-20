@@ -1,0 +1,496 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript About JavaScript Arithmetic
+Carrying Unfinished Stories
+The Cloudflare Contract
+The Braid’s Return Address
+Serializing the Wrong Answer
+Super-Process Without Sharing
+Reordering Without Repeating
+When Execution Fails
+A Reach Beyond A Type
+Participating in the Argument
+The Promise at the Return Point
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+About JavaScript Arithmetic
+Carrying Unfinished Stories
+The Cloudflare Contract
+The Braid’s Return Address
+Serializing the Wrong Answer
+Super-Process Without Sharing
+Reordering Without Repeating
+When Execution Fails
+A Reach Beyond A Type
+Participating in the Argument
+The Promise at the Return Point
+Scroll to top
+Blog
+Carrying Proofs into JavaScript
+Carrying Proofs into JavaScript
+Verfying numerical guarantees through JavaScript actors and durable workflows
+September 11, 2026 · Houston Haynes · 17 min read
+JavaScript Concurrency Parallelism Verification Cloudflare Architecture
+“JavaScript is single-threaded” is reassuring on a certain level. It explains why two ordinary callbacks do not simultaneously change an object inside one event loop. It can also persuade us to stop thinking about concurrency just before the interesting part begins.
+Much of our JavaScript targeting work centers on Cloudflare as a backplane provider. A durable workflow can resume after the isolate that began its execution has been discarded. Its arithmetic must retain the same meaning, its replies must reach the right requests, and the application must deliver a coherent result.
+In Pondering Fearless Parallelism , we explored how a compiler might establish which ways of dividing numerical work preserve its answer. Here we follow that question into JavaScript, where a calculation may span isolates, suspension points, and several versions of the same request.
+We want the compiler to establish useful guarantees about exactness, error, and reproducibility using the arithmetic JavaScript provides. Cloudflare supplies execution and coordination facilities. Clef’s job is to establish the numerical contract of the work and carry it across those boundaries.
+Our JavaScript targeting work covers both the F#/ Fickl compiler path and Composer’s proposed JSIR backend. This article looks at the actor, workflow, and proof-preserving lowering direction. The technical companion records the obligations and acceptance cases.
+About JavaScript Arithmetic
+For the ordinary Number operations considered here, JavaScript uses binary64 arithmetic. The compiler can work from those specified operations and choose a construction whose premises it can establish. Our design generates numerical proof obligations as part of compilation: the developer expresses the calculation and its engineering requirements, and the compiler derives the conditions needed to satisfy them. Different constructions offer different guarantees:
+Exact integer computation within a proved range. If admitted integer inputs and every exact intermediate remain within binary64’s consecutive-integer range, addition, subtraction, and multiplication preserve their mathematical integer results. A small final answer alone is insufficient.
+Exact fixed-point operations, or a stated quantization bound. Scale alignment and carrier capacity can establish exactness. When rescaling discards information, its rounding rule determines a local error bound that the analysis must propagate through subsequent operations.
+Recovery of a floating-point rounding residual. A construction such as TwoSum can represent the exact sum of two finite inputs as two Number components under its established conditions. Ordinary JavaScript arithmetic can carry more information than one rounded scalar.
+An error bound for a specified reduction. The operation graph, rounding model, and admitted inputs can establish a bound on accumulation error. This is separate from merely knowing that the result is finite or repeatable.
+A result independent of permitted worker partitions and merge order. An exact accumulator with exact merges and deterministic final rounding can establish this stronger property. Keeping a rounded tree fixed gives a narrower reproducibility guarantee. Compensation alone does not establish arbitrary merge freedom.
+Preserved numerical meaning across a message or checkpoint. Encoding and decoding must preserve the represented contribution or accumulator state, or meet an explicitly permitted error bound. Correct transport cannot recover information discarded before serialization.
+Here is a short exactness argument using only ordinary JavaScript numbers. If integer terms have magnitude at most B B B , there are at most N N N of them, and
+∑ i ∣ x i ∣ ≤ N B ≤ 2 53 ,
+\sum_i |x_i|\le NB\le 2^{53},
+i ∑ ​ ∣ x i ​ ∣ ≤ N B ≤ 2 53 , every subtotal formed from a subset of those terms is an exactly representable integer. Each addition therefore returns the exact subtotal. Induction through any tree of disjoint partial sums gives the same exact total. This is a proof of order-independent integer reduction within a stated domain, despite the carrier being a float. It excludes accidental integer coercions and specifies zero handling where signed zero is observable. ECMAScript’s Number semantics .
+General fractional inputs need a different construction. The TwoSum result from Pondering satisfies
+value ⁡ ( h ) + value ⁡ ( ℓ ) = value ⁡ ( a ) + value ⁡ ( b ) .
+\operatorname{value}(h)+\operatorname{value}(\ell)
+=\operatorname{value}(a)+\operatorname{value}(b).
+value ( h ) + value ( ℓ ) = value ( a ) + value ( b ) . The equality describes the real value represented by the pair. Adding its components as JavaScript numbers would round again. The result depends on finite inputs, round-to-nearest/ties-to-even, gradual underflow, and the absence of intermediate overflow. A complete exact reduction needs additional accumulator and merge laws because two components cannot hold an unlimited exact sum.
+The numerical proof sketches in the companion cover fixed-point divisibility and error, a rounding-error bound for a tree, and an exact integer-backed construction for sums of represented binary64 inputs. They give us mathematical arguments and construction requirements to carry into Composer’s proposed JSIR path. Automatically instantiating them and preserving their evidence through the emitted artifact is the implementation work ahead.
+The proposed compiler mechanism generates arithmetic obligations from the computation, instantiates the applicable construction theorems, and discharges their premises against program facts and JavaScript’s supported operations. It then carries the evidence through lowering. In the integer example, analysis supplies the term-count and magnitude bounds and generates the capacity obligation for exact merging. Developers can state the guarantee they need without writing a compensation recipe for every reduction. Application-specific tolerances and facts unavailable from the program still need a contract. The compiler must also account for cost and explain when it cannot establish the requested guarantee.
+Actors and workflows bring the numerical argument into a running application. They must deliver the right terms to the calculation, avoid counting them twice, and preserve their meaning through recovery. Cloudflare supplies the host facilities that carry the work.
+Our Decidable By Construction paper , §§6.2–6.3 and 7.3, develops the corresponding composition. Exact accumulator capacity, disjoint partition coverage, atomic acceptance, and representation laws establish the completed result. Approximate workers add explicit value-error and failure budgets. Applying that result here requires the JavaScript arithmetic and host contracts described in this article.
+Carrying Unfinished Stories
+Consider a dashboard gathering measurements from several remote devices. A user selects a time range, the application requests the relevant records, and workers calculate summaries. While those requests are outstanding, the user changes the selection.
+Every response can contain valid numbers and satisfy its declared record shape. A late answer from the first selection can still overwrite the newer display if the application accepts it as the result of the current request.
+That failure needs no simultaneous JavaScript instructions. It arises from the order and identity of events.
+Cloudflare documents that one Worker instance can handle concurrent requests through its single-threaded event loop, with other requests executing while an asynchronous operation is awaited. It also cautions against relying on requests reaching a particular instance. The execution boundary is narrower than an entire async request handler. How Workers works .
+Facts established before suspension matter when execution resumes. An immutable captured number retains its value, while an immutable binding to a mutable object leaves that object’s contents free to change. If a proof depended on the selected range, a buffer’s state, or a version stored elsewhere, the continuation needs the original immutable observation or evidence that the relevant state has not changed.
+The compiler can follow those dependencies: which values were captured, which properties depend on mutable storage, which operations can change it, and where a result becomes eligible to resume the waiting computation.
+The aim is to make those relationships part of the program’s contract, so the developer can rely on them across await points.
+The Cloudflare Contract
+JavaScript supports many arrangements for execution and communication. Our Cloudflare target uses a defined set of platform facilities and generated patterns, with declared boundaries for foreign behavior. That scope gives the compiler specific invariants to establish.
+Cloudflare supplies isolate boundaries, Durable Object identity and addressing, and documented concurrency and storage mechanisms. Those facilities belong to the trusted computing base (TCB) : our argument depends on their contracts holding. Proving that generated application code uses them correctly does not prove their implementation. Durable Object model , concurrency rules .
+Those premises help preserve the domain of the numerical proof: contributions come from the admitted input snapshot, are accepted with the required multiplicity, and retain their representation through storage and delivery. Existing host guarantees should supply their part directly. The remaining application obligations concern correct use of those facilities and any conditions they do not establish, such as whether a returned value belongs to the current dashboard selection.
+The evidence identifies the numerical property, the generated boundary checks, and the host guarantees on which they depend. We use Cloudflare’s existing execution facilities for dispatch. A result can be invariant under admitted execution choices while successful completion still depends on delivery and host progress.
+The current evidence inventory records component checks and declaration-level proof queries. The acceptance path describes how those obligations connect to emitted artifacts.
+Our Erlang exploration introduces McErlang and its approach to checking distributed systems. Our three-layer actor contract builds on that perspective. Model checking can establish specified properties over an explored execution model, with coverage shaped by state-space cost and semantic granularity. Numerical exactness and independence from reduction order need arithmetic arguments of their own.
+Dafny is another precedent for program verification and JavaScript output. It generates verification conditions and automates much of their discharge, including some inference. Developers supply specifications and, where needed, invariants or supporting lemmas. Its tutorial shows how those pieces fit together. Fidelity aims to derive supported numerical obligations and their construction-specific proof structure from the compilation graph and numeric contract as part of ordinary compilation. The same process connects those proofs with the actor, boundary, recovery, and platform contracts that preserve their premises through delivery.
+The Braid’s Return Address
+Weaving the Braid describes parallel work returning through sequential decisions. In the dashboard, several calculations can proceed independently, while the display update belongs to a particular continuation of a particular request.
+The return point must establish both that the required work has completed and that its results satisfy the calculation’s contract. The graph brings those questions together.
+flowchart TD
+I["Input snapshot and logical job identity"] --> P["Establish independent partitions"]
+P --> A["Actor A: contribution for partition A"]
+P --> B["Actor B: contribution for partition B"]
+A --> J["Join: validate identity, membership and multiplicity"]
+B --> J
+J --> M["Combine under the numerical contract"]
+M --> C["Resume the eligible continuation"]
+X["Late, duplicate or superseded reply"] --> G["Apply the declared reply policy"]
+G -. "Cannot silently become another contribution" .-> J
+In Fidelity’s actor model, Olivier actors perform the work. Prospero describes their orchestration and lifecycle responsibilities, including the ownership arrangements that let work move safely. Ariel names the dispatch contract across our targets. Cloudflare’s existing facilities provide execution and dispatch there. The compiler and operation contracts establish which arithmetic is eligible for parallel work and what the join means.
+The scheduler contract defines a turn from one resumption to suspension, completion, or fault. For a JavaScript target, we use that contract to identify the properties supplied by host callbacks and the actor-state discipline the generated application must preserve. A promise completing must still reach the appropriate continuation through the platform’s execution mechanisms.
+Object identity and computation identity need separate treatment. Reaching the intended Durable Object does not establish that a reply belongs to the user’s current dashboard selection. Host reactivation does not by itself start a new logical job or actor incarnation. The mapping must preserve the lifecycle policy the application declares. The source expression can remain compact while generated control flow maintains those distinctions, using host guarantees wherever they suffice.
+Serializing the Wrong Answer
+Suppose our worker actors each return a contribution to a numerical total. The collector receives one message at a time and updates its accumulator. There is no shared-memory data race. Each update is locally well behaved.
+If it adds floating-point contributions in arrival order, network timing has nevertheless selected the reduction order. The cancellation example in Pondering still applies. A perfectly serialized mailbox can produce different answers on different runs.
+One legitimate approach is to collect contributions by their logical input positions and then evaluate a fixed arithmetic tree. Another is to use a construction whose merge laws permit the available regroupings. An application can also intentionally observe arrival order, as a first-response service might. The compiler needs to preserve the choice the application actually made.
+JavaScript already illustrates the difference between completion order and result order. Promise.all places fulfilled results at their input positions, independently of which promise finishes first. That behavior comes from its indexed result collection. It does not make the work deterministic, create CPU parallelism by itself, or establish the arithmetic used afterward. ECMAScript’s Promise.all algorithm .
+Changing partition sizes introduces another question. A worker that rounds a subtotal before sending it may discard information the collector needs. Keeping the collector’s order fixed cannot recover any discarded bits. The proof has to cover the construction on both sides of the message, including what the message represents.
+The collector’s arithmetic contract still has to account for integer capacity, fixed-point rescaling, floating-point error, and exact-accumulator merging when it runs in V8.
+Super-Process Without Sharing
+Now extend the dashboard into an analysis service. A job fans out over remote partitions, waits for their results, writes a report, and notifies its requester. The work may outlive any one request or isolate.
+A super-process is one logical computation from the application’s point of view. Its identity, progress, and outcome can remain coherent while its physical execution moves among independently managed instances.
+Cloudflare Workflows provides durable orchestration through steps and retained results. Its rules describe rebuilding state across engine lifetimes from step returns and using deterministic step names. It supports concurrent step arrangements, while placement on isolates and cores remains a platform decision. Rules of Workflows .
+Cloudflare controls execution and dispatch. Where its facilities support the application policy, we can use them to express our orchestration: which operations to request, which results to await, and how to handle failure. Surfacing the Scheduler develops the relationship between dispatch and orchestration.
+flowchart TD
+W["Durable orchestration: job, inputs and recovery state"] --> L["Local actor work and hosted dispatch"]
+W --> R["Remote actor work and hosted dispatch"]
+L --> J["Accept logical contributions under the join contract"]
+R --> J
+J --> S["Persist sufficient state for recovery"]
+S --> C["Continue the logical computation"]
+S -. "After interruption: reconstruct valid state" .-> W
+For this realization, the applicable Prospero orchestration and lifecycle policies would map to the host’s workflow and actor facilities. Some policies can be expressed through those facilities, while others may be unsupported. The mapping would name what is retained, what can be repeated, and what is assumed about storage and delivery.
+A source continuation can have a durable state-machine realization if the compiler establishes the correspondence. The developer writes a calculation with parallel branches and a return point. The target determines how that return point survives.
+For the dashboard developer, the intended benefit is practical: useful work can continue without tying the interface to one long-lived request, while a returned result still belongs to the selection that requested it.
+Reordering Without Repeating
+Durable execution introduces a condition that pure numerical discussions can overlook: the same work may be attempted again. Workflow steps have retry policies and can eventually fail when those policies are exhausted. Cloudflare retry behavior .
+An exact accumulator does not protect a sum from a contribution inserted twice. Associativity permits regrouping. Commutativity permits reordering. Neither says that adding a value again leaves the answer unchanged.
+For our analysis job, a useful contract assigns a stable identity to each logical partition. An execution attempt is an attempt to produce that partition’s contribution, not a new partition. The collector accepts the logical contribution once. If a second result with the same identity disagrees with the accepted result, the contract must say how that conflict is handled. Quietly choosing the first would make a claimed deterministic calculation depend on timing again.
+The accumulator must represent exactly the accepted contributions, and their identities must belong to the expected partition set. Completion means that the required set has been accepted. The technical companion expresses that invariant and its recovery conditions.
+Making acceptance durable is consequential. If a restart preserves the updated total but loses the fact that a partition was accepted, a retry can count it again. If it preserves the acceptance record but loses the contribution, recovery can omit it. A supported atomic update or a justified reconstruction protocol has to keep those observations consistent.
+The same idea reaches beyond numbers. Duplicate analysis results, repeated inventory operations, and repeated notifications have different effect contracts. A collector that ignores duplicate replies has not prevented a remote service from performing an action twice. That needs a protocol at the effect boundary, such as a destination that honors an idempotency key. A preliminary “has this happened?” query followed by a separate write does not, on its own, make the pair atomic.
+Clef can make these distributed-systems obligations visible to the compiler and connect generated mechanisms to the protocols that satisfy them.
+When Execution Fails
+The ledger-lowering proposal asks what must be retained and what can be reconstructed. Numerical work and actor recovery give us concrete cases to consider.
+A deterministic calculation over saved inputs can often be recomputed. A response from an external service, a model inference, or a reading of changing data may need to be retained as an observation. Calling the same endpoint again does not establish that it returns the same value.
+Even a numerical reconstruction needs its arithmetic contract. A different reduction tree or newly rounded subtotal can change the recovered value. Saving the original inputs is sufficient only when the reconstruction is known to preserve the required result under its actual realization.
+Durable state includes the control and identity information needed to identify the job, admitted input version, accepted contributions, and continuation that may proceed. It also needs a compatible program version and a policy for local resources that cannot survive an isolate’s disappearance.
+BAREWire can supply agreed layouts for those records and for messages crossing between native and JavaScript endpoints. Job and partition identifiers are ordinary application data where the protocol requires them. They do not turn every payload into a self-describing proof package. Schema agreement and representation fidelity still need to be established at the endpoints.
+A well-formed reply establishes its structure. A claim about the remote computation needs an admitted implementation contract, an appropriate result check, or computation evidence.
+A Reach Beyond A Type
+JavaScript output may carry none of the source’s dimensional or refinement vocabulary. The properties established with that vocabulary can still describe the generated computation.
+A proof can establish a property of the generated computation. Every logical input contributes once. A continuation consumes only a matching result. A permitted merge preserves the numerical contract. A particular access occurs only after its boundary preconditions have been established.
+Types can express some of those premises. Graph relationships, effects, value identities, arithmetic laws, and protocol state supply others. Together they describe the behavior the generated operations must preserve.
+The compiler’s responsibility is to connect the argument to the emitted operations. If lowering changes a relevant representation, ordering, or boundary, it must preserve or re-establish the property. The JSIR acceptance sequence already distinguishes the source contract, graph obligations, emitted artifact, and runtime premises.
+At an open boundary, static reasoning can establish that the generated checker admits only values satisfying its predicate. The actual arriving value still has to pass that checker. The foreign-boundary design makes those generated checks part of the language contract. Merely declaring a foreign result to have a type cannot establish what an external service will send.
+A solver query describes a model of an operation. The proof must also connect that model to the generated JavaScript and to any remote service whose behavior the result depends on.
+Participating in the Argument
+The JavaScript engine and host services still execute the emitted artifact. Unless separately verified, their relevant semantics are assumptions of the result. Naming those assumptions makes the claim assessable: which arithmetic is required, which storage update is atomic, which callback discipline applies, and which external operations may fail?
+A single-threaded event loop cannot establish fairness against a callback that never yields or guarantee that a network reply arrives. An acyclic wait-for graph rules out a particular form of deadlock. Successful completion also depends on local progress, delivery, and the outcomes of required external work.
+The toolchain should explain that distinction. “If this operation succeeds, its result is independent of the admitted arrival orders” makes a different claim from “this operation is guaranteed to succeed.” Timeouts and cancellation can provide defined outcomes when a result is unavailable.
+Cloudflare’s Durable Objects illustrate why host facilities need specific descriptions. They provide concurrency controls through input and output gates, but asynchronous requests can still interleave under the documented rules. An actor realization must use the relevant mechanisms and preserve its own invariants across remote awaits. Rules of Durable Objects .
+There is an efficiency question here as well. Finer partitions expose more independent work but create more messages, durable records, and joins. An exact partial accumulator can be larger than a rounded scalar. Reconstructing state saves storage while spending computation. The cost-of-coordination analysis belongs beside these choices, applied only after their semantic eligibility is established.
+The Promise at the Return Point
+An application author wants to divide useful work, keep an interface responsive, recover from interruption, and make use of available resources. The person using that application wants the right measurements on the screen, a report they can trust, and an operation that survives a disrupted connection without counting a result twice. The compiler’s obligations support those expectations.
+Fidelity Framework reaches across MCU firmware, native desktop and server applications, accelerator and FPGA workloads, and JavaScript in browsers or at the cloud edge. Each substrate offers different resources and authority over execution. On a microcontroller, bring-up and dispatch may belong to the firmware. On Cloudflare, we use the platform’s execution facilities to express the orchestration they support. The framework carries the appropriate contract into each realization.
+The toolchain should explain which work can proceed independently, which results can safely combine, what must survive interruption, and what the chosen implementation costs. Its evidence must distinguish established guarantees from host assumptions and unresolved requirements. The technical companion sets out the progression from proof obligations to emitted-code evidence and focused experiments.
+Pondering Fearless Parallelism asks which arithmetic lets independent work meet without changing its meaning. Identity, suspension, and recovery extend that argument across the lifetime of an application. By generating and discharging supported proof obligations as part of compilation, Clef can put those guarantees within reach of the developer writing the work.
+The result we are working toward is software that remains responsive and dependable across those boundaries, whether the work runs on a device, a native service, or a server close to the user.
+Pondering Fearless Parallelism Pitch, slew and demand
+© 2025-2026 Braidpoint

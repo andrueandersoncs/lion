@@ -1,0 +1,495 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Scroll to top
+Documentation
+Compiler Internals
+Transparent Verification
+Transparent Verification
+The Fidelity Framework includes tooling in development designed to eliminate the annotation burden that has historically made formal verification impractical for systems programming. Instead of requiring developers to write theorems, the Clef Compiler Service (CCS) is designed to derive proof obligations directly from the code’s dimensional constraints and memory topologies, transparently, at design time, backed by the cvc5 SMT solver.
+These articles trace the planned verification pipeline: from the double-annotation friction that led to the algebraic discovery behind the Dimensional Type System, through its decidable foundations, the coeffect-based memory safety model, and finally to the MLIR translation validation and cryptographic release certificates designed to verify dimensional and memory properties statically, imposing no runtime overhead for the covered property classes.
+Proof Composition and Tooling connects these local results to reusable concurrent, distributed, relational and device-level foundations. It explains automatic lemma instantiation, checked mode shifts, explicit trust dependencies and the proposed consolidated Rocq toolchain. Mode Shifts develops the judgment interfaces. These designs distinguish existing compiler slices from integrations still to be built.
+© 2025-2026 Braidpoint

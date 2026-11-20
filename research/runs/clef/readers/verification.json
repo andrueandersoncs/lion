@@ -1,0 +1,691 @@
+[
+  {
+    "source": "clef-verification",
+    "title": "Transparent Verification",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "derive obligations instead of asking for theorems",
+        "what": "Clef's compiler service is meant to derive proof obligations from what the code already states (dimensions, memory topology) and discharge them with cvc5 while the developer edits, so the developer writes no theorems. The overview claims no runtime overhead only for the covered property classes.",
+        "for_lion": "The same direction as Lion's invariant inference (Houdini) and schema-typed solver variables: Lion could derive more obligations from what a program already says (schemas, keys, invariants) instead of asking for an explicit prove form.",
+        "quotes": [
+          "The Fidelity Framework includes tooling in development designed to eliminate the annotation burden that has historically made formal verification impractical for systems programming.",
+          "Instead of requiring developers to write theorems, the Clef Compiler Service (CCS) is designed to derive proof obligations directly from the code’s dimensional constraints and memory topologies, transparently, at design time, backed by the cvc5 SMT solver.",
+          "cryptographic release certificates designed to verify dimensional and memory properties statically, imposing no runtime overhead for the covered property classes"
+        ]
+      },
+      {
+        "idea": "checked composition with explicit trust, and honest status",
+        "what": "The overview names lemma instantiation, checked mode shifts between reasoning disciplines and explicit trust dependencies as the composition story, and says the pages separate what is built from what is planned.",
+        "for_lion": "A model for how Lion's docs could mark which verification features are implemented and which proofs rest on which trusted parts (solver, assumptions).",
+        "quotes": [
+          "It explains automatic lemma instantiation, checked mode shifts, explicit trust dependencies and the proposed consolidated Rocq toolchain.",
+          "These designs distinguish existing compiler slices from integrations still to be built."
+        ]
+      }
+    ],
+    "cites": ["cvc5", "Rocq"]
+  },
+  {
+    "source": "clef-double-annotation",
+    "title": "From Double Annotation to Discovery",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "the double-annotation problem",
+        "what": "Classic verification makes the developer write the program twice, an implementation and a specification, and keep them in sync; the burden grows with the code.",
+        "for_lion": "Lion's invariants, prove forms and schemas are specifications written beside the code; this is the argument for inferring them (Houdini) and for checking ones Lion can derive from rules and keys.",
+        "quotes": [
+          "The developer ends up writing the program twice: once in the implementation language, and once in the specification language that tells the prover what the program is supposed to do.",
+          "Keeping those two descriptions in sync across a large codebase becomes its own engineering discipline, one where the annotation burden grows at least linearly with the code.",
+          "This is the double-annotation problem in practice: the developer writes the implementation and then writes the specification that the compiler verifies against the implementation."
+        ]
+      },
+      {
+        "idea": "restrict to an algebraic, decidable property class",
+        "what": "Instead of arbitrary predicates (F*), Clef targets property classes with abelian-group structure (units, lifetime order) whose checks reduce to linear integer arithmetic, and leaves deep functional correctness to explicit specification.",
+        "for_lion": "Lion's solver already fixes a fragment (linear arithmetic, JSON equality); this frames the choice as picking property classes with a complete procedure and saying plainly what falls outside. Note the page's claim that the QF_LIA procedure is polynomial is not true of QF_LIA in general (it is NP-complete); it holds for the equalities their unification produces.",
+        "quotes": [
+          "The question the Fidelity Framework asks is whether systems programming actually needs arbitrary predicates for every verified property.",
+          "Consistency checking over these structures reduces to systems of linear equations and inequalities over integers, which maps directly to QF_LIA (Quantifier-Free Linear Integer Arithmetic).",
+          "The QF_LIA decision procedure is complete and terminates in polynomial time.",
+          "It does not require heuristics, fuel limits, or developer-supplied proof witnesses.",
+          "Properties outside this decidable subset, like the deep functional correctness guarantees that F* excels at, remain valuable candidates for explicit specification."
+        ]
+      },
+      {
+        "idea": "hand-written specs as a discovery step",
+        "what": "Writing the annotations by hand is how they learned which properties recur; that reading showed the properties had a structure that could be derived automatically.",
+        "for_lion": "A method Lion's research and history models could apply: look at the invariants and schemas users actually write to find the classes worth inferring.",
+        "quotes": [
+          "Working through the annotation bridge forced a close reading of which properties were being specified, function by function.",
+          "Writing those specifications is how we learned what the properties looked like, and once we saw that the approach could not scale, we asked whether the same properties could be derived automatically."
+        ]
+      },
+      {
+        "idea": "saturation: constraints checked as the graph is built",
+        "what": "As the semantic graph is built, each operation adds constraints, the solver checks them as they accumulate, and results are stored on graph nodes; when code changes, constraints and proofs are regenerated.",
+        "for_lion": "Close to Lion's derived rows kept up to date as facts change: proof results could be derived rows that follow program and fact changes rather than one-off runs.",
+        "quotes": [
+          "This is designed to happen incrementally as the compiler builds the graph.",
+          "The solver checks these constraints as they accumulate, and CCS records the results directly on the PSG nodes.",
+          "When the code changes, the constraints change with it, and the proofs are regenerated automatically.",
+          "The implementation is the specification, because the specification is derived from the implementation’s algebraic structure."
+        ]
+      },
+      {
+        "idea": "keep facts instead of erasing them",
+        "what": "Unlike F# units of measure, which are erased, Clef keeps dimensional facts and their premises available to later stages, which must preserve or re-check them.",
+        "for_lion": "Lion has no lowering, so little applies; at most, facts a compiled closure relies on could be kept for why rather than dropped.",
+        "quotes": [
+          "F#’s Units of Measure are erased during IL generation.",
+          "Lowering must preserve or re-check the properties its target realization can perturb; a downstream MLIR pass cannot use annotations to redo representation selection."
+        ]
+      }
+    ],
+    "cites": [
+      "F*",
+      "Project Everest",
+      "HACL*",
+      "Floyd-Hoare logic",
+      "separation logic",
+      "refinement types",
+      "Rice's theorem",
+      "QF_LIA",
+      "cvc5",
+      "F# Units of Measure"
+    ]
+  },
+  {
+    "source": "clef-decidability",
+    "title": "The Decidability Sweet Spot",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "units of measure by abelian-group unification",
+        "what": "Dimensions are integer exponent vectors; Clef infers them inside type inference by unification (Kennedy's method), complete and principal, and the solver only re-checks settled relations as ground facts; unannotated functions stay dimension-polymorphic.",
+        "for_lion": "Lion has no units; a dimension check over JSON numbers could be built on Lion's linear solver or as a schema, catching unit mixing in rules and aggregates, but it would be a new feature with no static checker to host it.",
+        "quotes": [
+          "CCS solves dimensional constraints inside type inference by abelian-group unification, the method Kennedy’s units of measure established.",
+          "The solver never searches for a dimension; it only re-checks each settled relation as a ground QF_LIA fact.",
+          "The inference is complete (every dimensionally consistent program can be typed without annotation), principal (the inferred type is the most general), and decidable (the constraint system is finite and the solution algorithm terminates)."
+        ]
+      },
+      {
+        "idea": "one decidable fragment per obligation",
+        "what": "Obligations go to SMT-LIB fragments that are guaranteed decidable: QF_LIA for integer ranges, QF_BV for widths and bit layout, QF_LRA for real bounds; Clef presents this as a separate formal class from dependent types, like regular languages beside context-free ones.",
+        "for_lion": "A frame for Lion's solver: state which fragment each kind of question lands in (Lion mixes integer and real JSON numbers) and keep each one decidable rather than heuristic.",
+        "quotes": [
+          "General dependent type systems have decidable type checking when the developer supplies the type, but type inference and proof search are undecidable, which is why production systems built on them require manual annotations, fuel limits, and timeout heuristics during SMT solving.",
+          "Obligations beyond dimensions, such as value ranges, machine widths and layouts, land in SMT-LIB’s guaranteed-decidable fragments : QF_LIA for integer ranges, QF_BV for fixed-width arithmetic and bit layout, and QF_LRA for real-valued bounds.",
+          "DTS occupies the analogous position relative to dependent types, a separate formal class that overlaps in expressive power for a specific domain but differs in the computational properties practical tooling depends on: decidability, inference completeness, and runtime cost."
+        ]
+      },
+      {
+        "idea": "the cheap check holds only where composition commutes",
+        "what": "Decidability rests on commutativity; where the order of concurrent work is observable, the structure is non-abelian and needs a heavier obligation, kept to that boundary.",
+        "for_lion": "The same line runs through Lion: lattice aggregates and merges are order-independent because they commute, while set! and commands are ordered; it suggests confining heavier proofs (command invariants) to the ordered part.",
+        "quotes": [
+          "The check stays cheap because composition commutes, and that commutativity holds only inside a boundary.",
+          "Concurrent work whose crossing order the runtime can observe does not commute",
+          "Ordinary code remains inside the abelian interior with no additional obligation."
+        ]
+      },
+      {
+        "idea": "diagnostics from the conflicting subset",
+        "what": "When unification fails, the plan is to report the exact subset of conflicting constraints and map each back to the graph edge that produced it.",
+        "for_lion": "Directly usable: when Lion's solver finds a question unsatisfiable or an invariant fails, why could give the minimal conflicting facts and constraints (an unsat core) traced to source forms.",
+        "quotes": [
+          "When unification fails, the plan is for Lattice to report the exact subset of conflicting constraints.",
+          "CCS generated each constraint from a specific PSG edge, so it can translate that subset back into the edges that caused the conflict."
+        ]
+      },
+      {
+        "idea": "annotations as fixed constraints",
+        "what": "An explicit annotation is just another constraint joined with the inferred ones; a hand-written requirement that inference already derives is redundant.",
+        "for_lion": "Fits Lion's schemas: a schema on an argument could be one more constraint the solver combines with what rules imply, and a conflict located at the form that caused it.",
+        "quotes": [
+          "If a developer explicitly annotates a boundary (the “push model”), like (m1: float<kg>) , CCS treats that as a fixed constraint in unification.",
+          "If it conflicts with the constraints derived from the code’s operations, unification fails, and Lattice will highlight the exact line of code where the physics broke down."
+        ]
+      },
+      {
+        "idea": "weakest preconditions and the consequence rule",
+        "what": "Design-time checking is weakest-precondition computation; each later stage is checked locally with Hoare's consequence rule, so no global re-verification is needed.",
+        "for_lion": "Lion's proofs that commands keep invariants could compute a weakest precondition for a command rather than only checking a given invariant, and compose proofs by local implication checks.",
+        "quotes": [
+          "The design-time discharge is weakest-precondition computation in Dijkstra’s sense.",
+          "The engineer writes the program and CCS derives the precondition.",
+          "Compositionality of the pipeline then reduces to local checks at each lowering, with no global re-verification required at the binary stage."
+        ]
+      }
+    ],
+    "cites": [
+      "Kennedy's units of measure",
+      "Hindley-Milner",
+      "SMT-LIB (QF_LIA, QF_BV, QF_LRA)",
+      "Linux kernel eBPF verifier",
+      "Dijkstra weakest precondition",
+      "Hoare consequence rule",
+      "braid group",
+      "regular expressions vs context-free grammars"
+    ]
+  },
+  {
+    "source": "clef-mode-shifts",
+    "title": "Mode Shifts In Fidelity Verification",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "three solver outcomes and vacuous premises",
+        "what": "A goal is checked by asking whether assumptions plus the negated goal are satisfiable: unsat proves it, sat gives a counterexample, unknown keeps the obligation open; contradictory premises must be detected because they make the implication vacuously true.",
+        "for_lion": "Lion's prove and assuming should report proved / counterexample / unknown separately and check that the assumed facts are consistent, so a proof under contradictory assumptions is flagged rather than reported as a pass.",
+        "quotes": [
+          "To establish a goal G G G from assumptions Γ \\Gamma Γ , the validity query asks whether a counterexample exists:",
+          "unknown The procedure returned no decision Retain the unresolved obligation",
+          "The compiler also needs to identify inconsistent premises"
+        ]
+      },
+      {
+        "idea": "unsat core and replayable proof are different evidence",
+        "what": "An unsat core shows which assertions were involved; a replayable proof is a separate kind of evidence; the record should say which was returned and which solver or checker it depends on.",
+        "for_lion": "Lion's solver certificates could state their evidence kind (checkable certificate versus bare verdict versus core) and the engine they rely on, inside why.",
+        "quotes": [
+          "An unsatisfiable core can help identify the assertions involved in an unsat result.",
+          "A replayable proof is a different evidence form.",
+          "Our record of the obligation should identify which was returned and which solver or checker the result depends on."
+        ]
+      },
+      {
+        "idea": "pending applications, invalidated on edit",
+        "what": "A proof application stays pending until its evidence exists; an edit to a premise invalidates the affected evidence; showing or hiding proofs never changes what is checked.",
+        "for_lion": "Maps onto Lion's derived rows that follow fact changes and the waiting rule: proof status could be a derived row that goes pending when a premise changes.",
+        "quotes": [
+          "The application remains pending until the required evidence is available.",
+          "If an edit changes a premise or the operation being justified, the affected evidence must be invalidated and checked again.",
+          "Required checks are active independently of editor presentation.",
+          "Proof visibility is optional, while a required compilation check remains required."
+        ]
+      },
+      {
+        "idea": "registered library lemmas, instantiated automatically",
+        "what": "Library authors register lemmas with premises and a justification; the compiler instantiates them with the program's actual values and dispatches the premises; imports are checked lemmas, never axioms.",
+        "for_lion": "Lion could let a proved property (e.g. a command keeps an invariant) be cited by later proofs as a lemma carrying its premises, instead of re-proving it.",
+        "quotes": [
+          "The compiler derives supported obligations from the PSG, instantiates registered library lemmas and dispatches their premises automatically.",
+          "The quotation makes a proposition available to the compiler.",
+          "Its truth requires the justification and the applicable premises.",
+          "Theorem and certificate imports are checked lemmas, never new axioms; every application retains its permitted foundation, semantic correspondence and use-site hypotheses."
+        ]
+      },
+      {
+        "idea": "untrusted search proposes, checker decides",
+        "what": "Search or ranking may offer a candidate rule application, but the compiler checks it before marking the obligation discharged.",
+        "for_lion": "The shape of Lion's Houdini inference, and a safe place for heuristics or an LLM to propose invariants or lemmas that Lion then checks.",
+        "quotes": [
+          "An analyzer can use search or ranking to offer a candidate.",
+          "The compiler must check the application before marking its obligation as discharged."
+        ]
+      },
+      {
+        "idea": "nonlinear facts enter a linear solver as justified premises",
+        "what": "A bound on exp(x) comes from a library theorem; the solver only checks the linear-arithmetic consequence of those imported facts, and each imported fact keeps its own justification.",
+        "for_lion": "A way past Lion's linear-only solver: facts about nonlinear functions can be supplied as bounds with their own why, and the solver checks only the linear consequence.",
+        "quotes": [
+          "It checks the arithmetic consequence of the imported facts.",
+          "The exponential theorem and the target’s error contract require their own justifications, retained with those facts in the PSG.",
+          "In particular, the query does not assert a transcendental exponential operation inside QF_LRA."
+        ]
+      }
+    ],
+    "cites": [
+      "Hăvărneanu, Classical Adjoint Logic (2026)",
+      "Pruiksma, Chargin, Pfenning, Reed, Adjoint Logic (2018)",
+      "Haynes, Fixed-Point Scaffolding in the Clef Programming Language",
+      "MLIR SMT dialect",
+      "cvc5",
+      "Rocq",
+      "Iris"
+    ]
+  },
+  {
+    "source": "clef-proof-composition",
+    "title": "Proof Composition and Tooling",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "tiers are reasoning roles",
+        "what": "Obligations are grouped as structural inference, local solver conditions, parameterized domain theorems and relational judgments about two executions; one component may need several tiers.",
+        "for_lion": "A map for Lion: schemas/patterns, the solver, prove with assuming/induction, and nothing yet for relational (two-run) properties, which shows the gap.",
+        "quotes": [
+          "The same actor can require several of these.",
+          "The topic “concurrency” does not assign every obligation to one tier.",
+          "4 Relational judgments about executions or realizations A compiler refinement or a probabilistic coupling with stated conditions"
+        ]
+      },
+      {
+        "idea": "a checked lemma gives a proof term, not an axiom",
+        "what": "Applying a lemma produces a proof term with its use-site hypotheses; a certificate counts only once it is checked, and an unchecked solver verdict never becomes an axiom.",
+        "for_lion": "Supports Lion's certificates being independently checkable, and why trees keeping the hypotheses at each use.",
+        "quotes": [
+          "The conclusion has a proof term.",
+          "It has not become an axiom.",
+          "A proof certificate is not established merely by being present.",
+          "An unchecked solver verdict cannot become a Rocq axiom."
+        ]
+      },
+      {
+        "idea": "automatic does not mean decidable",
+        "what": "The compiler can derive an obligation and apply a finite recipe, but that does not decide every statable theorem; unsupported premises or ones over budget stay unresolved.",
+        "for_lion": "Lion's bounded search and solver should say 'unresolved' with the reason (budget, unsupported form) rather than answer false.",
+        "quotes": [
+          "This also explains why automatic generation does not imply unrestricted decidability.",
+          "That does not decide every theorem that can be stated in the underlying logic.",
+          "Required premises that remain unsupported or exceed a checking budget stay unresolved."
+        ]
+      },
+      {
+        "idea": "joint constraints over shared identities",
+        "what": "Proofs from different reasoning kinds compose only when they refer to the same inputs and results; a pile of individually valid certificates is not a composed proof.",
+        "for_lion": "When Lion combines rule derivations, solver proofs and induction in one why, they must share the same variables and facts, an argument for one provenance graph across engines.",
+        "quotes": [
+          "These are joint constraints: the local numerical proof, resource proof and protocol proof must refer to the same inputs, buffers, epochs and accepted results.",
+          "Merely collecting three individually valid certificates is insufficient."
+        ]
+      },
+      {
+        "idea": "liveness needs more than safety",
+        "what": "A claim that completed work agrees with a spec is separate from a claim that work eventually completes, which needs delivery, fairness, termination and recovery conditions.",
+        "for_lion": "Relevant to Lion's rules about what must eventually happen: such claims should name their fairness or termination assumptions.",
+        "quotes": [
+          "The resulting claim can state that every completed accepted join agrees with a specified sequential result or error relation.",
+          "A claim that every job eventually completes additionally needs delivery, fairness, termination and recovery conditions."
+        ]
+      },
+      {
+        "idea": "proof caching, invalidation and negative cases",
+        "what": "Cache keys include semantic dependencies and versions; changes invalidate results and cancel stale work; the first milestone must include negative cases, and latency must be measured before it is claimed.",
+        "for_lion": "Matches Lion's practice of measuring and mutation testing; suggests proof results be cached by semantic dependencies, with properties for stale identities and missing premises.",
+        "quotes": [
+          "Cache keys must include semantic dependencies, law and encoding versions, target facts and the checked source snapshot.",
+          "Changes invalidate affected results; cancellation prevents obsolete work from delaying current feedback.",
+          "Cold and warm latency, invalidation fan-out and memory use need measurements before interactive performance is claimed.",
+          "The first engineering milestone should be narrow but complete: one automatically elaborated numerical/protocol composition, with a checked semantic bridge and negative cases for stale identities, missing premises and incorrect arithmetic."
+        ]
+      }
+    ],
+    "cites": [
+      "Iris",
+      "Actris",
+      "Aneris",
+      "Verdi",
+      "Clutch",
+      "Islaris",
+      "RefinedC",
+      "Rocq",
+      "cvc5",
+      "OPAM",
+      "pRHL",
+      "Decidable By Construction (project paper)",
+      "Coexponential Exploration in the Clef Programming Language (project paper)"
+    ]
+  },
+  {
+    "source": "clef-proof-aware",
+    "title": "Proof-Aware Compilation Through Hypergraphs",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "proof obligations as hyperedges",
+        "what": "Obligations are first-class multi-way edges connecting the program elements they concern, such as an array, its access sites and the loop.",
+        "for_lion": "Lion's logic layer already has n-ary relations: obligations and proofs could be facts over program elements that rules and queries can read.",
+        "quotes": [
+          "In the hypergraph, proof obligations aren’t annotations attached to code; they’re distinct “hyperedges” that connect multiple program elements, expressing multi-way relationships that must be preserved.",
+          "A single bounds-check proof might connect an array, multiple access sites, and the loop that contains them."
+        ]
+      },
+      {
+        "idea": "proofs enable optimization",
+        "what": "Knowing why a check exists lets the compiler hoist, fuse, eliminate or specialize checks; the page admits the carried properties are bounds and access invariants, not full functional correctness.",
+        "for_lion": "Lion's argument guards compiled from schemas could be skipped where a schema, pattern or solver result already establishes the argument (proof-guided guard elimination in compiled closures).",
+        "quotes": [
+          "proof-guided optimization that keeps a check where it is load-bearing and drops it where safety is already established",
+          "Check elimination : Remove checks entirely when other proof hyperedges already establish safety",
+          "The compiler treats proofs as information that drives optimization, not as cost to strip out.",
+          "The resulting binary would be optimized while carrying the safety properties the proof hyperedges hold, the bounds, allocation, and access invariants checked at design time rather than a full functional-correctness proof."
+        ]
+      },
+      {
+        "idea": "make bad states unrepresentable",
+        "what": "Some failures need no proof because the representation (chosen from the value range) cannot hold the bad state.",
+        "for_lion": "Lion is dynamically typed JSON, so this applies only through schemas that list their values and exact records; low relevance.",
+        "quotes": [
+          "Others never arise, because the state they depend on cannot be represented, and for those no proof obligation exists to carry.",
+          "The unsafe state is not caught and rejected at runtime; it is absent from the space of programs the type discipline can express."
+        ]
+      },
+      {
+        "idea": "one theorem, many instantiations",
+        "what": "A verified library function's theorem is shared across calls, but each call keeps its own premises; changed context invalidates evidence even when the source text is the same.",
+        "for_lion": "A proved function or command property in Lion could be proved once and instantiated per call; caching proofs by text alone (Lion versions by file hash) would miss changed context.",
+        "quotes": [
+          "When the same verified library function is called multiple times, its checked theorem can be shared while each call retains its own instantiation and premises.",
+          "Sharing the theorem does not discharge a call’s unmet preconditions",
+          "A changed writer, lifetime or boundary contract must invalidate the affected evidence even if the call’s source spelling stays the same."
+        ]
+      },
+      {
+        "idea": "rule libraries instantiated across a codebase",
+        "what": "Safety-standard rules (MISRA) become reusable proof patterns instantiated at each matching site.",
+        "for_lion": "Lion could express lint or safety rules as Lion rules over the facts its analyzer produces about a program.",
+        "quotes": [
+          "these patterns become reusable proof hyperedges instantiated across a codebase",
+          "Composer is designed to optimize within those marked boundaries rather than reason about safety from scratch at each site."
+        ]
+      },
+      {
+        "idea": "patent pending on certificate-guided optimization",
+        "what": "Braidpoint states a pending patent on verification-preserving compilation guided by formal certificates.",
+        "for_lion": "A caution before Lion adopts proof-guided optimization from this source: the idea's specific method is claimed.",
+        "quotes": [
+          "Braidpoint has a patent pending for this innovation: “System and Method for Verification-Preserving Compilation Using Formal Certificate Guided Optimization” (US 63/786,264).",
+          "This patent application covers the unique approach to verification-preserving compilation that the Fidelity Framework and Composer compiler represents."
+        ]
+      }
+    ],
+    "cites": [
+      "MISRA-C",
+      "MLIR",
+      "LLVM",
+      "Program Hypergraph paper (project)",
+      "Decidable By Construction (project paper)"
+    ]
+  },
+  {
+    "source": "clef-verification-byproduct",
+    "title": "Formal Verification as Compilation Byproduct",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "'for free' means no authoring step, not no cost",
+        "what": "The page defines 'for free' narrowly: no extra proof-writing in the supported workflow, while inference and checking still cost time.",
+        "for_lion": "A useful honesty rule for how Lion describes inferred invariants and derived checks.",
+        "quotes": [
+          "“For free” describes the absence of an additional proof-authoring step in the supported application workflow.",
+          "Inference, elaboration and evidence checking have implementation and execution costs."
+        ]
+      },
+      {
+        "idea": "integer reasoning is not rational reasoning",
+        "what": "Integer exponents need integer-preserving reasoning with divisibility; elimination over the rationals is not enough.",
+        "for_lion": "Lion's linear-arithmetic solver must say whether it decides over rationals or integers, since JSON numbers include both and a rational relaxation can wrongly accept integer constraints.",
+        "quotes": [
+          "Dimensional inference solves measure equations under the declared algebra.",
+          "Integer exponents require integer-preserving reasoning, including divisibility conditions; ordinary elimination over rationals is insufficient."
+        ]
+      },
+      {
+        "idea": "what a certificate records",
+        "what": "An evidence record names the proposition, participants, source snapshot, rule instance and checked premises, the proof and its checker, the axiom basis and hypotheses, and what invalidates it; emitted is not the same as checked.",
+        "for_lion": "A checklist for Lion's why certificates: add the axiom basis (solver, assumptions), the program version, and the facts whose change invalidates the result.",
+        "quotes": [
+          "The rule or theorem instance, actual parameters and checked premises.",
+          "The permitted axiom basis, remaining environment hypotheses and transitive checking dependencies.",
+          "The dependencies whose changes invalidate the result.",
+          "An emitted certificate is distinct from a checked certificate.",
+          "An imported result is a proved lemma, never an axiom added because a solver returned success."
+        ]
+      },
+      {
+        "idea": "not everything fits the solver",
+        "what": "Positive definiteness, energy conservation and arbitrary loop invariants cannot simply be sent to QF_LIA; each needs its own model, rule and encoding.",
+        "for_lion": "Bounds what Lion's solver can promise; arbitrary loop invariants belong to induction via assuming, not the linear solver.",
+        "quotes": [
+          "Matrix positive definiteness, general energy conservation and arbitrary loop invariants cannot simply be sent to QF_LIA because they appear in attributes.",
+          "Each needs an appropriate model, rule and supported encoding.",
+          "A checked fact about one allocation cannot justify an unrelated access with a similar type."
+        ]
+      },
+      {
+        "idea": "graduated adoption through reusable laws",
+        "what": "A law written once for one need serves later programs automatically; required checks never depend on the user accepting a suggestion.",
+        "for_lion": "Lion's stdlib could ship proved laws (e.g. that a merge is a lattice join) used automatically by every program.",
+        "quotes": [
+          "The initial authoring community can be small: a law developed for one concrete framework need can serve subsequent applications automatically.",
+          "An optional editor suggestion may introduce an additional requirement or repair, but required checking cannot depend on accepting a suggestion or displaying proof annotations."
+        ]
+      },
+      {
+        "idea": "honest scoping of what exists",
+        "what": "The page lists what is implemented (source obligations, cvc5 dispatch) and what remains engineering work, and says copying an attribute is not a preservation proof.",
+        "for_lion": "Confirms that most of Clef's verification design is unbuilt; Lion should treat it as design ideas, not proven practice.",
+        "quotes": [
+          "General theorem-package admission, cross-mode certificate import, the proposed concurrent/distributed library adapters and broad Tier 4 automation remain engineering work.",
+          "Copying an attribute is not a preservation proof.",
+          "Verification does not imply a universal speedup, nor eliminate validation at external boundaries whose inputs remain unknown before execution."
+        ]
+      }
+    ],
+    "cites": [
+      "Decidable By Construction (project paper)",
+      "cvc5",
+      "Rocq",
+      "Iris",
+      "Clutch",
+      "cRHL",
+      "pRHL",
+      "MLIR",
+      "llvm.assume"
+    ]
+  },
+  {
+    "source": "clef-constructed-witnesses",
+    "title": "Constructed Witnesses",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "a runtime guard constructs a witness",
+        "what": "A static proof can be conditional on an input premise known only at runtime; a sound generated check establishes the premise, and the invariant then follows for that use without shipping a proof.",
+        "for_lion": "Lion's schemas used as predicates at a boundary are such guards: a proof made assuming an input fits a schema, plus the schema check where input arrives, gives the invariant.",
+        "quotes": [
+          "A compiler can establish an implication about a computation while generating a check for an input premise that will become known only when a message arrives.",
+          "When a sound guard establishes a premise and the relevant implication and lowering are justified, the invariant follows for that use.",
+          "This is the sense in which the guard constructs a witness."
+        ]
+      },
+      {
+        "idea": "four distinct outcomes",
+        "what": "Proof, counterexample, unresolved and timeout are kept apart; pending facts may wait, but nothing may be committed that needs a missing fact.",
+        "for_lion": "Same lesson as the solver outcomes: Lion should not collapse unknown or timeout into false.",
+        "quotes": [
+          "A successful proof, a counterexample, an unresolved obligation and a timeout are distinct outcomes.",
+          "Pending facts can remain in the PSG while the program and platform context are elaborated; a lowering cannot silently choose a representation that needs facts still missing at commitment."
+        ]
+      },
+      {
+        "idea": "total narrowing with a failed path",
+        "what": "Boundary conversion either succeeds fully or returns an error naming the failed path, with no partial value admitted.",
+        "for_lion": "Fits Lion's fitting rule and schema decoding: a failed fit could always name the path that failed, and never yield a partly fitted record.",
+        "quotes": [
+          "The JavaScript profile requires total narrowing: a successful conversion or a Result error identifying the failed path, with no partially converted value admitted.",
+          "That makes a boundary failure ordinary typed control flow.",
+          "Enumerating those outcomes does not enumerate every reachable program state or prove termination, delivery or recovery."
+        ]
+      },
+      {
+        "idea": "contracts and blame",
+        "what": "Clef credits Findler-Felleisen higher-order contracts and blame, and aims to derive checks and their failure provenance from the obligations the compiler tracks.",
+        "for_lion": "Racket's contracts are in Lion's lineage; schemas on lambda arguments with blame (which side broke the contract) is a gap Lion could fill.",
+        "quotes": [
+          "The contract tradition of Findler and Felleisen and Wadler and Findler supplies a useful precedent, especially for higher-order crossings.",
+          "A blame theorem depends on its language and contract semantics; it is not a blanket claim that every failure belongs to foreign code.",
+          "Here the engineering goal is to derive checks and their failure provenance from the same obligations that the middle-end tracks, and to preserve that relation through emission."
+        ]
+      },
+      {
+        "idea": "scoped claims for external premises",
+        "what": "Some premises cannot be checked at runtime (durability, future trajectories); they become explicit assumptions or monitors, and the interface should say what was computed, declared or assumed.",
+        "for_lion": "Matches Lion's why with assumed unknowns and verifiable figures: separate computed results, declared facts and host assumptions.",
+        "quotes": [
+          "Not every external premise has a small runtime decision procedure.",
+          "Such facts need explicit assumptions or conditional monitors, with claims scoped to what they establish.",
+          "It should be clear which figures were computed, which facts were declared and which behavior remains a host assumption."
+        ]
+      }
+    ],
+    "cites": [
+      "Findler and Felleisen (contracts)",
+      "Wadler and Findler (blame)",
+      "Akka.NET persistence",
+      "BAREWire"
+    ]
+  },
+  {
+    "source": "clef-design-time-spec",
+    "title": "Design-Time Specification for Runtime Reliability",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "every emitted value has a declared origin",
+        "what": "Besides preserving or re-checking properties, the converse rule: every emitted constant or behavior must trace to source, specification or platform facts.",
+        "for_lion": "The same as Lion's rule that what a reader sees comes from the model: every output could carry a why back to facts.",
+        "quotes": [
+          "The normative rule is Conformance §6 : preserve a required property or re-check it at an affected lowering edge.",
+          "The converse matters too: an emitted constant, buffer extent or behavior must have a declared origin in source, specification or platform facts."
+        ]
+      },
+      {
+        "idea": "decidable is not fast; unresolved is not proved",
+        "what": "Each obligation needs its own decision procedure; a decidable fragment does not promise an interactive budget; missing facts and timeouts stay unresolved.",
+        "for_lion": "Lion's solver and bounded search should report a timeout or missing fact as unresolved, never as success or failure.",
+        "quotes": [
+          "Each proof obligation needs an appropriate decision procedure.",
+          "A supported decidable fragment makes a question well-defined; it does not promise every query finishes within an interactive budget.",
+          "Missing facts and solver timeouts stay unresolved, rather than becoming successful proofs."
+        ]
+      },
+      {
+        "idea": "pending facts, no silent weakening",
+        "what": "A choice is committed only once its facts are established; an empty set of admissible choices is an error, not a cue to relax the requirement.",
+        "for_lion": "Like Lion's waiting rule (an expression over unbound logic variables waits); also argues against silent defaults when no answer fits.",
+        "quotes": [
+          "Pending facts can survive elaboration; a concrete representation may be committed only when its required facts are established.",
+          "A missing required capability or an empty coverage set is a diagnostic error, not a recommendation to use weaker arithmetic.",
+          "The IDE can compare admissible choices and their costs without inventing quantitative accuracy claims or silently relaxing the requirement."
+        ]
+      },
+      {
+        "idea": "a result carries its obligation, assumptions and model",
+        "what": "A solver result is meaningful only with the obligation, assumptions and model; a source hash alone binds neither meaning nor behavior.",
+        "for_lion": "Lion versions beliefs by file hash; this warns that a hash names the text, so a certificate should also carry its assumptions and the engine version.",
+        "quotes": [
+          "A solver result needs the obligation it answered, the assumptions it used and the model in which it answered.",
+          "A source hash or successful MLIR verification binds neither numeric meaning nor observable behavior on its own."
+        ]
+      },
+      {
+        "idea": "claims belong to the contract that can establish them",
+        "what": "A valid payload does not prove authorization or delivery; a TypeScript signature does not prove purity; such properties need summaries or explicit external assumptions.",
+        "for_lion": "Host functions called from Lion are outside its semantics; their results could be marked as assumed premises in why rather than trusted silently.",
+        "quotes": [
+          "A valid payload is not evidence of peer authorization, session order, delivery or persistence.",
+          "Each claim belongs to the contract that can establish it.",
+          "It cannot establish purity, storage durability or future callback behavior by itself."
+        ]
+      },
+      {
+        "idea": "erasure last",
+        "what": "Metadata stays until every stage that needs it is done, then is dropped or kept only as diagnostic evidence.",
+        "for_lion": "Little for Lion, which evaluates in memory with no lowering; at most, keep schema facts for why rather than dropping them in compiled closures.",
+        "quotes": [
+          "Erasure is the final economy, not an early shortcut.",
+          "Metadata stays available through the lowering edges that need it, then can be consumed or retained only as diagnostic evidence."
+        ]
+      }
+    ],
+    "cites": [
+      "Conformance §6 (project spec)",
+      "Fable",
+      "Fickl",
+      "BAREWire",
+      "JSIR",
+      "V8",
+      "Solid/Babel",
+      "MLIR"
+    ]
+  },
+  {
+    "source": "clef-absorbing-alloy",
+    "title": "Absorbing Alloy",
+    "date": null,
+    "author": null,
+    "ideas": [
+      {
+        "idea": "not Alloy the modeling language",
+        "what": "'Alloy' here is Clef's own former BCL-free standard library, now absorbed into the compiler; the page has nothing on Alloy-style relational modeling or bounded model finding.",
+        "for_lion": "The research run should not count this page as a source on Alloy (Jackson's relational modeling language).",
+        "quotes": [
+          "In March 2025, we published “Building Composer With Alloy,” describing a BCL-free Clef standard library that would provide native type implementations.",
+          "Alloy would be to Fidelity what the BCL is to .NET."
+        ]
+      },
+      {
+        "idea": "remove a layer that duplicates another",
+        "what": "The library was defining types the compiler already defined, so the layer was removed; they ask of each inherited pattern whether it is load-bearing or scaffolding.",
+        "for_lion": "The same first-principles rule Lion already follows; no new technique.",
+        "quotes": [
+          "We were maintaining two layers where one would suffice.",
+          "Each time we find ourselves recreating a .NET pattern, we now ask: is this pattern load-bearing, or is it scaffolding we can remove once we have a firm grasp of what’s needed for this framework?",
+          "Alloy was scaffolding."
+        ]
+      },
+      {
+        "idea": "additive instead of subtractive inclusion",
+        "what": "Instead of loading the whole library and pruning unreachable code, the compiler includes only what is referenced.",
+        "for_lion": "Possibly relevant to how much of Lion's stdlib is compiled or shipped (site runtime), but Lion's stdlib is small; low relevance.",
+        "quotes": [
+          "With intrinsics, compilation follows an additive model.",
+          "In our HelloWorld samples, reachability analysis previously processed the entire Alloy typed tree before pruning over 90% of it.",
+          "If the compiler emits it, it’s needed."
+        ]
+      },
+      {
+        "idea": "critique of JSON code representations",
+        "what": "Clef prefers F# quotations because they keep type information as data, while string or JSON code representations leave types as opaque metadata to parse and validate separately.",
+        "for_lion": "A direct critique of Lion's representation; Lion's answer is that schemas are data and predicates in the same JSON, but no checked type information travels with a quoted Lion expression.",
+        "quotes": [
+          "Where string-based or JSON-based code representations leave types as opaque metadata that must be parsed and validated separately, a quotation preserves the compiler’s type information as first-class data.",
+          "That information is structurally present in the quotation, verified by the same type checker that validated the original code."
+        ]
+      },
+      {
+        "idea": "the language is its type definitions plus evaluation rules",
+        "what": "From the nanopass define-language form they take the view that a language's types belong to the compiler, not to an imported library.",
+        "for_lion": "Bears on where Lion draws the line between special forms and stdlib; little new for Lion.",
+        "quotes": [
+          "in nanopass, you don’t import a library of types",
+          "You define the language’s types as part of the compiler itself.",
+          "From our view, the language is type definitions plus evaluation rules."
+        ]
+      }
+    ],
+    "cites": [
+      "Scheme nanopass framework (define-language)",
+      "Triton-CPU",
+      "MLIR TableGen",
+      "F# quotations",
+      "F# active patterns",
+      "F# SRTP",
+      ".NET BCL"
+    ]
+  }
+]

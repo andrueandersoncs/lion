@@ -1,0 +1,440 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types The Parametricity Result
+The Connection to Dimensional Types
+Persistence Through Lowering
+From Types to Further Proof Obligations
+The Connection to Reynolds
+Implications for DTS
+The Free Theorem Boundary
+Lower Bounds Framing
+The Deeper Pattern
+References
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+The Parametricity Result
+The Connection to Dimensional Types
+Persistence Through Lowering
+From Types to Further Proof Obligations
+The Connection to Reynolds
+Implications for DTS
+The Free Theorem Boundary
+Lower Bounds Framing
+The Deeper Pattern
+References
+Scroll to top
+Blog
+'Free' Proofs from Dimensional Types
+'Free' Proofs from Dimensional Types
+How Wadler's Free Theorems Provide the Formal Foundation for Design-Time Dimensional Verification
+March 31, 2026 · Houston Haynes · 11 min read
+Architecture Type Systems Innovation
+In 1989, Philip Wadler published “Theorems for free!” , a paper that demonstrated a counterintuitive property of polymorphic type systems: the type of a function, by itself, determines non-trivial theorems about that function’s behavior. No implementation needs to be examined. No test cases need to be run. The type is the theorem.
+This result, grounding John Reynolds’ earlier abstraction theorem (1983) in a form accessible to working programmers, has quietly underpinned the design of ML-family type systems for over three decades. It is a direct influence on our Dimensional Type System, and the lineage is worth tracing.
+The Parametricity Result
+Wadler’s central observation is best illustrated by his own method. Write down the type of a polymorphic function. Do not look at the function’s definition. From the type alone, derive a theorem that every function of that type must satisfy.
+Consider a function with type ∀ a . [ a ] → [ a ] \forall a.\ [a] \to [a] ∀ a . [ a ] → [ a ] . This function takes a list of any type and returns a list of the same type. Parametricity guarantees that for any such function g g g and any total function f f f :
+map ⁡ f ∘ g = g ∘ map ⁡ f \operatorname{map}\ f \circ g = g \circ \operatorname{map}\ f map f ∘ g = g ∘ map f The function g g g cannot inspect the elements of the list (they are abstract; g g g does not know what a a a is). It can only rearrange, duplicate, or drop elements. Whatever rearrangement it performs must commute with any element-wise transformation. This is not a property of any specific function; it is a property of the type. Every function with this type satisfies the theorem.
+Wadler called these “free theorems” because they cost nothing: no annotation, no proof effort, no verification step. They fall out of the type.
+The Connection to Dimensional Types
+The DTS extends Hindley-Milner unification with dimensional annotations drawn from finitely generated abelian groups. A function with type float<'d> -> float<'d> -> float<'d * 'd> (multiply two dimensioned values) carries a dimension variable 'd that is polymorphic in exactly the sense Wadler describes: the function cannot inspect the dimension. It must behave uniformly across all dimensional instantiations.
+Parametricity guarantees this uniformity. A multiplication function that works correctly for meters must work correctly for kilograms, for seconds, for any dimension, because the dimension variable is abstract. The function has no mechanism to dispatch on the dimension and do something different. The type prevents it.
+This provides a semantic motivation for dimensional inference. The measure fragment has decidable principal inference over integer-exponent equations, using solving that preserves the integer and divisibility constraints. Soundness also requires that the inference rules implement the declared dimensional algebra. Connecting the result to a compiled artifact adds preservation obligations for the compiler’s transformations.
+Persistence Through Lowering
+The DTS design retains dimensional information through multi-stage MLIR lowering so that later representation and memory decisions can use it. A lowering pass changes the program’s structure and must preserve the meaning of the relevant facts. Parametricity can justify metadata uniformity for a suitably parametric transformation; connecting those facts to emitted operations requires a preservation argument or validation at that boundary.
+Each lowering pass is a structure-preserving transformation, a function from one program representation to another. The dimensional annotations are polymorphic metadata that the pass carries through. Wadler’s map-commutation theorem applies directly: if the lowering pass is parametric in the dimension (it does not inspect or modify dimensional annotations, only the computational structure), then lowering and reading the dimension gives the same result as reading the dimension and lowering.
+For an implementation satisfying those premises, the dimensional account can remain consistent before and after lowering. Retaining an unchanged annotation alone does not prove that the emitted operation implements its source meaning. The source-to-target relation is part of the Tier 4 compiler-preservation account.
+Later stages can add target and layout facts while retaining the consequences needed from earlier evidence. A transformation that changes a premise must trigger revalidation of affected obligations. Information can be released when its required consequences have been preserved and its remaining consumers are satisfied.
+From Types to Further Proof Obligations
+Dimensional inference supplies a foundation for further verification. The compiler can generate many of the additional obligations automatically, but each property needs its applicable analysis or proof rule:
+Dimensional consistency of the chain rule. If f f f maps values with dimension d 1 d_1 d 1 ​ to values with dimension d 2 d_2 d 2 ​ , then the derivative d f / d x df/dx df / d x carries dimension d 2 ⋅ d 1 − 1 d_2 \cdot d_1^{-1} d 2 ​ ⋅ d 1 − 1 ​ . This is a free theorem: the chain rule’s dimensional behavior follows from the polymorphic type of differentiation. The DTS verifies it without examining the computation’s structure, because the type determines it.
+Cross-target transfer fidelity. When a value crosses a hardware boundary (FPGA to CPU, NPU to GPU), its dimension records its meaning. Establishing an acceptable precision conversion also requires a range, source and target representation semantics, and an error criterion. These become graph-carried analysis obligations; dimensional equality alone does not prove the conversion adequate.
+Coeffect propagation. The escape classification system (StackScoped, ClosureCapture, ReturnEscape, ByRefEscape) is a coeffect discipline in the sense of Petricek et al. Its analysis propagates contextual requirements through the PSG under specified transfer rules. Range, lifetime, layout, and target requirements have their own domains and preservation obligations.
+Grade and blade support in geometric algebra. The PHG paper (arXiv:2603.17627) develops structural analyses for geometric products. Checked operation rules determine possible output grades and blade support. Preserving those facts through an update or lowering requires the relevant rule and its premises; exact accumulation alone does not establish every geometric invariant.
+The Connection to Reynolds
+Wadler’s paper is explicitly an accessible reformulation of Reynolds’ abstraction theorem. Reynolds proved in 1983 that types can be read as relations: a type denotes not just a set of values but a relation between different interpretations of the type. Polymorphic functions must preserve these relations. Wadler showed that this relational reading generates useful theorems for specific types.
+Reynolds also independently discovered continuations (as documented in his 1993 survey “The Discoveries of Continuations”), which provide the formal basis for Clef’s DCont mechanism. The two contributions, abstraction (parametricity) and continuations (DCont), are the two formal pillars of the porous loop’s typed interface :
+DCont provides the suspension and resumption mechanism. In the design we are building toward, the recurrent model suspends mid-computation, passes its state as a delimited continuation to a domain actor, and resumes with the response.
+Parametricity provides the guarantee that the suspension and resumption are dimensionally consistent. The continuation’s type is polymorphic in the dimension; the domain actor’s response must satisfy the same dimensional constraints regardless of which specific dimension is instantiated. This is a free theorem of the continuation’s type.
+The convergence of these two contributions in one researcher’s body of work is not coincidental. Both are consequences of taking types seriously as specifications of program behavior: types determine what continuations can capture (Reynolds 1972), and types determine what theorems functions satisfy (Reynolds 1983, Wadler 1989).
+Implications for DTS
+The DTS paper connects dimensional inference with semantic preservation. Principal inference describes the admissible dimensional assignments. Parametricity explains uniformity under suitable polymorphic operations. Checked transformations connect those source facts to later representations.
+In short, the full summary of Clef’s innovation stems from:
+Reynolds’ abstraction theorem : types are relations; polymorphic functions preserve relations.
+Wadler’s free theorems : specific types generate specific theorems about all functions of that type.
+DTS inference : dimensional types generate dimensional consistency theorems about all functions whose types the DTS infers.
+Persistence : compilation passes that are parametric in dimensional annotations preserve the inferred dimensional consistency, by the same reasoning that Wadler’s map-commutation theorem follows from parametricity.
+The Free Theorem Boundary
+Dimensional equality uses the free abelian group on the base measures. Grade support, escape classifications, ranges, and transfer fidelity have additional rules and analysis domains. Automatic coverage can extend across these domains without turning every property into a consequence of dimensional parametricity.
+The current Decidable By Construction account organizes that coverage by reasoning role:
+Tier Source of supported proof obligations
+1 Types, dimensional equations, and admitted structural rules
+2 Graph coeffects and analysis facts that generate local range, layout, and arithmetic conditions
+3 Spanning PSG relationships and hyperedges, with reusable domain or system lemmas instantiated against checked premises
+4 Relations between executions or realizations, including compiler-relational Hoare logic (cRHL) and probabilistic relational Hoare logic (pRHL)
+A Tier 2 bounds check may use a range inferred from a guard, constant, or library contract. It does not inherently require a developer-written proof annotation. Tier 3 extends coverage through laws established by framework and domain authors. Supported Tier 4 rules can likewise generate derivations from program structure and existing evidence. Each obligation retains its assumptions; a probabilistic relation does not establish a cryptographic security theorem without the appropriate adversary model and quantitative argument.
+These tiers do not prescribe an increasing annotation burden. Application developers receive supported coverage through typed code and library use. New requirements may need explicit formulation, while unsupported obligations and timeouts remain unresolved. The compilation sheaf design records the evidence and dependencies across the tiers. A theorem established in Rocq retains that foundation when its arithmetic premises are checked by a solver. The proposed Tier 3/4 integrations still require implementation and validation.
+Lower Bounds Framing
+A lower bound is rarely a property of a problem alone. It is a property of a (problem, technique) pair: a statement that the known techniques for solving the problem have not done better than the bound, established by a proof that exploits some structural assumption about how those techniques work. When the literature reports “problem P has lower bound B,” the load-bearing content is “every technique we have tried so far inherits a reasoning step that forces B.” The bound looks structural because the reasoning step is shared across all the techniques. It stops looking structural the moment someone finds a technique that does not depend on that step.
+Engineering value follows directly. If a lower bound is a property of (problem, technique) pairs, then progress comes from finding techniques whose structural assumptions do not bind on the specific instance class you care about. The distinction between “the problem is intractable” and “the problem is intractable under reasoning step S” is the difference between a closed door and a door that has not yet been examined for an appropriate handle.
+Two results from different fields make the distinction concrete. In type theory, the standard argument against fully automated verification runs: program correctness needs dependent types, type inference and proof search in dependent type systems are not fully automatable (the engineer must supply proof terms by hand), therefore complete annotation-free verification is impossible. The undecidability of inference and proof search in general dependent type systems is real. The reasoning step that fails is the implicit assumption that every useful program property requires the full expressive range of dependent types. Dimensional consistency does not. It lives in a free-abelian-group fragment whose obligations are systems of linear equations over the integers, and within that fragment inference is decidable, complete, and principal via Gaussian elimination. The engineer supplies no proof terms; the bound on proof search has nothing to bind on. The DTS escape route operates by observing that the dependent-type undecidability result’s load-bearing assumption (every property needs the full machinery) does not hold for the property the framework actually verifies.
+In algorithms, a 2025 paper from Tsinghua, Stanford, and Max Planck (arXiv:2504.17033) makes the same kind of move against the long-standing O ( m + n log ⁡ n ) O(m + n \log n) O ( m + n lo g n ) bound for directed single-source shortest paths. The bound had stood since the Fibonacci heap result of 1987 and was widely believed to be tight, on the reasoning that any shortest-path algorithm establishes a distance order over the vertices and therefore inherits the Ω ( n log ⁡ n ) \Omega(n \log n) Ω ( n lo g n ) lower bound that comparison sorting carries. The 2025 algorithm (BMSSP) defeats the bound by organizing the work as recursive divide-and-conquer over bounded vertex sets, compressing the search frontier in a way the comparison-sorting reduction cannot account for. The new bound is O ( m log ⁡ 2 / 3 n ) O(m \log^{2/3} n) O ( m lo g 2/3 n ) . The failure point in the older argument was the implicit transfer step: the comparison-sorting lower bound is a property of techniques that establish a total order through pairwise comparisons, and BMSSP does not work that way. The comparison-sorting bound holds for the techniques it was proved for, and it stops being a constraint the moment a technique appears that does not inherit the reasoning step it depends on.
+The discipline that the (problem, technique) framing imposes is symmetric. Treating a lower bound as universal closes off research programs that turn out to be tractable in the structured subclass where the engineer actually works. Treating the structured subclass as broader than it is ships systems whose guarantees do not survive contact with workloads that fall outside the subclass. The honest position requires three things at once: identify the (problem, technique) pair the lower bound was actually proved for, identify the structural assumption in the original technique that fails on an instance class, and demonstrate a technique that exploits the failure constructively.
+The Deeper Pattern
+Wadler’s paper demonstrates how useful theorems can follow from polymorphic types. Clef builds on dimensional inference and supplements it with graph analyses, reusable laws, and relational rules. These have distinct justifications, even when the application developer receives their results through the same editing experience.
+Verification as a compilation byproduct means generating and dispatching supported obligations from the structure the program already supplies. The foundational proofs and semantic adapters remain work for compiler and library authors, so application authors need not reconstruct them at every use.
+References
+[1] P. Wadler, “Theorems for free!” in Proceedings of the Fourth International Conference on Functional Programming Languages and Computer Architecture , pp. 347-359, ACM, 1989.
+[2] J. C. Reynolds, “Types, abstraction and parametric polymorphism,” in Information Processing 83 , pp. 513-523, North-Holland, 1983.
+[3] J. C. Reynolds, “The discoveries of continuations,” Lisp and Symbolic Computation , vol. 6, pp. 233-248, 1993.
+[4] H. Haynes, “Dimensional Type Systems and Deterministic Memory Management: Design-Time Semantic Preservation in Native Compilation,” arXiv:2603.16437 , 2026.
+[5] H. Haynes, “The Program Hypergraph: Multi-Way Relational Structure for Geometric Algebra, Spatial Compute, and Physics-Aware Compilation,” arXiv:2603.17627 , 2026.
+[6] T. Petricek, D. Orchard, and A. Mycroft, “Coeffects: A calculus of context-dependent computation,” in Proceedings of the 19th ACM SIGPLAN International Conference on Functional Programming , pp. 123-135, 2014.
+Hardware Inference Proofs for the Real World
+© 2025-2026 Braidpoint

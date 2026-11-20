@@ -1,0 +1,37 @@
+{
+  "a case no value can reach, after one that takes every number": [
+    "match",
+    5,
+    ["value/number?", ["lambda", ["n"], "a number"]],
+    ["value/integer?", ["lambda", ["n"], "an integer"]],
+    ["lambda", ["o"], "something else"]
+  ],
+  "the later case takes nothing the earlier one leaves": [
+    "schema/includes?",
+    "value/integer?",
+    "value/number?"
+  ],
+  "the cases cover every kind of order": [
+    "schema/includes?",
+    [
+      "schema/anyOf",
+      { "kind": "sale", "n": "value/integer?" },
+      { "kind": "refund" }
+    ],
+    [
+      "schema/anyOf",
+      { "kind": "sale", "n": "value/number?" },
+      ["schema/open", { "kind": "refund" }]
+    ]
+  ],
+  "the cases miss a kind of order": [
+    "schema/includes?",
+    [
+      "schema/anyOf",
+      { "kind": "sale" },
+      { "kind": "refund" },
+      { "kind": "void" }
+    ],
+    ["schema/anyOf", { "kind": "sale" }, { "kind": "refund" }]
+  ]
+}

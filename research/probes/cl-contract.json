@@ -1,0 +1,10 @@
+[
+  "begin",
+  ["define", "next", ["lambda", ["n"], ["number/add", "n", 1]]],
+  [
+    "define",
+    "label",
+    ["lambda", ["n"], ["string/concat", "item ", ["next", "n"]]]
+  ],
+  ["label", "seven"]
+]

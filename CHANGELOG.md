@@ -33,6 +33,7 @@
 - ['schema/includes?', a, b] says whether every value a allows fits b, decided exactly, by listing a's values or by the solver, and refused by name otherwise. (`schema/includes?` added)
 - Where the solver's step stopped a rule, why shows a certificate for each case the solver split the goals into (`solver-proof-certificates` added)
 - The solver runs a lambda written where it runs, closed over the values it works out, by its body (`solver-runs-closures` added)
+- The research model weighs what Lion can take from Clef, an F#-family language with units of measure, delimited continuations, incremental computation, and verification designed into its compiler. Its page, `research/runs/clef/`, ranks first checking a match's cases with schema inclusion, then proofs that notice premises allowing no state, contracts on lambdas with blame, and refusing extra arguments to a lambda. Its probes found that a function that changes a binding gives one number for three items in a rule body and three in plain code, that a failure for an argument of the wrong kind names neither the function nor its caller, and that integers past 2^53 are rounded without a word. The shared frame gains `{"designed": technique, "in": system}` for what a system plans but does not say it has built, which is not a precedent. (`research-clef` added)
 
 ### Removed
 

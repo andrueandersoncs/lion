@@ -1,0 +1,545 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec What the Middle-End Can Carry
+Dimensional Consistency
+Memory and Escape Classification
+BAREWire Across Memory, IPC and Network
+Representation Fidelity
+From a Proof Result to a Build Result
+The Runtime Boundary
+A Useful Result for the Developer
+UI Toolchain Preservation
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+What the Middle-End Can Carry
+Dimensional Consistency
+Memory and Escape Classification
+BAREWire Across Memory, IPC and Network
+Representation Fidelity
+From a Proof Result to a Build Result
+The Runtime Boundary
+A Useful Result for the Developer
+UI Toolchain Preservation
+Scroll to top
+Documentation
+Design
+JavaScript Targeting
+Design-Time Spec
+Design-Time Specification for Runtime Reliability
+What the Middle-End Can Carry
+The JSIR architecture proposes a common place to carry source facts toward native and JavaScript operations. A dimension, range or lifetime established in the PSG is useful only if the chosen lowering preserves it. This page explains that work, while keeping the working Fable/BAREWire baseline and the current Fickl direction distinct from Composer’s proposed JavaScript profile.
+The normative rule is Conformance §6 : preserve a required property or re-check it at an affected lowering edge. The converse matters too: an emitted constant, buffer extent or behavior must have a declared origin in source, specification or platform facts. Shared IR is a convenient place to enforce those rules, not their proof.
+Dimensional Consistency
+Dimensional relations can be solved before runtime, under the supported language and algebra. Their facts may come from an expression, a checked domain law or a boundary declaration. They remain available in PSG/codata for dependent reasoning, including numeric representation selection. A dimensionally valid expression does not by itself establish a numeric range, a lifetime or a message’s origin.
+Each proof obligation needs an appropriate decision procedure. Dimensional algebra, integer range arithmetic, bit-vector operations and effect constraints are not one universal polynomial-time SMT problem. A supported decidable fragment makes a question well-defined; it does not promise every query finishes within an interactive budget. Missing facts and solver timeouts stay unresolved, rather than becoming successful proofs.
+Erasure is the final economy, not an early shortcut. Metadata stays available through the lowering edges that need it, then can be consumed or retained only as diagnostic evidence. The emitted payload need not carry dimensions. Whether two programs have identical instructions depends on their representation and operation choices; dimensional reasoning can inform those choices before the metadata disappears.
+Memory and Escape Classification
+Escape and lifetime facts can guide native allocation and justify particular accesses. Eliminating a check or choosing stack storage requires the premises for that operation and the relevant target lowering. An analysis name alone does not establish that every allocation is safe or that an entire binary needs no memory management.
+On JavaScript, the host manages ordinary objects. A native record’s padding, alignment and byte size are not an object-layout contract for V8. The JavaScript backend accesses record properties structurally. Explicit byte storage, such as an ArrayBuffer view, has a separate extent and lifetime contract; sharing, mutation and detachment can affect that contract even in a garbage-collected runtime.
+The useful common information is about what a computation needs, which captures it uses and when a fact remains valid. A target may realize that information differently. A native allocation decision cannot simply be relabeled as a JavaScript guarantee.
+BAREWire Across Memory, IPC and Network
+BAREWire is the glue for these three roles. A declaration can guide a native layout, a shared-memory view or a network codec, with the applicable ABI, ownership and transport facts made explicit. These roles share reasoning material; they do not imply that a native structure is already a wire encoding or that an ordinary JavaScript object has a native footprint.
+The final payload is untagged with respect to its types, schema, dimensions and proofs. Endpoint agreement supplies that interpretation. Union case indices and optional-value presence bits select alternatives inside the agreed contract; they do not identify its version or semantic meaning. Two incompatible contracts can assign different meanings to identical bytes, so deployment or session agreement has work to do outside the payload.
+A common Composer codec derivation would choose field order and encoding once. Native and JavaScript operations would still need to implement that choice faithfully, including bounds and numeric conversions. The current BAREWire implementation already checks codec and framing behavior in JavaScript after Fable compilation in the recorded baseline, with Fickl as the current direction, using exact vectors, round trips and selected rejection cases, including an out-of-bounds read and a truncated frame. These tests remain useful when another backend arrives.
+The current proof inventory ( BAREWire/docs/12 Intersection Subset.md , §5.1) also records JavaScript-generated SMT queries over declared platform facts. Those queries establish their modeled predicates. They are not a semantic proof of the JavaScript generator, codec or emitted application. The worked example identifies the additional operation and artifact correspondence required.
+Representation Fidelity
+The joint analysis connects dimension, range, representation, width, footprint and allocation. Pending facts can survive elaboration; a concrete representation may be committed only when its required facts are established. The source need not name a width or attach a seal to each operation.
+The JavaScript profile realizes ordinary reals as binary64 and respects the integer policy of Width Inference §8 . Wider exact integers need a documented realization, such as BigInt or emulation, rather than silent truncation to a host number. Additional numeric capabilities depend on the target’s declared implementation and emulation policy.
+Numeric Selection §10 requires transfer fidelity to be directional. Exact wire bytes preserve the selected encoding; they do not undo a lossy conversion made before encoding. Exact value transfer requires range coverage and representability at the destination. A lossy transfer needs a justified bound and an admissible boundary contract.
+A quire can make accumulation exact for the admitted products and partial sums, provided both fit its finite representation. Input errors, surrounding arithmetic and final conversion still matter. A missing required capability or an empty coverage set is a diagnostic error, not a recommendation to use weaker arithmetic. The IDE can compare admissible choices and their costs without inventing quantitative accuracy claims or silently relaxing the requirement.
+From a Proof Result to a Build Result
+A solver result needs the obligation it answered, the assumptions it used and the model in which it answered. Connecting that result to a build adds the target operation, relevant lowering edges and the emitted artifact. A source hash or successful MLIR verification binds neither numeric meaning nor observable behavior on its own.
+The proposed acceptance sequence starts with one operation family, preserves or re-checks its obligations, tests its runtime behavior and records the exact tools, dependencies and outputs. This is a plan for the Composer path. The current JavaScript tests do not issue an artifact-bound semantic proof certificate, and the JavaScript Substrate chapter explicitly records that no conforming implementation exists yet.
+The Runtime Boundary
+The specified boundary is productive work for generated code. Inbound objects and callback arguments are narrowed before entering the declared Clef shape. Host throws and awaited promise rejections become typed errors. Absence is converted according to the position’s contract; interior Option representation has its own preservation obligation. These are requirements for the proposed profile, not a claim about every existing F# binding.
+Byte decoding also retains checks for malformed, truncated or oversized inputs. An accepted case index is not evidence that every following byte exists. A valid payload is not evidence of peer authorization, session order, delivery or persistence. Each claim belongs to the contract that can establish it.
+A dependency’s TypeScript signature describes an interface. It cannot establish purity, storage durability or future callback behavior by itself. The compiler needs a justified implementation summary where possible and explicit external assumptions elsewhere. The host and any shipped SDK code remain part of the execution story even when the application has no package-manager directory at runtime.
+A Useful Result for the Developer
+The goal is less work repeated by hand: one declaration informing a codec, one boundary policy generating its narrowing, one obligation traced through the operation that implements it. Some checks can disappear when their premises and preservation are established. Others belong at the boundary where a value first becomes known.
+That combination lets BAREWire stay economical at final lowering while the compiler remains informed beforehand. JSIR offers a place to extend the discipline to JavaScript. The next step is to earn it one supported operation at a time, with the current tests and the specification both serving as concrete guides.
+UI Toolchain Preservation
+For a Solid/WREN profile, JSX generation is followed by Solid’s Babel-based transformation, bundling and native embedding. Preserve or re-check affected properties through those steps and bind evidence to the final assets, shipped dependencies and selected WebView. A successful JSX parse or source map does not establish reactive tracking, event multiplicity or cleanup behavior. The same proof-preservation principle applies; this is an additional realization path, not a replacement for the actor and numeric obligations above.
+JS / JSX Toolchain The Foreign Pair
+© 2025-2026 Braidpoint

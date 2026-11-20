@@ -1,0 +1,580 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals 1. Overview
+2. Mapping to the Intrinsics
+3. Signal: Settable Reactive Source
+4. Memo: Derived Cached Value
+5. Effect: Reactive Side Effect
+6. Batch: Stabilization Control
+7. Store: Nested Reactive State
+8. Dependency Tracking by Reads and Effects
+9. UI Scaffolding: Front End ↔ Core
+10. Example: Counter Application
+11. Normative Requirements
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+1. Overview
+2. Mapping to the Intrinsics
+3. Signal: Settable Reactive Source
+4. Memo: Derived Cached Value
+5. Effect: Reactive Side Effect
+6. Batch: Stabilization Control
+7. Store: Nested Reactive State
+8. Dependency Tracking by Reads and Effects
+9. UI Scaffolding: Front End ↔ Core
+10. Example: Counter Application
+11. Normative Requirements
+Scroll to top
+Language Specification
+Reactive Signals
+Reactive Signals
+This chapter specifies the surface API and its desugaring . The underlying reactive semantics are specified in Observable Computation and Incremental Computation .
+1. Overview
+Reactive Signals is a developer-facing surface API for fine-grained reactivity. It is the signal scaffolding that connects a front end to a native renderer or a WebView/JavaScript front end, and to the application core. A familiar Signal / Memo / Effect vocabulary helps developers arriving from existing ecosystems navigate the API.
+Informative. Ranvier provides a practical point of reference for this surface: writable signals, demand-driven memos, effects, batches, dynamic read dependencies, and scoped cleanup support responsive views as well as non-UI computations. Ranvier.View builds views on that reactive core. Clef’s constructs are specified by this chapter and the intrinsic chapters; their correspondence with a particular Ranvier version is established at an integration boundary, including observable scheduling, equality, and lifetime behavior.
+Signals are a thin surface layer , not a separate reactive engine. Each construct desugars to the Observable<'T> and Incremental<'T> intrinsics:
+Signal<'T> is a settable reactive source, the graph’s input leaf.
+Memo<'T> is a derived, cached, cutoff-bearing value, an Incremental<'T> .
+Effect is a side-effecting computation that re-runs on change, a demanded sink on the graph.
+Two consequences follow from being a surface over the intrinsics:
+Reactive callbacks are flat closures. A Memo or Effect body is an ordinary closure that may capture signals and local state ( Closure Representation ). Captures describe its environment; tracked reads determine its reactive dependencies. These sets are not generally identical.
+The reactive plan is compiler-visible in the Program Semantic Graph . Read and effect analysis determines static dependencies and the operations that select dynamic dependencies. Target lowering specializes proven static structure and realizes the remaining state and dynamic graph instances. No mandatory global CurrentTracking mechanism or generic runtime signal table is prescribed.
+2. Mapping to the Intrinsics
+Signals surface Desugars to Semantics specified in
+Signal<'T> (settable cell) Settable source leaf: set emits invalidation (Observable side); get registers a dependency (Incremental side) Observable / Incremental
+Memo<'T> Incremental<'T> node; tracked reads establish dependencies; cutoff from 'T : equality Incremental Computation
+Effect Always-demanded Incremental sink (an observer that performs effects) Incremental §6.3
+Batch Stabilization-boundary control (coalesce to one stabilization) Incremental §6.2
+Store<'T> Per-field signals (sugar over Signal ) this chapter
+Automatic dependency tracking Read/effect analysis over the typed graph, including closure environments and called computations §8
+Because both ends are intrinsic, a Signal driving a Memo can lower directly through the shared reactive plan without a mandatory separate library bridge ( Incremental + Observable ). The selected target still realizes the dependency notifications and runtime state the program requires.
+3. Signal: Settable Reactive Source
+A Signal<'T> is a settable cell at the root of a reactive graph. Reading it inside a reactive scope creates a dependency; writing it pushes an invalidation to dependents.
+type Signal < ' T >
+val create : ' T -> Signal < ' T >
+val get : Signal < ' T > -> ' T // within a reactive scope, registers a dependency
+val set : Signal < ' T > -> ' T -> unit // emits invalidation to dependents if changed
+val update : Signal < ' T > -> ( ' T -> ' T ) -> unit
+Desugaring. A Signal<'T> is a settable source leaf. set performs an Observable -style emission (invalidation) to the dependent Incremental nodes; a tracked read within a Memo / Effect computation establishes a dependency represented by the PSG’s reactive plan. Capturing a signal handle without reading it does not establish that dependency. Change detection on set uses the same 'T : equality cutoff as Incremental .
+Read API. The tracked read is expressed explicitly by the developer, either as a property access or a function call. A property access (e.g. .Value or .current ) is zero-cost at runtime and is a common pattern in fine-grained reactive systems; a function call is semantically identical. Either form registers the dependency in a reactive scope.
+let count = Signal . create 0
+let name = Signal . create "World"
+4. Memo: Derived Cached Value
+A Memo<'T> is a derived value that recomputes when its dependencies change and caches otherwise. It is an Incremental<'T> .
+type Memo < ' T >
+val create : ( unit -> ' T ) -> Memo < ' T > // flat closure; tracked reads establish dependencies
+val get : Memo < ' T > -> ' T // demand
+Desugaring. Memo.create f constructs an Incremental<'T> node whose recompute function is the flat closure f . The compiler analyzes tracked reads, including those reached through helper calls and captured aggregates, to represent dependencies (applicative when fixed, monadic when selected by runtime values, see Incremental §4.1 ). Lexical captures alone do not determine the active read set. Cutoff is structural equality on 'T , or an [<IncrementalCutoff>] predicate.
+A runtime may choose to represent a source and its derived computations with a single node type, distinguishing them only by mutability of the write handle. A source node accepts writes; a computed node does not. This keeps the combinator code monomorphic (no dispatch or hidden-class polymorphism per source/computed pair) and means that the observable surface area at runtime is smaller than the source-level vocabulary.
+let doubled = Memo . create ( fun () -> Signal . get count * 2 ) // captures `count`
+5. Effect: Reactive Side Effect
+An Effect runs when its tracked dependencies change. It is a demanded Incremental sink whose output is a side effect rather than a value.
+type Effect
+val create : ( unit -> unit ) -> Effect
+val createWithCleanup : ( unit -> ( unit -> unit )) -> Effect // returns a cleanup closure
+val detach : Effect -> unit // detaches the effect from its reactive graph
+Desugaring. Effect.create f registers f (a flat closure) as an always-demanded sink. Its tracked signal/memo reads determine dependencies. The effect runs initially, then re-runs when its dependencies change under the stabilization discipline. createWithCleanup returns a cleanup closure that runs before each re-execution and on detachment. An effect’s unit result is not a value cutoff that permits suppressing its required side effects.
+Lifetime. An effect’s lifetime is bounded by its enclosing actor or region. In a scoped region, the runtime (or compiler for JSIR) automatically generates the teardown code that detaches every registered effect and runs its cleanup handlers. The developer does not call cleanup at every scope boundary. In an actor context, Prospero retiring the actor performs this teardown for all remaining effects. detach is available for the rare case where manual early teardown is needed (for example, canceling an effect before its enclosing scope ends), but the default path is automatic scoped cleanup. Native captured storage follows the region lifetime; the JavaScript target uses host-managed storage while preserving deterministic logical cleanup through compiler-generated teardown at scope boundaries. A separate onCleanup registration is available for cleanup callbacks that are not tied to a specific effect’s re-execution.
+Reclamation of a removed child scope must satisfy the lifetime ordering obligations in Memory Regions . Allocation in an actor-lifetime arena does not establish early reclamation.
+let logger = eager (
+Effect . create ( fun () ->
+let c = Signal . get count // captures `count`
+Console . writeln ( sprintf "Count: %d" c )))
+The reached eager binding activates registration even if the handle is not
+otherwise used. An ordinary unused binding of the same expression would remain
+deferred; becoming an always-demanded sink follows registration, not merely the
+presence of Effect.create inside an unevaluated expression.
+6. Batch: Stabilization Control
+val run : ( unit -> unit ) -> unit
+Batch.run f groups writes under the stabilization boundary specified in Incremental §6.2 . Writes mark affected computations stale, while the batch defers the ordinary effect flush until it completes. The flush sees the final values of the contained writes. A memo read within the batch can be brought current using the writes so far; its value is a read at that point, rather than an effect observing the completed batch. An adapter to another reactive system must account for any explicit early flush that system admits.
+Batch . run ( fun () ->
+Signal . set firstName "John"
+Signal . set lastName "Doe" ) // effects run once, after both writes
+7. Store: Nested Reactive State
+A Store<'T> is a single mutable record whose fields are independently observable. Updating one field triggers re-evaluation only of the selectors that read that field. This is the reactive alternative to field-level change notification in runtime managed environments: you define one record, and the framework provides per-field dependency tracking without boilerplate.
+In runtime managed environments like the .NET CLR, field-level reactivity typically requires INotifyPropertyChanged (a manual change-notification protocol applied to every type) or eager evaluation of every dependent on any state change. Store avoids both patterns: each field desugars to a Signal<'T> , so a selector that reads state.field establishes a reactive dependency on just that field. Only those selectors re-run when that field changes.
+type Store < ' T >
+val create : ' T -> Store < ' T >
+val state : Store < ' T > -> ' T
+val setState : Store < ' T > -> ( ' T -> ' T ) -> unit
+val subscribe : Store < ' T > -> ( unit -> unit ) -> ( unit -> unit ) // returns an unsubscribe closure
+create builds the store and its per-field signal structure. state returns the current value. setState applies a transformation and emits invalidation to the dependent selectors of any changed field, with change detection via 'T : equality cutoff. subscribe registers an effect and returns an unsubscribe closure; the closure’s invocation (or whose owning region’s release) detaches it.
+A selector reads a single field through state and establishes a reactive dependency on that field alone. The selector desugars to an Effect backed by a Signal read. A record update via setState invalidates only the selectors that read the changed field, not all selectors on the store. This is sugar over Signal and Effect . It introduces no mechanism beyond them.
+8. Dependency Tracking by Reads and Effects
+Capture analysis supplies environment and lifetime information; dependency analysis additionally examines tracked reads and effects:
+A closure may capture a signal only to install a later callback, capture an aggregate containing several signals, or call a helper that performs tracked reads. Captures and active read dependencies SHALL NOT be equated without establishing that relationship.
+Applicative tracking of a proven fixed set of read dependencies yields static edges. Analysis includes the relevant behavior of called computations and access through captured values.
+Dynamic tracking represents dependencies selected by runtime values, including conditional reads and runtime-selected sources. The PSG carries the plan for selection and graph construction; its runtime instances carry the active dependencies, cached values and ownership state required by that plan ( Incremental §4.1 ). Static specialization can remove this state only where its absence preserves behavior.
+The dependency plan SHALL account for every observation needed to justify memo reuse; capture layout alone establishes neither purity nor the immutability of referenced storage. A supported dynamic realization SHALL preserve the required active-dependency behavior. Unsupported cases SHALL be diagnosed rather than silently treated as fixed dependencies.
+For example, a view can select which of two values to display:
+let showFirst = Signal . create true
+let first = Signal . create "left"
+let second = Signal . create "right"
+let selected = Memo . create ( fun () ->
+if Signal . get showFirst then Signal . get first
+else Signal . get second )
+When selected is demanded with showFirst true, its active reads include showFirst and first . After showFirst changes and selected recomputes, its active reads include showFirst and second . A later change to first alone does not invalidate that active result. This is the same practical distinction visible in Ranvier’s dynamically tracked computations. Clef’s PSG records the plan for choosing dependencies; runtime instances represent choices that cannot be settled statically.
+This retains compiler visibility for fusion, cutoff reasoning and target-specific lowering without identifying one compiler graph node with every runtime instance. It does not require a process-global tracking context, a managed native heap, or a separate library reactive engine.
+Dependency reconciliation. A realization may match reads against a node’s existing sources and reconcile only changes. When recomputation succeeds and its dependency set is unchanged, it can retain the existing edges; the computation itself can still allocate. An incomplete recomputation must not publish a partially collected dependency set as a valid cache. Failure and cleanup follow the admitted native protocol in Error Handling . This preserves dependency validity across successful evaluations while leaving the bookkeeping representation to the realization.
+9. UI Scaffolding: Front End ↔ Core
+Signals connect the application core and a front end, with the same Clef surface API across targets. Ranvier’s separation of a reactive core from its view layer is a useful model for this connection: state and derived computations can serve a view without making rendering the meaning of a signal. A shared view description can have browser and native realizations. The renderer and its integration contract determine how changes reach the corresponding UI.
+Native renderer. Flat closures lower through the native target pathway (the LLVM pathway off the portable middle end, see Closure Representation §6.3 and Backend Lowering §4.2 ) to region-allocated closure records plus a function address. Signal writes drive view bindings through the Incremental stabilization model. Logical updates and frame presentation have distinct boundaries.
+Browser / JavaScript front end. The planned Clef-to-JSIR pathway realizes flat closures as JavaScript closures and can compile the same Clef signal surface for a browser. F# applications using Fickl and Ranvier have a separate compilation path; sharing a view model or observable behavior across these paths requires an explicit integration and its own evidence.
+Native view integration. A native view can connect to a platform renderer through its native interface, with no application JavaScript required by the Clef signal model. Its event delivery, UI-thread affinity, rendering and resource lifetime follow the selected view and platform contracts.
+Core ↔ front-end transport. State crossing the native-core/WebView boundary is carried by BAREWire and can update a local signal mirror. Encoding alone does not give the two sides one synchronous stabilization boundary. Ordering, resynchronization and failure behavior belong to the transport/application contract.
+A UI graph’s state changes and view operations execute according to its scheduler and the platform’s thread-affinity rules. Actor messages or queued dispatch can deliver work from concurrent application components to that context. Each graph stabilizes within its own contract; crossing a process, window, or transport boundary does not turn separate graphs into one atomic update. A binding that promises corresponding behavior across realizations must account for change detection, batch visibility, effect ordering, cleanup, asynchronous delivery, and failure. Similar API names alone do not establish that correspondence.
+For example, Clef’s default incremental cutoff uses structural equality, subject to the declared cutoff predicate. Ranvier’s graph equality policy and the representation of a value can differ between its .NET and JavaScript targets. An adapter that maps a Clef value to a Ranvier signal must therefore establish when a change is suppressed and when an effect runs on each side. Likewise, a JavaScript promise completion may arrive later than a corresponding native completion. Cross-target view consistency concerns the agreed observations and boundary timing, rather than an assumption that the two runtimes schedule identically.
+10. Example: Counter Application
+The example demonstrates the reactive signal flow through a pure domain transition. The model is the source of truth; signals carry changes to any front end.
+type Model = { count : int ; name : string }
+type Msg = Increment | Decrement | SetName of string
+A pure transition produces a new model:
+let update ( model : Model ) ( msg : Msg ) =
+match msg with
+| Increment -> { model with count = model . count + 1 }
+| Decrement -> { model with count = model . count - 1 }
+| SetName n -> { model with name = n }
+Signal updates follow the domain transition:
+Batch . run ( fun () ->
+Signal . set countSignal resultModel . count
+Signal . set nameSignal resultModel . name )
+An effect reads signals and produces output, re-running on any change:
+let logger = eager (
+Effect . create ( fun () ->
+let c = Signal . get countSignal
+let n = Signal . get nameSignal
+Console . writeLine ( sprintf "Count: %d, Name: %s" c n )))
+Registration is activated by the eager binding. A batch that changes either observed projection can trigger the effect after the grouped writes; an update with no observed change need not run it. Domain transitions drive reactive signals, and signals drive updates to the subscribed front end (native, WebView, CLI, or TUI).
+11. Normative Requirements
+Surface, not engine : Signal , Memo , Effect , Batch , and Store SHALL desugar to Observable<'T> / Incremental<'T> ; their reactive semantics SHALL be those specified in the corresponding intrinsic chapters.
+Closures : Reactive callbacks SHALL be flat closures. The compiler SHALL NOT require FnPtr for any reactive callback, and SHALL NOT restrict effects/memos to top-level functions.
+Read-based tracking : The PSG reactive plan SHALL be derived from tracked reads and effect analysis, including relevant closure environments and called computations. Lexical capture identity alone SHALL NOT establish dependency completeness. Static specialization and supported dynamic realization SHALL preserve those dependencies; no mandatory global tracking context or generic runtime signal table is prescribed.
+Memo is Incremental : Memo.create SHALL construct an Incremental<'T> node, with cutoff from 'T : equality or an [<IncrementalCutoff>] predicate.
+Signal set is invalidation : Signal.set SHALL emit an invalidation to dependents per the Observable/Incremental model, subject to change detection.
+Batching : Batch.run SHALL coalesce contained writes into a single ordinary effect-flush boundary. A memo demanded within the batch SHALL reflect the writes visible at that read. A practical propagation uses a three-level state per node: a source value change marks direct observers as dirty ; downstream of a freshly-stale node, observers are marked check . Nodes at check that find an unchanged value do not propagate further. A batch can use a depth counter so writes mark nodes while the ordinary effect flush waits until the outermost batch completes.
+Automatic scoped cleanup : Effect and subscription lifetimes are managed by the enclosing actor or region. The compiler (for JSIR) and runtime generate the teardown code that detaches every registered effect and runs its cleanup handlers at scope exit. The developer does not call cleanup at every scope boundary. detach is available only when early manual teardown is needed. A practical implementation marks all nodes as invalidated before compacting each affected source’s observer list in a single pass, so teardown is O(external observers) rather than O(nodes × external observers). No GC or finalizer is required.
+Target parity : The Signal / Memo / Effect surface SHALL compile to both the native target (the LLVM target pathway) and the JavaScript target (the JSIR target pathway) from the same source, with reactive callbacks lowering to region-allocated closures and JavaScript closures respectively. LLVM and JSIR are peer target pathways off the portable middle end (as is CIRCT for FPGA); the middle end commits to no target, and each pathway realizes the flat closure through its own mechanism.
+“Push-staleness” above describes invalidation and flush scheduling. It does not
+override Incremental’s demand gate: undemanded stale memos do not recompute,
+whereas a registered Effect is an explicitly demanded sink. Observable delivery
+retains every required emission unless an explicit operator changes that
+contract; a batched incremental invalidation is not permission to drop events.
+Ordinary bindings and arguments remain lazy by default ;
+constructing a deferred expression containing an effect registration does not
+itself activate the registration. Activation, delivery, cache validation and
+scheduling must each be represented and checked at their own boundary.
+Observable Computation Width Inference
+© 2025-2026 Braidpoint

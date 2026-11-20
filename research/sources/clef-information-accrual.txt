@@ -1,0 +1,543 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual What “Carried” Means
+Where the Discipline Shows
+The MLIR Substrate
+An Annotation Is Not a Pragma
+The Formal and Normative Statements
+See Also
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+What “Carried” Means
+Where the Discipline Shows
+The MLIR Substrate
+An Annotation Is Not a Pragma
+The Formal and Normative Statements
+See Also
+Scroll to top
+Documentation
+Design
+Structure and Performance
+Information Accrual
+Information Is Not Discarded
+Most compilers throw information away as they lower. The front end proves something, uses it to make a decision, and discards the proof; the middle end sees the decision but not the reason for it; the back end sees neither. By the time code reaches the target, the facts that made the source safe or fast are gone, and a later pass, with no record of them, can undo the structure they depended on.
+Fidelity’s preservation contract keeps an established fact connected to the decisions that rely on it. A stage may consume a static annotation once those decisions and their preservation have been checked; later stages still need the resulting meaning and any evidence their own contracts require. The Program Hypergraph paper develops this distinction through joint relations, witnesses and constraint transport. It lets a native value remain unboxed while its dimensional, resource and verification obligations remain accounted for.
+What “Carried” Means
+When escape analysis decides where a closure’s environment lives, or when dimensional inference fixes a value’s units, that result is attached to the Program Semantic Graph as codata. Alex consumes settled local facts when emitting the chosen construction; a fact needed by a later pass is reified in that pass’s declared vocabulary. A transformation that would perturb a required property must preserve it by a checked rule or re-establish it against the lowered operation. Copying an attribute without preserving its participants and premises is insufficient.
+The alternative, recomputing a fact at the stage that needs it, often fails outright. Once information is erased, the stage that needs it back may have no way to recover it. The “arity curtain” is the canonical case: a function’s argument count, discarded early, cannot in general be reconstructed once the function passes through an abstraction. Carrying the fact forward is not an optimization over recomputing it; it is the only way the fact is available at all.
+Where the Discipline Shows
+The same commitment appears at every level of the compiler, applied to whatever design-time fact that level establishes:
+Arity. A curried function’s argument count is recorded and carried, so the compiler can tell a saturated call (a direct function call) from a partial application (a closure) rather than guessing. See Arity On The Side of Caution .
+Closure lifetime and inhabitance. Escape analysis resolves where a closure’s environment lives at construction, and that placement is carried through lowering rather than recomputed at the bottom. The closure’s safety is a property of a fact the compiler still holds, and the verification conditions raised at the closure site survive because the flat environment they range over survives. See Gaining Closure and ByRef Resolved .
+Dimensional types. Units and dimensions are preserved through the PSG and MLIR generation, erased only at the final lowering stage, after every decision that could benefit from them has been made. See Dimensional Type Safety .
+Verification facts. A property discharged by the verifier travels the middle end as a carried annotation, so the guarantee is available at each stage rather than re-derived from the finished binary. See Proofs to Silicon .
+None of these is a separate feature. Across all four, the compiler carries a fact it has established to each lower stage rather than leaving that stage to recompute it.
+The MLIR Substrate
+This discipline needs an intermediate representation that can hold a fact across a lowering step, and most cannot. MLIR can. Its SSA form already treats some structure as inviolable: a value has one definition, and a pass that would break it fails IR verification. Its attribute system generalizes that from definitions to arbitrary carried facts, so a lifetime, a dimension, or a discharged obligation is preserved through the dialect conversions rather than dropped at each boundary. Building on MLIR is what lets a design-time fact remain a real thing at every stratum instead of a front-end promise.
+MLIR arrives through C++, the “worse is better” lineage in Gabriel’s sense. Clef is an ML-family language whose correctness properties are structural, and it uses that pragmatic C++-borne scaffold to carry them to the metal. The Fixed-Point Scaffolding pre-print develops that arrangement, and why a scaffold chosen for reach rather than purity carries a structurally-correct language to real hardware while preserving its guarantees.
+An Annotation Is Not a Pragma
+An attribute system can decay into pragmas, and the failure mode is worth naming because MLIR’s own contract permits it: discardable attributes are namespaced, attachable to any operation, and legitimately droppable by a pass that rebuilds an op it does not fully understand. A pragma is an assertion injected as an input, honored or ignored by convention, with nothing behind it. Held to that default, “carried as an annotation” would be a polite name for hope. Three properties separate the carried facts of this pipeline from that default.
+Provenance. An annotation is derived at emission from a fact saturation already established on the graph. Nothing downstream is asked to trust it as a claim. The discharge that consumes it re-checks the obligation it feeds. A pragma is an input. A carried fact is a consequence.
+Residence. The Program Semantic Graph remains the system of record, and the annotation is an emission artifact, closer to a debug symbol than to state. This is what makes the defect-catching clause above mechanical rather than aspirational: because the graph retains every fact it emitted, the seam cross-checks what it gathers against what the graph holds, and a dropped annotation surfaces as an emission defect instead of a silent unsoundness.
+Lifetime. An annotation is written by the emission traversal and consumed one step later by its named consumer. No pass in between reads it to make a decision. A pass that needs to is the under-saturation signal the duality piece states as a standing law, and the remedy is moving the decision onto the graph, never enriching the annotation.
+The lowering target then informs the form the reified fact takes, because the consumer’s contract governs it. An obligation bound for the seam expands into the SMT dialect, with per-op anchors retained so an unsat core can name a source span. Deadlock freedom as an obligation shows the worked shape, anchors cross-checked against the graph’s wait relation. A fact a backend dialect genuinely consumes is reified in that dialect’s own vocabulary, the form a tile assignment takes for spatial targets or a mapping attribute takes on a parallel loop, target vocabulary in the same sense the LLVM dialect is target vocabulary. And a fact that must survive an open boundary becomes a constructed witness , a generated guard beside the emitted program. None of the three mints an operation vocabulary of ours. Where a consumer owns a vocabulary, the emission writes into it.
+The discipline compresses to a sentence a future pass author can be held to: an annotation is derived at emission, consumed by a named contract, and never read to make a decision the saturated graph should have settled.
+The Formal and Normative Statements
+The account here is the mechanical one. The same principle has a formal statement and a normative one, and this discipline is where they meet.
+The Compilation Sheaf develops a formal account of compatibility across lowering stages. For a concrete pass, the obligation is to identify the translation of the relevant facts and establish that it preserves their meaning under the stated premises. This does not require every intermediate annotation to survive as a runtime field or an unchanged MLIR attribute.
+Normatively, the specification requires it. A design-time property the specification obliges an implementation to establish must be preserved through lowering, or re-checked at the lowering steps that could perturb it. A property silently lost in lowering is a conformance violation. The obligation is stated in Conformance §6, the preservation obligation through lowering .
+See Also
+The Compilation Sheaf - the formal, cohomological account of the same principle
+Conformance - the normative preservation obligation (§6)
+Arity On The Side of Caution - arity as a carried fact
+Gaining Closure - closure lifetime resolved at construction and carried
+Dimensional Type Safety - dimensions preserved to the final lowering stage
+Proofs to Silicon - verification facts carried through the middle end
+Deadlock Freedom as an Obligation - the anchor-and-cross-check shape worked in full
+Constructed Witnesses - the reification a fact takes at an open boundary
+Fixed-Point Scaffolding - why an MLIR/C++ scaffold carries a structurally-correct language to hardware
+Opining Upon Reflection - the accrual principle read against runtime reflection, for readers arriving from managed platforms
+Why Clef Fits MLIR Coupling & Cohesion
+© 2025-2026 Braidpoint

@@ -1,0 +1,744 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation 1. Overview
+2. Type Definition
+3. Node Structure
+4. Subscription and Emission
+5. Operators
+6. SemanticKind in the PSG
+7. Target-Specific Lowering
+8. Interaction with Other Intrinsics
+9. Coeffect Model
+10. Inference Levels
+11. What Disappears
+12. Normative Requirements
+References
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+1. Overview
+1.1 Relationship to Incremental
+1.2 Relationship to Continuations
+1.3 Relationship to Actors
+1.4 Rationale for Intrinsic Status
+2. Type Definition
+2.1 Core Type
+2.2 Hardware Targeting
+2.3 NativeType Representation
+3. Node Structure
+3.1 Logical Fields
+3.2 Arena Allocation
+3.3 Memory Layout on CPU Target
+4. Subscription and Emission
+4.1 Subscription
+4.2 Emission
+4.3 Activation, Fan-Out and Cancellation
+5. Operators
+5.1 Join Contracts
+6. SemanticKind in the PSG
+7. Target-Specific Lowering
+7.1 CPU Target
+7.2 Fusion into Incremental (Accelerator Path)
+8. Interaction with Other Intrinsics
+8.1 Observable + Incremental
+8.2 Observable + Cold
+8.3 Observable + BAREWire
+8.4 Observable + Lifetime Inference
+9. Coeffect Model
+10. Inference Levels
+10.1 Level 3: Explicit
+10.2 Level 2: Bounded
+10.3 Level 1: Inferred
+11. What Disappears
+12. Normative Requirements
+References
+Scroll to top
+Language Specification
+Observable Computation
+Observable Computation
+Normative specification for the Observable<'T> intrinsic type, push-based reactive observation, and its fusion into demand-driven computation in Clef compilation.
+1. Overview
+Clef specifies Observable<'T> as a compiler-known intrinsic type for push-based, producer-driven reactive observation. Its subscription and delivery plan is preserved in the Program Semantic Graph through lowering. Active subscriptions, observer closures and dynamically created sources remain runtime instances with owned state. The compiler can specialize their representation and fuse an observable into the demand-driven computation it feeds; intrinsic status does not eliminate that runtime state or require a separate reactive package.
+Observable<'T> specifies producer-driven delivery within the independent
+activation, delivery and reuse contracts also listed in
+Incremental Computation §1 :
+Property Observable<‘T> Cold<‘T> Lazy<‘T> Incremental<‘T>
+Activation / demand Producer/subscription contract; a cold wrapper defers connection Explicit start/force First force Demand registration; stale nodes recompute at stabilization
+Delivery once active Producer pushes each emission Completion of the started computation Force returns the shared result Demanded consumers observe a validated cached result
+Intrinsic result cache None None Once, retained indefinitely Retained until dependency validation requires recomputation
+Dependency invalidation No implicit dependency cache None None Conservative staleness propagates to dependents
+Change suppression Explicit operator only None No recomputation after first force Cutoff suppresses only the unchanged output’s propagation
+Work guarantee Preserve every required emission Preserve the start contract Preserve single computation and sharing Selective work; no fixed graph-size or execution-time bound
+Clef’s lazy-by-default evaluation
+applies to ordinary bindings and arguments. These intrinsic contracts refine
+activation, delivery and cache behavior independently. Push delivery does not
+force an otherwise undemanded producer expression or activate a cold source.
+Cutoff can reduce recomputation; it does not establish a fixed work or time
+bound for an arbitrary graph.
+An Observable<'T> is opaque : the producer decides when values arrive, and the compiler must assume every emission matters. It carries none of the structure (cache, dependency graph, cutoff) that makes Incremental<'T> transparent. This opacity is definitional, not a deficiency: an event source — user input, a sensor, a network packet — genuinely produces on its own clock, and there is nothing for the compiler to memoize or elide.
+1.1 Relationship to Incremental
+Observable<'T> supplies producer-driven delivery; Incremental<'T> supplies
+demand-gated cache validation and recomputation. Incremental invalidation itself
+propagates from changed inputs, so “push” and “pull” are not exclusive labels for
+an entire system. The contracts are not interchangeable and compose :
+// An event source (push) driving a cached derivation (demand)
+let sensorEvents : Observable < Reading > = sensorStream
+let fused : Incremental < Decision > =
+incremental {
+let! r = sensorEvents // subscription becomes an invalidation edge
+return decide r
+}
+Because both are intrinsic, the compiler can fuse the observable subscription directly into the incremental node’s invalidation trigger, avoiding a separate bridge representation where the semantics permit (see Incremental + Observable ). The observable supplies change events; the incremental supplies dependency-tracked, demand-gated cached recomputation. Neither intrinsic status nor cutoff establishes a fixed work or time bound. Fusion must preserve required event delivery and effects; merely marking a cache stale does not establish that multiple emissions may be discarded.
+The developer-facing Signal / Memo / Effect surface (see Reactive Signals ) is built on this pair: a Signal is a settable source, a Memo is an Incremental , and an Effect is a demanded sink.
+1.2 Relationship to Continuations
+An observer is a continuation . Subscribing installs the consumer’s continuation with the producer; emitting invokes it. In continuation-passing terms the producer holds the consumer’s continuation and applies it on each emission — the inverse of demand-driven evaluation, where the consumer holds and forces the producer’s suspended continuation. The registered observer is represented as a flat closure (see Closure Representation ); its captured environment is the consumer state the continuation resumes into.
+The delimited-continuation substrate underlying MailboxProcessor<'Msg> and Incremental<'T> is the same substrate beneath Observable<'T> : the named intrinsic provides compositional identity that enables compiler-directed optimization, while the capture/resume mechanics exist at a lower level.
+1.3 Relationship to Actors
+The following structural correspondence can inform integration with the Olivier/Prospero actor system. It is not a one-to-one runtime mapping:
+Observable Concept Actor Concept
+Producer / source Event source within an actor, or an actor emitting messages
+Observer (registered continuation) Local continuation; receive handler when delivered across actors
+Subscription Local registration; supervised link where actor integration requires it
+Emission Local continuation dispatch; message send across admitted actor boundaries
+Subscription lifetime Bounded by its owner; may end before that owner retires
+Unsubscribe / teardown Logical registration removal, followed by safe resource reclamation
+An owner may contain many sources and subscriptions without an actor or mailbox per observer. Non-actor ownership is also admitted. Owner retirement releases remaining subscriptions, but an individual subscription may end earlier. Logical unsubscribe is distinct from reclaiming closure storage or shared captured resources; native regions and JavaScript-managed storage realize that lifetime differently (§3.2).
+Local delivery follows §4.2. Actor message admission adds a delivery boundary; it does not itself establish a shared synchronous clock or distributed incremental stabilization. Cross-actor ordering and failure handling require an explicit protocol.
+1.4 Rationale for Intrinsic Status
+The ingredients for reactive observation exist at the library level: a callback is a function, a subscriber list is a collection, and MailboxProcessor<'Msg> provides message delivery. These could be composed without compiler knowledge.
+Library composition alone does not establish compiler-visible subscription, lifetime or fusion semantics. It does not inherently require a managed heap. Intrinsic status gives the compiler a stable semantic contract under which it can:
+Place native observer storage in an inferred or explicit owning region.
+Fuse an observable into an Incremental<'T> invalidation trigger when event and effect semantics are preserved.
+Lower emission as flat-closure dispatch on native targets, or target-appropriate closure dispatch elsewhere.
+Track subscription lifetime so logical unsubscribe does not depend on finalization or garbage collection.
+2. Type Definition
+2.1 Core Type
+type Observable < ' T > = intrinsic
+Unlike Incremental<'T> , Observable<'T> imposes no equality constraint : an observable does not perform cutoff and never compares emissions. Suppression of duplicate values (the push-side analogue of cutoff) is an explicit operator, not an implicit property of the type (see §5 ).
+2.2 Hardware Targeting
+Observable<'T> does not carry a hardware-target measure the way Incremental<'T> does. Because an observable is opaque — the compiler cannot bound its emissions or statically schedule them — it has no standalone accelerator lowering. Reactive event sources are lowered at the CPU/event boundary; accelerator computation is reached by fusing an observable into an Incremental<'T> , which carries the target measure and the bounded schedule (see §7 ).
+2.3 NativeType Representation
+type NativeType =
+// ...
+| TObservable of elementType : NativeType
+3. Node Structure
+3.1 Logical Fields
+Each Observable<'T> node in the PSG describes the following logical roles. These are a compile-time plan, not a complete enumeration of every active runtime registration or a fixed runtime struct. Dynamic source instances and subscription changes require corresponding runtime state, represented by the selected target.
+Field Type Semantics
+source producer reference The origin of emissions (event source, upstream operator, or actor)
+observers continuation list Registered observer closures, invoked on each emission
+An observable node carries no value , stale , height , or cutoff field. The absence of these is the structural expression of its position on the spectrum (§1): there is nothing to cache, no dependency DAG, and no change detection.
+3.2 Arena Allocation
+An observer’s logical lifetime is bounded by its subscription owner. Native closure storage follows the lifetime inference model of Memory Regions ; it must outlive every permitted invocation and cannot remain registered after release:
+Level 1 (inferred): An observer that escapes the subscribe call requires storage beyond that call frame; inference determines an admissible owning region.
+Level 2 (bounded): The developer establishes a subscription within an actor or other owner; the compiler infers placement within that lifetime bound.
+Level 3 (explicit): The developer specifies the native subscription’s region directly.
+On JavaScript targets, closures may reside in host-managed storage. Logical unsubscribe and owned resource cleanup remain deterministic and do not wait for host garbage collection. On native targets, removing a subscription does not imply that an individual allocation can immediately be reclaimed from a longer-lived bump arena.
+Physical reclamation must account for pending invocations and shared captured resources, including when subscription changes or retirement occur during an active emission.
+3.3 Memory Layout on CPU Target
+The following CPU layout illustrates the source reference and a flat list of N observer closures. Dynamic registration, safe removal and active delivery require additional bookkeeping:
+Observable<T>
+┌──────────────────────────────────────────────────────────────────┐
+│ source_ptr: ptr (1 platform word) │
+├──────────────────────────────────────────────────────────────────┤
+│ observer_count: i32 (4 bytes) │
+├──────────────────────────────────────────────────────────────────┤
+│ observer_ptrs: ptr[N] (N platform words; flat closures) │
+└──────────────────────────────────────────────────────────────────┘
+A ptr here is the platform word: sizeof(ptr) is 4 bytes on thumbv8m/M33 and 8 bytes on x86-64. So a source reference plus N observer pointers occupy (N + 1) platform words plus the 4-byte count. Each observer pointer references a flat closure (function pointer plus captured environment) laid out per Closure Representation .
+4. Subscription and Emission
+4.1 Subscription
+subscribe installs an observer continuation with the producer and returns a subscription handle:
+val subscribe : ( ' T -> unit ) -> Observable < ' T > -> Subscription
+The observer ( 'T -> unit ) is the consumer’s continuation. The returned Subscription is an owner-scoped handle; its release unsubscribes the observer deterministically, with remaining handles released when the owner retires. This language-level lifetime contract does not require a .NET IDisposable interface. Physical reclamation follows §3.2.
+4.2 Emission
+On emission, the producer invokes each registered observer continuation with the emitted value, in subscription order:
+The source produces a value v : 'T .
+For each active observer k , the producer applies k v .
+Delivery is unbounded : every active observer receives every emission. There is no implicit cutoff and no implicit coalescing.
+Emission is synchronous by default — the producer’s clock determines timing. Asynchronous and buffered delivery disciplines, where required, are properties of the producer or of an explicit operator (§5), not of the bare intrinsic.
+4.3 Activation, Fan-Out and Cancellation
+Activation, producer sharing and recipient topology are independent contracts.
+A cold source defers activation; this does not determine whether its eventual
+emissions have one recipient or many. Multiple subscriptions do not by themselves
+specify multiple producer instances: instance creation and sharing follow the
+source’s activation contract (§1, §8.2).
+The delivery in §4.2 is broadcast : one emission reaches every active observer.
+This delivery fan-out is distinct from starting separate computations for those
+observers. Unicast or work-sharing composition SHALL specify single-consumer
+admission or recipient selection explicitly. Routing an input to one destination
+does not permit dropping deliveries to active observers of that destination’s
+observable output. Preserving every required emission does not imply infinite
+buffer capacity; buffering and backpressure belong to the delivery contract.
+Cancelling an observation or releasing a subscription withdraws that consumer’s
+participation. It SHALL NOT, solely for that reason, cancel work still required
+by other consumers. Shared-work cancellation SHALL follow the owner’s demand and
+lifetime contract, including whether withdrawal of the final demand requests
+cancellation. An externally owned hot producer need not stop when a subscriber
+leaves. Pending invocations and shared captures remain subject to §3.2 even
+after logical unsubscribe.
+5. Operators
+Observables compose through combinators that transform emissions. Each operator composes the coeffects of its inputs (the same coeffect algebra used for async and incremental analysis; see §9 ):
+source @ R₁ ⊢ Observable<'A> f @ R₂ ⊢ 'A -> 'B
+─────────────────────────────────────────────────
+map f source @ R₁ ⊔ R₂ ⊢ Observable<'B>
+The push-side analogue of incremental cutoff is an explicit operator, distinctUntilChanged , which suppresses an emission when it equals the previous one:
+val distinctUntilChanged : Observable < ' T > -> Observable < ' T > // requires 'T : equality
+distinctUntilChanged suppresses emission when its output is unchanged. Incremental cutoff suppresses change propagation along the unchanged node’s path; a dependent with another changed input may still need recomputation. Cutoff is intrinsic to Incremental<'T> ; duplicate suppression is optional for Observable<'T> (the default observable delivers every emission).
+5.1 Join Contracts
+An operator that starts independent work or joins inputs composes their existing
+activation, delivery, dependency and ownership contracts. Merely constructing
+the composition does not activate cold inputs; activation follows demand and
+the selected start contract. Independent work may execute concurrently where
+dependencies and coeffects permit. Composition adds no implicit observable
+replay. Each such operator SHALL specify:
+Membership and correlation: which input instances, emissions or work
+invocations belong together, and when membership closes. A finite join over
+an ongoing source needs an explicit grouping or completion boundary; source
+quiescence alone is not completion.
+Result selection: which inputs permit an output, how failures are
+reported, and whether remaining work is still required. Pairing successive
+emissions, combining latest values and awaiting all members are different
+contracts. Result order and reduction order SHALL follow the selected
+contract, not accidentally depend on completion order.
+Ownership and cancellation: which work the operator owns and which shared
+work it merely observes. Withdrawing an input observation follows §4.3.
+Cancelling a waiter does not revoke another consumer’s demand or necessarily
+cancel the group; cancellation of the group requires its own authority.
+Completion and draining: selecting a result or requesting cancellation
+does not discharge outstanding owned work. Before reporting the owning scope
+drained or reclaiming its resources, the owner SHALL account for every
+admitted invocation and join its execution, cancellation callbacks and
+cleanup. Early result delivery MAY precede draining only while a live owner
+retains those obligations. Failure reporting SHALL account for cleanup
+failures; cancellation SHALL NOT silently erase them.
+Acceptance: late or duplicate completions SHALL NOT publish into a
+retired group or another invocation. Where a group promises one terminal
+outcome, selection SHALL consume its completion authority at most once.
+Observing a retained result again does not repeat that completion or authorize
+duplicating a consumable resource.
+Delivery discipline: buffering, capacity, backpressure and any admitted
+asynchronous delivery SHALL preserve the operator’s required emissions and
+ordering. A join SHALL NOT infer permission to coalesce events from incremental
+cutoff or from the absence of demand for a different consumer.
+When a join needs an incremental input’s current value, a validated cached value
+can satisfy that dependency. The join SHALL NOT require an unchanged input to
+recompute merely to signal readiness. Reuse still requires validation of all
+relevant dependencies under
+Incremental Computation §6.1 .
+This does not satisfy an operator explicitly waiting for a future emission or
+change. For example, a current-value join may combine a reused input with a
+recomputed input once both are validated for the required dependency context.
+These rules refine composition rather than prescribe new source syntax or a
+generic task carrier. Existing direct subscriptions retain §4.2 delivery.
+Implementations of joins must make their selection and lifetime behavior
+explicit in the operator contract and its PSG realization; these obligations
+do not require additional programmer annotations. No particular join operator
+is introduced by this chapter.
+6. SemanticKind in the PSG
+type SemanticKind =
+// ...
+| ObservableExpr of
+sourceNodeId : NodeId *
+observerEdges : ObserverEdge list
+and ObserverEdge = {
+ObservableNodeId : NodeId // the producer
+ObserverNodeId : NodeId // the registered continuation (Lambda node)
+}
+The PSG node references the producer and observer-registration plan. Repeated or conditional execution can realize multiple instances or different active registrations. When an ObservableExpr feeds an IncrementalExpr , fusion (§7) can realize the corresponding ObserverEdge as an incremental invalidation edge where delivery and effect semantics are preserved.
+7. Target-Specific Lowering
+7.1 CPU Target
+The CPU pathway is one of several backend pathways, alongside CIRCT/FPGA and
+JSIR. Baker establishes the subscription, delivery order, observer ownership and
+callable storage plan. Alex witnesses the admitted iteration, loads and calls
+through its Elements, Patterns and Witnesses at the current Huet-zipper
+occurrence, using portable scf , memref and func operations.
+For composition under §5.1, CCS preserves the chosen operator contract and Baker
+settles its correlation, result selection and ownership obligations in that
+plan. Target lowering SHALL preserve them through draining. This is a language
+semantics obligation; Baker’s own nanopass fan-out and fold-in is a compiler
+implementation strategy and does not introduce an observable operator.
+Each actual observer is the distinct function value and environment specified
+by Closure Representation §6.3 .
+The call supplies the actual environment first when one is required, followed by
+the emission argument under the settled signature. A capture-free observer needs
+no dummy environment. A stored callback requires admitted storage for both
+components and their identities; an untyped !closure value or function address
+inside the environment is not a substitute.
+The portable indirect call already has a standard func.call_indirect form.
+Backend conversion realizes it and its storage according to the chosen target;
+LLVM pointer calls are one such realization, not an exception to middle-end
+portability. CIRCT circuit structure and JSIR closure objects likewise follow
+their backend contracts. Source delivery and effects must correspond through the
+settled graph, admitted witness and transformed artifact; this text does not
+assert that every target pathway has been validated.
+7.2 Fusion into Incremental (Accelerator Path)
+An Observable<'T> has no standalone NPU or GPU lowering, because its opacity gives the compiler nothing to schedule statically. When an observable feeds an Incremental<'T> , fusion can realize the subscription as an invalidation trigger, subject to preservation of event delivery and effects. The incremental node’s lowering (CPU inline, AIE tile activation, or HSA dispatch, per Incremental Computation §8 ) then carries the computation schedule. The observable contributes the event; the incremental contributes dependency-tracked, demand-gated recomputation. Neither fusion nor cutoff alone supplies a fixed resource or execution-time bound.
+8. Interaction with Other Intrinsics
+8.1 Observable + Incremental
+The canonical composition (§1.1, §7.2): an event source drives a cached derived computation; subscription can fuse into invalidation while preserving required event delivery. See Incremental + Observable .
+8.2 Observable + Cold
+A Cold<Observable<'T>> represents a deferred subscription: the producer is not connected and no observer is registered until the cold value is forced. This expresses a reactive source whose side effects (opening a device, joining a stream) are withheld until demand arrives.
+8.3 Observable + BAREWire
+Emissions delivered to an observer on a different hardware target or address space use BAREWire descriptors for zero-copy transport. The observer edge’s element type drives descriptor generation, exactly as dependency edges do for cross-target incremental nodes.
+8.4 Observable + Lifetime Inference
+An observer closure can outlive the subscribe call frame because it is invoked on later emissions. Lifetime inference must assign storage and ownership that cover those invocations. Logical unsubscribe is deterministic; target-specific physical reclamation follows §3.2.
+9. Coeffect Model
+Subscription and operators participate in the standard coeffect algebra. The recompute-free observer of an observable carries:
+Coeffect Description
+Read Read capability on the producer/source
+Capture Capture capability on the observer’s environment (subscription-scoped)
+Thread Thread/affinity constraint of the delivery context
+Operators compose coeffects as in §5. These are resolved by the standard coeffect resolution pipeline specified in Inference Procedures .
+10. Inference Levels
+Following the Fidelity convention, Observable<'T> supports three levels of developer involvement:
+10.1 Level 3: Explicit
+let sub = eager ( source |> subscribe ( fun reading -> handle reading ))
+// `sub` release (scope exit / actor retirement) unsubscribes
+The reached eager binding activates subscription. An ordinary unused binding
+of the subscription expression remains deferred; its syntax alone does not
+install an observer.
+10.2 Level 2: Bounded
+The developer establishes a reactive derivation; the compiler infers subscription placement and lifetime, and can fuse into a consuming Incremental<'T> where event and effect semantics permit.
+10.3 Level 1: Inferred
+The compiler recognizes that an actor emits on each receive and exposes its output as an Observable<'T> , inferring the subscription and delivery edges from the actor’s structure.
+11. What Disappears
+When Observable<'T> is intrinsic, the following library-level constructs are subsumed by compiler behavior:
+Library Construct Compiler Equivalent
+IObservable<'T> / IObserver<'T> interfaces Intrinsic type; emission is flat-closure dispatch
+Subject producer plumbing Intrinsic source and subscription plan; retained current state belongs to the Signal/Incremental surface
+IDisposable / manual Dispose on subscriptions Region-scoped Subscription ; deterministic unsubscribe
+ObserveOn / SubscribeOn scheduler ceremony Thread coeffect on the delivery context
+Manual bridge from events to derived state Fusion of Observable<'T> into Incremental<'T>
+12. Normative Requirements
+Intrinsic Status : Observable<'T> SHALL be a compiler-known intrinsic type, not a library type.
+No Equality Constraint : Observable<'T> SHALL NOT require 'T : equality . Emission comparison SHALL occur only via an explicit operator (e.g. distinctUntilChanged ).
+Broadcast Delivery : Every active observer SHALL receive every emission of its observable source. The compiler SHALL NOT assume emissions may be dropped or coalesced absent an explicit operator. Explicit routing SHALL preserve delivery to active observers of each resulting observable output (§4.3).
+Target-Appropriate Storage : Native observer closures SHALL reside in inferred or explicit owning regions, without requiring a GC-managed heap. JavaScript lowering MAY use host-managed closure storage; logical lifetime requirements SHALL remain the same.
+Deterministic Unsubscribe : A subscription’s lifetime SHALL be bounded by its owner, with deterministic release; no finalizer or GC SHALL be required to unsubscribe. Physical reclamation SHALL account for permitted pending invocations and resource ownership.
+Fusion Availability : An Observable<'T> feeding an Incremental<'T> SHALL admit fusion into the incremental node’s invalidation trigger without a mandatory separately allocated bridge. Fusion SHALL preserve required event delivery and effects; it SHALL NOT authorize implicit event dropping or coalescing.
+Opacity : The compiler SHALL treat an observable as opaque for scheduling purposes and SHALL NOT elide or reorder emissions.
+Independent Participation : Activation, producer sharing and delivery topology SHALL follow their respective contracts. Withdrawal of one consumer SHALL preserve other consumers’ demand and pending resource obligations (§4.3).
+Join Preservation : Operators that start independent work or join inputs SHALL specify and preserve the contracts in §5.1, including result selection, completion authority and ownership through draining.
+References
+Haynes, H. (2026). Coexponential Exploration in the Clef Programming Language , §4.4 — activation and delivery as separate contracts, retained observer environments, and the distinction between a reusable subscription and each invocation’s single-use completion right.
+Elliott, C., & Hudak, P. (1997). Functional Reactive Animation. ICFP ‘97 .
+Elliott, C. (2009). Push-Pull Functional Reactive Programming. Haskell Symposium ‘09 .
+Meijer, E. (2012). Your Mouse Is a Database. Communications of the ACM, 55(5) .
+Hagino, T. (1987). A Categorical Programming Language. PhD thesis, University of Edinburgh. (codata / final coalgebras)
+Tofte, M., & Talpin, J.-P. (1997). Region-Based Memory Management. Information and Computation .
+Syme, D. (2006). Leveraging .NET Meta-programming Components from F#. ML Workshop ‘06 .
+Incremental Computation Reactive Signals
+© 2025-2026 Braidpoint

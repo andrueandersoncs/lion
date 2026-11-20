@@ -1,0 +1,615 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline 1. Why two disciplines and not one
+2. Parity
+3. Blade support
+4. Interaction of the two disciplines
+5. Layout and lowering
+6. Negative grade
+7. Normative Requirements
+References
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+1. Why two disciplines and not one
+2. Parity
+2.1 Definition
+2.2 Composition
+2.3 Parity is exact
+2.4 Erasure
+3. Blade support
+3.1 Basis indexing
+3.2 Definition
+3.3 Representation
+3.3.1 Which stage this width belongs to
+3.3.2 Host representation
+3.4 Composition
+3.5 The grade view
+3.6 Support is a coeffect, not a type parameter
+3.7 Unresolvable support
+4. Interaction of the two disciplines
+4.1 Two solver calls
+5. Layout and lowering
+5.1 Component count
+5.2 Component width at the MLIR level
+5.3 Product generation
+5.4 Declared and derived support
+5.5 Pathway realization
+6. Negative grade
+7. Normative Requirements
+References
+Scroll to top
+Language Specification
+Grade Discipline
+Grade Discipline
+Companion Specs : algebra-declarations.md , annotation-disciplines.md , units-of-measure.md , ntu-dimensional-architecture.md , width-inference.md
+This chapter specifies the grade structure of geometric algebra as two annotation disciplines of different algebraic character, together with their inference, their interaction, and their erasure behaviour.
+The discipline is optional. A compilation unit that declares no algebra (see Algebra Declarations ) is unaffected by this chapter in every respect.
+Research context (informative): The Program Hypergraph , §3.3, develops geometric-product sparsity from sound support inference. Excluded components can be omitted from arithmetic and storage; an admitted component may still vanish by coefficient cancellation. This chapter specifies the parity and support disciplines on which that specialization depends.
+1. Why two disciplines and not one
+The grade of a multivector is not a single quantity that composes under a single law. Three obstructions rule out a single integer-valued axis:
+The geometric product of a grade-$p$ and a grade-$q$ blade occupies grades $|p-q|$, $|p-q|+2$, through $\min(p+q, n)$. The output is a set.
+A general multivector is not homogeneous. A rotor is a sum of a grade-0 and a grade-2 part, and v + B is a legal expression with no single grade.
+Grade admits no additive inverse in the value algebra, so the axis is a monoid and not a group.
+Two quantities remain available as annotations.
+Parity is $\mathbb{Z}_2$-valued, total on every multivector, and exact. It composes as a group under the geometric product. It is a measure generator and is specified in §2.
+Blade support is a subset of the $2^n$ basis blades, total on every multivector, and a sound over-approximation. It composes as a bounded join semilattice under symmetric difference of the blade index sets. It is a coeffect and is specified in §3. Grade support, a subset of ${0..n}$, is its popcount image and is retained as a derived view.
+A third quantity, the signature, is a property of the declared algebra and not of any value. It is specified in Algebra Declarations .
+2. Parity
+2.1 Definition
+Every element of a Clifford algebra decomposes uniquely into an even part and an odd part. The parity of a homogeneous element is its grade modulo 2. Parity is written as a measure generator supplied by the algebra declaration.
+// Declared by the algebra; not user-defined
+[< Measure >] type parity
+A multivector type carries a parity annotation as a measure:
+type Multivector < ' A , [< Measure >] ' P >
+where 'A is an algebra reference and 'P is 1 for even or parity for odd.
+2.2 Composition
+Parity composes under the geometric product by measure multiplication, with the torsion rule of Units of Measure :
+parity parity ≡ 1
+The inference rules follow directly.
+Operation Rule
+a * b (geometric product) $\pi_{\text{out}} = \pi_a \pi_b$
+a ^ b (outer product) $\pi_{\text{out}} = \pi_a \pi_b$
+`a . b` (inner product)
+a + b $\pi_a = \pi_b = \pi_{\text{out}}$
+~a (reversion) $\pi_{\text{out}} = \pi_a$
+-a (grade involution) $\pi_{\text{out}} = \pi_a$
+grade<k> a (projection) $\pi_{\text{out}} = k \bmod 2$
+Addition is the only operation that constrains its operands, and the constraint is an ordinary measure equation. No new solver machinery is required: the constraint 'Pa = 'Pb is solved by the mechanism of Constraint Solving extended for torsion.
+2.3 Parity is exact
+The parity annotation is not an approximation. Where §3 gives a containment for blade support, §2 gives an equality. The compiler reports a parity constraint violation as a type error at the point of violation, diagnosed as CLEF9620 , and does not defer it to elaboration.
+In the majority of observed cases, the class of geometric-algebra error that produces a structurally meaningless result, as distinct from a numerically inaccurate one, is a parity error. The parity constraint is exact, and the check is one bit wide.
+2.4 Erasure
+Parity is a measure and erases with the other measures, per Measure Parameter Erasure . It is absent from code generation and does not affect layout.
+3. Blade support
+3.1 Basis indexing
+Index the basis blades of an algebra of dimension $n$ by subsets of ${1..n}$: the blade $e_A$ for $A \subseteq {1..n}$, with $e_\emptyset = 1$ and $\mathrm{gr}(e_A) = |A|$. The basis product is
+e A e B = ±   e A ⊕ B e_A e_B = \pm\, e_{A \oplus B} e A ​ e B ​ = ± e A ⊕ B ​ where $\oplus$ is symmetric difference. The sign is fixed by a transposition count together with the squares of the generators in $A \cap B$, and the product is zero where a degenerate generator lies in $A \cap B$. Signs are tabulated at algebra declaration. See Algebra Declarations .
+3.2 Definition
+The blade support of a multivector is the set of basis blades at which it may have a non-zero coefficient:
+β ( x )    ⊇    {   A ⊆ { 1.. n }    :    the e A coefficient of x is non-zero   } \beta(x) \;\supseteq\; \{\, A \subseteq \{1..n\} \;:\; \text{the } e_A \text{ coefficient of } x \text{ is non-zero} \,\} β ( x ) ⊇ { A ⊆ { 1.. n } : the e A ​ coefficient of x is non-zero } The containment is the sound direction. The compiler computes an over-approximation. A component the analysis admits may be zero at runtime. A component the analysis excludes is zero by construction.
+3.3 Representation
+The support is a bitvector of width $2^n$, one bit per basis blade, indexed so that bit $i$ corresponds to the blade whose index set is the binary expansion of $i$. The width is fixed at algebra declaration.
+Algebra $n$ $\beta$ width
+VGA Cl(3,0,0) 3 8 bits
+PGA Cl(3,0,1) 4 16 bits
+STA Cl(1,3,0) 4 16 bits
+CGA Cl(4,1,0) 5 32 bits
+3.3.1 Which stage this width belongs to
+Four widths arise in connection with a multivector, at four nested stages. Conformance statements MUST distinguish them.
+Stage Quantity Governed by
+Specification $\beta$ is $2^n$ bits This chapter
+Host Mask storage, Cayley sign cache, QF_BV query width Implementation, §3.3.2
+MLIR $\lvert\beta\rvert$ values at portable dialect types, carrying inferred widths Width Inference , §5.2
+Target pathway The physical realization of each width The pathway, §5.5
+$\beta$ is present on the Program Semantic Graph, is read by CCS during inference and by Alex during lowering, and is absent from the emitted MLIR. The boundary holds because §3.7 makes an unresolvable support an error and not a runtime fallback, so every $\beta$ is statically determined and nothing carries it past emission.
+A specification statement about $\beta$ SHALL NOT be expressed in terms of a host type, an MLIR type, or a device resource.
+3.3.2 Host representation
+The mask, the Cayley sign data, and the constraint queries are compiler data structures on the machine running CCS, Composer, and Alex. Their cost is real and is an implementation concern, not a language property.
+Per-node annotation. $2^n$ bits on each node carrying a multivector type.
+Cayley signs. The sign for an ordered pair $(A,B)$ is one of ${+1, -1, 0}$ over $4^n$ pairs, computable in $O(n)$ from $A$ and $B$. A stored table is a memoization. An implementation MAY cache it fully, cache it partially, or recompute per query.
+Alternative structure. An implementation MAY represent the support as an explicit list of occupied blade indices at $\lvert\beta\rvert \cdot n$ bits against $2^n$. The list is smaller where $\lvert\beta\rvert < 2^n / n$ and requires a merge per operation where the bitvector requires a bitwise operation.
+Solver width. QF_BV queries carry $2^n$-bit bitvectors. The theory is decidable and the query cost grows with $n$.
+Each choice above is unobservable in the language and in the generated program. This specification imposes no host word size and no packing convention, and states no bound on $n$: the practical bound is a compiler-resource figure that an implementation determines against its own graph sizes and solver budget.
+3.4 Composition
+Operation Rule
+a + b $\beta_{\text{out}} = \beta_a \cup \beta_b$
+a * b $\beta_{\text{out}} = {, A \oplus B : A \in \beta_a,\ B \in \beta_b ,}$, less pairs annihilated by a degenerate generator
+a ^ b as a * b , restricted to $A \cap B = \emptyset$
+a .| b as a * b , restricted to $A \subseteq B$ or $B \subseteq A$
+grade<k> a $\beta_{\text{out}} = {, A \in \beta_a :
+~a , -a $\beta_{\text{out}} = \beta_a$
+complement (dual) $\beta_{\text{out}} = {, {1..n} \setminus A : A \in \beta_a ,}$
+a ∨ b (regressive product) complement both operands, apply the ^ rule, complement the result; grade image $p + q - n$ where non-negative
+$k$-ary join $\wedge(a_1, \ldots, a_k)$ fold of the ^ rule over the $k$ operand masks, computed over the hyperedge’s source set with no intermediate node ( Program Hypergraph )
+On masks, symmetric difference is XOR. Addition is a bitwise OR. The product is an OR-reduction of $A \oplus B$ over the set bits of the two operand masks, bounded by $4^n$ bit operations and computable in $n,2^n$ by an XOR-convolution. Every rule is a quantifier-free bitvector operation over a fixed-width bitvector and discharges in QF_BV. The bound is a compile-time cost and depends on no host or target word size.
+The complement is the combinatorial right complement, defined on index sets, so it exists in a degenerate algebra where the pseudoscalar has no inverse. On the mask it is an involutive permutation of bit positions, index $i$ to index $(2^n - 1) \oplus i$, fixed at algebra declaration; signs do not affect support. The regressive product’s rule follows from the complement identity and stays in QF_BV. The $k$-ary join is definable as a fold of the binary rule because the outer product is associative; it is stated for the hyperedge form directly so that no intermediate node is introduced; a binarized join would type intermediate nodes that carry no geometric identity.
+No grade-indexed product table is required. Knowing that two operands are grade $p$ and grade $q$ leaves $|A \oplus B| = p + q - 2|A \cap B|$ undetermined, so a grade-indexed support would require a $(n{+}1)^2$ table of reachable grades to recover what the blade rule computes directly.
+A derivative node carries a sound support over-approximation; that support alone
+does not establish an exact parity constraint.
+A sandwich product typed through these binary rules carries the sound
+over-approximate support. Parity and blade support alone do not establish that
+an operand is a versor and do not justify narrowing by a grade-preservation theorem.
+3.5 The grade view
+σ ( x ) = {   ∣ A ∣ : A ∈ β ( x )   } \sigma(x) = \{\, |A| : A \in \beta(x) \,\} σ ( x ) = { ∣ A ∣ : A ∈ β ( x ) } is the popcount image of $\beta$. It is the vocabulary of the user-facing constraint syntax ( 'T : grade S ) and of the diagnostics, and it is strictly coarser: for $x = e_{12} + e_{13}$ in Cl(3,0) , $\beta(x)$ has two elements and $\sigma(x) = {2}$ admits three. Layout SHALL be computed from $\beta$ and not from $\sigma$.
+3.6 Support is a coeffect, not a type parameter
+Blade support follows the discipline established by Width Inference §5 . It is a requirement settled during design-time analysis, carried on the Program Semantic Graph, and read without recomputation by every later lowering pass.
+Three consequences.
+It stays out of generalization. A function polymorphic in blade support is annotated with the join of the masks at its call sites. The mask is a field on the PSG node, outside the unifier’s input.
+It reports at elaboration. The solver resolves support constraints by join and by containment check. Where a required support exceeds an inferred support, the compiler reports CLEF9621 at the elaboration boundary, after constraint solving has completed.
+It is settled before witnessing. CCS/Baker computes the packed layout from
+the mask (component count $|\beta|$, one slot per set bit) and elaborates the
+sparse product from the operand masks and Cayley sign table. The graph retains
+the contributing occurrences, coefficients, selected representations and joint
+proof premises. Alex passively witnesses that settled layout and arithmetic;
+it computes neither support nor layout, width or product semantics.
+3.7 Unresolvable support
+Where the analysis cannot bound a support, the compiler reports CLEF9624 and requests an annotation. It does not fall back to the full support.
+A fallback to the full support would type-check and would produce correct code. It would also discard the sparsity the representation argument rests on.
+4. Interaction of the two disciplines
+Parity is recoverable from a blade support whose members share a popcount parity, and is not recoverable otherwise. Carrying both is not redundant.
+$\pi$ is exact. $\beta$ is an over-approximation, and cancellation widens the gap between $\beta$ and the true occupied set.
+$\beta$ gives the component count. $\pi$ gives one bit.
+Where the two disagree, replace $\beta$ with ${, A \in \beta : |A| \equiv \pi \bmod 2 ,}$. The narrowing is not diagnosed.
+This narrowing occurs during propagation inside the compiler. Neither annotation appears in the other’s constraint system, and no joint query is issued. See §4.1.
+4.1 Two solver calls
+The annotation disciplines fall into two families. The group family (dimensional exponents, parity) discharges in QF_LIA. The lattice family (blade support, escape classification, capability, target reachability) discharges in QF_BV.
+The two families range over disjoint sets of constraint variables. They are therefore discharged as two independent queries, and the composite cost is the sum of the two. An implementation SHALL NOT combine them into a single query: QF_BV is not stably infinite, so the classical Nelson-Oppen combination result does not license the combination, and no combination is needed because the variable sets do not meet.
+The two families above are the families this chapter’s constraints occupy. Further annotation disciplines range over their own disjoint variable sets (enumeration sorts for memory dimensions discharge in QF_UF under the DTS treatment), and the rule extends unchanged: families are discharged as independent queries, and a hyperedge constraint whose fields span families SHALL decompose into per-family projections before discharge ( Program Hypergraph §4 ).
+5. Layout and lowering
+Blade support fixes the number of coefficients a multivector carries. It does not fix their widths.
+5.1 Component count
+A multivector with blade support $\beta$ lowers to $|\beta|$ coefficients, one per set bit. It does not lower to a dense $2^n$ array, and it does not lower to a grade-padded layout allocating $\binom{n}{k}$ slots for each occupied grade $k$.
+5.2 Component width at the MLIR level
+The representation of each coefficient is selected independently by Numeric Selection from that coefficient’s analyzed range, under the discipline of Width Inference . Coefficients of one multivector are not required to share a representation, and an implementation SHALL NOT impose a common representation across a multivector’s components in the absence of a range that justifies it.
+Grouping components that share an analyzed range is a permitted coarsening. A grade band is a reasonable grouping heuristic and is not a rule.
+Alex emits these as $\lvert\beta\rvert$ values at portable dialect types and commits to no target. A width at this level is a statement of what the computation requires, and not a claim about what any device provides.
+5.3 Product generation
+CCS/Baker elaboration of the geometric product enumerates pairs $(A, B)$ with $A \in \beta_a$ and $B \in \beta_b$, accumulating into the coefficient for $A \oplus B$ with the sign from the Cayley table. The number of pairs contributing to one output coefficient is the length of that accumulation. Those accumulations are the ones targeted by the source-owned quire nanopass of Numeric Selection §10.2 . Their lengths and required arithmetic premises are settled from $\beta$ before Alex witnesses them.
+5.4 Declared and derived support
+Where a value is declared with a wider support than the analysis derives, the compiler emits CLEF9625 as an advisory and packs to the derived support.
+5.5 Pathway realization
+The target pathway realizes the widths of §5.2. The same emitted MLIR is realized differently per pathway, and neither this chapter nor the annotation records the difference.
+Pathway Realization of a $w$-bit inferred coefficient
+LLVM (CPU, MCU) Rounded up to a native integer or float size for arithmetic. The analyzed range still governs representation choice and overflow checking.
+CIRCT (FPGA) Exactly $w$ flip-flops. A multivector’s coefficients may carry as many distinct widths as they have distinct ranges, each narrowing its own carry chain. Posit or fixed-point per range.
+JSIR (JavaScript) Binary64 host numbers per Width Inference §8 : exact at or below 53 bits, the documented wide-integer realization above. Posit and fixed-point are software realizations on this pathway, available only as documented library forms.
+Arbitrary width is the intent on the pathways that realize layouts, achieved exactly on the CIRCT pathway and by rounding on the LLVM pathway; the JSIR pathway is binary64-bounded. Component count $\lvert\beta\rvert$ is invariant across pathways. Only the per-coefficient realization varies.
+The quire is not a native capability of the JSIR pathway. An accumulation whose exactness obligation the quire pass targets (§5.3) is, on that pathway, a capability question under the gate of Numeric Selection §7 : a documented software realization or a diagnosed capability failure, never a silent binary64 fallback.
+6. Negative grade
+Grade admits no additive inverse in the value algebra. During constraint solving, elimination may introduce a formal negative grade as an intermediate term. The constraint language is $\mathbb{Z}$ and admits it. The model is ${0..n}$ and does not.
+A formal negative grade SHALL cancel before elaboration completes. A residual negative grade at the elaboration boundary is CLEF9622 .
+7. Normative Requirements
+Optionality. A compilation unit that declares no algebra SHALL be unaffected by this chapter.
+Parity exactness. Parity constraints SHALL be solved as equational constraints in the measure algebra and SHALL fail at the point of constraint violation.
+Support soundness. An inferred blade support SHALL contain every basis blade at which the annotated value may have a non-zero coefficient.
+Support carriage. Blade support SHALL be recorded as a coeffect on the PSG and preserved through lowering without recomputation.
+No silent default. An unresolvable blade support SHALL be reported as an error requesting annotation. The compiler SHALL NOT default to the full support.
+Packed layout. A multivector SHALL lower to a representation whose component count is the cardinality of its blade support.
+Grade view derivation. Where a grade support is required, it SHALL be computed as the popcount image of the blade support. An implementation SHALL NOT carry a grade support as an independent annotation.
+Algebra identity. Multivector types from distinct algebra declarations SHALL NOT unify.
+Negative-grade cancellation. A formal negative grade SHALL NOT be present after elaboration.
+Parity precedence. Where a parity annotation and a blade support are inconsistent, the support SHALL be narrowed to the parity-consistent subset and the narrowing SHALL NOT be diagnosed.
+Separate discharge. The group-family and lattice-family constraints SHALL be discharged as independent queries. An implementation SHALL NOT issue a single combined query over both variable sets.
+Component width independence. The representation of each coefficient of a multivector SHALL be selected from that coefficient’s analyzed range. An implementation SHALL NOT impose a single representation across a multivector’s components in the absence of a range that justifies it.
+Stage separation. The blade support SHALL NOT appear in emitted MLIR or in the generated program. A conformance requirement SHALL NOT be stated in terms of a host type, an MLIR type, or a device resource, and a figure belonging to one of the four stages of §3.3.1 SHALL NOT be presented as governing another.
+Pathway invariance. The component count $\lvert\beta\rvert$ SHALL be identical across target pathways for a given program. Only the per-coefficient realization of §5.5 varies by pathway.
+References
+Kennedy, A. (2009). Types for Units-of-Measure: Theory and Practice. CEFP.
+Katsumata, S. (2014). Parametric effect monads and semantics of effect systems. POPL .
+Petricek, T., Orchard, D., and Mycroft, A. (2014). Coeffects: a calculus of context-dependent computation. ICFP .
+Dorst, L., and De Keninck, S. (2022). A guided tour to the plane-based geometric algebra PGA.
+Units of Measure Special Attributes and Types
+© 2025-2026 Braidpoint

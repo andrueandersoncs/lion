@@ -1,0 +1,765 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency Core Architecture
+Interaction Nets as the Pure Regime
+Interaction Nets and Post-Transformer Architectures
+Delimited Continuations for Effects
+Hybrid Compilation Strategy
+SPIR-V Integration for Post-Transformer Architectures
+Practical Implications
+Design Principles
+Future Directions
+Property-Driven Compilation
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+Core Architecture
+CCS/Baker: Source Analysis and Settlement
+Program Analysis Pipeline
+Interaction Nets as the Pure Regime
+Why Interaction Nets Suit Pure Code
+Interaction Nets and Post-Transformer Architectures
+MatMul-Free Networks as Interaction Patterns
+BitNet and Quantized Models
+State Space Models (Mamba, RWKV)
+Memory Characteristics
+Delimited Continuations for Effects
+Hybrid Compilation Strategy
+SPIR-V Integration for Post-Transformer Architectures
+Reference Type Preservation
+SPIR-V Generation for MatMul-Free Models
+Hybrid CPU-GPU Execution
+Practical Implications
+Memory Management
+Concurrency Strategies
+Performance Characteristics
+Post-Transformer Specific Benefits
+Design Principles
+Future Directions
+Advanced Patterns
+Hardware Targets
+Property-Driven Compilation
+Scroll to top
+Documentation
+Compiler Internals
+Concepts
+Referential Transparency
+Seeking Referential Transparency
+Compiler design carries a standing tension between keeping high-level abstractions and generating efficient machine code. In our design, referential transparency is the decision point for the Composer compiler’s compilation strategy: whether a region is pure is a mathematical property to branch on, rather than a heuristic.
+Our Clef native compiler is organized around the Program Hypergraph (PHG), the representation Composer analyzes to identify referentially transparent regions. From that analysis, Composer chooses between two computational models: interaction nets for pure, concurrent computations, and delimited continuations for effectful, sequential operations.
+Selecting the compilation strategy from the purity of a region, rather than from optimization heuristics, lets Composer preserve the high-level intent of Clef code while targeting the appropriate execution model. The two models are designed to work together across heterogeneous hardware.
+Core Architecture
+CCS/Baker: Source Analysis and Settlement
+CCS/Baker establish effects, demand, dependencies and the premises for an admitted execution regime on the PSG. Alex passively witnesses the immutable published result through its Huet zipper and Elements/Patterns/Witnesses:
+// CCS/Baker establish effects and the permitted reduction contract
+let pureComputation data =
+data
+|> Array . map ( fun x -> x * 2 . 0 )
+|> Array . filter ( fun x -> x > threshold )
+|> Array . reduce (+)
+// CCS/Baker settle effects, suspension boundaries and captures
+let effectfulComputation data = async {
+let! result = externalService . process data
+return result
+}
+Program Analysis Pipeline
+The compilation strategy derives from three analyses:
+Program Hypergraph (PHG) - Captures high-level program structure
+Control Flow Graph (CFG) - Hypernodes in the PHG that identify control dependencies
+Data Flow Graph (DFG) - Hypernodes in the PHG that tracks data dependencies
+These analyses inform which regime a region takes:
+Interaction nets for pure parallelism
+Delimited continuations for effectful, sequential execution
+Interaction Nets as the Pure Regime
+For a region admitted to the interaction-net regime by CCS/Baker, the rule system and its proof premises are settled on the Program Hypergraph at saturation. Alex witnesses the published rule bodies as ordinary functions over node records; the net is runtime data, with a worklist of active pairs the compiled kernels consume. Purity alone does not establish independence, confluence or permitted arithmetic reassociation. The residue in the portable dialects:
+// The residue a pure region leaves (sketch): rule kernels as ordinary
+// functions, the net as runtime data, and a worklist loop
+func . func @apply_map_rule ( %node : memref < ?x i8 >) { ... }
+func . func @apply_filter_rule ( %node : memref < ?x i8 >) { ... }
+func . func @reduce_worklist ( %net : memref < ?x i8 >) {
+// consume active pairs until the net is normal
+scf . while : () -> () { ... } do { ... }
+}
+Why Interaction Nets Suit Pure Code
+Natural Parallelism - Reductions happen simultaneously wherever patterns match
+No Synchronization Overhead - Pure functions need no coordination
+Optimal for GPUs - Maps directly to SIMD/SIMT execution models
+Interaction Nets and Post-Transformer Architectures
+Interaction nets might seem a poor fit for traditional ML workloads dominated by matrix multiplication, but MatMul-free and sub-quadratic post-transformer models map well onto interaction net compilation.
+MatMul-Free Networks as Interaction Patterns
+Post-transformer architectures replace matrix multiplication with simple arithmetic operations that map directly to interaction rules:
+// Ternary operations from MatMul-free networks
+let ternaryOperation ( input : Vector < float >) ( weights : TernaryMatrix ) =
+// Only additions and subtractions, mapping to interaction rules
+for i in 0 .. outputDim - 1 do
+for j in 0 .. inputDim - 1 do
+match weights .[ i , j ] with
+| 1y -> result .[ i ] <- result .[ i ] + input .[ j ] // Simple addition
+| - 1y -> result .[ i ] <- result .[ i ] - input .[ j ] // Simple subtraction
+| 0y -> () // No operation
+// Maps directly to interaction rules, settled at design time on the PHG
+rule ternary_add : ( wire f32 , wire f32 ) -> wire f32
+rule ternary_sub : ( wire f32 , wire f32 ) -> wire f32
+BitNet and Quantized Models
+BitNet’s 1.58-bit weights are ternary, so each layer reduces to additions and subtractions, the operations interaction rules express directly:
+// BitNet layer - 2 bits per weight, simple operations
+[< CompileToSPIRV >]
+let bitnetLayer ( input : Tensor ) ( weights : PackedBitArray ) ( scale : float32 ) =
+inet {
+// Massively parallel ternary operations
+let! outputs = inet . parallel_map ( fun i ->
+let sum = applyTernaryOps input weights .[ i ]
+sum * scale
+) [ 0 .. outputSize - 1 ]
+return outputs
+}
+// Compiles to SPIR-V with no tensor cores required
+State Space Models (Mamba, RWKV)
+Linear-complexity models with local state updates are natural interaction net candidates:
+// Mamba's linear recurrence - perfect for Inet concurrency
+let mambaStep ( state : State ) ( input : float ) ( A : Diagonal ) ( B : Vector ) =
+// Each dimension updates independently
+inet {
+let! updates = inet . parallel_map ( fun i ->
+A . [ i ] * state .[ i ] + B . [ i ] * input
+) [ 0 .. stateSize - 1 ]
+return updates
+}
+Memory Characteristics
+Compiling post-transformer models through the Inet path changes the memory and arithmetic profile:
+Architecture Traditional GPU Inet + SPIR-V Direction
+Memory per param 16-32 bits 1.58-2 bits Fewer bits per weight
+Ops per token MatMul-dominated Add/Sub-dominated Simpler arithmetic
+Memory bandwidth A bottleneck Register/cache-resident Less DRAM traffic
+Hardware required Tensor cores Any GPU No tensor cores
+Delimited Continuations for Effects
+When code involves effects, delimited continuations preserve control flow:
+// Clef async with effects
+let processWithEffects data = async {
+let! validated = validate data // External effect
+let transformed = pure data // Pure computation
+let! stored = save transformed // External effect
+return stored
+}
+// Saturates as a continuation state machine; the portable-dialect
+// residue is a resume switch over a state record
+func . func @ processWithEffects_resume (% state : memref <? xi8 >, % value : index ) {
+% idx = memref . load % state [% c0 ] : memref <? xi8 >
+cf . switch % idx : i32 , [
+default : ^ done ,
+0 : ^ afterValidate , // run the pure region, then request save
+1 : ^ afterSave
+]
+}
+Hybrid Compilation Strategy
+Mixed workloads combine both strategies in a single function:
+// Mixed pure and effectful code
+let hybridProcessing datasets = async {
+// Effectful: read from external source
+let! data = DataSource . readAsync ()
+// Pure: massively parallel processing via Inet
+let processed =
+data
+|> Array . Parallel . map complexTransform
+|> Array . reduce combine
+// Effectful: save results
+do ! Storage . saveAsync processed
+}
+This lowers to one state machine whose pure segment calls the compiled parallel kernels between suspension points:
+func . func @hybridProcessing_resume ( %state : memref < ?x i8 >, %value : index ) {
+%idx = memref . load %state [ %c0 ] : memref < ?x i8 >
+cf . switch %idx : i32 , [
+default : ^done ,
+0 : ^afterRead , // pure region: call the compiled kernels, then request save
+1 : ^afterSave
+]
+}
+SPIR-V Integration for Post-Transformer Architectures
+SPIR-V’s capabilities align with interaction net compilation, especially for post-transformer models:
+Reference Type Preservation
+Interaction nets → Direct mapping to GPU work items
+Ternary weights → 2-bit packed representations in shared memory
+Zero-copy semantics → BAREWire unified memory access
+SPIR-V Generation for MatMul-Free Models
+// BitNet layer compiles to efficient SPIR-V
+[< CompileToSPIRV >]
+let matMulFreeLayer ( input : Tensor < float32 >) ( weights : TernaryTensor ) =
+inet {
+let! parallelOps = inet . parallel_map ( fun outputIdx ->
+// Each GPU thread: adds/subtracts in registers
+let mutable sum = 0 . 0f
+for inputIdx in 0 .. inputSize - 1 do
+match weights .[ outputIdx , inputIdx ] with
+| Pos -> sum <- sum + input .[ inputIdx ]
+| Neg -> sum <- sum - input .[ inputIdx ]
+| Zero -> ()
+sum
+) [ 0 .. outputSize - 1 ]
+return Tensor . ofArray parallelOps
+}
+// Generates SPIR-V that:
+// - Uses no tensor cores (works on any GPU)
+// - Keeps weights in shared memory (2 bits each)
+// - Accumulates in registers (avoids DRAM bandwidth)
+// - Targets high ALU utilization
+Hybrid CPU-GPU Execution
+In post-transformer architectures, the work splits between CPU and GPU:
+// CPU handles ternary ops efficiently with AVX-512
+// GPU handles parallel decompression of compressed KV cache
+[< HybridExecution >]
+let hybridInference ( model : HybridBitNet ) ( input : TokenSequence ) =
+inet {
+// CPU: Sequential ternary operations (cache-friendly)
+let! cpuResult = inet . cpu {
+return processTernaryLayers model . BitNetLayers input
+}
+// GPU: Parallel KV cache decompression via SPIR-V
+let! gpuResult = inet . gpu {
+return decompressAndApplyAttention model . CompressedKV cpuResult
+}
+// Zero-copy result sharing via BAREWire
+return combine cpuResult gpuResult
+}
+Practical Implications
+Memory Management
+Pure computations (Inet) - Can use zero-copy shared memory
+Effectful computations (DCont) - Align with continuation boundaries for RAII
+Concurrency Strategies
+Data parallelism - Inet reductions across GPU warps
+Task concurrency - DCont for coordinating async operations
+Pipeline concurrency - Hybrid approach for streaming
+Performance Characteristics
+Pattern Compilation Strategy Target Hardware Characteristic
+Pure map/reduce Inet regime GPU/SIMD Parallel reduction
+Async I/O DCont regime CPU Deterministic memory
+Mixed workload Hybrid Heterogeneous Adaptive
+MatMul-free layers Inet regime Any GPU Reduced memory footprint
+Ternary networks Inet regime CPU SIMD Add/sub in place of MatMul
+State space models Inet regime GPU Linear complexity
+Post-Transformer Specific Benefits
+The Inet compilation path becomes the dominant strategy for post-transformer architectures:
+BitNet/Ternary Networks
+2 bits per weight → entire layers fit in L2 cache
+Add/subtract ops → no tensor cores needed
+Parallel reductions → concurrent interaction net rewrites
+Linear Attention/State Space Models
+O(n) complexity instead of O(n²)
+Local state updates → independent, coordination-free updates
+No attention matrices → massive memory savings
+Hybrid Architectures
+CPU for sequential ternary ops (cache-efficient)
+GPU for parallel decompression (bandwidth-efficient)
+Zero-copy via BAREWire (no transfer overhead)
+Design Principles
+Preserve Until Necessary - Keep high-level abstractions as long as they provide value
+Purity as the Decision Point - Referential transparency determines compilation strategy
+No Forced Model - Choose interaction nets or continuations based on code semantics
+Hardware Awareness - Target appropriate hardware based on computation patterns
+Future Directions
+Advanced Patterns
+Distributed interaction nets - Cross-process/machine reductions
+Persistent continuations - Checkpoint/restore for long-running computations
+Adaptive recompilation - Switch strategies based on runtime behavior
+Hardware Targets
+Quantum backends - Interaction nets for quantum circuit optimization
+Neuromorphic chips - Event-driven computation via continuations
+Custom ASICs - Domain-specific interaction patterns
+Property-Driven Compilation
+Fidelity selects a compilation strategy per computational pattern, preserving functional abstractions while targeting code competitive with hand-optimized implementations.
+CCS/Baker own purity analysis and execution-regime settlement. The admitted regime must satisfy dependency, effect, demand, arithmetic and resource obligations; a performance expectation cannot discharge them. Alex consumes that settlement, while Composer’s backend owns target realization.
+Post-transformer models fundamentally change the GPU programming landscape:
+No tensor cores required - Addition and subtraction run on any GPU
+Minimal memory bandwidth - Ternary weights fit in cache/registers
+Massive parallelism - Every operation can execute simultaneously
+Consumer hardware - Efficient inference without specialized accelerators
+What began as an exploration of referential transparency as a compilation heuristic became a design commitment: the mathematical properties of our code determine how we compile it.
+Developers write idiomatic functional code, and the compiler selects the execution strategy from the purity of each region. A BitNet model that would traditionally require specialized kernels and manual optimization can compile directly from straightforward Clef expressions to SPIR-V code that may outperform hand-tuned implementations.
+By making post-transformer architectures accessible through familiar functional abstractions, Composer will enable a new generation of AI applications:
+Edge AI devices running full language models with megabytes, not gigabytes, of memory
+Real-time inference on consumer GPUs without specialized hardware
+Energy-efficient deployment reducing computational costs by orders of magnitude
+Compositional AI systems where functional guarantees enable safe, predictable model composition
+As post-transformer architectures mature, our approach to compilation, grounded in the mathematical properties of the program, is designed to extend to whatever computational paradigms emerge next.
+Seq'ing Simplicity
+© 2025-2026 Braidpoint

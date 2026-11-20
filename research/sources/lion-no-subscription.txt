@@ -1,0 +1,5 @@
+$ grep -rniE 'subscribe|onChange|addListener|watch\(' packages/core/src --include=*.ts -l | grep -v /tests/   (Lion's core, outside its tests, commit 7e4b4ad)
+files that let host code subscribe to changes: 0
+
+$ grep -niE 'subscribe|listener|be told|on change|watch' packages/site-runtime/content/reference/typescript-api.html   (Lion's TypeScript API reference)
+lines about being told of changes: 0

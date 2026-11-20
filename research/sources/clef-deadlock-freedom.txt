@@ -1,0 +1,602 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom “Safe” covers two properties
+Where the deadlock edge actually enters
+What session-types get, and what it costs
+The wait-for relation is already in the graph
+A classification that mirrors EscapeKind
+The developer sees the machinery and can change it
+How it maps onto the architecture
+How it survives lowering
+The honest ledger
+Related Reading
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+“Safe” covers two properties
+Where the deadlock edge actually enters
+What session-types get, and what it costs
+The wait-for relation is already in the graph
+A classification that mirrors EscapeKind
+The developer sees the machinery and can change it
+How it maps onto the architecture
+How it survives lowering
+The honest ledger
+Related Reading
+Clef Design Documents
+External References
+Scroll to top
+Documentation
+Design
+Concurrency
+Deadlock Freedom
+Deadlock Freedom as an Obligation
+Our actor model gives every instance an arena that lives exactly as long as the actor, and Prospero reclaims it deterministically when the actor terminates. That discipline, Resource Acquisition Is Initialization (RAII) drawn to the actor boundary, forecloses the memory failures of an actor system: use-after-free, dangling byref, a byref escaping its frame, a reference into a dead actor. However, it does not foreclose deadlock. Two actors can each park a continuation on a reply that only the other could send, every arena intact, every sentinel reading Valid , every lifetime correct, and the system makes no progress while reporting green. This is the gap this document closes, the way managed mutability closes its own.
+“Safe” covers two properties
+Actor-scoped RAII is a safety property in the technical sense: nothing bad happens to memory. Each actor owns its arena, cross-process references resolve through sentinels, and cleanup is tied to the actor lifecycle rather than to a collector running on its own clock. Those are the failure modes actor-scoped RAII is designed to rule out, and in Olivier and Prospero it does.
+Deadlock is a liveness property: something good eventually happens. A set of actors each blocked waiting for a message that only another blocked actor in the set could send will sit there indefinitely. Prospero never retires any of them, because none has crashed or completed. They are all alive and quiescent. The entire memory apparatus stays consistent while the program stops doing anything.
+Safety and liveness are independent axes.
+Our RAII work eliminated the memory-safety failures and left the liveness axis to runtime contingency, because the references are what RAII validates, and the wait-for graph is a different object that nothing in the memory model inspects.
+Where the deadlock edge actually enters
+The hazard has one source: a synchronous reply expectation across actors. A PostAndReply call suspends the caller’s continuation until the callee answers on a reply channel. That suspension is an edge in a wait-for relation, and a cycle of such edges where every actor is simultaneously blocked is the deadlock.
+A fire-and-forget Tell adds no such edge. The sender posts to a mailbox and returns, so the asynchronous fraction of a program is invisible to this hazard and cannot deadlock through it. The synchronous request and response concentrates the risk, because that is the only place a caller’s progress is contingent on a specific message another actor is contractually bound to produce.
+We want remote procedure call (RPC) available. It is genuinely useful in systems work, and closed-loop request and response is much better than legislating it away in favor of pervasive callbacks. So the synchronous edge stays in the model. The question is how to make its liveness visible in a way that fits our design-time norms.
+What session-types get, and what it costs
+Classical Linear Logic (CLL) gives one well-studied route to deadlock freedom for synchronous communication. Wadler’s Classical Processes (CP) put session-typed communication in exact correspondence with CLL, and in CP and its successor Hypersequent Classical Processes (HCP) a well-typed process cannot deadlock, established as a corollary of the proof structure. The mechanism in CP fuses channel creation and parallel composition under a single cut rule, which forces the communication topology to be a tree. Deadlock freedom follows because a tree has no cycles to wait around. The price is stated plainly in that work: the only processes allowed are tree-structured. Two actors that hold references to each other are already outside the fragment, and that pattern is common in real supervision graphs.
+Priority CP (PCP), following Kobayashi and Padovani, admits the cyclic topologies again. It annotates communication actions with priorities, a partial order, and the type checker verifies that the order has no cycle. Cyclic connection graphs become typeable as long as the priorities prove the wait-for relation stays acyclic. The recognized cost is compositionality: priorities are non-local, so a library actor’s priorities surface in the types of everything that calls it, and the programmer threads those annotations through by hand.
+Neither shape fits our constraints as written. The tree restriction forbids reasonable systems patterns. Pervasive priority annotation is the ceremony I am declining when I say I do not want to write Clef as though it were Haskell. And a compiler pass that silently rejects programs with a cyclic wait-for graph, with no surface the developer reads or steers, is the hidden guard I refuse on principle. Memory safety in our model is not a hidden analysis. The let mutable is visible syntax, the escape classification is inspectable, and the allocation decision is reachable by a library author. Deadlock freedom should be a citizen of the same kind.
+The wait-for relation is already in the graph
+A synchronous RPC introduces one structural object: a blocking-wait hyperedge. At a call site that issues callee.PostAndReply msg and suspends pending the reply, the caller’s continuation waits on the callee’s reply obligation. Our Program Hypergraph already records this kind of relation on its joint-constraint axis, the axis that gathers the hyperedges flat closures, regions, and actor lifetimes generate.
+Collect those edges into a wait-for relation W W W over actor behaviors. A node caller —waits-on→ callee exists whenever the caller issues a synchronous RPC to the callee and parks until the reply. Deadlock is a cycle in W W W whose actors are all in their blocked state at once. The relation is a may-wait over-approximation: an actor that can call either of two callees depending on message content contributes an edge to each. Over-approximating keeps the analysis sound, never claiming deadlock freedom that an execution could violate, at the cost of sometimes flagging a cycle no run reaches. Our escape analysis takes this posture too: EscapeKind over-approximates escape and never under-approximates it.
+For a finite, completely represented blocking-wait relation, a
+strongly-connected-component pass identifies cyclic components in linear time in
+the graph size. Acyclicity excludes circular waiting within that represented
+relation. A cycle in a may-wait over-approximation still needs feasibility analysis;
+it is not itself a demonstrated deadlock. Fairness, local progress, external
+completion and the selected recovery contract remain separate premises under
+Synchronous RPC and Wait Classification .
+Sections 5.1–5.3 of Coexponential Exploration give this boundary a formal service interpretation. A finite protocol summary over-approximates the supported actor traces, and its blocking operations supply the wait projection. Acyclicity of that projection is one premise of completion; whole-continuation termination, fair scheduling, delivery and cleanup remain explicit. This gives the three-layer contract a bounded account without claiming automatic reconstruction of every session protocol.
+Decidable By Construction §5.3 places that argument in the reusable-law architecture. The compiler must bind the theorem’s wait dependencies to the actual participants and preserve their correspondence to emitted blocking operations. A protocol’s safety or completed-result theorem supplies a different judgment from eventual completion.
+This directed wait analysis has a different meaning from
+conflict coloring .
+Neither a color assignment nor static callee identity alone licenses an
+interaction-net rewrite or establishes every progress obligation. Shared graph
+infrastructure retains the distinct relation, participants and judgment; it does
+not turn their different proofs into one coloring theorem.
+A classification that mirrors EscapeKind
+Every synchronous RPC call site gets a wait classification, deliberately built to mirror the escape classification managed mutability assigns to every mutable binding:
+type WaitClass =
+// callee static, W acyclic: guaranteed, silent
+| AcyclicStatic
+// callee static, in a connection cycle but
+// priority-orderable: guaranteed, priority inferred
+| OrderedCyclic of priority : int
+// callee value-carried: visible downgrade to
+// supervised timeout, diagnostic emitted
+| Unresolved of routing : RoutingKind
+AcyclicStatic is the common case under a mostly-static topology, and it adds no annotation, no marker, and no ceremony. The check ran, the graph was acyclic, and the developer never hears about it.
+OrderedCyclic is the case CP’s tree restriction wrongly forbids: two actors hold references to each other and call in both directions, forming a cycle in the connection graph but not in the wait-for graph, because their calls are ordered so that no execution waits around the loop. The order is a rank: an integer assigned to each actor behavior such that every wait-for edge strictly increases it, which exists exactly when the relation is acyclic. The priority annotation a developer might write is that rank, and in the common case the solver finds it. The developer writes nothing. This is the place our inference thesis earns the difference from textbook Priority CP, where that priority would be a hand-written annotation. Width is inferred from type structure and surfaced only when inference needs help. The synchronous-action priority is that inference one axis over.
+Unresolved is the genuinely dynamic case, where the callee is value-carried through Actor.self() -passing, content-based routing, or a runtime-spawned handle whose identity is not statically pinned. Acyclicity over such routing is undecidable in general, which is the wall the asynchronous-and-cyclic process-network literature documents and works around. The program is neither forbidden nor silently admitted. The call site drops out of the static guarantee, the compiler says which call dropped and why, and that call falls back to supervised execution with a timeout. RPC stays available, and the boundary of the guarantee is visible at the exact call that crosses it.
+The developer sees the machinery and can change it
+The interaction follows the managed-mutability standard: inferred when it holds, a concrete diagnostic when it does not, and an opt-in annotation for the developer who wants control.
+In the common case the developer sees nothing. When a cycle is flagged, the compiler reports the wait-for path the way the escape diagnostic reports an escape path. The message is the actual chain, “ ActorA.handleFoo waits on ActorB.query , which waits on ActorA.handleBar , a synchronous cycle,” rather than a generic warning that deadlock is possible. The developer reads the structural reason and chooses the resolution: supply an explicit priority that breaks the cycle and that the checker verifies, refactor one leg to a Tell with an explicit continuation so the wait-for edge disappears, or mark the call for supervised timeout and opt it out of the static guarantee on purpose. The guard is never hidden, and it is always overridable. The visibility and overridability set this design apart from both the tree restriction and the runtime-only timeout.
+Writing an explicit priority is the only place priorities-as-syntax appear, and they appear only at the cyclic-and-ambiguous call sites that genuinely need them, not across every channel in the program. The compositionality cost the literature attaches to priorities is real, and confining it to the call that incurs it is the improvement over pervasive annotation.
+How it maps onto the architecture
+The wait-for edges are hyperedges on the joint-constraint axis our tier architecture already defines, so deadlock freedom is a section over that axis being free of cycles. Acyclicity is not a graph algorithm that needs its own machinery. It encodes as the rank constraint, ∀ ( u → v ) ∈ W . r ( u ) < r ( v ) \forall (u \to v) \in W.\ r(u) < r(v) ∀ ( u → v ) ∈ W . r ( u ) < r ( v ) , which is satisfiable exactly when the relation is acyclic, and that constraint is QF_LIA. So the AcyclicStatic and OrderedCyclic obligations are ordinary Tier 2 obligations in the fragment that already includes our interval and bound checks, and the solver discharges them together, with the inferred rank serving as the priority witness. When a sub-protocol’s acyclicity depends on a fact about a library actor, for instance that a supervised pool never calls back into its caller, a mode shift lifts the obligation that the Tier 2 structure admits the Tier 3 refinement supplying that ordering, then projects the result back down, which is the worked traversal shape the architecture uses elsewhere.
+Parametricity does not establish this property. Free theorems give independence of pure regions for the interaction-net path, and they say nothing about the liveness of effectful interaction. Deadlock freedom is Tier 2 work, never Tier 1 free: free of annotation in the common case, but never free of analysis.
+How it survives lowering
+A check that runs only in the front end and is discarded before code generation is theater. The CakeML standard is the right bar: the property is established once and carried to the target, rather than asserted at the source and hoped for below. For deadlock freedom that transfer is direct, because the obligation is already a Tier 2 verification condition and Tier 2 conditions already lower to the MLIR SMT dialect and discharge at the seam. There is no separate mechanism for this one.
+The shape in MLIR turns on one question: is deadlock freedom a structural invariant of an op, or a proof obligation on a scope? It is the second. A single blocking call cannot establish acyclicity, because acyclicity is a property of the whole set of wait edges and no individual op can see the set. SSA dominance can make use-after-definition structurally impossible at the op level, and there is no analogue here. So each synchronous RPC lowers to a blocking primitive that attaches only its own wait edge as local fact, derived at emission from the graph rather than asserted by the op:
+// each PostAndReply lowers to its blocking send. The wait edge is derived
+// at emission and rides the op as a diagnostic anchor
+%r = func . call @inventory_reply ( %request )
+{ rpc.wait_edge = #wait < from = "order" , to = "inventory" > } : ( index ) -> index
+The acyclicity proof is hung on the scope that encloses the set of those edges. The enclosing region bears the obligation as an attribute, which instructs the seam to gather every wait edge in the region and prove the relation admits a rank:
+module @order_system attributes { verif.obligation = #tier2.acyclic_wait } {
+// actor behaviors and their blocking sends
+}
+The seam emits the verification condition for that scope from the graph’s wait relation, cross-checks the gathered anchors against it, and the solver discharges the condition exactly as it discharges an interval obligation:
+%edges = collect rpc . wait_edge in @order_system // per-op anchors, for diagnostics
+check %edges == W // W: the graph's wait relation; a dropped anchor is an emission bug
+smt . assert ( forall ( u v ) (=> ( wait %u %v ) ( lt ( rank %u ) ( rank %v ))))
+smt . check // sat: acyclic. unsat: the core is the cycle, reported as CCS8031.
+The unsat core is the wait-for path the front-end diagnostic names. The solver returns it as the minimal set of edges that cannot be jointly ranked, which is precisely the cycle, so the proof failure and the developer-facing message are the same object.
+The scope is the part to choose deliberately. The wait relation ranges over the actors that can address one another, so the obligation belongs on the smallest region closed under “can send a synchronous reply to.” That is a module when an actor system is a module, and a dedicated actor-system region when actors span modules. A smaller scope is a cheaper proof, and a synchronous call that crosses a scope boundary is an Unresolved site by the same definition the front end already applies, because the callee is outside the relation the scope can see.
+The honest ledger
+Static RPC with no wait cycle gets compile-time deadlock freedom at zero ceremony, and the orderable-cyclic case gets the same guarantee with inferred priorities and still no annotation. The dynamic case keeps RPC working, trading the static guarantee for a visible, local, overridable downgrade to supervised execution. The design-time cost is minimized: the dynamic fragment is not statically guaranteed, and a developer who wants a guarantee there annotates the ordering, paying a cost localized to that call, or accepts the timeout.
+This is not HCP’s whole-calculus theorem, and doesn’t intend to be a full theoretical exercise. The claim is not that Clef is deadlock-free without qualification. It is deadlock freedom for a precisely drawn, common, statically resolvable fragment, with a boundary the developer can see and steer. Our memory model took dynamic discipline, the collector and its unpredictable clock, and made it a structural property carried to the substrate. And now we have a mechanism that handles liveness, one axis over, with the wait-for element in our hypergraph in place of the escape classification, and that is the direction we will build it as the actor runtime matures.
+Related Reading
+Clef Design Documents
+Managed Mutability - Escape classification and the inferred-with-override pattern this design mirrors
+RAII in Olivier and Prospero - Actor-scoped arenas, sentinels, and deterministic lifetimes
+The DCont/Inet Duality - The sequential and parallel compilation patterns
+Delimited Continuations - The continuation structure under async, actors, and RPC
+External References
+Propositions as Sessions , Wadler (ICFP 2012) - CP and the exact correspondence between session types and Classical Linear Logic
+Better Late Than Never: A Fully-Abstract Semantics for Classical Processes , Kokke, Montesi, Peressotti (POPL 2019) - HCP and deadlock freedom by typing
+Prioritise the Best Variation , Kokke, Dardha - Priority GV and deadlock freedom for cyclic topologies
+Deadlock Freedom for Asynchronous and Cyclic Process Networks - The asynchronous-and-cyclic fragment and its priority discipline
+The Three-Layer Actor Contract : The protocol layer this wait-for slice projects from, with coexponential session types sitting between the BAREWire data contract and deadlock freedom
+Graph-Direct Parallelism Ariel Under Prospero
+© 2025-2026 Braidpoint

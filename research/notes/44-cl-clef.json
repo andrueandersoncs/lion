@@ -1,0 +1,942 @@
+{
+  "sources": [
+    {
+      "id": "clef-introduction",
+      "url": "https://clef-lang.com/spec/draft/introduction/",
+      "title": "Clef specification: Introduction",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-units-spec",
+      "url": "https://clef-lang.com/spec/draft/units-of-measure/",
+      "title": "Clef specification: Units of Measure",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-decidability",
+      "url": "https://clef-lang.com/docs/internals/verification/decidability-sweet-spot/",
+      "title": "The Decidability Sweet Spot",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-double-annotation",
+      "url": "https://clef-lang.com/docs/internals/verification/double-annotation-discovery/",
+      "title": "From Double Annotation to Discovery",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-patterns-spec",
+      "url": "https://clef-lang.com/spec/draft/patterns/",
+      "title": "Clef specification: Patterns",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-dcont-spec",
+      "url": "https://clef-lang.com/spec/draft/dcont-representation/",
+      "title": "Clef specification: Delimited Continuation Representation",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-delimited-continuations",
+      "url": "https://clef-lang.com/docs/design/concurrency/delimited-continuations/",
+      "title": "Delimited Continuations: Fidelity's Turning Point",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-blog-reactivity",
+      "url": "https://clef-lang.com/blog/native-reactivity-in-clef/",
+      "title": "Native Reactivity in Clef",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": 20250803
+    },
+    {
+      "id": "clef-reactive-signals",
+      "url": "https://clef-lang.com/spec/draft/reactive-signals/",
+      "title": "Clef specification: Reactive Signals",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-incremental",
+      "url": "https://clef-lang.com/spec/draft/incremental-computation/",
+      "title": "Clef specification: Incremental Computation",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-lazy-spec",
+      "url": "https://clef-lang.com/spec/draft/lazy-representation/",
+      "title": "Clef specification: Lazy Value Representation",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-lazy",
+      "url": "https://clef-lang.com/docs/design/structure-and-performance/why-lazy-is-hard/",
+      "title": "Why Lazy Is Hard",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-referential-transparency",
+      "url": "https://clef-lang.com/docs/internals/concepts/seeking-referential-transparency/",
+      "title": "Seeking Referential Transparency",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-coeffects",
+      "url": "https://clef-lang.com/docs/internals/concepts/coeffects-and-codata/",
+      "title": "Coeffects and Codata in Composer",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-mode-shifts",
+      "url": "https://clef-lang.com/docs/internals/verification/mode-shifts/",
+      "title": "Mode Shifts In Fidelity Verification",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-constructed-witnesses",
+      "url": "https://clef-lang.com/docs/design/javascript-targeting/constructed-witnesses/",
+      "title": "Constructed Witnesses",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-design-time-spec",
+      "url": "https://clef-lang.com/docs/design/javascript-targeting/design-time-spec-runtime-reliability/",
+      "title": "Design-Time Specification for Runtime Reliability",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-error-handling",
+      "url": "https://clef-lang.com/spec/draft/error-handling/",
+      "title": "Clef specification: Error Handling",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-behavior-classification",
+      "url": "https://clef-lang.com/spec/draft/behavior-classification/",
+      "title": "Clef specification: Behavior Classification",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-verification",
+      "url": "https://clef-lang.com/docs/internals/verification/",
+      "title": "Transparent Verification",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-verification-byproduct",
+      "url": "https://clef-lang.com/docs/design/categorical-foundations/formal-verification-compilation-byproduct/",
+      "title": "Formal Verification as Compilation Byproduct",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-blog-fewer-tests",
+      "url": "https://clef-lang.com/blog/fewer-tests-greater-safety/",
+      "title": "Fewer Tests; Greater Safety",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": 20250808
+    },
+    {
+      "id": "clef-absorbing-alloy",
+      "url": "https://clef-lang.com/docs/design/language/absorbing-alloy/",
+      "title": "Absorbing Alloy",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-blog-dimensional-proofs",
+      "url": "https://clef-lang.com/blog/proofs-from-dimensional-types/",
+      "title": "'Free' Proofs from Dimensional Types",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": 20260331
+    },
+    {
+      "id": "racket-contract-boundaries",
+      "url": "https://docs.racket-lang.org/guide/contract-boundaries.html",
+      "title": "The Racket Guide: Contracts and Boundaries",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "racket-contract-func",
+      "url": "https://docs.racket-lang.org/guide/contract-func.html",
+      "title": "The Racket Guide: Simple Contracts on Functions",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "racket-guide-lambda",
+      "url": "https://docs.racket-lang.org/guide/lambda.html",
+      "title": "The Racket Guide: Functions (Procedures): lambda",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "racket-guide-exceptions",
+      "url": "https://docs.racket-lang.org/guide/exns.html",
+      "title": "The Racket Guide: Exceptions",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "racket-promises",
+      "url": "https://docs.racket-lang.org/reference/Delayed_Evaluation.html",
+      "title": "The Racket Reference: Delayed Evaluation",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "pint-tutorial",
+      "url": "https://pint.readthedocs.io/en/stable/getting/tutorial.html",
+      "title": "Pint: Tutorial",
+      "publisher": "Pint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "rfc8259",
+      "url": "https://www.rfc-editor.org/rfc/rfc8259.txt",
+      "title": "RFC 8259: The JavaScript Object Notation (JSON) Data Interchange Format",
+      "publisher": "IETF",
+      "kind": "primary",
+      "published": 20171201
+    },
+    {
+      "id": "clef-arity",
+      "url": "https://clef-lang.com/docs/design/structure-and-performance/arity-on-the-side-of-caution/",
+      "title": "Arity On The Side of Caution",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-baker",
+      "url": "https://clef-lang.com/docs/internals/pipeline/baker-saturation-engine/",
+      "title": "Baker: A Key Ingredient to Composer",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-blog-carrying-proofs",
+      "url": "https://clef-lang.com/blog/carrying-proofs-into-javascript/",
+      "title": "Carrying Proofs into JavaScript",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": 20260911
+    },
+    {
+      "id": "clef-blog-deferred-inference",
+      "url": "https://clef-lang.com/blog/deferred-inference/",
+      "title": "The Gift of Deferred Inference",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": 20260627
+    },
+    {
+      "id": "clef-blog-dont-assume",
+      "url": "https://clef-lang.com/blog/dont-assume/",
+      "title": "Don't Assume All Proofs Are Bulletproof",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": 20260430
+    },
+    {
+      "id": "clef-blog-lisp",
+      "url": "https://clef-lang.com/blog/hardware-lessons-from-lisp/",
+      "title": "Hardware Lessons from LISP",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": 20250722
+    },
+    {
+      "id": "clef-collect-yourself",
+      "url": "https://clef-lang.com/docs/design/language/collect-yourself/",
+      "title": "Collect Yourself!",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-deadlock-freedom",
+      "url": "https://clef-lang.com/docs/design/concurrency/deadlock-freedom-as-an-obligation/",
+      "title": "Deadlock Freedom as an Obligation",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-dimensional-types",
+      "url": "https://clef-lang.com/docs/design/types/dimensional-type-safety/",
+      "title": "Dimensional Type Safety Across Execution Models",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-grade-discipline",
+      "url": "https://clef-lang.com/spec/draft/grade-discipline/",
+      "title": "Clef specification: Grade Discipline",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-hypergraphs",
+      "url": "https://clef-lang.com/docs/internals/pipeline/hyping-hypergraphs/",
+      "title": "Hyping Hypergraphs",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-information-accrual",
+      "url": "https://clef-lang.com/docs/design/structure-and-performance/information-is-not-discarded/",
+      "title": "Information Is Not Discarded",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-interactive",
+      "url": "https://clef-lang.com/spec/draft/interactive-development/",
+      "title": "Clef specification: Interactive Development",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-managed-mutability",
+      "url": "https://clef-lang.com/docs/design/language/managed-mutability/",
+      "title": "Managed Mutability",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-metaprogramming",
+      "url": "https://clef-lang.com/docs/design/language/standing-art-clef-metaprogramming/",
+      "title": "Standing Art: Clef Metaprogramming Features in the Composer Compiler",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-nanopass",
+      "url": "https://clef-lang.com/docs/internals/concepts/nanopass-navigation/",
+      "title": "Nanopass Navigation",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-negative-fractional",
+      "url": "https://clef-lang.com/docs/design/types/negative-fractional-types/",
+      "title": "Negative and Fractional Types",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-null-free",
+      "url": "https://clef-lang.com/docs/design/language/null-free-by-construction/",
+      "title": "Null-Free by Construction",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-observable",
+      "url": "https://clef-lang.com/spec/draft/observable-computation/",
+      "title": "Clef specification: Observable Computation",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-proof-aware",
+      "url": "https://clef-lang.com/docs/internals/pipeline/proof-aware-compilation/",
+      "title": "Proof-Aware Compilation Through Hypergraphs",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-proof-composition",
+      "url": "https://clef-lang.com/docs/internals/verification/proof-composition-and-tooling/",
+      "title": "Proof Composition and Tooling",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-psg",
+      "url": "https://clef-lang.com/spec/draft/program-semantic-graph/",
+      "title": "Clef specification: Program Semantic Graph",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "clef-structural-polymorphism",
+      "url": "https://clef-lang.com/docs/design/types/structural-polymorphism/",
+      "title": "Structural Polymorphism: Resolution over the Algebraic Substrate",
+      "publisher": "Braidpoint",
+      "kind": "primary",
+      "published": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "cl-c1",
+      "source": "clef-units-spec",
+      "quote": "Addition, subtraction, remainder and comparison require matching measures.",
+      "says": {
+        "covers": "quantities whose units are checked when they are combined",
+        "by": "units of measure",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c2",
+      "source": "clef-decidability",
+      "quote": "CCS solves dimensional constraints inside type inference by abelian-group unification, the method Kennedy’s units of measure established.",
+      "says": {
+        "designed": "units of measure",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c3",
+      "source": "clef-double-annotation",
+      "quote": "F#’s Units of Measure are erased during IL generation.",
+      "says": {
+        "covers": "units checked when the program runs",
+        "by": "units of measure",
+        "is": false
+      }
+    },
+    {
+      "id": "cl-c4",
+      "source": "clef-introduction",
+      "quote": "F# applies type checking and type inference to numerically-intensive domains through units of measure inference and checking",
+      "says": {
+        "adopted": "units of measure",
+        "in": "F#"
+      },
+      "where": "Strong Typing for Numerical Code"
+    },
+    {
+      "id": "cl-c5",
+      "source": "pint-tutorial",
+      "quote": "Pint will complain if you ask it to perform a conversion it doesn’t know",
+      "says": {
+        "covers": "quantities whose units are checked when they are combined",
+        "by": "quantities as values that carry their units",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c6",
+      "source": "pint-tutorial",
+      "quote": "DimensionalityError : Cannot convert from 'inch / minute' ([length] / [time]) to 'joule' ([length] ** 2 * [mass] / [time] ** 2)",
+      "says": {
+        "covers": "units checked when the program runs",
+        "by": "quantities as values that carry their units",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c7",
+      "source": "pint-tutorial",
+      "quote": "Follow the steps below and learn how to use Pint to track physical quantities",
+      "says": {
+        "adopted": "quantities as values that carry their units",
+        "in": "Pint"
+      }
+    },
+    {
+      "id": "cl-c8",
+      "source": "clef-introduction",
+      "quote": "This approach provides exhaustive pattern matching verified at compile time.",
+      "says": {
+        "covers": "a match checked to cover every value of its schema",
+        "by": "exhaustiveness checking",
+        "is": true
+      },
+      "where": "Functional Programming"
+    },
+    {
+      "id": "cl-c9",
+      "source": "clef-patterns-spec",
+      "quote": "A warning is issued if an expression contains a redundant dynamic type-test pattern",
+      "says": {
+        "covers": "a report of a match case no value can reach",
+        "by": "exhaustiveness checking",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c10",
+      "source": "clef-patterns-spec",
+      "quote": "execution terminates with a diagnostic identifying the failed source match.",
+      "says": {
+        "designed": "exhaustiveness checking",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c11",
+      "source": "clef-delimited-continuations",
+      "quote": "The reset operator establishes a boundary, and shift captures everything up to that boundary:",
+      "says": {
+        "covers": "first-class continuations",
+        "by": "delimited continuations",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c12",
+      "source": "clef-dcont-spec",
+      "quote": "seq { } is the degenerate case of this recipe: every resumption source is the caller’s pull, and yield is the cut.",
+      "says": {
+        "covers": "generators",
+        "by": "delimited continuations",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c13",
+      "source": "clef-delimited-continuations",
+      "quote": "The three then read as one construct: async expressions are delimited continuations with I/O-triggered resumption, actors the same with message-triggered resumption, and computation expressions the surface syntax for manipulating them.",
+      "says": {
+        "covers": "asynchronous code and actors on one primitive",
+        "by": "delimited continuations",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c14",
+      "source": "clef-dcont-spec",
+      "quote": "Because VC-ONE is stated on the frame value, multi-shot is well-defined where it is declared",
+      "says": {
+        "covers": "a continuation resumed more than once",
+        "by": "delimited continuations",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c15",
+      "source": "clef-introduction",
+      "quote": "Concurrency is a first-class language concern: the actor model, [Incremental<'T>](incremental-computation.md) , delimited continuations, and interaction nets are foundational primitives.",
+      "says": {
+        "designed": "delimited continuations",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c16",
+      "source": "clef-blog-reactivity",
+      "quote": "It runs initially and reacts to relevant changes under the stabilization contract.",
+      "says": {
+        "covers": "host code told when a derived value changes",
+        "by": "reactive signals",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c17",
+      "source": "clef-reactive-signals",
+      "quote": "Signals are a thin surface layer , not a separate reactive engine.",
+      "says": {
+        "covers": "signals, memos, and effects on one incremental engine",
+        "by": "reactive signals",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c18",
+      "source": "clef-incremental",
+      "quote": "Recomputation occurs only when the node is both stale (inputs changed) and demanded (a downstream consumer requires the value).",
+      "says": {
+        "covers": "derived rows kept up to date as facts change",
+        "by": "incremental computation",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c19",
+      "source": "clef-blog-reactivity",
+      "quote": "The compiler and target implementations will need to establish the corresponding guarantees as they develop.",
+      "says": {
+        "designed": "reactive signals",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c20",
+      "source": "clef-blog-reactivity",
+      "quote": "The compiler and target implementations will need to establish the corresponding guarantees as they develop.",
+      "says": {
+        "designed": "incremental computation",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c21",
+      "source": "clef-lazy-spec",
+      "quote": "Subsequent forces SHALL return the stored result without evaluating the computation again.",
+      "says": {
+        "covers": "values computed on first demand and kept",
+        "by": "promises (delay and force)",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c22",
+      "source": "clef-lazy",
+      "quote": "Design update, 26 September 2026: the original January article reported a prototype that recomputed on every force and described memoization as a future optimization.",
+      "says": {
+        "designed": "promises (delay and force)",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c23",
+      "source": "racket-promises",
+      "quote": "every later force of the promise produces the same result.",
+      "says": {
+        "covers": "values computed on first demand and kept",
+        "by": "promises (delay and force)",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c24",
+      "source": "racket-promises",
+      "quote": "every later force of the promise produces the same result.",
+      "says": {
+        "adopted": "promises (delay and force)",
+        "in": "Racket"
+      }
+    },
+    {
+      "id": "cl-c25",
+      "source": "clef-referential-transparency",
+      "quote": "From that analysis, Composer chooses between two computational models: interaction nets for pure, concurrent computations, and delimited continuations for effectful, sequential operations.",
+      "says": {
+        "covers": "effects kept out of code whose evaluation order the engine chooses",
+        "by": "purity analysis",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c26",
+      "source": "clef-referential-transparency",
+      "quote": "In our design, referential transparency is the decision point for the Composer compiler’s compilation strategy: whether a region is pure is a mathematical property to branch on, rather than a heuristic.",
+      "says": {
+        "designed": "purity analysis",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c27",
+      "source": "clef-coeffects",
+      "quote": "A coeffect system tracks the converse: what code needs from its environment.",
+      "says": {
+        "defines": "coeffects"
+      }
+    },
+    {
+      "id": "cl-c28",
+      "source": "clef-coeffects",
+      "quote": "Composer’s emergent design is considering incorporation of context requirements as first-class citizens in its type system:",
+      "says": {
+        "designed": "coeffects",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c29",
+      "source": "clef-mode-shifts",
+      "quote": "The compiler also needs to identify inconsistent premises",
+      "says": {
+        "covers": "a proof that says when its premises allow no state",
+        "by": "vacuity checking",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c30",
+      "source": "clef-mode-shifts",
+      "quote": "The compiler also needs to identify inconsistent premises",
+      "says": {
+        "designed": "vacuity checking",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c31",
+      "source": "clef-mode-shifts",
+      "quote": "An unsatisfiable core can help identify the assertions involved in an unsat result.",
+      "says": {
+        "covers": "which assumptions make a goal unsatisfiable",
+        "by": "unsatisfiable cores",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c32",
+      "source": "clef-decidability",
+      "quote": "When unification fails, the plan is for Lattice to report the exact subset of conflicting constraints.",
+      "says": {
+        "designed": "unsatisfiable cores",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c33",
+      "source": "racket-contract-func",
+      "quote": "catch this violation and blame the client for breaking the contract with",
+      "says": {
+        "covers": "a failure that names the function and the caller that broke its contract",
+        "by": "higher-order contracts with blame",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c34",
+      "source": "racket-contract-func",
+      "quote": "a contract can ensure that a function receives only values in its",
+      "says": {
+        "covers": "a lambda whose arguments are checked against schemas when it is called",
+        "by": "higher-order contracts with blame",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c35",
+      "source": "racket-contract-boundaries",
+      "quote": "The contracts library is built into the Racket language",
+      "says": {
+        "adopted": "higher-order contracts with blame",
+        "in": "Racket"
+      }
+    },
+    {
+      "id": "cl-c36",
+      "source": "clef-constructed-witnesses",
+      "quote": "Here the engineering goal is to derive checks and their failure provenance from the same obligations that the middle-end tracks, and to preserve that relation through emission.",
+      "says": {
+        "designed": "higher-order contracts with blame",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c37",
+      "source": "clef-error-handling",
+      "quote": "Operations that can fail return Result values rather than raising exceptions:",
+      "says": {
+        "covers": "a failure a program can catch and read as data",
+        "by": "errors as values",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c38",
+      "source": "clef-error-handling",
+      "quote": "Design Principle : Errors are values, not control flow.",
+      "says": {
+        "designed": "errors as values",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c39",
+      "source": "racket-guide-exceptions",
+      "quote": "To catch an exception, use the with-handlers form:",
+      "says": {
+        "covers": "a failure a program can catch and read as data",
+        "by": "exception handlers",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c40",
+      "source": "racket-guide-exceptions",
+      "quote": "To catch an exception, use the with-handlers form:",
+      "says": {
+        "adopted": "exception handlers",
+        "in": "Racket"
+      }
+    },
+    {
+      "id": "cl-c41",
+      "source": "clef-behavior-classification",
+      "quote": "A representation edge SHALL be a diagnosed error or an explicitly specified saturation, never a silent wraparound or precision collapse; a representation change SHALL be an explicit witnessed conversion, never a bit reinterpretation.",
+      "says": {
+        "covers": "an integer refused when it cannot be held exactly",
+        "by": "errors at the edges of exact arithmetic",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c42",
+      "source": "clef-behavior-classification",
+      "quote": "A representation edge SHALL be a diagnosed error or an explicitly specified saturation, never a silent wraparound or precision collapse; a representation change SHALL be an explicit witnessed conversion, never a bit reinterpretation.",
+      "says": {
+        "designed": "errors at the edges of exact arithmetic",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c43",
+      "source": "rfc8259",
+      "quote": "are in the range [-(2**53)+1, (2**53)-1] are interoperable in the",
+      "says": {
+        "defines": "the integers every JSON implementation agrees on"
+      },
+      "where": "Section 6, Numbers"
+    },
+    {
+      "id": "cl-c44",
+      "source": "racket-guide-lambda",
+      "quote": "the expected number of arguments does not match the given",
+      "says": {
+        "covers": "a call refused when a lambda is given more arguments than it has parameters",
+        "by": "arity checking",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c45",
+      "source": "racket-guide-lambda",
+      "quote": "the expected number of arguments does not match the given",
+      "says": {
+        "adopted": "arity checking",
+        "in": "Racket"
+      }
+    },
+    {
+      "id": "cl-c46",
+      "source": "clef-constructed-witnesses",
+      "quote": "A successful proof, a counterexample, an unresolved obligation and a timeout are distinct outcomes.",
+      "says": {
+        "covers": "an undecided question kept apart from a false one",
+        "by": "distinct proof outcomes",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c47",
+      "source": "clef-design-time-spec",
+      "quote": "Missing facts and solver timeouts stay unresolved, rather than becoming successful proofs.",
+      "says": {
+        "designed": "distinct proof outcomes",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c48",
+      "source": "clef-verification",
+      "quote": "Instead of requiring developers to write theorems, the Clef Compiler Service (CCS) is designed to derive proof obligations directly from the code’s dimensional constraints and memory topologies, transparently, at design time, backed by the cvc5 SMT solver.",
+      "says": {
+        "designed": "smt solving",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c49",
+      "source": "clef-blog-fewer-tests",
+      "quote": "As we currently conceive it, the proofs discharge first through an external proof assistant via a code-generation framework, and the resulting obligations then travel through the compilation pipeline as hyperedges, guiding optimization while carrying the safety constraints forward.",
+      "says": {
+        "designed": "interactive theorem proving",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c50",
+      "source": "clef-verification-byproduct",
+      "quote": "General theorem-package admission, cross-mode certificate import, the proposed concurrent/distributed library adapters and broad Tier 4 automation remain engineering work.",
+      "says": {
+        "designed": "proof certificates",
+        "in": "Clef"
+      }
+    },
+    {
+      "id": "cl-c51",
+      "source": "clef-absorbing-alloy",
+      "quote": "Where string-based or JSON-based code representations leave types as opaque metadata that must be parsed and validated separately, a quotation preserves the compiler’s type information as first-class data.",
+      "says": {
+        "raises": "types carried with code written as JSON"
+      }
+    },
+    {
+      "id": "cl-c52",
+      "source": "clef-blog-dimensional-proofs",
+      "quote": "The measure fragment has decidable principal inference over integer-exponent equations, using solving that preserves the integer and divisibility constraints.",
+      "says": {
+        "covers": "units inferred by solving whole-number equations over exponents",
+        "by": "units of measure",
+        "is": true
+      }
+    },
+    {
+      "id": "cl-c53",
+      "source": "racket-guide-lambda",
+      "quote": "the expected number of arguments does not match the given",
+      "says": {
+        "covers": "a lambda host code can call as a callback with extra arguments",
+        "by": "arity checking",
+        "is": false
+      }
+    }
+  ]
+}

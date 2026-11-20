@@ -1,0 +1,667 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "candidate",
+   "units",
+   [
+    "quote",
+    "Let a number carry its unit: a quantity is a JSON record of a value and a unit, a map from base units to whole-number exponents, and arithmetic, rules, and aggregates check and combine the units"
+   ]
+  ],
+  [
+   "weighed_in",
+   "units",
+   "clef"
+  ],
+  [
+   "uses",
+   "units",
+   [
+    "quote",
+    "units of measure"
+   ]
+  ],
+  [
+   "uses",
+   "units",
+   [
+    "quote",
+    "quantities as values that carry their units"
+   ]
+  ],
+  [
+   "offers",
+   "units",
+   [
+    "quote",
+    "quantities whose units are checked when they are combined"
+   ]
+  ],
+  [
+   "candidate",
+   "match-coverage",
+   [
+    "quote",
+    "Check a match's cases with schema inclusion: report a case that the cases before it leave no value for, and let a match without a fallback be checked to cover the schema it names"
+   ]
+  ],
+  [
+   "weighed_in",
+   "match-coverage",
+   "clef"
+  ],
+  [
+   "uses",
+   "match-coverage",
+   [
+    "quote",
+    "exhaustiveness checking"
+   ]
+  ],
+  [
+   "uses",
+   "match-coverage",
+   [
+    "quote",
+    "schema inclusion"
+   ]
+  ],
+  [
+   "offers",
+   "match-coverage",
+   [
+    "quote",
+    "a report of a match case no value can reach"
+   ]
+  ],
+  [
+   "offers",
+   "match-coverage",
+   [
+    "quote",
+    "a match checked to cover every value of its schema"
+   ]
+  ],
+  [
+   "on",
+   "match-coverage",
+   [
+    "quote",
+    "a check of whether one schema includes another"
+   ]
+  ],
+  [
+   "rewrites",
+   "match-coverage",
+   [
+    "quote",
+    "a match always has a fallback"
+   ]
+  ],
+  [
+   "candidate",
+   "delimited-control",
+   [
+    "quote",
+    "Give plain code delimited continuations, and put waiting on logic variables, generators, and asynchronous host calls on that one primitive"
+   ]
+  ],
+  [
+   "weighed_in",
+   "delimited-control",
+   "clef"
+  ],
+  [
+   "uses",
+   "delimited-control",
+   [
+    "quote",
+    "delimited continuations"
+   ]
+  ],
+  [
+   "offers",
+   "delimited-control",
+   [
+    "quote",
+    "first-class continuations"
+   ]
+  ],
+  [
+   "candidate",
+   "watched-queries",
+   [
+    "quote",
+    "Let host code watch a query, as Clef's effects watch its memos: facts are the signals, rules the memos, and a watched query is told when its answers change"
+   ]
+  ],
+  [
+   "weighed_in",
+   "watched-queries",
+   "clef"
+  ],
+  [
+   "uses",
+   "watched-queries",
+   [
+    "quote",
+    "reactive signals"
+   ]
+  ],
+  [
+   "uses",
+   "watched-queries",
+   [
+    "quote",
+    "incremental computation"
+   ]
+  ],
+  [
+   "offers",
+   "watched-queries",
+   [
+    "quote",
+    "host code told when a derived value changes"
+   ]
+  ],
+  [
+   "offers",
+   "watched-queries",
+   [
+    "quote",
+    "derived rows kept up to date as facts change"
+   ]
+  ],
+  [
+   "candidate",
+   "promises",
+   [
+    "quote",
+    "Add Scheme's delay and force: a value computed when it is first asked for, and kept"
+   ]
+  ],
+  [
+   "weighed_in",
+   "promises",
+   "clef"
+  ],
+  [
+   "uses",
+   "promises",
+   [
+    "quote",
+    "promises (delay and force)"
+   ]
+  ],
+  [
+   "uses",
+   "promises",
+   [
+    "quote",
+    "a closure that caches its value"
+   ]
+  ],
+  [
+   "offers",
+   "promises",
+   [
+    "quote",
+    "values computed on first demand and kept"
+   ]
+  ],
+  [
+   "candidate",
+   "pure-rule-bodies",
+   [
+    "quote",
+    "Refuse set! in what a rule, a query, or a find runs, since the engine decides when, and how often, a rule body runs"
+   ]
+  ],
+  [
+   "weighed_in",
+   "pure-rule-bodies",
+   "clef"
+  ],
+  [
+   "uses",
+   "pure-rule-bodies",
+   [
+    "quote",
+    "purity analysis"
+   ]
+  ],
+  [
+   "offers",
+   "pure-rule-bodies",
+   [
+    "quote",
+    "effects kept out of code whose evaluation order the engine chooses"
+   ]
+  ],
+  [
+   "rewrites",
+   "pure-rule-bodies",
+   [
+    "quote",
+    "a rule body may change a binding"
+   ]
+  ],
+  [
+   "candidate",
+   "vacuity",
+   [
+    "quote",
+    "Have a proof ask whether its premises allow any state at all, and have why name the premises a proof used, so a proof from premises that contradict each other says so"
+   ]
+  ],
+  [
+   "weighed_in",
+   "vacuity",
+   "clef"
+  ],
+  [
+   "uses",
+   "vacuity",
+   [
+    "quote",
+    "vacuity checking"
+   ]
+  ],
+  [
+   "uses",
+   "vacuity",
+   [
+    "quote",
+    "unsatisfiable cores"
+   ]
+  ],
+  [
+   "offers",
+   "vacuity",
+   [
+    "quote",
+    "a proof that says when its premises allow no state"
+   ]
+  ],
+  [
+   "offers",
+   "vacuity",
+   [
+    "quote",
+    "which assumptions make a goal unsatisfiable"
+   ]
+  ],
+  [
+   "candidate",
+   "contracts",
+   [
+    "quote",
+    "Let a lambda name schemas for its parameters and its result, checked at every call, and say who broke the contract, the caller or the function, as Racket's contracts do"
+   ]
+  ],
+  [
+   "weighed_in",
+   "contracts",
+   "clef"
+  ],
+  [
+   "uses",
+   "contracts",
+   [
+    "quote",
+    "higher-order contracts with blame"
+   ]
+  ],
+  [
+   "offers",
+   "contracts",
+   [
+    "quote",
+    "a lambda whose arguments are checked against schemas when it is called"
+   ]
+  ],
+  [
+   "offers",
+   "contracts",
+   [
+    "quote",
+    "a failure that names the function and the caller that broke its contract"
+   ]
+  ],
+  [
+   "candidate",
+   "catchable-failures",
+   [
+    "quote",
+    "Let a program catch a failure as data: a form that runs an expression and, if it fails, gives a record of the error's tag, message, and fields, as Racket's with-handlers does"
+   ]
+  ],
+  [
+   "weighed_in",
+   "catchable-failures",
+   "clef"
+  ],
+  [
+   "uses",
+   "catchable-failures",
+   [
+    "quote",
+    "exception handlers"
+   ]
+  ],
+  [
+   "uses",
+   "catchable-failures",
+   [
+    "quote",
+    "errors as values"
+   ]
+  ],
+  [
+   "offers",
+   "catchable-failures",
+   [
+    "quote",
+    "a failure a program can catch and read as data"
+   ]
+  ],
+  [
+   "candidate",
+   "exact-integers",
+   [
+    "quote",
+    "Refuse an integer Lion cannot hold exactly, written in a program or made by arithmetic, instead of rounding it to a neighbor"
+   ]
+  ],
+  [
+   "weighed_in",
+   "exact-integers",
+   "clef"
+  ],
+  [
+   "uses",
+   "exact-integers",
+   [
+    "quote",
+    "errors at the edges of exact arithmetic"
+   ]
+  ],
+  [
+   "offers",
+   "exact-integers",
+   [
+    "quote",
+    "an integer refused when it cannot be held exactly"
+   ]
+  ],
+  [
+   "candidate",
+   "strict-arity",
+   [
+    "quote",
+    "Refuse a call that gives a lambda more arguments than it has parameters, as Racket does and as Lion's library functions do already"
+   ]
+  ],
+  [
+   "weighed_in",
+   "strict-arity",
+   "clef"
+  ],
+  [
+   "uses",
+   "strict-arity",
+   [
+    "quote",
+    "arity checking"
+   ]
+  ],
+  [
+   "offers",
+   "strict-arity",
+   [
+    "quote",
+    "a call refused when a lambda is given more arguments than it has parameters"
+   ]
+  ],
+  [
+   "rewrites",
+   "strict-arity",
+   [
+    "quote",
+    "a lambda ignores extra arguments"
+   ]
+  ],
+  [
+   "candidate",
+   "undecided-apart",
+   [
+    "quote",
+    "Keep a question the solver cannot decide apart from one it answers no, as Clef keeps a proof, a counterexample, an unresolved obligation, and a timeout apart"
+   ]
+  ],
+  [
+   "weighed_in",
+   "undecided-apart",
+   "clef"
+  ],
+  [
+   "uses",
+   "undecided-apart",
+   [
+    "quote",
+    "distinct proof outcomes"
+   ]
+  ],
+  [
+   "offers",
+   "undecided-apart",
+   [
+    "quote",
+    "an undecided question kept apart from a false one"
+   ]
+  ]
+ ],
+ [
+  "fact",
+  [
+   "concern",
+   [
+    "quote",
+    "units checked when the program runs"
+   ]
+  ],
+  [
+   "concern",
+   [
+    "quote",
+    "a continuation resumed more than once"
+   ]
+  ],
+  [
+   "concern",
+   [
+    "quote",
+    "a lambda host code can call as a callback with extra arguments"
+   ]
+  ]
+ ],
+ [
+  "fact",
+  [
+   "assumption",
+   "cl-units",
+   [
+    "quote",
+    "Lion has no units of measure: a number does not carry its unit"
+   ]
+  ],
+  [
+   "assumption",
+   "cl-incremental",
+   [
+    "quote",
+    "Lion's rules already keep derived values up to date as Clef's incremental computation does"
+   ]
+  ],
+  [
+   "assumption",
+   "cl-rule-effects",
+   [
+    "quote",
+    "A function that changes a binding gives in a rule body what it gives in plain code"
+   ]
+  ],
+  [
+   "assumption",
+   "cl-error-names",
+   [
+    "quote",
+    "Lion's failure for an argument of the wrong kind names the function that refused it"
+   ]
+  ],
+  [
+   "assumption",
+   "cl-vacuous",
+   [
+    "quote",
+    "A Lion proof from premises that allow no state is still reported as a proof"
+   ]
+  ],
+  [
+   "assumption",
+   "cl-exact",
+   [
+    "quote",
+    "Lion holds every integer a program writes exactly"
+   ]
+  ],
+  [
+   "assumption",
+   "cl-undecided",
+   [
+    "quote",
+    "Lion's solver refuses what it cannot decide rather than answering no"
+   ]
+  ],
+  [
+   "assumption",
+   "cl-inclusion",
+   [
+    "quote",
+    "Schema inclusion, which Lion has, is enough to check that a match's cases cover a schema"
+   ]
+  ],
+  [
+   "assumption",
+   "cl-one-primitive",
+   [
+    "quote",
+    "Clef runs generators and asynchronous code on one delimited-continuation primitive"
+   ]
+  ]
+ ],
+ [
+  "fact",
+  [
+   "expects",
+   "cl-units",
+   [
+    "quote",
+    {
+     "lion has": "quantities whose units are checked when they are combined"
+    }
+   ],
+   false
+  ],
+  [
+   "expects",
+   "cl-incremental",
+   [
+    "quote",
+    {
+     "lion has": "derived rows kept up to date as facts change"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "cl-rule-effects",
+   [
+    "quote",
+    {
+     "lion has": "a function that changes a binding gives in a rule body what it gives in plain code"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "cl-error-names",
+   [
+    "quote",
+    {
+     "lion has": "a failure that names the function given a wrong argument"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "cl-vacuous",
+   [
+    "quote",
+    {
+     "lion has": "a proof that says when its premises allow no state"
+    }
+   ],
+   false
+  ],
+  [
+   "expects",
+   "cl-exact",
+   [
+    "quote",
+    {
+     "lion has": "integers kept exact past two to the 53rd"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "cl-undecided",
+   [
+    "quote",
+    {
+     "lion has": "an undecided question kept apart from a false one"
+    }
+   ],
+   true
+  ],
+  [
+   "expects_cover",
+   "cl-inclusion",
+   "match-coverage",
+   [
+    "quote",
+    "a match checked to cover every value of its schema"
+   ]
+  ],
+  [
+   "expects",
+   "cl-one-primitive",
+   [
+    "quote",
+    {
+     "covers": "generators",
+     "by": "delimited continuations"
+    }
+   ],
+   true
+  ]
+ ],
+ "cl framed"
+]

@@ -1,0 +1,871 @@
+{
+  "title": "What Lion can take from Clef",
+  "summary": [
+    "string/concat",
+    "Of ",
+    ["words/count", ["array/length", ["ours"]], "idea", "ideas"],
+    " from Clef weighed here, ",
+    [
+      "words/number",
+      ["array/length", ["withVerdict", ["quote", "worth adopting"]]]
+    ],
+    " are worth adopting and ",
+    [
+      "words/number",
+      ["array/length", ["withVerdict", ["quote", "Lion does this already"]]]
+    ],
+    " Lion does already. ",
+    "In the model's order, the first is ",
+    ["label", ["object/get", ["array/head", ["ranked"]], "idea"]],
+    ". ",
+    [
+      "cond",
+      [
+        ["and", ["weighed_in", "?c", ["quote", "clef"]], ["waits", "?c", "?_"]],
+        [
+          "string/concat",
+          [
+            "words/count",
+            [
+              "aggregate/countUnique",
+              [
+                "find",
+                "?c",
+                [
+                  "and",
+                  ["weighed_in", "?c", ["quote", "clef"]],
+                  ["waits", "?c", "?_"]
+                ]
+              ]
+            ],
+            "idea",
+            "ideas"
+          ],
+          " would change a rule Lion documents and wait for your decision: ",
+          [
+            "listOf",
+            [
+              "array/map",
+              [
+                "find",
+                "?c",
+                [
+                  "and",
+                  ["weighed_in", "?c", ["quote", "clef"]],
+                  ["waits", "?c", "?_"]
+                ]
+              ],
+              "label"
+            ]
+          ],
+          ". "
+        ]
+      ],
+      ["else", ""]
+    ],
+    [
+      "cond",
+      [
+        ["and", ["violated", "?a", "?_"], ["string/startsWith", "?a", "cl-"]],
+        [
+          "string/concat",
+          "Running Lion showed ",
+          [
+            "words/count",
+            [
+              "aggregate/countUnique",
+              [
+                "find",
+                "?a",
+                [
+                  "and",
+                  ["violated", "?a", "?_"],
+                  ["string/startsWith", "?a", "cl-"]
+                ]
+              ]
+            ],
+            "belief",
+            "beliefs"
+          ],
+          " about it wrong."
+        ]
+      ],
+      ["else", "Every belief about Lion the run tested held."]
+    ]
+  ],
+  "names": {
+    "units": "Numbers that carry their units",
+    "match-coverage": "Check a match's cases with schema inclusion",
+    "delimited-control": "Delimited continuations as one primitive",
+    "watched-queries": "Host code that watches a query",
+    "promises": "delay and force",
+    "pure-rule-bodies": "No set! where the engine picks the order",
+    "vacuity": "Proofs that notice premises allowing no state",
+    "contracts": "Contracts on lambdas, with blame",
+    "catchable-failures": "Failures a program can catch as data",
+    "exact-integers": "Refuse integers Lion cannot hold exactly",
+    "strict-arity": "Refuse extra arguments to a lambda",
+    "undecided-apart": "Keep undecided apart from no"
+  },
+  "define": {
+    "ours": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        ["find", "?c", ["weighed_in", "?c", ["quote", "clef"]]]
+      ]
+    ],
+    "withVerdict": [
+      "lambda",
+      ["v"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["verdict", "?c", "v"],
+            ["weighed_in", "?c", ["quote", "clef"]]
+          ]
+        ]
+      ]
+    ],
+    "label": [
+      "lambda",
+      ["c"],
+      [
+        "object/get",
+        [
+          "quote",
+          {
+            "units": "Numbers that carry their units",
+            "match-coverage": "Check a match's cases with schema inclusion",
+            "delimited-control": "Delimited continuations as one primitive",
+            "watched-queries": "Host code that watches a query",
+            "promises": "delay and force",
+            "pure-rule-bodies": "No set! where the engine picks the order",
+            "vacuity": "Proofs that notice premises allowing no state",
+            "contracts": "Contracts on lambdas, with blame",
+            "catchable-failures": "Failures a program can catch as data",
+            "exact-integers": "Refuse integers Lion cannot hold exactly",
+            "strict-arity": "Refuse extra arguments to a lambda",
+            "undecided-apart": "Keep undecided apart from no"
+          }
+        ],
+        "c"
+      ]
+    ],
+    "listOf": [
+      "lambda",
+      ["items"],
+      ["words/listed", ["aggregate/unique", "items"]]
+    ],
+    "ranked": [
+      "lambda",
+      [],
+      [
+        "query",
+        [
+          "and",
+          ["weighed_in", "?idea", ["quote", "clef"]],
+          ["to_build", "?idea"],
+          ["rank", "?idea", "?position"]
+        ],
+        {
+          "order": "position"
+        }
+      ]
+    ],
+    "case": [
+      "lambda",
+      ["c"],
+      [
+        "string/concat",
+        [
+          "cond",
+          [
+            ["verdict", "c", ["quote", "worth adopting"]],
+            [
+              "string/concat",
+              "Worth adopting: it would give Lion ",
+              ["listOf", ["find", "?f", ["adds", "c", "?f", "?_"]]],
+              ". ",
+              [
+                "cond",
+                [
+                  ["already", "c", "?_"],
+                  [
+                    "string/concat",
+                    "Lion already has part of it: ",
+                    ["listOf", ["find", "?f", ["already", "c", "?f"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["folds", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "It would make one rule of what Lion now does in one place only: ",
+                    ["listOf", ["find", "?f", ["folds", "c", "?f", "?_"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["met", "c", "?_"],
+                  [
+                    "string/concat",
+                    "What it builds on is there: ",
+                    ["listOf", ["find", "?x", ["met", "c", "?x"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["precedent", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "Already done in ",
+                    ["listOf", ["find", "?s", ["precedent", "c", "?_", "?s"]]],
+                    ". "
+                  ]
+                ],
+                ["else", "No working system among the sources does it yet. "]
+              ]
+            ]
+          ],
+          [
+            ["verdict", "c", ["quote", "worth adopting in part"]],
+            [
+              "string/concat",
+              "Worth adopting once its ground is there: it would give Lion ",
+              ["listOf", ["find", "?f", ["adds", "c", "?f", "?_"]]],
+              ", but needs ",
+              ["listOf", ["find", "?x", ["moot", "c", "?x"]]],
+              ". "
+            ]
+          ],
+          [
+            ["verdict", "c", ["quote", "Lion does this already"]],
+            [
+              "string/concat",
+              "Lion does this already: ",
+              ["listOf", ["find", "?f", ["already", "c", "?f"]]],
+              ". "
+            ]
+          ],
+          [
+            ["verdict", "c", ["quote", "conflicts with what Lion guarantees"]],
+            [
+              "string/concat",
+              "Does not fit Lion: it gives up ",
+              ["listOf", ["find", "?g", ["blocks", "c", "?g", "?_"]]],
+              ". "
+            ]
+          ],
+          [
+            ["verdict", "c", ["quote", "has nothing in Lion to work on"]],
+            [
+              "string/concat",
+              "Not now: it needs ",
+              ["listOf", ["find", "?x", ["moot", "c", "?x"]]],
+              ". "
+            ]
+          ],
+          ["else", "Not judged yet: the model has too little evidence. "]
+        ],
+        [
+          "cond",
+          [
+            ["waits", "c", "?_"],
+            [
+              "string/concat",
+              "It would change a rule Lion documents, ",
+              ["listOf", ["find", "?r", ["waits", "c", "?r"]]],
+              ", so it waits for your decision. "
+            ]
+          ],
+          ["else", ""]
+        ],
+        [
+          "cond",
+          [
+            ["caveat", "c", "?_", "?_"],
+            [
+              "string/concat",
+              "Take care: Clef's own technique does not give ",
+              ["listOf", ["find", "?f", ["caveat", "c", "?f", "?_"]]],
+              ". "
+            ]
+          ],
+          ["else", ""]
+        ]
+      ]
+    ],
+    "evidenceOf": [
+      "lambda",
+      ["c"],
+      [
+        "query",
+        [
+          "and",
+          [
+            "or",
+            ["offers", "c", "?feature"],
+            ["on", "c", "?feature"],
+            ["rewrites", "c", "?feature"]
+          ],
+          [
+            "or",
+            [
+              "answer",
+              {
+                "lion has": "?feature"
+              },
+              "?_",
+              "?statement"
+            ],
+            [
+              "and",
+              ["uses", "c", "?technique"],
+              [
+                "answer",
+                {
+                  "covers": "?feature",
+                  "by": "?technique"
+                },
+                "?_",
+                "?statement"
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  },
+  "views": [
+    {
+      "name": "The answer",
+      "blocks": [
+        {
+          "type": "figures",
+          "items": [
+            {
+              "label": "Ideas weighed",
+              "value": ["words/number", ["array/length", ["ours"]]]
+            },
+            {
+              "label": "Worth adopting",
+              "value": [
+                "words/number",
+                ["array/length", ["withVerdict", ["quote", "worth adopting"]]]
+              ],
+              "note": [
+                "string/concat",
+                [
+                  "words/number",
+                  [
+                    "aggregate/countUnique",
+                    [
+                      "find",
+                      "?c",
+                      [
+                        "and",
+                        ["weighed_in", "?c", ["quote", "clef"]],
+                        ["precedent", "?c", "?_", "?_"]
+                      ]
+                    ]
+                  ]
+                ],
+                " already done in a working system"
+              ]
+            },
+            {
+              "label": "Lion does already",
+              "value": [
+                "words/number",
+                [
+                  "array/length",
+                  ["withVerdict", ["quote", "Lion does this already"]]
+                ]
+              ]
+            },
+            {
+              "label": "Wait for your decision",
+              "value": [
+                "words/number",
+                [
+                  "aggregate/countUnique",
+                  [
+                    "find",
+                    "?c",
+                    [
+                      "and",
+                      ["weighed_in", "?c", ["quote", "clef"]],
+                      ["waits", "?c", "?_"]
+                    ]
+                  ]
+                ]
+              ],
+              "note": "each would change a rule Lion documents"
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What can Lion adopt from Clef, and in what order?",
+          "answer": [
+            "string/concat",
+            "In the model's order: ",
+            [
+              "string/join",
+              [
+                "array/map",
+                ["ranked"],
+                [
+                  "lambda",
+                  ["row"],
+                  [
+                    "string/concat",
+                    ["number/toString", ["object/get", "row", "position"]],
+                    ". ",
+                    ["label", ["object/get", "row", "idea"]]
+                  ]
+                ]
+              ],
+              "; "
+            ],
+            ". ",
+            [
+              "cond",
+              [
+                [
+                  "and",
+                  ["weighed_in", "?c", ["quote", "clef"]],
+                  ["verdict", "?c", ["quote", "Lion does this already"]]
+                ],
+                [
+                  "string/concat",
+                  "Lion does this already: ",
+                  [
+                    "listOf",
+                    [
+                      "array/map",
+                      ["withVerdict", ["quote", "Lion does this already"]],
+                      "label"
+                    ]
+                  ],
+                  ". "
+                ]
+              ],
+              ["else", ""]
+            ],
+            "Choose an idea below to see what it would give Lion, what it builds on, and who does it already."
+          ],
+          "note": "Ranks count what an idea gives Lion, then how many publishers stand behind its techniques, across every run in the model, so numbers can skip; ideas with the same number tie.",
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", ["quote", "clef"]],
+              ["adds", "?idea", "?gives", "?technique"]
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Every idea from Clef, in the model's order",
+          "query": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", ["quote", "clef"]],
+              ["verdict", "?idea", "?verdict"],
+              [
+                "or",
+                ["rank", "?idea", "?position"],
+                [
+                  "and",
+                  ["not", ["rank", "?idea", "?_"]],
+                  ["=", "?position", null]
+                ]
+              ],
+              [
+                "or",
+                [
+                  "and",
+                  ["waits", "?idea", "?_"],
+                  [
+                    "=",
+                    "?would_change",
+                    [
+                      "aggregate/unique",
+                      ["find", "?x", ["waits", "?idea", "?x"]]
+                    ]
+                  ]
+                ],
+                [
+                  "and",
+                  ["not", ["waits", "?idea", "?_"]],
+                  ["=", "?would_change", null]
+                ]
+              ]
+            ],
+            {
+              "order": "position"
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What did running Lion show about Lion itself?",
+          "answer": [
+            "cond",
+            [
+              [
+                "and",
+                ["violated", "?a", "?_"],
+                ["string/startsWith", "?a", "cl-"]
+              ],
+              [
+                "string/concat",
+                "These beliefs about Lion were wrong: ",
+                [
+                  "listOf",
+                  [
+                    "find",
+                    "?s",
+                    [
+                      "and",
+                      ["violated", "?a", "?w"],
+                      ["string/startsWith", "?a", "cl-"],
+                      ["assumption", "?a", "?s"]
+                    ]
+                  ]
+                ],
+                ". ",
+                [
+                  "cond",
+                  [
+                    [
+                      "and",
+                      ["confirmed", "cl-vacuous"],
+                      [
+                        "stated",
+                        {
+                          "lion has": "a proof that says when its premises allow no state"
+                        },
+                        false
+                      ]
+                    ],
+                    "And, as expected, a proof whose premises allow no state is still reported as a proof, without a word that it holds of nothing."
+                  ],
+                  ["else", ""]
+                ]
+              ]
+            ],
+            ["else", "Every belief about Lion the run tested held."]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["violated", "?belief", "?statement"],
+              ["string/startsWith", "?belief", "cl-"]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Which ideas need your decision first?",
+          "answer": [
+            "string/join",
+            [
+              "array/map",
+              [
+                "aggregate/unique",
+                [
+                  "find",
+                  "?c",
+                  [
+                    "and",
+                    ["weighed_in", "?c", ["quote", "clef"]],
+                    ["waits", "?c", "?_"]
+                  ]
+                ]
+              ],
+              [
+                "lambda",
+                ["c"],
+                [
+                  "string/concat",
+                  ["label", "c"],
+                  " would change: ",
+                  ["listOf", ["find", "?r", ["waits", "c", "?r"]]],
+                  "."
+                ]
+              ]
+            ],
+            " "
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", ["quote", "clef"]],
+              ["waits", "?idea", "?rule"],
+              [
+                "answer",
+                {
+                  "lion has": "?rule"
+                },
+                "?_",
+                "?statement"
+              ]
+            ]
+          ]
+        },
+        {
+          "type": "lookup",
+          "title": "Each idea: what it gives, what it needs, and where Lion stands",
+          "choose": {
+            "idea": {
+              "label": "Idea",
+              "options": ["ours"],
+              "labels": [
+                "quote",
+                {
+                  "units": "Numbers that carry their units",
+                  "match-coverage": "Check a match's cases with schema inclusion",
+                  "delimited-control": "Delimited continuations as one primitive",
+                  "watched-queries": "Host code that watches a query",
+                  "promises": "delay and force",
+                  "pure-rule-bodies": "No set! where the engine picks the order",
+                  "vacuity": "Proofs that notice premises allowing no state",
+                  "contracts": "Contracts on lambdas, with blame",
+                  "catchable-failures": "Failures a program can catch as data",
+                  "exact-integers": "Refuse integers Lion cannot hold exactly",
+                  "strict-arity": "Refuse extra arguments to a lambda",
+                  "undecided-apart": "Keep undecided apart from no"
+                }
+              ]
+            }
+          },
+          "example": {
+            "idea": "units"
+          },
+          "answer": ["lambda", ["idea"], ["case", "idea"]],
+          "query": ["lambda", ["idea"], ["evidenceOf", "idea"]]
+        }
+      ]
+    },
+    {
+      "name": "Clef beside Lion",
+      "blocks": [
+        {
+          "type": "comparison",
+          "title": "What Clef's techniques give, and whether Lion has it",
+          "query": [
+            "aggregate/unique",
+            [
+              "find",
+              {
+                "feature": "?feature",
+                "lion": "?lion",
+                "column": "?column"
+              },
+              [
+                "and",
+                ["weighed_in", "?idea", ["quote", "clef"]],
+                ["uses", "?idea", "?technique"],
+                [
+                  "stated",
+                  {
+                    "covers": "?feature",
+                    "by": "?technique"
+                  },
+                  true
+                ],
+                [
+                  "or",
+                  [
+                    "and",
+                    [
+                      "stated",
+                      {
+                        "lion has": "?feature"
+                      },
+                      true
+                    ],
+                    ["=", "?lion", ["quote", "has it"]]
+                  ],
+                  [
+                    "and",
+                    [
+                      "stated",
+                      {
+                        "lion has": "?feature"
+                      },
+                      false
+                    ],
+                    ["=", "?lion", ["quote", "lacks it"]]
+                  ],
+                  [
+                    "and",
+                    [
+                      "not",
+                      [
+                        "stated",
+                        {
+                          "lion has": "?feature"
+                        },
+                        "?_"
+                      ]
+                    ],
+                    ["=", "?lion", ["quote", "not checked"]]
+                  ]
+                ],
+                ["=", "?column", ["quote", "Lion"]]
+              ]
+            ]
+          ],
+          "rows": "feature",
+          "columns": "column",
+          "cell": "lion"
+        },
+        {
+          "type": "answer",
+          "question": "How much of what Clef describes has it built?",
+          "answer": [
+            "string/concat",
+            "Clef's pages describe these as designs or plans, not as built: ",
+            [
+              "listOf",
+              [
+                "find",
+                "?t",
+                [
+                  "stated",
+                  {
+                    "designed": "?t",
+                    "in": ["quote", "Clef"]
+                  },
+                  true
+                ]
+              ]
+            ],
+            ". ",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "adopted": "?_",
+                    "in": ["quote", "Clef"]
+                  },
+                  true
+                ],
+                [
+                  "string/concat",
+                  "They say Clef uses ",
+                  [
+                    "listOf",
+                    [
+                      "find",
+                      "?t",
+                      [
+                        "stated",
+                        {
+                          "adopted": "?t",
+                          "in": ["quote", "Clef"]
+                        },
+                        true
+                      ]
+                    ]
+                  ],
+                  "."
+                ]
+              ],
+              [
+                "else",
+                [
+                  "string/concat",
+                  "None of the pages read says a technique is built and working in Clef, so none counts as a precedent here; the precedents come from ",
+                  [
+                    "listOf",
+                    [
+                      "find",
+                      "?s",
+                      [
+                        "and",
+                        ["weighed_in", "?c", ["quote", "clef"]],
+                        ["precedent", "?c", "?_", "?s"]
+                      ]
+                    ]
+                  ],
+                  "."
+                ]
+              ]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "answer",
+                {
+                  "designed": "?technique",
+                  "in": ["quote", "Clef"]
+                },
+                "?_",
+                "?statement"
+              ]
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Who already does each idea",
+          "query": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", ["quote", "clef"]],
+              ["precedent", "?idea", "?technique", "?system"]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "How solid is it",
+      "blocks": [
+        {
+          "type": "trust"
+        }
+      ]
+    },
+    {
+      "name": "Sources",
+      "blocks": [
+        {
+          "type": "sources"
+        }
+      ]
+    }
+  ]
+}

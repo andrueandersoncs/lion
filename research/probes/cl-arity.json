@@ -1,0 +1,14 @@
+{
+  "a lambda of one parameter given three arguments": [
+    ["lambda", ["a"], "a"],
+    1,
+    2,
+    3
+  ],
+  "a lambda that counts what it was given": [
+    ["lambda", ["a"], ["array/length", ["array/make", "a"]]],
+    1,
+    2,
+    3
+  ]
+}

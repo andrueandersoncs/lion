@@ -1,0 +1,9 @@
+{
+  "two to the 53rd plus one": ["number/add", 9007199254740992, 1],
+  "an integer written one past two to the 53rd": 9007199254740993,
+  "that integer equals two to the 53rd": [
+    "number/equals?",
+    9007199254740993,
+    9007199254740992
+  ]
+}

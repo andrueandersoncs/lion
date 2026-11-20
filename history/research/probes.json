@@ -21083,6 +21083,15 @@
     ]
   },
   {
+    "feature": "research-clef",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "research/runs/clef/report.md"]],
+      1
+    ]
+  },
+  {
     "feature": "join-gap-research",
     "kind": "file",
     "program": [

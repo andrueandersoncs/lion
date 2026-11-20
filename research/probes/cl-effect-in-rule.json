@@ -1,0 +1,37 @@
+[
+  "begin",
+  ["define", "calls", 0],
+  [
+    "define",
+    "counted",
+    [
+      "lambda",
+      ["x"],
+      ["begin", ["set!", "calls", ["number/add", "calls", 1]], "calls"]
+    ]
+  ],
+  [
+    "define",
+    "in_plain_code",
+    ["array/map", ["array/make", 1, 2, 3], "counted"]
+  ],
+  ["define", "calls_after_plain_code", "calls"],
+  ["relation", "item", ["x"]],
+  ["relation", "numbered", ["x", "n"]],
+  ["rule", ["numbered", "?x", ["counted", "?x"]], ["item", "?x"]],
+  ["fact", ["item", 1], ["item", 2], ["item", 3]],
+  ["define", "in_a_rule", ["find", "?n", ["numbered", "?_", "?n"]]],
+  {
+    "different numbers three calls in plain code give": [
+      "array/length",
+      ["aggregate/unique", "in_plain_code"]
+    ],
+    "the count after three calls in plain code": "calls_after_plain_code",
+    "items the rule numbered": ["array/length", "in_a_rule"],
+    "different numbers three calls in a rule body give": [
+      "array/length",
+      ["aggregate/unique", "in_a_rule"]
+    ],
+    "the count after the rule ran": "calls"
+  }
+]

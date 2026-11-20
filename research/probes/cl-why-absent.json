@@ -1,0 +1,43 @@
+[
+  "begin",
+  ["relation", "proved", ["claim"]],
+  [
+    "rule",
+    ["proved", "no balance is both negative and not"],
+    [
+      "not",
+      [
+        "exists",
+        ["?balance", "?withdrawal"],
+        [
+          "and",
+          ["schema/fits?", "?balance", "value/integer?"],
+          ["schema/fits?", "?withdrawal", "value/integer?"],
+          ["number/greaterThanOrEqualTo", "?balance", 0],
+          ["number/lessThan", "?balance", 0],
+          ["number/greaterThan", "?withdrawal", 0],
+          ["number/lessThan", ["number/subtract", "?balance", "?withdrawal"], 0]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "reason",
+    [
+      "array/head",
+      [
+        "object/get",
+        ["why", ["proved", "no balance is both negative and not"]],
+        "because"
+      ]
+    ]
+  ],
+  {
+    "what why gives for a proof whose premises contradict each other": [
+      "string/join",
+      ["object/keys", "reason"],
+      ", "
+    ]
+  }
+]

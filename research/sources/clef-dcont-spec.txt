@@ -1,0 +1,562 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation 1. Overview
+2. The Suspension Recipe
+3. Relationship to Sequence Expressions and Closures
+4. Suspended-Continuation State
+5. The Witnessed Form and the Target Legs
+6. PSG Structure and Verification Conditions
+7. NORMATIVE: Single-Core Cooperative Scheduling
+8. SSA Cost
+9. Normative Requirements
+10. Related Chapters
+References
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+1. Overview
+2. The Suspension Recipe
+3. Relationship to Sequence Expressions and Closures
+4. Suspended-Continuation State
+5. The Witnessed Form and the Target Legs
+5.1 CPU and MCU: the state-machine form
+5.2 Stack switching
+5.3 Host coroutines (JSIR pathway)
+6. PSG Structure and Verification Conditions
+7. NORMATIVE: Single-Core Cooperative Scheduling
+8. SSA Cost
+9. Normative Requirements
+10. Related Chapters
+References
+Scroll to top
+Language Specification
+Delimited Continuation Representation
+Delimited Continuation Representation
+Normative specification for delimited continuations as a saturated aggregate on the
+Program Semantic Graph, the frame they resume into, the standard-dialect form the
+witness emits, and the cooperative scheduling that suspend/resume realizes on a
+single-core target in Clef compilation.
+1. Overview
+Delimited continuations are the substrate under async { } , actor receive , and every synchronous suspension point. This chapter specifies them as graph structure : a computation-expression region is elaborated by the suspension recipe (§2) into segments and a frame, its delimiter is the boundary of the subgraph the builder’s extent defines, and the whole is settled at saturation before any code exists. What the witness emits is standard dialects only — a discriminant, a byte frame with static views, function values, and scf.index_switch (§5). There is no continuation operation surface, and no continuation dialect, above the witness boundary ( Backend Lowering Architecture §2.1 ).
+The semantics reside in the Program Hypergraph , judgments discharge over its literals, and MLIR receives the settled decomposition. A cont -style vocabulary may exist below the boundary as transliteration for a target that natively hosts continuations (§5.2); the front end does not emit it.
+The delimited continuation is one instance of the general environment object of Closure Representation : the closure environment, the continuation frame, and the actor state cell are three instances of one node, placed by one fold-in rule. Everything the flat-closure chapter establishes — the finiteness lemma, the enumerated capture set, deterministic layout, the lifetime lattice — is inherited here, and the frame’s obligations quantify over enumerated structure for the same reason a closure’s do ( Closure Representation §11 ).
+2. The Suspension Recipe
+Elaboration carries the continuation as a recipe in the sense of the Program Semantic Graph saturation discipline: fan-out elaborates the region into structure; fold-in settles what that structure literally is.
+Fan-out: segments at cuts. A computation-expression region is split at its suspension points. Each let! / do! (and each construct that lowers to one: an actor receive , the reply wait of a synchronous RPC ) is a cut . The code between two cuts is a segment ; the code from the last cut to the builder’s return is the final segment. The delimiter is structure: the boundary of the subgraph the builder’s extent defines. No operation carries it, so the ill-formed shapes an operation encoding admits cannot arise — there is no op result for a continuation to self-reference, and no region boundary for a live value to cross. Reset is where the region ends, by construction.
+Per-segment liveness. For each cut, the live-across set is the set of bindings live on the path from that suspension point to the region’s end. These become frame slots. The frame is not a new object: it is the environment node of Closure Representation , carrying the state-machine slot class fixed in Closure Representation §7 — captures read-only across resumptions, internal state read-modify-write between cuts, the in-flight value and the discriminant written at each cut.
+Resumption sources are an edge class. The frame’s awaited delivery is one edge with four members today: I/O completion, mailbox delivery, interrupt, DMA completion. The constructs of §1 differ only in that edge. One recipe serves all of them.
+Fold-in settles three things, all literal at saturation.
+Settled Rule
+State count the number of cuts, literally: a region with N cuts folds to a discriminant over N +2 values — not-started, one per cut, done
+Frame layout slot assignment by interference colouring over segment liveness: two live-across values whose lifetimes do not overlap share a slot; the result is a byte frame with literal extent and literal offsets
+Placement by the lifetime lattice of Closure Representation §3.3 : a continuation that does not escape its delimiter lives on the stack; one that does (a mailbox holding suspended receives, a stored future) lives in a region whose lifetime covers it; the escape class is read at fold-in, the same read the closure forms make
+Nested delimiters resolve statically. In the saturated graph every suspension point carries an edge to its delimiter by construction: fan-out created the cut inside exactly one builder extent, and the edge records that extent. An inner async inside an actor receive yields two extents, and each cut belongs to the extent that cut it. The compiled program contains no prompt tag and performs no dynamic search for a matching reset, on any target.
+3. Relationship to Sequence Expressions and Closures
+The continuation frame joins the family of resumable-computation representations, each an instance of the environment node of Closure Representation §7 :
+Form Suspends to Captured state Resumed by
+seq { } ( seq ) yield a value outward loop-local internal state the caller’s pull
+delimited continuation (this chapter) await a value inward the delimited remainder delivery on the resumption edge
+Observable / Incremental (opaque, push-driven) subscriber closure emission / staleness
+seq { } is the degenerate case of this recipe: every resumption source is the caller’s pull, and yield is the cut. Its form — the pair (moveNext, {state, current, captures, internal_state}) — is a compiled one-shot delimited continuation: state is the discriminant, current the in-flight value, the captures and internal state the live-across slots, and MoveNext is resume with a narrowed signature. The suspension recipe generalizes the resumption edge and keeps the representation ( Sequence Expression Representation §5 ).
+4. Suspended-Continuation State
+Independent of any target, a suspended continuation carries the state the recipe of §2 implies. A conforming implementation SHALL realize this state as the frame; §5 gives its witnessed form.
+Suspension index — the discriminant: which cut the continuation paused at ( 0 = not yet started; 1..N = paused at the N th cut; done = ran to its origin).
+In-flight value — the value delivered on the resumption edge (read inward) or passed outward at the cut.
+Live-across set — the bindings live on the path from a cut to the continuation’s origin, per cut. This is the delimited remainder; it is what distinguishes a continuation from a seq , whose captured state is loop-local.
+Internal state — let mutable bindings threaded across cuts.
+The live-across computation is the one analysis this chapter adds over seq . It is computed per cut at elaboration and consumed, never recomputed, at fold-in and at the witness.
+5. The Witnessed Form and the Target Legs
+What crosses the witness boundary is standard dialects only: a discriminant, a byte frame with static memref.view s at literal offsets, function values, and scf.index_switch over the discriminant. No continuation dialect, no llvm dialect, no new op. The correspondence table of Closure Representation §6.3 covers every constituent; the suspension form adds the discriminant switch and nothing else.
+// resume: load the discriminant, dispatch to the segment, run to the next cut
+func . func private @region_resume ( %frame : memref < Exi8 >, %delivered : T ) -> i1 {
+%c0 = arith . constant 0 : index
+%sv = memref . view %frame [ %c0 ][] : memref < Exi8 > to memref < 1x index >
+%s = memref . load %sv [ %c0 ] : memref < 1x index >
+%again = scf . index _switch %s -> i1
+case 0 { ... segment 0 ... store in - flight , store 1 , scf . yield %true }
+case 1 { ... segment 1 ... }
+default { ... store done , scf . yield %false }
+return %again : i1
+}
+E , every slot offset, and every discriminant literal are fixed at saturation (§2). The frame is the same 1-D i8 buffer with identity layout that memref.view requires as its source, which is why the standard dialect already contains the elaborated form.
+Below the boundary, each target leg realizes the same saturated structure in its own shape. The realizations are stated with the profile conditions that select them; none changes what the witness emits.
+5.1 CPU and MCU: the state-machine form
+The witnessed form runs as written: scf.index_switch dispatches on the discriminant, each case is a segment, and resume is a call that loads the frame, switches, and runs to the next cut. On a freestanding target the frame is stack- or region-placed with no heap involvement (§2, placement), and resume has the MoveNext shape of seq §5.1 :
+resume: (memref<Exi8>, T) -> i1 // true if it suspended again, false at the origin
+This is the first realization to build, and it is the seq state machine generalized.
+5.2 Stack switching
+A target that exposes suspend/resume as a first-class primitive may receive the saturated frame and discriminant transliterated into that primitive by a backend leg , below the boundary, in the target’s own vocabulary. That vocabulary expresses the target upward ( Backend Lowering Architecture §3.2 ); it never expresses Clef downward, and the front end never emits it. The witnessed form of §5 is unchanged; only the leg differs.
+5.3 Host coroutines (JSIR pathway)
+This subsection binds implementations claiming the JavaScript Substrate profile ( Conformance §7 ).
+On the JSIR pathway the host’s suspendable functions are the suspend/resume primitive: each cut is realized by the host’s async-function or generator mechanism, and the §4 state is carried by the host coroutine’s own frame under the carrier-realization rule of Backend Lowering Architecture §4.5 . Resume is delivery by the host event loop; the run-to-completion guarantee between cuts is supplied by the single-threaded host and is the substrate-discharged form of the discipline in §7 (see the isolate row of Scheduler Contract §7 ). A rejection delivered at a cut that a boundary operation awaited is intercepted per JavaScript Boundary Semantics §6 . The structure of §2 and the state of §4 are unchanged; only the realization differs.
+6. PSG Structure and Verification Conditions
+A continuation region saturates to a frame node — the environment node of Closure Representation in its second instance — with these constituents settled:
+Frame (environment node, state-machine slot class) {
+Delimiter: edge to the builder extent that owns this region
+Cuts: (NodeId * int) list // each suspension point and its discriminant value
+LiveAcross: per cut, the enumerated slot set
+InternalState: NodeId list // let mutable across cuts
+Segments: NodeId list // per-cut resume code
+ResumptionEdge: the edge class member (I/O, mailbox, interrupt, DMA)
+}
+The frame is minted by the suspension recipe at saturation, in the front end. Its discriminant values, slot offsets, and extent are literals on the graph, projected onto the nodes they govern as annotations the witness reads ( Program Hypergraph §5 ). No code generator assigns them, and no analysis beside the graph recomputes them.
+Every obligation the suspension form generates is quantifier-free, in the discharge regime of Closure Representation §11 : at saturation, over the graph’s literals, before witnessing. For a frame with slots s ₀.. s ₙ₋₁, offsets off ᵢ, sizes size ᵢ, extent E , and cut count N :
+VC Obligation Fragment Discharge
+VC-EXT size ₀ + … + size ₙ₋₁ + pad = E QF_LIA ground arithmetic over literals
+VC-STATE every store to the discriminant writes a literal in [−1, N ] QF_LIA finite conjunction over literals
+VC-ACC for each state k , the slots read by segment k are within live( k ) none; sets per-state check against segment liveness, enumerated
+VC-DOM the delimiter node dominates every cut it encloses none; graph dominance check on the saturated graph
+VC-ONE each suspended frame is resumed exactly once none; linear linear obligation on the frame value
+Because VC-ONE is stated on the frame value, multi-shot is well-defined where it is declared: a frame copy is a byte copy of E bytes, legitimate because the frame is flat with literal extent, and each copy carries its own VC-ONE. Multi-shot is never the silent default.
+7. NORMATIVE: Single-Core Cooperative Scheduling
+Delimited continuations are pervasive in Clef and carry no scheduling role of their own; the frame and its resume are what async , actor receive , and every suspension point saturate to, on every target. On a single-core small-form-factor target ( Backend Lowering Architecture §5 defines the freestanding pathway), one further fact holds: the suspend/resume semantics become the cooperative scheduler. This is a forcing function of the braid, not a property of continuations. With one thread of control and no room for a separate scheduler runtime, a continuation that suspends is the only thing that can hand the core to another, so the braid presses the continuation’s own suspend/resume into the scheduler’s role — no task queue or preemption mechanism is introduced because none can be. The operative constraint is the single core, not the freestanding host: a freestanding pathway is not inherently single-core, and where the target has more cores the braid coordinates them by other means, out of this section’s scope. This section states the single-core discipline normatively so it can be relied upon; it holds regardless of which §5 leg realizes the frame.
+A conforming single-core implementation SHALL observe:
+Continuations are tasks. A suspended frame is a runnable unit. There is no task object distinct from the frame itself.
+Resume is the scheduling event. A continuation runs only when resumed by delivery on its resumption edge. On a bare-metal freestanding target the delivery source is a peripheral interrupt (or a completion the interrupt records); the interrupt-to-continuation binding is the scheduler’s dispatch.
+Run-to-completion until the next cut (non-preemption). Once resumed, a continuation runs its segment until it reaches its next cut or its origin. It is never preempted mid-segment. This is the cooperative guarantee: a continuation yields the core only at a cut, never involuntarily.
+Quiescence to low power. When no continuation is runnable — every frame is suspended awaiting delivery — the implementation SHALL return the core to a wait state (e.g. WFI on Arm) until the next interrupt. The interrupt resumes the awaiting continuation, and the cycle repeats.
+The interrupt handler that delivers a value SHALL be a captureless top-level handler bound directly to the vector-table slot (hardware vectors carry no environment pointer); it reaches the frame through the resume entry point, not through a captured closure. The progress guarantee under this discipline is that every continuation whose awaited value has been delivered is eventually resumed; on a single core with one interrupt source per suspension class this reduces to “the handler resumes the awaiting continuation,” and no fairness policy beyond interrupt priority is required.
+This is the sense in which the concurrency model reduces to an event loop on a single core :
+the braided crossing (a cut that spawns an awaited computation and threads its result back
+through the remainder) is held by the frame, and where the target has one core the frame’s
+own suspend/resume is the whole of the scheduling. The reduction is a property of the core
+count, not of the freestanding host — the same continuation semantics carry to a multi-core
+target, where the scheduling is more than one event loop.
+8. SSA Cost
+On the §5.1 leg the resume state machine has the seq SSA cost profile ( seq §5 ): one discriminant load and switch at entry, plus per cut the in-flight store and discriminant store, plus the live-across loads on each resume. No allocation-site cost is added for a scope-bounded frame (stack/region), matching the zero-heap requirement of a freestanding target.
+9. Normative Requirements
+Graph structure, not an operation surface. A delimited continuation SHALL be expressed on the Program Semantic Graph by the suspension recipe of §2 — segments at cuts, a frame, and a delimiter edge from every cut to the builder extent that owns it. An implementation SHALL NOT express continuations as a continuation operation surface or continuation dialect above the witness boundary.
+Suspended state. The frame SHALL realize the state of §4: the discriminant, the in-flight value, the live-across set per cut, and internal state.
+Live-across set. The live-across set of a cut SHALL be the bindings live on the path from that cut to the continuation’s origin — the delimited remainder — computed at elaboration and consumed, not recomputed, thereafter.
+Witnessed form. The witness SHALL emit the form of §5: a discriminant, a byte frame of literal extent with static memref.view s at literal offsets, function values, and scf.index_switch over the discriminant, in the portable dialects of Backend Lowering Architecture §2.1 and no other.
+Target legs below the boundary. A target that natively hosts continuations MAY transliterate the witnessed frame and discriminant into its own primitive in a backend leg (§5.2). Such a leg SHALL consume the witnessed form; it SHALL NOT be a change to what the witness emits.
+Verification conditions. The obligations of §6 SHALL be discharged at saturation, over the graph’s literals, before witnessing; VC-ONE SHALL be stated on the frame value.
+Cooperative discipline. A single-core implementation SHALL observe the scheduling discipline of §7 (continuations-as-tasks, resume-as-dispatch, run-to-completion, quiescence-to-wait).
+10. Related Chapters
+Sequence Expression Representation — the degenerate case: the caller’s pull as the only resumption edge, yield as the cut.
+Closure Representation — the environment node this frame is an instance of; the finiteness lemma; the lifetime lattice; the discharge regime.
+Program Hypergraph — the hyperedge formalism the delimiter edge and the frame’s obligations reside in; the emission-transport rule the witness follows.
+Program Semantic Graph — saturation, and the state-machine node vocabulary this chapter generalizes.
+Synchronous RPC and Liveness — one specified cut (the actor reply wait) whose wait-for edge is rank-checked.
+Native Type Mappings — which computation-expression regions saturate through this recipe and which compile to data flow.
+References
+Haynes, H. (2026). The Program Hypergraph , §§1.4 and 2 — continuation frame and slot identities, ordered participant relations, and the transport of settled obligations into the witnessed state machine.
+Haynes, H. (2026). Coexponential Exploration in the Clef Programming Language , §§4.1–4.3 and 10.4–10.6 — the manuscript’s conditional actor-to-continuation correspondence, retaining invocation identity, exclusive state and completion rights across suspension, with storage and target-realization obligations.
+Danvy, O., Filinski, A. Abstracting Control (1990) — shift/reset, the control operators whose semantics the recipe of §2 carries as graph structure.
+Dybvig, R. K., Peyton Jones, S., Sabry, A. A Monadic Framework for Delimited Continuations (JFP 2007).
+Kang, B., Desai, H., Jia, L., Lucia, B. WAMI: Compilation to WebAssembly through MLIR without Losing Abstraction (2025), arXiv:2506.16048 — prior art for a dialect-level encoding of delimited continuations.
+Appel, A. W. SSA is Functional Programming (1998) — the state-machine/CFG equivalence the resume form rests on.
+Sequence Expression Representation Sequence Operations Representation
+© 2025-2026 Braidpoint

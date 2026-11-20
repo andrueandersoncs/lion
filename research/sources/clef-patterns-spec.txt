@@ -1,0 +1,936 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns Simple Constant Patterns
+Named Patterns
+“As” Patterns
+Wildcard Patterns
+Disjunctive Patterns
+Conjunctive Patterns
+List Patterns
+Type-annotated Patterns
+Dynamic Type-test Patterns
+Record Patterns
+Array Patterns
+Null Patterns
+Guarded Pattern Rules
+Pattern Match Lowering
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+Simple Constant Patterns
+Named Patterns
+Union Case Patterns
+Literal Patterns
+Active Patterns
+“As” Patterns
+Wildcard Patterns
+Disjunctive Patterns
+Conjunctive Patterns
+List Patterns
+Type-annotated Patterns
+Dynamic Type-test Patterns
+Record Patterns
+Array Patterns
+Null Patterns
+Guarded Pattern Rules
+Exhausted Match Rules
+Pattern Match Lowering
+Decision Tree Structure
+Record Pattern Extraction
+Selected Binding and Guard Order
+Union Case Pattern Extraction
+Scroll to top
+Language Specification
+Patterns
+Patterns
+Patterns are used to perform simultaneous case analysis and decomposition on values together with
+the match , try...with , function , fun , and let expression and declaration constructs. Rules are
+attempted in order from top to bottom and left to right. The syntactic forms of patterns are shown
+in the subsequent table.
+rule :=
+pat pattern-guard~opt -> expr -- pattern, optional guard and action
+pattern-guard := when expr
+pat :=
+const -- constant pattern
+long-ident pat-param~opt pat~opt -- named pattern
+_ -- wildcard pattern
+pat as ident -- "as" pattern
+pat '|' pat -- disjunctive pattern
+pat '&' pat -- conjunctive pattern
+pat :: pat -- "cons" pattern
+pat : type -- pattern with type constraint
+pat , ... , pat -- tuple pattern
+struct (pat , ... , pat) -- struct tuple pattern
+( pat ) -- parenthesized pattern
+list-pat -- list pattern
+array-pat -- array pattern
+record-pat -- record pattern
+:? atomic-type -- dynamic type test pattern
+:? atomic-type as ident -- dynamic type test pattern
+null -- tooling compatibility syntax; not native Clef
+attributes pat -- pattern with attributes
+list-pat :=
+[ ]
+[ pat ; ... ; pat ]
+array-pat :=
+[| |]
+[| pat ; ... ; pat |]
+record-pat :=
+{ field-pat ; ... ; field-pat }
+atomic-pat :=
+pat : one of
+const long-ident list-pat record-pat array-pat ( pat )
+:? atomic-type
+null _
+field-pat := long-ident = pat
+pat-param :=
+| const
+| long-ident
+| [ pat-param ; ... ; pat-param ]
+| ( pat-param , ..., pat-param )
+| long-ident pat-param
+| pat-param : type
+| <@ expr @>
+| <@@ expr @@>
+| null
+pats := pat , ... , pat
+field-pats := field-pat ; ... ; field-pat
+rules := '|'~opt rule '|' ... '|' rule
+Patterns are elaborated to expressions through a process called pattern match compilation . This
+reduces pattern matching to decision trees which operate on an input value, called the pattern input .
+The native decision tree is composed of the following constructs. Grammar
+productions retained for tooling compatibility do not by themselves admit a
+native operation; in particular, see Null Patterns .
+Conditionals on integers and other constants
+Switches on union cases
+Conditionals on runtime types
+Value definitions
+An array of pattern-match targets referred to by index
+Simple Constant Patterns
+The pattern const is a constant pattern which matches values equal to the given constant. For
+example:
+let rotate3 x =
+match x with
+| 0 -> "two"
+| 1 -> "zero"
+| 2 -> "one"
+| _ -> failwith "rotate3"
+In this example, the constant patterns are 0, 1, and 2. A constant pattern follows
+the source literal rules in Simple Constant Expressions ,
+including the restrictions on representation-selecting numeric suffixes.
+The constant and pattern input have the same checked type, including numeric
+dimension. The pattern elaborates to Clef’s ordinary typed equality operation
+with the input and constant as its two arguments. It succeeds when that
+operation returns true ; otherwise selection continues with the next rule.
+The hosted representation of the literal does not choose an integer width or
+erase its dimension. Character patterns compare the actual character, real
+patterns use real equality, string patterns compare contents rather than storage
+addresses, and unit patterns retain the ordinary unit equality contract.
+These rules do not depend on a CLI runtime or FSharp.Core call.
+Named Patterns
+Patterns in the following forms are named patterns :
+Long-ident
+Long-ident pat
+Long-ident pat-params pat
+If long-ident is a single identifier that does not begin with an uppercase character, it is interpreted
+as a variable pattern . During checking, the variable is assigned the same value and type as the
+pattern input.
+If long-ident is more than one-character long or begins with an uppercase character (that is, if
+System.Char.IsUpperInvariant is true and System.Char.IsLowerInvariant is false on the first
+character), it is resolved by using Name Resolution in Patterns ( § Name Resolution in Patterns ). This algorithm produces one
+of the following:
+A union case
+An exception label
+An active pattern case name
+A literal value
+Otherwise, long-ident must be a single uppercase identifier ident . In this case, pat is a variable
+pattern. An F# implementation may optionally generate a warning if the identifier is uppercase. Such
+a warning is recommended if the length of the identifier is greater than two.
+After name resolution, the subsequent treatment of the named pattern is described in the following
+sections.
+Union Case Patterns
+If long-ident from § Named Patterns resolves to a union case, the pattern is a union case pattern . If long-ident
+resolves to a union case Case , then long-ident and long-ident pat are patterns that match pattern
+inputs that have union case label Case . The long-ident form is used if the corresponding case takes
+no arguments, and the long-ident pat form is used if it takes arguments.
+At runtime, if the pattern input is an object that has the corresponding union case label, the data
+values carried by the union are matched against the given argument patterns.
+For example:
+type Data =
+| Kind1 of int * int
+| Kind2 of string * string
+let data = Kind1 ( 3 , 2 )
+let result =
+match data with
+| Kind1 ( a , b ) -> a + b
+| Kind2 ( s1 , s2 ) -> s1 . Length + s2 . Length
+In this case, result is given the value 5.
+When a union case has named fields, these names may be referenced in a union case pattem. When
+using pattern matching with multiple fields, semicolons are used to delimit the named fields. For
+example
+type Shape =
+| Rectangle of width : float * height : float
+| Square of width : float
+let getArea ( s : Shape ) =
+match s with
+| Rectangle ( width = w ; height = h ) -> w * h
+| Square ( width = w ) -> w * w
+Literal Patterns
+If long-ident from § Named Patterns resolves to a literal value, the pattern is a literal pattern. The pattern is
+equivalent to the corresponding constant pattern.
+In the following example, the Literal attribute ( § Literal Definitions in Modules ) is first used to define two literals, and these
+literals are used as identifiers in the match expression:
+[< Literal >]
+let Case1 = 1
+[< Literal >]
+let Case2 = 100
+let result =
+match 1 00 with
+| Case1 -> "Case1"
+| Case2 -> "Case 2 "
+| _ -> "Some other case"
+In this case, result is given the value Case2 .
+Active Patterns
+If long-ident from § Named Patterns resolves to an active pattern case name CaseNamei then the pattern is an
+active pattern. The rules for name resolution in patterns ( § Name Resolution in Patterns ) ensure that CaseNamei is
+associated with an active pattern function f in one of the following forms:
+(| CaseName |) inp
+Single case. The function accepts one argument (the value being matched) and can return any
+type.
+(| CaseName |_|) inp
+Partial. The function accepts one argument (the value being matched) and must return a value
+of type FSharp.Core.option<_>
+(| CaseName1 | ...| CaseNamen |) inp
+Multi-case. The function accepts one argument (the value being matched), and must return a
+value of type FSharp.Core.Choice<_,...,_> based on the number of case names. In F#, the
+limitation n ≤ 7 applies.
+(| CaseName |) arg1 ... argn inp
+Single case with parameters. The function accepts n+1 arguments, where the last argument ( inp )
+is the value to match, and can return any type.
+(| CaseName |_|) arg1 ... argn inp
+Partial with parameters. The function accepts n +1 arguments, where the last argument ( inp ) is
+the value to match, and must return a value of type FSharp.Core.option<_> .
+Other active pattern functions are not permitted. In particular, multi-case, partial functions such as
+the following are not permitted:
+(| CaseName1 | ... | CaseNamen |_|)
+When an active pattern function takes arguments, the pat-params are interpreted as expressions
+that are passed as arguments to the active pattern function. The pat-params are converted to the
+syntactically identical corresponding expression forms and are passed as arguments to the active
+pattern function f .
+At runtime, the function f is applied to the pattern input, along with any parameters. The pattern
+matches if the active pattern function returns v , ChoicekOfN v , or Some v , respectively, when applied
+to the pattern input. If the pattern argument pat is present, it is then matched against v .
+The following example shows how to define and use a partial active pattern function:
+let (| Positive |_|) inp = if inp > 0 then Some ( inp ) else None
+let (| Negative |_|) inp = if inp < 0 then Some (- inp ) else None
+match 3 with
+| Positive n -> printfn "positive, n = %d" n
+| Negative n -> printfn "negative, n = %d" n
+| _ -> printfn "zero"
+The following example shows how to define and use a multi-case active pattern function:
+let (| A | B | C |) inp = if inp < 0 then A elif inp = 0 then B else C
+match 3 with
+| A -> "negative"
+| B -> "zero"
+| C - > "positive"
+The following example shows how to define and use a parameterized active pattern function:
+let (| MultipleOf |_|) n inp = if inp % n = 0 then Some ( inp / n ) else None
+match 16 with
+| MultipleOf 4 n -> printfn "x = 4*%d" n
+| _ -> printfn "not a multiple of 4"
+An active pattern function is executed only if a left-to-right, top-to-bottom reading of the entire
+pattern indicates that execution is required. For example, consider the following active patterns:
+let (| A |_|) x =
+if x = 2 then failwith "x is two"
+elif x = 1 then Some ()
+else None
+let (| B |_|) x =
+if x = 3 then failwith "x is three" else None
+let (| C |) x = failwith "got to C"
+let f x =
+match x with
+| 0 -> 0
+| A -> 1
+| B -> 2
+| C -> 3
+| _ -> 4
+These patterns evaluate as follows:
+f 0 // 0
+f 1 // 1
+f 2 // failwith "x is two"
+f 3 // failwith "x is three"
+f 4 // failwith "got to C"
+An active pattern function may be executed multiple times against the same pattern input during
+resolution of a single overall pattern match. The precise number of times that the active pattern
+function is executed against a particular pattern input is implementation-dependent.
+“As” Patterns
+An “as” pattern is of the following form:
+pat as ident
+The “as” pattern defines ident to be equal to the pattern input and matches the pattern input
+against pat . For example:
+let t1 = ( 1 , 2 )
+let ( x , y ) as t2 = t1
+printfn "%d-%d-%A" x y t2 // 1- 2 - (1, 2)
+This example binds the identifiers x , y , and t1 to the values 1 , 2 , and (1,2) , respectively.
+Wildcard Patterns
+The pattern _ is a wildcard pattern and matches any input. For example:
+let categorize x =
+match x with
+| 1 - > 0
+| 0 -> 1
+| _ -> 0
+In the example, if x is 0 , the match returns 1 . If x has any other value, the match returns 0 .
+Disjunctive Patterns
+A disjunctive pattern matches an input value against one or the other of two patterns:
+pat | pat
+At runtime, the pattern input is matched against the first pattern. If that fails, the pattern input is
+matched against the second pattern. Both patterns must bind the same set of variables with the
+same types. For example:
+type Date = Date of int * int * int
+let isYearLimit date =
+match date with
+| ( Date ( year , 1 , 1 ) | Date ( year , 12 , 31 )) -> Some year
+| _ -> None
+let result = isYearLimit ( Date ( 2010 , 12 , 31 ))
+In this example, result is given the value true , because the pattern input matches the second
+pattern.
+Conjunctive Patterns
+A conjunctive pattern matches the pattern input against two patterns.
+pat1 & pat2
+For example:
+let (| MultipleOf |_|) n inp = if inp % n = 0 then Some ( inp / n ) else None
+let result =
+match 56 with
+| MultipleOf 4 m & MultipleOf 7 n -> m + n
+| _ -> false
+In this example, result is given the value 22 (= 16 + 8), because the pattern input match matches
+both patterns.
+List Patterns
+The pattern pat :: pat is a union case pattern that matches the “cons” union case of F# list values.
+The pattern [] is a union case pattern that matches the “nil” union case of F# list values.
+The pattern [ pat1 ; ... ; patn ] is shorthand for a series of :: and empty list patterns
+pat1 :: ... :: patn :: [] .
+For example:
+let rec count x =
+match x with
+| [] -> 0
+| h :: t -> h + count t
+let result1 = count [ 1 ; 2 ; 3 ]
+let result2 =
+match [ 1 ; 2 ; 3 ] with
+| [ a ; b ; c ] -> a + b + c
+| _ -> 0
+In this example, both result1 and result2 are given the value 6 .
+Type-annotated Patterns
+A type-annotated pattern specifies the type of the value to match to a pattern.
+pat : type
+For example:
+let rec sum xs =
+match xs with
+| [] -> 0
+| ( h : int ) :: t -> h + sum t
+In this example, the initial type of h is asserted to be equal to int before the pattern h is checked.
+Through type inference, this in turn implies that xs and t have static type int list , and sum has
+static type
+int list -> int .
+Dynamic Type-test Patterns
+Dynamic type-test patterns have the following two forms:
+:? type
+:? type as ident
+A dynamic type-test pattern matches any value whose runtime type is type or a subtype of type . For
+example:
+let message ( x : System . Exception ) =
+match x with
+| :? System . OperationCanceledException -> "cancelled"
+| :? System . ArgumentException -> "invalid argument"
+| _ -> "unknown error"
+If the type-test pattern is of the form :? type as ident , then the value is coerced to the given type
+and ident is bound to the result. For example:
+let findLength ( x : obj ) =
+match x with
+| :? string as s -> s . Length
+| _ -> 0
+In the example, the identifier s is bound to the value x with type string .
+If the pattern input has type tyin , pattern checking uses the same conditions as both a dynamic type-
+test expression e :? type and a dynamic coercion expression e :?> type where e has type tyin . An
+error occurs if type cannot be statically determined to be a subtype of the type of the pattern input.
+A warning occurs if the type test will always succeed based on type and the static type of the pattern
+input.
+A warning is issued if an expression contains a redundant dynamic type-test pattern, after any
+coercion is applied. For example:
+match box "3" with
+| :? string -> 1
+| :? string -> 1 // a warning is reported that this rule is "never matched"
+| _ -> 2
+match box "3" with
+| :? System . IComparable -> 1
+| :? string -> 1 // a warning is reported that this rule is "never matched"
+| _ -> 2
+At runtime, a dynamic type-test pattern succeeds if and only if the corresponding dynamic type-test
+expression e :? ty would return true where e is the pattern input. The value of the pattern is bound
+to the results of a dynamic coercion expression e :?> ty .
+Record Patterns
+The following is a record pattern :
+{ long-ident1 = pat1 ; ... ; long-identn = patn }
+For example:
+type Data = { Header : string ; Size : int ; Names : string list }
+let totalSize data =
+match data with
+| { Header = "TCP" ; Size = size ; Names = names } -> size + names . Length * 12
+| { Header = "UDP" ; Size = size } -> size
+| _ -> failwith "unknown header"
+The long-identi are resolved in the same way as field labels for record expressions and must
+together identify a single, unique F# record type. Not all record fields for the type need to be
+specified in the pattern.
+Array Patterns
+An array pattern matches an array of a partciular length:
+[| pat ; ... ; pat |]
+For example:
+let checkPackets data =
+match data with
+| [| "HeaderA" ; data1 ; data2 |] -> ( data1 , data2 )
+| [| "HeaderB" ; data2 ; data1 |] -> ( data1 , data2 )
+| _ -> failwith "unknown packet"
+Null Patterns
+The parser retains null in pattern grammar for compatibility with existing
+F# tooling. It is not an admitted native Clef pattern. Under
+Null-Freedom , a native null pattern receives
+the same CCS8010 source error as an invalid null expression; it does not become
+a wildcard, a constructor tag or a runtime null test.
+Foreign or optional absence must be represented through its declared boundary
+contract and an admitted optional value. A retained grammar production cannot
+introduce a null inhabitant into the native type system.
+Guarded Pattern Rules
+Guarded pattern rules have the following form:
+pat when expr
+For example:
+let categorize x =
+match x with
+| _ when x < 0 -> - 1
+| _ when x > 0 -> 1
+| _ -> 0
+The guard on a rule is demanded only after the match value matches the corresponding pattern.
+Rules are considered in source order. A false guard continues with the next rule; a successful
+rule prevents later guards and bodies from being evaluated. A guard’s effects are therefore
+neither unconditional match setup nor work that may be moved ahead of the pattern test.
+For example, the following evaluates to 2 with no output.
+match ( 1 , 2 ) with
+| ( 3 , x ) when ( printfn "not printed" ; true ) -> 0
+| (_, y ) -> y
+Exhausted Match Rules
+When a demanded match has no rule whose pattern and guard both succeed,
+execution terminates with a diagnostic identifying the failed source match.
+This failure is always active, including when DEBUG is absent. It does not
+produce a result value, synthesize unit or a default payload, return Error ,
+or raise a catchable language exception. The conditional compilation policy for
+assert does not disable match failure.
+Failure preserves the ordered selection rules above. A false guard proceeds to
+the next rule, including another rule for the same constructor. Only exhaustion
+of the rules terminates execution. Effects of already demanded pattern tests
+and guards occur in their established order; no later body is evaluated and no
+payload is extracted from a constructor that failed its test. A match inside an
+undemanded computation remains deferred under the ordinary evaluation policy.
+Pattern Match Lowering
+Pattern matching is compiled through a process called pattern match compilation , which transforms
+high-level pattern constructs into decision trees composed of conditionals and value extractions.
+Decision Tree Structure
+Baker elaborates pattern tests, selected bindings, guards and fallthrough into explicit PSG
+decisions. A shallow CaseElimination selects a constructor. A constant pattern uses
+ordinary typed equality and boolean selection; source guards also use IfThenElse .
+Nested patterns introduce further decisions inside the selected branch. The scrutinee
+retains one shared identity throughout those decisions.
+For example:
+match x with
+| Case1 -> body1
+| Case2 -> body2
+Has the following logical decision structure:
+IfThenElse(
+guard: <test for Case1>,
+then: body1,
+else: IfThenElse(
+guard: <test for Case2>,
+then: body2,
+else: <match failure>
+)
+)
+This notation describes selection and failure, not a requirement to materialize tag loads or
+target comparisons in Baker. Alex navigates the settled decisions at their actual Huet zipper
+occurrences and composes physical operations through Elements, Patterns and Witnesses. It
+does not reconstruct source pattern ordering or move guard evaluation between regions.
+An exhausted decision uses an always-active source requirement before its
+successful continuation. Baker retains the shared input identity and checked
+type, the boolean pattern test or terminal guard, and the selected body in the
+requirement’s evidence. The internal Require operation has a unit result only
+on success; failure terminates with its diagnostic. It is not the source
+assert expression and is not conditional on DEBUG . Alex must witness the
+requirement and continuation in that established occurrence order, preserving
+the diagnostic through target lowering. A proven successful test may remove
+redundant runtime work; it cannot authorize an unguarded payload read or invent
+a result for the failure path.
+Record Pattern Extraction
+Record patterns extract field values using FieldGet operations. For example:
+match person with
+| { Name = n ; Age = a } -> ...
+Each field binding ( n , a ) retains its source definition identity and receives a typed
+FieldGet from the scrutinee. This is a projection of the existing record; it does not construct
+a second record. Wildcard fields do not supply a substitute payload type: projection and
+layout use the instantiated source record declaration.
+Selected Binding and Guard Order
+Critical invariant : A guard can use its pattern-bound variables only after the corresponding
+pattern facts admit their extraction. Bindings are available before that guard, within the
+selected pattern’s scope. They cannot be hoisted ahead of a refutable constructor or component
+test merely to make an operand available to emission.
+match person with
+| { Age = a } when a < 18 -> "minor"
+| _ -> "adult"
+The guard a < 18 references a . This record pattern is irrefutable for its record type, so its
+binding precedes the guard in the reached rule:
+Sequential [
+Binding("a", FieldGet(scrutinee, "Age"))
+IfThenElse(
+guard: a < 18,
+then: "minor",
+else: "adult"
+)
+]
+For a refutable pattern, the order is instead: test the pattern, enter the selected scope,
+extract the required bindings, then evaluate the guard. A false guard follows the original
+later rules, including another rule for the same constructor. Baker constructs these scopes
+and continuations during saturation; a later physical traversal must preserve them.
+Union Case Pattern Extraction
+Union case patterns with payloads compile similarly:
+match opt with
+| Some x when x > 0 -> x
+| Some _ -> - 1
+| None -> 0
+Has the following logical structure:
+IfThenElse(
+guard: DUGetTag(opt) == Some,
+then: Sequential [
+Binding("x", DUEliminate(opt, Some))
+IfThenElse(
+guard: x > 0,
+then: x,
+else: -1
+)
+],
+else: 0
+)
+The DUEliminate operation projects the selected case’s payload using its instantiated type.
+The constructor test must dominate that projection. A payload belonging to another case is
+never read speculatively to prepare bindings or guards. The same rule applies recursively to
+union patterns inside tuples, records and other union payloads.
+Expressions Namespaces and Modules
+© 2025-2026 Braidpoint

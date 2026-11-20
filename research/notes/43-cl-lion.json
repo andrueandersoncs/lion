@@ -1,0 +1,435 @@
+{
+  "sources": [
+    {
+      "id": "lion-probes-cl",
+      "url": "research/probes/cl-*.json",
+      "title": "Lion programs run for the Clef run, at commit 7e4b4ad",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261120120000
+    },
+    {
+      "id": "lion-no-subscription",
+      "url": "grep -rniE 'subscribe|onChange|addListener|watch\\(' packages/core/src",
+      "title": "Lion's core and TypeScript API searched for a way to be told of changes, at commit 7e4b4ad",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261120120000
+    },
+    {
+      "id": "lion-special-forms-now",
+      "url": "packages/site-runtime/content/reference/special-forms.html",
+      "title": "Lion reference: Special forms, at commit 7e4b4ad",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261120
+    },
+    {
+      "id": "lion-evaluation-rules-now",
+      "url": "packages/site-runtime/content/reference/evaluation-rules.html",
+      "title": "Lion reference: Evaluation rules, at commit 7e4b4ad",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261120
+    },
+    {
+      "id": "lion-standard-library-now",
+      "url": "packages/site-runtime/content/reference/standard-library.html",
+      "title": "Lion reference: Standard library, at commit 7e4b4ad",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261120
+    },
+    {
+      "id": "lion-errors-now",
+      "url": "packages/site-runtime/content/reference/errors.html",
+      "title": "Lion reference: Errors, at commit 7e4b4ad",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261120
+    },
+    {
+      "id": "lion-decision-lambda-arity",
+      "url": "DECISIONS.md#lambda-arity",
+      "title": "Lion's decision lambda-arity, at commit 7e4b4ad",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261120
+    }
+  ],
+  "claims": [
+    {
+      "id": "cl-l1",
+      "source": "lion-probes-cl",
+      "quote": "\"a lambda of one parameter given three arguments\": 1",
+      "says": {
+        "lion": "a call refused when a lambda is given more arguments than it has parameters",
+        "has": false
+      },
+      "where": "cl-arity.json"
+    },
+    {
+      "id": "cl-l2",
+      "source": "lion-probes-cl",
+      "quote": "\"a lambda of one parameter given three arguments\": 1",
+      "says": {
+        "lion": "a lambda ignores extra arguments",
+        "has": true
+      },
+      "where": "cl-arity.json"
+    },
+    {
+      "id": "cl-l3",
+      "source": "lion-probes-cl",
+      "quote": "\"console/log\" takes 1 argument but got 2.",
+      "says": {
+        "lion": "a call refused when a library function is given the wrong number of arguments",
+        "has": true
+      },
+      "where": "cl-arity-library.json"
+    },
+    {
+      "id": "cl-l4",
+      "source": "lion-probes-cl",
+      "quote": "\"console/log\" takes 1 argument but got 2.",
+      "says": {
+        "covers": "a call refused when a library function is given the wrong number of arguments",
+        "by": "arity checking",
+        "is": true
+      },
+      "where": "cl-arity-library.json"
+    },
+    {
+      "id": "cl-l5",
+      "source": "lion-probes-cl",
+      "quote": "\"a key that is not there\": null",
+      "says": {
+        "lion": "plain code that tells a missing key from a key holding null",
+        "has": false
+      },
+      "where": "cl-missing-key.json"
+    },
+    {
+      "id": "cl-l6",
+      "source": "lion-probes-cl",
+      "quote": "\"a key that holds null\": null",
+      "says": {
+        "lion": "plain code that tells a missing key from a key holding null",
+        "has": false
+      },
+      "where": "cl-missing-key.json"
+    },
+    {
+      "id": "cl-l7",
+      "source": "lion-probes-cl",
+      "quote": "\"answers to a pattern for a key that is not there\": 0",
+      "says": {
+        "lion": "a pattern that tells a missing key from a key holding null",
+        "has": true
+      },
+      "where": "cl-missing-key.json"
+    },
+    {
+      "id": "cl-l8",
+      "source": "lion-probes-cl",
+      "quote": "\"a case no value can reach, after one that takes every number\": \"a number\"",
+      "says": {
+        "lion": "a report of a match case no value can reach",
+        "has": false
+      },
+      "where": "cl-match-cases.json"
+    },
+    {
+      "id": "cl-l9",
+      "source": "lion-probes-cl",
+      "quote": "\"the later case takes nothing the earlier one leaves\": true",
+      "says": {
+        "covers": "a report of a match case no value can reach",
+        "by": "schema inclusion",
+        "is": true
+      },
+      "where": "cl-match-cases.json"
+    },
+    {
+      "id": "cl-l10",
+      "source": "lion-probes-cl",
+      "quote": "\"the cases miss a kind of order\": false",
+      "says": {
+        "covers": "a match checked to cover every value of its schema",
+        "by": "schema inclusion",
+        "is": true
+      },
+      "where": "cl-match-cases.json"
+    },
+    {
+      "id": "cl-l11",
+      "source": "lion-probes-cl",
+      "quote": "\"a count defined in plain code, after a second order\": 1",
+      "says": {
+        "lion": "a value defined in plain code kept up to date as facts change",
+        "has": false
+      },
+      "where": "cl-plain-live.json"
+    },
+    {
+      "id": "cl-l12",
+      "source": "lion-probes-cl",
+      "quote": "\"a count a rule derives, after a second order\": 2",
+      "says": {
+        "lion": "derived rows kept up to date as facts change",
+        "has": true
+      },
+      "where": "cl-plain-live.json"
+    },
+    {
+      "id": "cl-l13",
+      "source": "lion-probes-cl",
+      "quote": "\"different numbers three calls in a rule body give\": 1",
+      "says": {
+        "lion": "a function that changes a binding gives in a rule body what it gives in plain code",
+        "has": false
+      },
+      "where": "cl-effect-in-rule.json"
+    },
+    {
+      "id": "cl-l14",
+      "source": "lion-probes-cl",
+      "quote": "\"the count after the rule ran\": 4",
+      "says": {
+        "lion": "a rule body may change a binding",
+        "has": true
+      },
+      "where": "cl-effect-in-rule.json"
+    },
+    {
+      "id": "cl-l15",
+      "source": "lion-probes-cl",
+      "quote": "\"a length and a time, as values that carry their units, added\": 128",
+      "says": {
+        "lion": "quantities whose units are checked when they are combined",
+        "has": false
+      },
+      "where": "cl-units.json"
+    },
+    {
+      "id": "cl-l16",
+      "source": "lion-probes-cl",
+      "quote": "\"a time does not fit the schema of a length\": false",
+      "says": {
+        "lion": "a schema that checks a quantity's unit",
+        "has": true
+      },
+      "where": "cl-units.json"
+    },
+    {
+      "id": "cl-l17",
+      "source": "lion-probes-cl",
+      "quote": "\"the solver solves for an exponent\": 1",
+      "says": {
+        "lion": "values that satisfy constraints over unbound variables",
+        "has": true
+      },
+      "where": "cl-units.json"
+    },
+    {
+      "id": "cl-l18",
+      "source": "lion-probes-cl",
+      "quote": "\"a rule no account can meet, under withdrawals with no limit, is proved kept\": true",
+      "says": {
+        "lion": "a proof that says when its premises allow no state",
+        "has": false
+      },
+      "where": "cl-vacuous-proof.json"
+    },
+    {
+      "id": "cl-l19",
+      "source": "lion-probes-cl",
+      "quote": "\"what why gives for a proof whose premises contradict each other\": \"absent\"",
+      "says": {
+        "lion": "which assumptions make a goal unsatisfiable",
+        "has": false
+      },
+      "where": "cl-why-absent.json"
+    },
+    {
+      "id": "cl-l20",
+      "source": "lion-probes-cl",
+      "quote": "Expected number",
+      "says": {
+        "lion": "a failure that names the function given a wrong argument",
+        "has": false
+      },
+      "where": "cl-contract.json"
+    },
+    {
+      "id": "cl-l21",
+      "source": "lion-probes-cl",
+      "quote": "Expected number",
+      "says": {
+        "lion": "a failure that names the function and the caller that broke its contract",
+        "has": false
+      },
+      "where": "cl-contract.json"
+    },
+    {
+      "id": "cl-l22",
+      "source": "lion-probes-cl",
+      "quote": "[\"delay\",[\"number/add\",1,2]] is not a call",
+      "says": {
+        "lion": "values computed on first demand and kept",
+        "has": false
+      },
+      "where": "cl-no-delay.json"
+    },
+    {
+      "id": "cl-l23",
+      "source": "lion-probes-cl",
+      "quote": "\"times the body ran\": 1",
+      "says": {
+        "covers": "values computed on first demand and kept",
+        "by": "a closure that caches its value",
+        "is": true
+      },
+      "where": "cl-promise-by-hand.json"
+    },
+    {
+      "id": "cl-l24",
+      "source": "lion-probes-cl",
+      "quote": "[\"call/cc\",[\"lambda\",[\"k\"],[\"k\",1]]] is not a call",
+      "says": {
+        "lion": "first-class continuations",
+        "has": false
+      },
+      "where": "cl-no-callcc.json"
+    },
+    {
+      "id": "cl-l25",
+      "source": "lion-probes-cl",
+      "quote": "cannot say whether every value \"value/number?\" allows fits \"value/integer?\"",
+      "says": {
+        "lion": "an undecided question kept apart from a false one",
+        "has": true
+      },
+      "where": "cl-undecided.json"
+    },
+    {
+      "id": "cl-l26",
+      "source": "lion-probes-cl",
+      "quote": "\"that integer equals two to the 53rd\": true",
+      "says": {
+        "lion": "integers kept exact past two to the 53rd",
+        "has": false
+      },
+      "where": "cl-big-integers.json"
+    },
+    {
+      "id": "cl-l27",
+      "source": "lion-probes-cl",
+      "quote": "\"an integer written one past two to the 53rd\": 9007199254740992",
+      "says": {
+        "lion": "an integer refused when it cannot be held exactly",
+        "has": false
+      },
+      "where": "cl-big-integers.json"
+    },
+    {
+      "id": "cl-l28",
+      "source": "lion-no-subscription",
+      "quote": "files that let host code subscribe to changes: 0",
+      "says": {
+        "lion": "host code told when a derived value changes",
+        "has": false
+      },
+      "where": "the search of packages/core/src"
+    },
+    {
+      "id": "cl-l29",
+      "source": "lion-special-forms-now",
+      "quote": "Extra arguments are ignored.",
+      "says": {
+        "lion": "a lambda ignores extra arguments",
+        "has": true
+      },
+      "where": "lambda"
+    },
+    {
+      "id": "cl-l30",
+      "source": "lion-special-forms-now",
+      "quote": "At least one pair and the fallback are required.",
+      "says": {
+        "lion": "a match always has a fallback",
+        "has": true
+      },
+      "where": "match"
+    },
+    {
+      "id": "cl-l31",
+      "source": "lion-special-forms-now",
+      "quote": "At least one pair and the fallback are required.",
+      "says": {
+        "lion": "a match checked to cover every value of its schema",
+        "has": false
+      },
+      "where": "match"
+    },
+    {
+      "id": "cl-l32",
+      "source": "lion-special-forms-now",
+      "quote": "Parameters can be any non-empty strings but __proto__",
+      "says": {
+        "lion": "a lambda whose arguments are checked against schemas when it is called",
+        "has": false
+      },
+      "where": "lambda"
+    },
+    {
+      "id": "cl-l33",
+      "source": "lion-evaluation-rules-now",
+      "quote": "so its name cannot be a form's: begin , cond , define , set! , eval , lambda , match , quote , relation , schema , rule , fact , retract , query , find , assuming , exists , some , why , not , and , or , = , in , snapshot , or invariant",
+      "says": {
+        "lion": "a failure a program can catch and read as data",
+        "has": false
+      },
+      "where": "Names of forms: every form Lion has"
+    },
+    {
+      "id": "cl-l34",
+      "source": "lion-errors-now",
+      "quote": "Each error has a _tag you can catch with Effect.catchTag",
+      "says": {
+        "lion": "a failure a program can catch and read as data",
+        "has": false
+      },
+      "where": "the top of the page: the host catches, by tag"
+    },
+    {
+      "id": "cl-l35",
+      "source": "lion-standard-library-now",
+      "quote": "The value under key , or null when there is none.",
+      "says": {
+        "lion": "plain code that tells a missing key from a key holding null",
+        "has": false
+      },
+      "where": "object/get"
+    },
+    {
+      "id": "cl-l36",
+      "source": "lion-logic-forms",
+      "quote": "A call on values that are already known may be computed when the rule is written, which changes nothing but when a side effect happens.",
+      "says": {
+        "lion": "effects kept out of code whose evaluation order the engine chooses",
+        "has": false
+      },
+      "where": "Logic forms, the opening list"
+    },
+    {
+      "id": "cl-l37",
+      "source": "lion-decision-lambda-arity",
+      "quote": "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback.",
+      "says": {
+        "lion": "a lambda host code can call as a callback with extra arguments",
+        "has": true
+      }
+    }
+  ]
+}

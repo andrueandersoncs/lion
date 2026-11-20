@@ -1,0 +1,427 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof Game-Based Security Definitions
+The Reductionist Structure
+The Bidirectional Consequence
+VSH and the Inverted Hierarchy
+The Post-Quantum Reductionist Response
+Three Categories of Foundation
+Implications for Primitive Selection
+Terms and Conditions Apply
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+Game-Based Security Definitions
+The Reductionist Structure
+The Bidirectional Consequence
+VSH and the Inverted Hierarchy
+The Post-Quantum Reductionist Response
+Three Categories of Foundation
+Implications for Primitive Selection
+Terms and Conditions Apply
+Scroll to top
+Blog
+Don't Assume All Proofs Are Bulletproof
+Don't Assume All Proofs Are Bulletproof
+Cryptographic Proofs Depend on Their Threat Models, For Better and For Worse
+April 30, 2026 · Houston Haynes · 16 min read
+Cryptography Foundations Post-Quantum
+On April 29, 2026, the cryptographer JP Aumasson posted the following observation on social media:
+dont worry, BLAKE3 is post-quantum; unlike the provably secure hash VSH
+The remark is compressed enough to read as a quip and substantive enough to deserve unpacking. Aumasson co-designed the BLAKE family of hash functions, and his statement carries a specific technical claim: a hash function with no formal security reduction (BLAKE3) survives the quantum transition, while a hash function with a formal security reduction to a well-studied hard problem (VSH) does not. The relationship between formal proof and practical security, in this comparison, runs in the direction opposite to the one the cryptographic community has traditionally treated as default.
+Formal proofs are essential to the discipline. The load-bearing question is what cryptographic security proofs actually establish, and what the post-quantum transition reveals about the conditions of that establishment. Practitioners adopting cryptographic primitives must understand the structure of the proofs supporting those primitives, because the proof’s meaning is conditional on assumptions that may not hold across the threat models the primitive will face during its deployment lifetime.
+Game-Based Security Definitions
+The modern foundation for cryptographic security proofs is the game-based formalism developed in works such as Katz and Lindell’s Introduction to Modern Cryptography . A security property is defined as an experiment between a challenger and an adversary, parameterized by a security parameter n n n . The adversary is a probabilistic polynomial-time (PPT) algorithm A \mathcal{A} A . The experiment outputs 1 1 1 if the adversary succeeds and 0 0 0 otherwise.
+For a hash function H : { 0 , 1 } ∗ → { 0 , 1 } ℓ ( n ) H : \{0,1\}^* \to \{0,1\}^{\ell(n)} H : { 0 , 1 } ∗ → { 0 , 1 } ℓ ( n ) , the collision-resistance experiment C o l l A , H ( n ) \mathsf{Coll}_{\mathcal{A}, H}(n) Coll A , H ​ ( n ) proceeds as follows. The adversary A \mathcal{A} A outputs two distinct messages x 1 , x 2 ∈ { 0 , 1 } ∗ x_1, x_2 \in \{0,1\}^* x 1 ​ , x 2 ​ ∈ { 0 , 1 } ∗ . The experiment outputs 1 1 1 if H ( x 1 ) = H ( x 2 ) H(x_1) = H(x_2) H ( x 1 ​ ) = H ( x 2 ​ ) and 0 0 0 otherwise. The hash function H H H is collision-resistant if for every PPT adversary A \mathcal{A} A ,
+Pr ⁡ [ C o l l A , H ( n ) = 1 ] ≤ n e g l ( n ) \Pr[\mathsf{Coll}_{\mathcal{A}, H}(n) = 1] \leq \mathsf{negl}(n) Pr [ Coll A , H ​ ( n ) = 1 ] ≤ negl ( n ) where n e g l ( n ) \mathsf{negl}(n) negl ( n ) denotes a function that decreases faster than any inverse polynomial in n n n . The advantage of the adversary is the probability above; collision resistance requires that this advantage be negligible across all PPT adversaries.
+This formalism is precise but conditional. The quantification “for every PPT adversary” defines the threat model. A primitive proven secure against PPT adversaries is silent about adversaries with capabilities outside that class. Quantum adversaries with bounded-error quantum polynomial-time (BQP) algorithms are outside the class. The proof remains valid; its scope simply does not extend to the quantum setting.
+The Reductionist Structure
+The dominant proof technique for establishing computational security properties is the polynomial-time reduction. Given a primitive Π \Pi Π with claimed security in some experiment and a mathematical problem P \mathcal{P} P believed to be hard, a reductionist proof constructs a PPT algorithm B \mathcal{B} B that uses any successful adversary A \mathcal{A} A against Π \Pi Π as a subroutine to solve P \mathcal{P} P with related success probability and runtime.
+Concretely, the reduction establishes an inequality of the form
+A d v B P ( n ) ≥ 1 q ( n ) ⋅ A d v A Π ( n ) − n e g l ( n ) \mathsf{Adv}^{\mathcal{P}}_{\mathcal{B}}(n) \geq \frac{1}{q(n)} \cdot \mathsf{Adv}^{\Pi}_{\mathcal{A}}(n) - \mathsf{negl}(n) Adv B P ​ ( n ) ≥ q ( n ) 1 ​ ⋅ Adv A Π ​ ( n ) − negl ( n ) where A d v A Π ( n ) \mathsf{Adv}^{\Pi}_{\mathcal{A}}(n) Adv A Π ​ ( n ) is the adversary’s advantage against Π \Pi Π , A d v B P ( n ) \mathsf{Adv}^{\mathcal{P}}_{\mathcal{B}}(n) Adv B P ​ ( n ) is the constructed algorithm’s advantage in solving P \mathcal{P} P , and q ( n ) q(n) q ( n ) is some polynomial overhead introduced by the reduction. The contrapositive yields the security claim: if P \mathcal{P} P is hard (no PPT algorithm solves it with non-negligible advantage), then A d v A Π ( n ) \mathsf{Adv}^{\Pi}_{\mathcal{A}}(n) Adv A Π ​ ( n ) is negligible for every PPT A \mathcal{A} A .
+The pattern is exemplified by RSA. The factoring assumption states that for every PPT algorithm F \mathcal{F} F ,
+A d v F F a c t o r ( n ) = Pr ⁡ [ F ( N ) = ( p , q ) : N = p q ,   p , q prime ,   ∣ p ∣ , ∣ q ∣ = n ] ≤ n e g l ( n ) \mathsf{Adv}^{\mathsf{Factor}}_{\mathcal{F}}(n) = \Pr[\mathcal{F}(N) = (p, q) : N = pq, \, p, q \text{ prime}, \, |p|, |q| = n] \leq \mathsf{negl}(n) Adv F Factor ​ ( n ) = Pr [ F ( N ) = ( p , q ) : N = pq , p , q prime , ∣ p ∣ , ∣ q ∣ = n ] ≤ negl ( n ) The RSA cryptosystem’s one-wayness reduces to a related (and stronger) assumption, the RSA assumption, but the key structural feature is the same: the cryptosystem’s security is bounded by the assumption’s hardness, with polynomial loss. ECDSA’s unforgeability reduces (under the random oracle model and additional assumptions) to the elliptic curve discrete logarithm problem. The Diffie-Hellman key exchange reduces to the computational Diffie-Hellman problem. The cryptographic literature is, to a substantial degree, a catalog of such reductions.
+The strength of the reductionist approach is that it grounds practical primitives in well-studied mathematical assumptions. The community has invested substantial effort in understanding integer factoring and discrete logarithms; the difficulty of these problems against classical adversaries is supported by extensive cryptanalysis. A primitive that reduces to factoring inherits the credibility of factoring’s hardness assumption against PPT adversaries. The proof is the bridge that transfers this credibility to the primitive.
+The Bidirectional Consequence
+The reduction A → B \mathcal{A} \to \mathcal{B} A → B has a logical structure that bears explicit examination. The constructed algorithm B \mathcal{B} B uses A \mathcal{A} A as a subroutine, so any improvement in A \mathcal{A} A ’s advantage propagates (modulo the polynomial loss) to B \mathcal{B} B ’s advantage. If a new technique gives A \mathcal{A} A non-negligible success, the same technique, run through the reduction, gives B \mathcal{B} B non-negligible success against P \mathcal{P} P . This is the property cryptographers want: tight coupling of the primitive’s security to the assumption’s hardness.
+The same coupling runs in the reverse direction. Suppose a new algorithm S \mathcal{S} S solves P \mathcal{P} P with non-negligible advantage. The reduction does not directly give an attack on Π \Pi Π ; reductions are typically constructive only in one direction. But the contrapositive of the security theorem fails: it is no longer true that “if P \mathcal{P} P is hard then Π \Pi Π is secure,” because P \mathcal{P} P is no longer hard. The proof did not falsify; the assumption it relied on simply ceased to hold. The primitive’s security claim, as established by the reduction, is no longer in force.
+In practice, the failure of the assumption tends to produce direct attacks on the primitive, often through cryptanalysis that exploits the specific structure the reduction relied on. RSA decryption can be performed by anyone who can factor the modulus; the reduction made this an explicit consequence rather than an incidental one. ECDSA signatures can be forged by anyone who can solve the elliptic curve discrete logarithm problem for the public key. The problems’ difficulty already determined that the attacks were possible; the reductions made the dependency precise.
+Cryptographers have always understood this bidirectional structure. The reductionist methodology is a contract: the primitive is exactly as secure as the assumption is hard, with explicit polynomial loss. What has changed in the post-quantum era is that the “assumption holds” condition has become contingent on a quantum-computation timeline that may sit inside the deployment lifetimes of primitives currently being shipped. Shor’s algorithm demonstrates that integer factoring and discrete logarithm computation are in BQP, the bounded-error quantum polynomial-time class. A sufficiently capable quantum computer solves both problems efficiently. Against a quantum adversary, the factoring assumption and the discrete logarithm assumption both fail to hold.
+The consequence follows directly from the reductionist proofs themselves. RSA, ECDSA, ECDH, EdDSA, Schnorr, and finite-field Diffie-Hellman are all broken against quantum adversaries. The proofs that ground these primitives are correct; their conclusions, in the quantum setting, are silent rather than supportive of the security claim. The community has known this since Shor’s 1994 paper. The post-quantum transition is the operational response to a structural property of the proofs that has been understood for three decades.
+VSH and the Inverted Hierarchy
+The starkest illustration of the reductionist trap is VSH (Very Smooth Hash), proposed by Contini, Lenstra, and Steinfeld in 2005. VSH is a hash function constructed so that its collision resistance reduces, in the formal sense, to a problem closely related to integer factoring. Specifically, finding a collision in VSH would yield an algorithm for the Very Smooth Number Nontrivial Modular Square Root (VSSR) problem, which Contini, Lenstra, and Steinfeld argue is at least as hard as factoring the underlying modulus N N N .
+The reduction takes the form: if A \mathcal{A} A finds a collision in VSH with non-negligible advantage, then there exists a PPT algorithm B \mathcal{B} B that solves VSSR with related advantage, and a further reduction connects VSSR to the factoring of N N N . Under classical assumptions about the hardness of factoring, VSH’s collision resistance follows.
+This is precisely the kind of foundation a cryptographic hash function is supposed to have under the dominant criterion. Most deployed hash functions, including SHA-2, SHA-3, and BLAKE3, lack any such reduction; their security rests on the absence of known attacks rather than on a formal proof of equivalence to a hard problem. The widely deployed hash functions are, in the strict reductionist sense, less rigorously founded than VSH. This was, for two decades, treated as a point in VSH’s favor by cryptographic theorists, even as performance considerations kept it from widespread deployment.
+In the quantum setting, this rigor inverts. Shor’s algorithm factors N N N in polynomial time on a quantum computer. The factoring assumption that grounds VSH’s collision resistance does not hold against quantum adversaries. The reduction that established VSH’s collision resistance, applied to a context where factoring is tractable, yields the consequence that VSH collisions are findable with the same efficiency that factoring is solvable. VSH is broken in the quantum setting as a direct consequence of the proof structure that established its security in the classical setting.
+The hash functions without such reductions are unaffected by this argument. SHA-256, SHA-3, and BLAKE3 do not reduce to factoring or to any other Shor-vulnerable problem. Their security is grounded in resistance to known cryptanalytic techniques applied to their specific constructions, and Grover’s algorithm provides at most a quadratic speedup against pre-image search and collision search. At standard output sizes (256 bits and above), this leaves them at or above NIST’s post-quantum security floor of 128 bits.
+The hash function with the formal proof falls. The hash functions without the formal proofs survive. This is the substance of the Aumasson observation: the specific formal proofs available before the post-quantum era reduced to the wrong problems. Cryptanalytic hash functions sit beyond that failure mode entirely; their security stands on resistance to the broad class of attacks.
+The Post-Quantum Reductionist Response
+The cryptographic community’s response to the quantum threat has been substantial and largely successful. The NIST post-quantum cryptography standardization process produced ML-KEM (formerly Kyber) for key encapsulation, ML-DSA (formerly Dilithium) for digital signatures, and SLH-DSA (formerly SPHINCS+) for hash-based signatures. These standards are now part of the formal cryptographic infrastructure of the United States and are being adopted internationally.
+The structure of the security proofs for ML-KEM and ML-DSA preserves the reductionist pattern, and reading those proofs at the level of what they actually depend on is part of the deeper “deep tech” work we pursue at Braidpoint with the Fidelity Framework. Their security reduces to lattice problems, primarily Module Learning With Errors (Module-LWE). The Module-LWE problem, due to Regev (2005) and its module-lattice generalization due to Langlois and Stehlé (2015), is defined as follows. Let R = Z [ X ] / ( X d + 1 ) R = \mathbb{Z}[X]/(X^d + 1) R = Z [ X ] / ( X d + 1 ) be a polynomial ring with d d d a power of two, and let R q = R / q R R_q = R/qR R q ​ = R / q R for a prime q q q . The Module-LWE distribution with parameters ( n , m , q , χ ) (n, m, q, \chi) ( n , m , q , χ ) samples a uniform matrix A ∈ R q m × n \mathbf{A} \in R_q^{m \times n} A ∈ R q m × n ​ , a secret vector s ∈ R q n \mathbf{s} \in R_q^n s ∈ R q n ​ drawn from the error distribution χ n \chi^n χ n , and an error vector e ∈ R q m \mathbf{e} \in R_q^m e ∈ R q m ​ drawn from χ m \chi^m χ m , and outputs the pair ( A , A s + e ) (\mathbf{A}, \mathbf{A}\mathbf{s} + \mathbf{e}) ( A , As + e ) .
+The Module-LWE problem is to distinguish samples from this distribution from samples drawn from the uniform distribution over R q m × n × R q m R_q^{m \times n} \times R_q^m R q m × n ​ × R q m ​ . The decision-Module-LWE assumption states that for every PPT distinguisher D \mathcal{D} D ,
+∣ Pr ⁡ [ D ( A , A s + e ) = 1 ] − Pr ⁡ [ D ( A , u ) = 1 ] ∣ ≤ n e g l ( n ) \left| \Pr[\mathcal{D}(\mathbf{A}, \mathbf{A}\mathbf{s} + \mathbf{e}) = 1] - \Pr[\mathcal{D}(\mathbf{A}, \mathbf{u}) = 1] \right| \leq \mathsf{negl}(n) ∣ Pr [ D ( A , As + e ) = 1 ] − Pr [ D ( A , u ) = 1 ] ∣ ≤ negl ( n ) where u \mathbf{u} u is uniform in R q m R_q^m R q m ​ . ML-KEM’s IND-CCA security reduces to this assumption with a polynomial loss factor that depends on the specific parameters and the underlying KEM construction (Fujisaki-Okamoto transform applied to a CPA-secure scheme).
+This is genuine progress, but the structural feature that produced the VSH problem is preserved. If a quantum algorithm is found that solves Module-LWE efficiently, every primitive whose security reduces to Module-LWE falls together. The lattice problems are believed hard against quantum adversaries, but “believed hard” is the same epistemological status that integer factoring held before Shor’s algorithm. The community’s confidence rests on the cryptanalytic record of failed quantum searches against these problems, with the underlying hardness question itself still open. The reductionist methodology has been re-aimed at quantum-resistant target problems; the structural risk profile carries over. The bet has been re-placed on different mathematics.
+SLH-DSA is a different case. Its security reduces to the pre-image resistance of an underlying hash function, which is itself believed quantum-resistant under Grover’s quadratic bound. The reduction here targets a property of the hash function (pre-image resistance) whose security stands on cryptanalytic resistance to a broad class of attacks rather than on any single algebraic assumption. This is closer to the cryptanalytically grounded model of BLAKE3 than to the reductionist model of VSH or ML-KEM, and SLH-DSA’s foundation is correspondingly more conservative. The cost is operational: SLH-DSA signatures and keys are larger and slower than their lattice-based counterparts. This is a recurring pattern: reductionist security to a structured assumption typically affords better performance than cryptanalytic security to a less-structured assumption, and the tradeoff between these is a genuine engineering decision.
+This is the engineering register our planned post-quantum work in the Fidelity Framework enters. Post-quantum primitive support is one line of work among several rather than the framework’s central concern; the standardized primitives and their reductionist proofs sit upstream of any compiler we build, and the broader engagement with quantum substrates lives in Quantum Optionality and the categorical structure of the quantum substrate . Our four-tier proof architecture is aimed at the implementation surface around standardized primitives, and the post-quantum primitive support we plan to ship will be built against that surface.
+Three Categories of Foundation
+Three categories of cryptographic security foundations come into focus, distinguished by what an adversary would have to accomplish to break the primitive.
+Reductionist foundations establish security through a polynomial-time reduction to a specific mathematical problem assumed to be hard. The primitive’s security advantage is bounded by the assumption’s solvability advantage, with explicit polynomial loss. RSA, ECC, finite-field DH, and the lattice-based post-quantum standards all fall in this category, with different target problems. The advantage of this category is that the security has a precise formal grounding; the disadvantage is that the security is contingent on a single hardness assumption, and a breakthrough against that assumption breaks every primitive that reduces to it. Reductionist foundations also typically yield concrete advantage bounds that allow precise parameter selection for a given security level.
+Information-theoretic foundations establish security without any computational hardness assumption. The one-time pad provides perfect secrecy: for every distribution over plaintexts and every ciphertext c c c , the conditional distribution of the plaintext given c c c equals the marginal distribution. This holds against unbounded adversaries, including quantum adversaries, because the security is independent of computational power. Information-theoretic message authentication codes provide unconditional unforgeability under similar assumptions, and quantum key distribution provides information-theoretic security under specific physical assumptions about quantum measurement. The advantage of this category is immunity to any computational advance, including quantum. The disadvantage is operational cost: the one-time pad requires key material as long as the message, information-theoretic MACs require fresh key material per authentication, and QKD requires specific physical infrastructure that does not generalize to typical deployment contexts.
+Cryptanalytic foundations establish security through extensive failed attack. A primitive in this category has been subjected to focused cryptanalytic effort by skilled researchers over an extended period, and the cryptanalytic record is the security record. SHA-256, SHA-3, BLAKE3, AES, ChaCha20, and most deployed symmetric primitives fall in this category. The advantage of this category is the diffusion of failure modes: each primitive’s security stands on its own cryptanalytic record, so a change in any single mathematical problem’s hardness leaves the rest of the category unaffected. The disadvantage is empirical grounding: the security claim is supported by the cryptanalytic record rather than derived from a formal proof.
+These categories are not exhaustive, and important primitives combine elements of multiple categories. Hybrid post-quantum constructions, for example, combine a classical reductionist primitive (such as X25519, whose security reduces to the elliptic curve Diffie-Hellman problem in Curve25519) with a post-quantum reductionist primitive (such as ML-KEM-768, whose security reduces to Module-LWE) into a single key exchange. The resulting hybrid is secure if either component is secure: an adversary must solve both Module-LWE and the elliptic curve Diffie-Hellman problem to break the hybrid. This is a defense-in-depth strategy that hedges against the failure of either reduction, at the cost of additional bandwidth and computation per handshake.
+Implications for Primitive Selection
+Practitioners selecting cryptographic primitives need to ask both the standard question (is the primitive proven secure?) and the load-bearing follow-up: what assumption would have to fail for the proof to no longer apply, what the reduction loses, and how robust that assumption is under the threat model the primitive will face. The fragility lives in the assumption; the proof correctly conveys the assumption’s status to the primitive, including the negative case. Migration planning should account for both the algorithm name and the foundation type of each primitive in the cryptographic stack.
+For primitives with reductionist foundations targeting Shor-vulnerable problems, the migration is mandatory. RSA, ECC, and finite-field Diffie-Hellman must be replaced. The reductionist proofs grounding these primitives derive their vulnerability against quantum adversaries directly from the proof structure, and no parameter adjustment can recover the security: the reduction does not have parameters that can be tuned to protect against an adversary capable of solving the target problem efficiently.
+For primitives with reductionist foundations targeting post-quantum problems, the migration is to these primitives, with the understanding that the security rests on assumptions that have received less cryptanalytic scrutiny than factoring or discrete logarithms received before Shor. The lattice-based standards are the current best available choice for general key exchange and signatures, and they have undergone substantial scrutiny through the NIST process. The structural property remains that a breakthrough against the underlying lattice assumption invalidates the entire family of lattice-based primitives simultaneously. This is the same risk profile that classical reductionist primitives carried before Shor; the community is now operating under it for a different set of assumptions.
+For primitives with cryptanalytic foundations, the migration is largely a matter of parameter verification rather than algorithm replacement. AES-256 remains adequate against Grover. SHA-256, SHA-3, and BLAKE3 at 256-bit output remain adequate against Grover. AES-128 requires upgrade to AES-256 to clear the post-quantum security floor. The construction-level security of these primitives is independent of any single mathematical assumption that quantum computing might invalidate, so the migration burden is correspondingly lighter.
+For applications where the additional cost is operationally tolerable, hybrid constructions provide defense in depth. The Cloudflare deployment of X25519Kyber768 in production traffic is an example of this strategy applied at internet scale: the hybrid retains the classical security of X25519 against any adversary while adding the post-quantum security of Kyber against quantum adversaries. If lattice cryptanalysis advances unexpectedly, the classical component preserves security against the (still classical) adversary that has not yet built a quantum computer; if classical cryptanalysis advances unexpectedly, the post-quantum component preserves security. The hybrid retains reductionist risk in both components, with the structural improvement that the construction breaks only when both reductions fail simultaneously, a meaningfully stronger requirement than either reduction holding individually.
+For our part, the Fidelity Framework’s planned post-quantum primitive support is designed to serve exactly this analysis. Each primitive we plan to ship will carry a per-tier certificate naming what our verification covers (memory safety, constant-time discipline, source-to-binary correspondence) and what residual concerns sit outside that scope. The shape of that per-primitive accounting parallels how our verification architecture treats other classes of obligation; see Building Proofs for the Real World for how the range-propagation tier handles physical-safety properties under the same staged-discharge discipline. The Cryspen team’s recent “verification facade” discussion and accompanying ePrint paper are companion reading on why per-primitive accounting of this kind matters.
+Terms and Conditions Apply
+The lesson we take from this is about reading formal cryptography carefully, and about recognizing that proofs are precise instruments whose precision depends on the specific conditions to which they are applied. Inside those conditions, they remain as rigorous as the day they were written. Outside those conditions, the proofs do not protect the primitive. The shift from one regime to the other is the operational substance of the post-quantum transition, and the practitioner has to know, for each primitive in the deployed stack, on which side of the boundary a given claim resides.
+A Triangle Without Mystery Where Native Goes, Mobile Follows
+© 2025-2026 Braidpoint

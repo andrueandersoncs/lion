@@ -1,0 +1,872 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs The Unified Compilation Vision
+The Decomposition Challenge
+Decades-Old Math on Current Hardware
+The PHG as a Learning System
+Recursion and Bidirectional Zippers
+Graph Coloring Across Time: Learning Parallelization Patterns
+Event-Sourced Compilation Intelligence
+Multi-Way Learning in Action
+Pattern-Based Heuristic Architecture for Hypergraphs
+Practical Benefits of Temporal Hypergraphs
+The Evolving Compiler
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+The Unified Compilation Vision
+The Decomposition Challenge
+Decades-Old Math on Current Hardware
+Hypergraph Partitioning with Learning
+Temporal Coeffect Propagation
+Parametric Learning
+Why These Tested Concepts Matter Now
+The PHG as a Learning System
+Temporal Hypergraph Architecture
+Recursion and Bidirectional Zippers
+Recursion Schemes for Hypergraph Transformation
+The Temporal Zipper
+Graph Coloring Across Time: Learning Parallelization Patterns
+Event-Sourced Compilation Intelligence
+Multi-Way Learning in Action
+Pattern-Based Heuristic Architecture for Hypergraphs
+Practical Benefits of Temporal Hypergraphs
+1. Incremental Compilation Intelligence
+2. Architecture-Specific Learning
+3. Optimization Strategy Evolution
+The Evolving Compiler
+Scroll to top
+Documentation
+Compiler Internals
+Compiler Pipeline
+Hyping Hypergraphs
+Hyping Hypergraphs
+Our Program Hypergraph preprint develops the extension of Clef’s Program Semantic Graph with explicit relations among several participants. An operation’s ordered inputs and outputs, a continuation’s captures and lifetime, or a numerical result and its proof premises can remain connected while the compiler selects an implementation. The PHG specification states the representation contract. That organization is useful across conventional processors and spatial targets. Its benefit depends on retaining the right semantics and checking the transformations that use them.
+The executable structure, local coeffects and joint relations belong to one program representation. The graph is not an archive of every runtime value, and a hyperedge does not itself establish a proof. An analysis may order its facts in a lattice; graph topology records which facts depend on which participants. A Path Less Traveled follows this distinction into native bidirectional composition, including why an inverse recipe need not create a second live computation.
+Our design also treats the hypergraph as a candidate learning system. Over a temporal graph, the compiler could refine its compilation strategies across applications, or across iterations of the same application. This follows from combining recursion schemes, bidirectional zippers, and event-sourced compilation telemetry, all well-established algorithmic tools that map onto the current diversification of compute hardware. Within the Fidelity framework the same principled representation addresses efficiency and safety on the older architectures while profiling and targeting the newer ones.
+The Unified Compilation Vision
+In its future representation, the PHG design would support a unified compilation strategy that adapts across the traditional and new processor spectrum:
+graph TD
+subgraph "Program Hypergraph Core"
+PHG[Unified PHG Representation<br/>Multi-way relationships preserved]
+end
+subgraph "Gradient-Based Analysis"
+PHG --> GRADIENT[Zipper Graph Traversal]
+GRADIENT --> VN[Harvard/Von Neumann<br/>Emphasis]
+GRADIENT --> HYBRID[Hybrid<br/>Balance]
+GRADIENT --> DATAFLOW[Dataflow<br/>Emphasis]
+end
+subgraph "Architecture-Specific Generation"
+VN --> LLVM[LLVM IR<br/>Control Flow + Caching<br/>Sequential Optimization]
+HYBRID --> MIXED[Heterogeneous<br/>CPU Control + GPU Data<br/>Balanced Execution]
+DATAFLOW --> SPATIAL[Spatial Kernels<br/>Streaming Pipelines<br/>Graph Computing]
+end
+subgraph "Target Architectures"
+LLVM --> CPU[x86/ARM/RISC-V<br/>Traditional Processors]
+MIXED --> CPUGPU[CPU+GPU Systems<br/>Heterogeneous Platforms]
+SPATIAL --> POSTVM[Groq/Tenstorrent/E1<br/>Post-Von Neumann]
+end
+The Decomposition Challenge
+A binary incidence graph can encode a hypergraph without losing information. The design choice is to make the multi-participant relation explicit in the compiler’s own contract, so consumers do not have to reconstruct it independently. Ordered operand occurrences also matter: an operation using the same value twice has two input occurrences even when a scheduling dependency set contains only one identity.
+A continuation illustrates the joint requirement. Its body, captured values, owner, resumption point and storage must agree. Node-local facts can summarize established results, while a relation retains the participants and premises that justify them. Replacing that relation during lowering requires a preserving interpretation or the necessary re-checks; copying a metadata label is insufficient.
+Control flow and dataflow remain useful views of the same admitted computation. The PHG is intended to retain enough information to select a suitable realization for each target, including conventional control flow. Flow-loss analysis studies the work and dependency costs of those realizations. Graph representation alone establishes neither an optimal schedule nor a performance improvement.
+The temporal-learning material below is a research direction beyond these representation obligations. Heuristics may rank admissible realizations; they cannot supply missing semantic premises or turn an unresolved obligation into an established fact.
+Decades-Old Math on Current Hardware
+The formulas below represent well-established algorithms, some dating back to the 1960s and 70s, that map onto systems and compilation frameworks only now becoming practical. A developer no more needs to read them to use Clef than a database user needs the mathematics of B-trees. They are the specifications behind the compiler’s behavior rather than something the surface language exposes.
+Each of these algorithmic frameworks has natural affinities that have existed for decades. The work here brings them together in a form that current hardware can exploit.
+Hypergraph Partitioning with Learning
+The formula, rooted in graph theory work from the 1970s, describes how to split a complex program into chunks that different processors can handle efficiently, and here it becomes adaptive.
+cut t ( P ) = ∑ e ∈ E w t ( e ) ⋅ ∣ { V i : V i ∩ e ≠ ∅ } ∣
+\text{cut}_t(P) = \sum_{e \in E} w_t(e) \cdot |\{V_i : V_i \cap e \neq \emptyset\}|
+cut t ​ ( P ) = e ∈ E ∑ ​ w t ​ ( e ) ⋅ ∣ { V i ​ : V i ​ ∩ e  = ∅ } ∣ The subscript t t t represents time: the compiler refines its choices with each compilation. The w t ( e ) w_t(e) w t ​ ( e ) represents learned weights, favoring a strategy that worked well on similar code in a prior compilation. This is the same partitioning problem studied since the early days of parallel computing, with a learning component that carries forward what worked before.
+Temporal Coeffect Propagation
+This notation, based on type theory from the 1980s, tracks what a program needs from its environment over time:
+Γ @ R t ⊢ e : τ
+\Gamma @ R_t \vdash e : \tau
+Γ@ R t ​ ⊢ e : τ The symbols read: given some context ( Γ \Gamma Γ ) and requirements that evolve over time ( R t R_t R t ​ ), the expression e e e has type τ \tau τ .
+In practical terms, the compiler tracks questions like whether a function needs network access, whether it requires specific hardware features, and whether similar patterns have appeared before. The notation makes these informal questions precise and verifiable. The @ @ @ symbol (pronounced “at”) indicates “in the context of,” standard notation in coeffect systems.
+Parametric Learning
+Free theorems, discovered in the 1980s by Philip Wadler, tell us that certain program transformations are always safe. This formula extends that insight with learning:
+∀ α , β . ∀ g : α → β . map   g ∘ f α = f β ∘ map   g + ϵ t
+\forall \alpha, \beta. \forall g : \alpha \to \beta. \text{map}\,g \circ f_\alpha = f_\beta \circ \text{map}\,g + \epsilon_t
+∀ α , β .∀ g : α → β . map g ∘ f α ​ = f β ​ ∘ map g + ϵ t ​ The symbols read: for any types α \alpha α and β \beta β , and any function g g g that converts between them, the map compositions can be rearranged and the result stays the same, with learned adjustments ( ϵ t \epsilon_t ϵ t ​ ).
+Translating a document and then formatting it yields the same result as formatting and then translating, and over successive compilations the compiler favors whichever order runs faster for a given shape of data. The ϵ t \epsilon_t ϵ t ​ represents those learned optimizations, small adjustments based on measured performance.
+Why These Tested Concepts Matter Now
+These mathematical frameworks are tested results that broad-based systems development can put to use:
+Hypergraph partitioning has been used in VLSI chip design since the 1970s
+Coeffect systems emerged from decades of research in context-aware computing
+Free theorems have been a cornerstone of functional programming optimization since the 1980s
+The math is decades old. What changed is the hardware, which now embodies the structure these algorithms were designed to exploit. With MLIR providing a common compilation framework, we can bring these time-tested approaches together in a practical system.
+The bottom line for developers : You write normal Clef code. The compiler uses these mathematical frameworks - refined over decades by some of the brightest minds in computer science - to transform your code into highly optimized executables. You don’t need to understand the math any more than you need to understand semiconductor physics to use a computer. The compiler builds on algorithms whose behavior is already well understood.
+The PHG as a Learning System
+Rather than representing one compilation in isolation, the Program Hypergraph would evolve across compilations, learning from each pass in the compilation process. This transforms the PHG from a data structure into a temporal graph that not only improves with experience but can serve to create optimization patterns for mapping application structure to new architectures.
+Temporal Hypergraph Architecture
+// The PHG evolves into a learning system
+type TemporalProgramHypergraph = {
+Current : ProgramHypergraph
+History : TemporalProjection list
+LearnedPatterns : CompilationKnowledge
+RecursionSchemes : SchemeLibrary
+}
+and TemporalProjection = {
+Timestamp : DateTime
+GraphSnapshot : ProgramHypergraph
+CompilationDecisions : Decision list
+PerformanceMetrics : Metrics
+ZipperTraversalPaths : ZipperPath list // How we navigated
+}
+and CompilationKnowledge = {
+OptimizationPatterns : Map < PatternFingerprint , OptimizationStrategy >
+CoeffectPropagation : Map < NodeSignature , CoeffectSet >
+HyperedgeFormation : Map < RelationshipPattern , HyperedgeType >
+}
+Compilation patterns repeat within a single program and, as code evolves, across compilation iterations. A temporal graph would over time serve to recognize and optimize these patterns.
+Recursion and Bidirectional Zippers
+The foundation for navigating this temporal hypergraph comes from recursion schemes combined with bidirectional zippers. Beyond traversing the current graph for a given compilation pass, they let the compiler learn optimal traversal patterns over time.
+Recursion Schemes for Hypergraph Transformation
+// Recursion schemes that understand hyperedges
+type PHGRecursionScheme < ' a , ' b > =
+| Catamorphism of ( PHGHyperedge -> ' a list -> ' a ) // Bottom-up
+| Anamorphism of ( ' b -> PHGHyperedge ) // Top-down
+| Hylomorphism of ( PHGHyperedge -> ' a list -> ' a ) * ( ' b -> PHGHyperedge ) // Both
+| Paramorphism of ( PHGHyperedge * ProgramHypergraph -> ' a ) // With history
+// Hyperedge-aware recursion preserves multi-way relationships
+let rec cataHypergraph ( f : PHGHyperedge -> ' a list -> ' a ) ( phg : ProgramHypergraph ) : ' a =
+match phg with
+| HyperedgeNode hyperedge ->
+let childResults =
+hyperedge . Participants
+|> Set . map ( fun p -> cataHypergraph f p )
+|> Set . toList
+f hyperedge childResults
+| SimpleNode node ->
+f ( promoteToHyperedge node ) []
+The Temporal Zipper
+The bidirectional zipper would traverse both the current graph and its temporal projections:
+type TemporalZipper < ' a , ' b > = {
+Focus : PHGNode
+SpatialContext : PHGContext // Current graph position
+TemporalContext : TemporalContext // Position in time
+RecursionScheme : PHGRecursionScheme < ' a , ' b > // Current traversal
+TraversalMemory : TraversalHistory
+}
+and TemporalContext =
+| Present of currentVersion : int
+| Past of version : int * projection : TemporalProjection
+| Comparing of current : PHGNode * past : PHGNode list
+and TraversalHistory = {
+VisitedPatterns : Set < PatternFingerprint >
+SuccessfulTransformations : Map < PatternFingerprint , Transformation >
+OptimalPaths : Map < CompilationGoal , ZipperPath >
+}
+// Navigate through time and space
+let temporalNavigation ( zipper : TemporalZipper ) =
+match zipper . RecursionScheme with
+| Catamorphism f ->
+// Bottom-up traversal comparing with past compilations
+let pastResults =
+zipper . TemporalContext
+|> getHistoricalCompilations
+|> List . map ( fun past -> past . OptimizationUsed )
+// Learn: did these optimizations work well before?
+let decision =
+match analyzePastSuccess pastResults with
+| HighConfidence strategy -> ReuseStrategy strategy
+| LowConfidence -> ExploreNewStrategy
+| NoHistory -> DefaultStrategy
+applyWithHistory f decision zipper . Focus
+| Paramorphism f ->
+// Access both current and historical structure
+let historicalContext = gatherTemporalContext zipper
+f ( zipper . Focus , historicalContext )
+Graph Coloring Across Time: Learning Parallelization Patterns
+Across compilations, measured performance can guide which valid colorings to
+try first. This is a heuristic over candidates: historical success does not prove
+independence, optimality or applicability to the current snapshot. Validate each
+candidate against current conflicts, joint resource constraints, arithmetic and
+execution premises before admission. Keep the proposal and validation in the
+rewrite tape described in Graph Coloring .
+The following remains a schematic design, not a current compiler API:
+// Temporal graph coloring with learning
+type TemporalColoring = {
+CurrentColoring : Map < NodeId , Color >
+HistoricalColorings : Map < CompilationId , ColoringResult >
+LearnedConstraints : ColoringConstraint list
+HeuristicPredictor : PatternPredictor option
+}
+and ColoringResult = {
+Coloring : Map < NodeId , Color >
+ParallelizationAchieved : float // 0.0 to 1.0
+RuntimePerformance : PerformanceMetrics
+HyperedgeUtilization : Map < HyperedgeId , float >
+}
+let evolveColoring ( phg : ProgramHypergraph ) ( history : TemporalColoring ) =
+// Extract structural features from the hypergraph
+let features = extractHypergraphFeatures phg
+// Use historical success to guide coloring
+let successfulPatterns =
+history . HistoricalColorings
+|> Map . filter ( fun _ result ->
+result . ParallelizationAchieved > 0 . 8 )
+|> Map . map ( fun _ result -> result . Coloring )
+match history . HeuristicPredictor with
+| Some predictor ->
+// Predict a candidate; current constraint validation governs admission
+let predictedColoring = predictor . Predict ( features , successfulPatterns )
+validateAndAdmitCandidate phg predictedColoring
+| None ->
+// A deterministic conservative candidate uses the same validation
+validateAndAdmitCandidate phg ( greedyConflictColoring phg )
+Event-Sourced Compilation Intelligence
+Building on the event-sourcing architecture, each compilation would become a learning opportunity:
+-- Extended event schema for temporal learning
+CREATE TABLE compilation_events . learning_events (
+event_id UUID PRIMARY KEY ,
+event_type VARCHAR , -- 'hyperedge_recognized', 'optimization_applied'
+timestamp TIMESTAMP DEFAULT now (),
+-- Hypergraph evolution
+hyperedge_fingerprint VARCHAR ,
+hyperedge_type VARCHAR ,
+participant_count INTEGER ,
+-- Recursion scheme application
+scheme_type VARCHAR , -- 'catamorphism', 'anamorphism', 'hylomorphism'
+zipper_path JSON , -- Path through hypergraph
+transformation_result JSON ,
+-- Learning feedback
+compilation_time_ms INTEGER ,
+runtime_improvement_percent FLOAT ,
+memory_reduction_bytes BIGINT ,
+parallelization_achieved FLOAT ,
+-- Temporal linking
+previous_compilation_id UUID ,
+pattern_similarity_score FLOAT
+);
+-- Query: Find successful hyperedge patterns
+CREATE VIEW successful_hyperedge_patterns AS
+SELECT
+hyperedge_fingerprint ,
+hyperedge_type ,
+AVG ( runtime_improvement_percent ) as avg_improvement ,
+COUNT ( * ) as usage_count ,
+AVG ( parallelization_achieved ) as avg_parallelization
+FROM compilation_events . learning_events
+WHERE event_type = 'optimization_applied'
+AND runtime_improvement_percent > 10
+GROUP BY hyperedge_fingerprint , hyperedge_type
+HAVING COUNT ( * ) > 5 ;
+Multi-Way Learning in Action
+Consider how a proposed temporal hypergraph would transform our understanding of concurrent data processing:
+let analyzeStreams ( streams : AsyncSeq < DataPoint > array ) = async {
+// Multiple input streams with different rates
+let! correlatedData =
+streams
+|> Array . map ( AsyncSeq . scan accumulateMetrics initialState )
+|> AsyncSeq . mergeChoice // Multi-way merge operation
+|> AsyncSeq . bufferByCount windowSize
+|> AsyncSeq . mapAsync analyzeWindow
+|> AsyncSeq . toArrayAsync
+// Results flow to multiple concurrent consumers
+let! analysisResults = [|
+async { return detectPatterns correlatedData }
+async { return computeStatistics correlatedData }
+async { return generateAlerts correlatedData }
+async { return updateModels correlatedData }
+|] |> Async . Parallel
+return analysisResults
+}
+In the temporal PHG representation, this becomes a learning opportunity:
+let streamAnalysisHypergraph =
+let currentHyperedges = [
+AsyncConcurrency {
+Triggers = { stream1_node ; stream2_node ; stream3_node }
+Coordinator = merge_coordinator_node
+Continuations = { buffer_node ; analysis_node }
+ExecutionModel = DelimitedContinuation
+}
+DataflowComputation {
+Inputs = { correlated_data_node }
+Operation = analysis_kernel_node
+Outputs = { patterns_node ; stats_node ; alerts_node ; models_node }
+LocalityHints = StreamingDataflow
+}
+]
+// Learn from history
+let historicalPatterns =
+queryTemporalDatabase "stream_merge_pattern"
+|> List . map ( fun past -> past . OptimizationStrategy )
+// Apply learned optimizations
+let optimizedHyperedges =
+match findBestHistoricalMatch historicalPatterns with
+| Some strategy when strategy . SuccessRate > 0 . 9 ->
+applyLearnedStrategy currentHyperedges strategy
+| _ ->
+// New pattern - learn from this compilation
+recordForLearning currentHyperedges
+Pattern-Based Heuristic Architecture for Hypergraphs
+The hypergraph structure naturally maps to graph heuristic networks, with hyperedges enabling richer message passing:
+// GNN-compatible hypergraph representation
+type HeuristicPHG = {
+// Node feature vectors derived from compilation patterns
+NodeFeatures : Map < NodeId , Vector < float32 >>
+// Hyperedge signatures capture multi-way relationships
+HyperedgeSignatures : Map < HyperedgeId , Vector < float32 >>
+// Attention weights for compilation contexts
+PriorityWeights : CompilationPriorities
+}
+and CompilationPriorities = {
+CoeffectWeights : Matrix < float32 > // Context requirement priorities
+TemporalWeights : Matrix < float32 > // Historical pattern importance
+StructuralWeights : Matrix < float32 > // Graph topology significance
+HyperedgeWeights : Matrix < float32 > // Multi-way relationship importance
+}
+// Message passing through hyperedges
+let propagateHeuristicPatterns ( phg : HeuristicPHG ) =
+// Hyperedges enable richer pattern propagation than binary edges
+phg . HyperedgeSignatures
+|> Map . map ( fun hyperedgeId signature ->
+let participants = getParticipants hyperedgeId
+// Gather patterns from all participants
+let patterns =
+participants
+|> Set . map ( fun p -> phg . NodeFeatures .[ p ])
+|> Set . toList
+// Aggregate through the hyperedge (not just pairwise!)
+let aggregated =
+HyperedgeAggregation . compute patterns signature
+// Update all participants simultaneously
+participants |> Set . iter ( fun p ->
+let newFeature =
+updateFeature phg . NodeFeatures .[ p ] aggregated
+phg . NodeFeatures .[ p ] <- newFeature ))
+Practical Benefits of Temporal Hypergraphs
+The temporal hypergraph would provide concrete compilation improvements in three areas:
+1. Incremental Compilation Intelligence
+// The compiler learns which hyperedges change together
+let predictRecompilationScope ( change : CodeChange ) ( history : TemporalPHG ) =
+// Find hyperedges affected by similar changes in the past
+let affectedHyperedges =
+history . LearnedPatterns . HyperedgeFormation
+|> Map . filter ( fun pattern _ ->
+patternOverlapsChange pattern change )
+// Proactively recompile predicted dependencies
+let recompilationUnits =
+affectedHyperedges
+|> Map . map ( fun _ hyperedge ->
+hyperedge . Participants )
+|> Set . unionMany
+scheduleIncrementalCompilation recompilationUnits
+2. Architecture-Specific Learning
+// Learn which hyperedge patterns map best to each architecture
+let learnArchitectureMapping ( phg : TemporalProgramHypergraph ) =
+phg . History
+|> List . groupBy ( fun proj -> proj . TargetArchitecture )
+|> Map . map ( fun arch projections ->
+// Find patterns that worked well for this architecture
+projections
+|> List . filter ( fun p -> p . PerformanceMetrics . Success )
+|> List . map ( fun p -> extractHyperedgePatterns p . GraphSnapshot )
+|> consolidatePatterns )
+3. Optimization Strategy Evolution
+// Evolve compilation strategies based on hyperedge patterns
+let evolveOptimization ( hyperedge : PHGHyperedge ) ( history : CompilationHistory ) =
+let fingerprint = computeHyperedgeFingerprint hyperedge
+match history . TryFind fingerprint with
+| Some previousOptimizations ->
+// Weight by historical success and recency
+previousOptimizations
+|> List . map ( fun opt ->
+let recencyWeight = computeRecency opt . Timestamp
+let successWeight = opt . PerformanceGain
+( opt , recencyWeight * successWeight ))
+|> List . sortByDescending snd
+|> List . head
+|> fst
+| None ->
+// New hyperedge pattern - explore multiple strategies
+ExperimentalOptimization hyperedge
+The Evolving Compiler
+The temporal Program Hypergraph is the direction we are building toward now. It rests on the pieces described above: hypergraphs for the multi-way relationships, recursion schemes and bidirectional zippers for the traversal, event-sourced telemetry for the temporal record, and graph heuristic networks for pattern recognition. What it adds to the static PSG is the temporal dimension: a compiler that reads its own compilation history and applies what it learns to the next pass. As the gap between Von Neumann and post-Von Neumann targets widens, that history is where a per-target parallelization strategy accrues, so each compilation sharpens the next and the strategy is reused rather than recomputed from scratch.
+For a narrative treatment of what the joint-constraint structure buys at design time, Opining Upon Reflection follows it from the hypergraph to the editor surface.
+Baker Saturation Engine Graph Coloring
+© 2025-2026 Braidpoint

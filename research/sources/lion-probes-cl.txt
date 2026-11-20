@@ -1,0 +1,250 @@
+Lion programs run for research with @lionlang/cli 0.13.1 built at commit 7e4b4ad (core 0.14.1), 2026-11-20.
+
+== program cl-arity.json
+{
+  "a lambda of one parameter given three arguments": [["lambda", ["a"], "a"], 1, 2, 3],
+  "a lambda that counts what it was given": [["lambda", ["a"], ["array/length", ["array/make", "a"]]], 1, 2, 3]
+}
+== gives
+{
+  "a lambda of one parameter given three arguments": 1,
+  "a lambda that counts what it was given": 1
+}
+
+== program cl-arity-fewer.json
+[["lambda", ["a", "b"], "a"], 1]
+== gives
+
+ERROR
+  A lambda was called with fewer arguments than it has parameters.
+
+== program cl-arity-library.json
+["console/log", "one", "two"]
+== gives
+
+ERROR
+  "console/log" takes 1 argument but got 2.
+
+== program cl-missing-key.json
+{
+  "a key that is not there": ["object/get", ["quote", {"a": 1}], "b"],
+  "a key that holds null": ["object/get", ["quote", {"b": null}], "b"],
+  "a record with a key that holds null fits an optional key": ["schema/fits?", ["quote", {"b": null}], {"b": ["schema/optional", "value/number?"]}],
+  "a record without the key fits an optional key": ["schema/fits?", ["quote", {}], {"b": ["schema/optional", "value/number?"]}],
+  "answers to a pattern for a key that holds null": ["array/length", ["query", ["schema/fits?", ["quote", {"b": null}], ["schema/open", {"b": "?b"}]]]],
+  "answers to a pattern for a key that is not there": ["array/length", ["query", ["schema/fits?", ["quote", {"a": 1}], ["schema/open", {"b": "?b"}]]]]
+}
+== gives
+{
+  "a key that is not there": null,
+  "a key that holds null": null,
+  "a record with a key that holds null fits an optional key": false,
+  "a record without the key fits an optional key": true,
+  "answers to a pattern for a key that holds null": 1,
+  "answers to a pattern for a key that is not there": 0
+}
+
+== program cl-match-fallback.json
+["match", "x", ["value/number?", ["lambda", ["n"], "a number"]]]
+== gives
+
+ERROR
+  ["match","x",["value/number?",["lambda",["n"],"a number"]]] is not a well-formed match form: match takes a value, one or more cases of a schema and a function, and a fallback function, as in ["match", "x", ["value/number?", "value/identity"], ["lambda", ["v"], null]].
+
+== program cl-match-cases.json
+{
+  "a case no value can reach, after one that takes every number": ["match", 5,
+    ["value/number?", ["lambda", ["n"], "a number"]],
+    ["value/integer?", ["lambda", ["n"], "an integer"]],
+    ["lambda", ["o"], "something else"]],
+  "the later case takes nothing the earlier one leaves": ["schema/includes?", "value/integer?", "value/number?"],
+  "the cases cover every kind of order": ["schema/includes?",
+    ["schema/anyOf", {"kind": "sale", "n": "value/integer?"}, {"kind": "refund"}],
+    ["schema/anyOf", {"kind": "sale", "n": "value/number?"}, ["schema/open", {"kind": "refund"}]]],
+  "the cases miss a kind of order": ["schema/includes?",
+    ["schema/anyOf", {"kind": "sale"}, {"kind": "refund"}, {"kind": "void"}],
+    ["schema/anyOf", {"kind": "sale"}, {"kind": "refund"}]]
+}
+== gives
+{
+  "a case no value can reach, after one that takes every number": "a number",
+  "the later case takes nothing the earlier one leaves": true,
+  "the cases cover every kind of order": true,
+  "the cases miss a kind of order": false
+}
+
+== program cl-plain-live.json
+["begin",
+  ["relation", "order", ["id"]],
+  ["fact", ["order", 1]],
+  ["define", "counted_in_plain_code", ["aggregate/count", ["find", "?id", ["order", "?id"]]]],
+  ["relation", "orders", ["n"]],
+  ["rule", ["orders", ["aggregate/count", "?id"]], ["order", "?id"]],
+  ["fact", ["order", 2]],
+  {"a count defined in plain code, after a second order": "counted_in_plain_code",
+   "a count a rule derives, after a second order": ["array/head", ["find", "?n", ["orders", "?n"]]]}]
+== gives
+{
+  "a count defined in plain code, after a second order": 1,
+  "a count a rule derives, after a second order": 2
+}
+
+== program cl-effect-in-rule.json
+["begin",
+  ["define", "calls", 0],
+  ["define", "counted", ["lambda", ["x"], ["begin", ["set!", "calls", ["number/add", "calls", 1]], "calls"]]],
+  ["define", "in_plain_code", ["array/map", ["array/make", 1, 2, 3], "counted"]],
+  ["define", "calls_after_plain_code", "calls"],
+  ["relation", "item", ["x"]],
+  ["relation", "numbered", ["x", "n"]],
+  ["rule", ["numbered", "?x", ["counted", "?x"]], ["item", "?x"]],
+  ["fact", ["item", 1], ["item", 2], ["item", 3]],
+  ["define", "in_a_rule", ["find", "?n", ["numbered", "?_", "?n"]]],
+  {"different numbers three calls in plain code give": ["array/length", ["aggregate/unique", "in_plain_code"]],
+   "the count after three calls in plain code": "calls_after_plain_code",
+   "items the rule numbered": ["array/length", "in_a_rule"],
+   "different numbers three calls in a rule body give": ["array/length", ["aggregate/unique", "in_a_rule"]],
+   "the count after the rule ran": "calls"}]
+== gives
+{
+  "different numbers three calls in plain code give": 3,
+  "the count after three calls in plain code": 3,
+  "items the rule numbered": 3,
+  "different numbers three calls in a rule body give": 1,
+  "the count after the rule ran": 4
+}
+
+== program cl-units.json
+["begin",
+  ["define", "exponent", ["lambda", ["unit", "base"],
+    ["cond", [["value/null?", ["object/get", "unit", "base"]], 0], ["else", ["object/get", "unit", "base"]]]]],
+  ["define", "unitTimes", ["lambda", ["a", "b"],
+    ["array/reduce", ["object/keys", "b"], "a",
+      ["lambda", ["unit", "base"],
+        ["cond",
+          [["number/equals?", ["number/add", ["exponent", "unit", "base"], ["object/get", "b", "base"]], 0], ["object/remove", "unit", "base"]],
+          ["else", ["object/set", "unit", "base", ["number/add", ["exponent", "unit", "base"], ["object/get", "b", "base"]]]]]]]]],
+  ["define", "times", ["lambda", ["x", "y"],
+    {"value": ["number/multiply", ["object/get", "x", "value"], ["object/get", "y", "value"]],
+     "unit": ["unitTimes", ["object/get", "x", "unit"], ["object/get", "y", "unit"]]}]],
+  ["define", "distance", ["quote", {"value": 120, "unit": {"m": 1}}]],
+  ["define", "duration", ["quote", {"value": 8, "unit": {"s": 1}}]],
+  ["define", "rate", ["quote", {"value": 15, "unit": {"m": 1, "s": -1}}]],
+  {"a length and a time, added as numbers": ["number/add", 120, 8],
+   "a length and a time, as values that carry their units, added": ["number/add", ["object/get", "distance", "value"], ["object/get", "duration", "value"]],
+   "a rate times a time, with units multiplied in plain code": ["times", "rate", "duration"],
+   "a length divided into itself has no unit left": ["unitTimes", {"m": 1}, {"m": -1}],
+   "a schema says a value is a length": ["schema/fits?", "distance", {"value": "value/number?", "unit": {"m": 1}}],
+   "a time does not fit the schema of a length": ["schema/fits?", "duration", {"value": "value/number?", "unit": {"m": 1}}],
+   "the solver solves for an exponent": ["array/head", ["find", "?e", ["and", ["schema/fits?", "?e", "value/integer?"], ["=", ["number/add", "?e", -1], 0]]]]}]
+== gives
+{
+  "a length and a time, added as numbers": 128,
+  "a length and a time, as values that carry their units, added": 128,
+  "a rate times a time, with units multiplied in plain code": {
+    "value": 120,
+    "unit": {
+      "m": 1
+    }
+  },
+  "a length divided into itself has no unit left": {},
+  "a schema says a value is a length": true,
+  "a time does not fit the schema of a length": false,
+  "the solver solves for an exponent": 1
+}
+
+== program cl-vacuous-proof.json
+["begin",
+  ["schema", "Account", {"balance": "value/integer?", "limit": "value/integer?"}],
+  ["schema", "Amount", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+  ["schema", "Command", ["schema/anyOf", {"deposit": "Amount"}, {"withdraw": "Amount"}]],
+  ["define", "step", ["lambda", ["a", "c"], ["cond", [["value/number?", ["object/get", "c", "deposit"]], {"balance": ["number/add", ["object/get", "a", "balance"], ["object/get", "c", "deposit"]], "limit": ["object/get", "a", "limit"]}], ["else", {"balance": ["number/subtract", ["object/get", "a", "balance"], ["object/get", "c", "withdraw"]], "limit": ["object/get", "a", "limit"]}]]]],
+  ["define", "never overdrawn and always overdrawn", ["lambda", ["a"], ["boolean/and", ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0], ["number/lessThan", ["object/get", "a", "balance"], 0]]]],
+  ["define", "keeps", ["lambda", ["rule"], ["number/equals?", 1, ["array/length", ["query", ["not", ["exists", ["?a", "?c"], ["and", ["schema/fits?", "?a", "Account"], ["rule", "?a"], ["schema/fits?", "?c", "Command"], ["not", ["rule", ["step", "?a", "?c"]]]]]]]]]]],
+  ["define", "allows a state", ["lambda", ["rule"], ["number/equals?", 1, ["array/length", ["query", ["exists", ["?a"], ["and", ["schema/fits?", "?a", "Account"], ["rule", "?a"]]]]]]]],
+  {"a rule no account can meet, under withdrawals with no limit, is proved kept": ["keeps", "never overdrawn and always overdrawn"],
+   "the same rule allows some account": ["allows a state", "never overdrawn and always overdrawn"]}]
+== gives
+{
+  "a rule no account can meet, under withdrawals with no limit, is proved kept": true,
+  "the same rule allows some account": false
+}
+
+== program cl-why-absent.json
+["begin",
+  ["relation", "proved", ["claim"]],
+  ["rule", ["proved", "no balance is both negative and not"],
+    ["not", ["exists", ["?balance", "?withdrawal"], ["and",
+      ["schema/fits?", "?balance", "value/integer?"],
+      ["schema/fits?", "?withdrawal", "value/integer?"],
+      ["number/greaterThanOrEqualTo", "?balance", 0],
+      ["number/lessThan", "?balance", 0],
+      ["number/greaterThan", "?withdrawal", 0],
+      ["number/lessThan", ["number/subtract", "?balance", "?withdrawal"], 0]]]]],
+  ["define", "reason", ["array/head", ["object/get", ["why", ["proved", "no balance is both negative and not"]], "because"]]],
+  {"what why gives for a proof whose premises contradict each other": ["string/join", ["object/keys", "reason"], ", "]}]
+== gives
+{
+  "what why gives for a proof whose premises contradict each other": "absent"
+}
+
+== program cl-contract.json
+["begin",
+  ["define", "next", ["lambda", ["n"], ["number/add", "n", 1]]],
+  ["define", "label", ["lambda", ["n"], ["string/concat", "item ", ["next", "n"]]]],
+  ["label", "seven"]]
+== gives
+
+ERROR
+  Expected number
+  at [0]
+
+== program cl-no-delay.json
+["delay", ["number/add", 1, 2]]
+== gives
+
+ERROR
+  ["delay",["number/add",1,2]] is not a call: its first element must be a special form or evaluate to a function.
+
+== program cl-no-callcc.json
+["call/cc", ["lambda", ["k"], ["k", 1]]]
+== gives
+
+ERROR
+  ["call/cc",["lambda",["k"],["k",1]]] is not a call: its first element must be a special form or evaluate to a function.
+
+== program cl-promise-by-hand.json
+["begin",
+  ["define", "runs", 0],
+  ["define", "promise", ["lambda", ["thunk"], ["begin",
+    ["define", "done", false],
+    ["define", "value", null],
+    ["lambda", [], ["cond",
+      ["done", "value"],
+      ["else", ["begin", ["set!", "value", ["thunk"]], ["set!", "done", true], "value"]]]]]]],
+  ["define", "answer", ["promise", ["lambda", [], ["begin", ["set!", "runs", ["number/add", "runs", 1]], 42]]]],
+  {"forced once": ["answer"], "forced again": ["answer"], "times the body ran": "runs"}]
+== gives
+{
+  "forced once": 42,
+  "forced again": 42,
+  "times the body ran": 1
+}
+
+== program cl-undecided.json
+["schema/includes?", "value/number?", "value/integer?"]
+== gives
+
+ERROR
+  schema/includes? cannot say whether every value "value/number?" allows fits "value/integer?": The solver cannot reason about value/integer?: it decides sums of numbers times known numbers, comparisons of them, and equality of values.
+
+== program cl-big-integers.json
+{"two to the 53rd plus one": ["number/add", 9007199254740992, 1],
+ "an integer written one past two to the 53rd": 9007199254740993,
+ "that integer equals two to the 53rd": ["number/equals?", 9007199254740993, 9007199254740992]}
+== gives
+{
+  "two to the 53rd plus one": 9007199254740992,
+  "an integer written one past two to the 53rd": 9007199254740992,
+  "that integer equals two to the 53rd": true
+}

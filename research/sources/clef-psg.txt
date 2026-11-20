@@ -1,0 +1,966 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph 1. Overview
+2. SemanticGraph Structure
+3. SemanticNode Structure
+4. SemanticKind
+5. Emission Strategy
+6. Module Classification
+7. Intrinsic Metadata
+8. Reachability
+9. Platform Context
+10. Invariants
+11. Traversal
+12. PSG Saturation
+13. Enrichment
+14. Coeffect Analysis
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+1. Overview
+1.1 Architectural Heritage
+1.2 Relationship to FCS
+2. SemanticGraph Structure
+2.1 Field Specifications
+2.2 Lazy Coeffects
+2.3 Cutoff Integrity
+2.4 Design-Time Observation and Authority Revocation
+3. SemanticNode Structure
+3.1 Field Specifications
+3.2 Type Attachment
+3.3 SRTP Resolution
+4. SemanticKind
+4.1 Bindings and Control
+4.2 Core Expressions
+4.3 Control Flow
+4.4 Data Structures
+4.5 Compiler Features
+5. Emission Strategy
+6. Module Classification
+6.1 Classification Algorithm
+7. Intrinsic Metadata
+7.1 Intrinsic Modules
+8. Reachability
+8.1 Soft-Delete Model
+8.2 Reachability Computation
+8.3 Causal Shadow Pass across Revisions
+9. Platform Context
+10. Invariants
+11. Traversal
+12. PSG Saturation
+12.1 The Saturation Principle
+12.2 Motivation
+12.3 Architectural Separation
+12.4 Saturation Pass Architecture
+12.5 Sequence Expression Saturation
+12.6 Comparison to F# Compiler
+12.7 Invariants for Saturated PSG
+13. Enrichment
+13.1 Terminology
+13.2 Enrichment Categories
+13.2.1 Intrinsic Elaboration
+13.2.2 Baker Saturation
+13.3 Enrichment Metadata
+13.4 Source-Based vs Enriched Nodes
+13.5 Expansion ID Linking
+14. Coeffect Analysis
+14.1 Definition
+14.2 Pipeline Position
+14.3 Standard Coeffect Analyses
+14.3.1 Binding and Storage Identity
+14.3.2 Mutability Analysis
+14.3.3 Yield State Analysis
+14.3.4 Pattern Binding Analysis
+14.3.5 Escape and Lifetime Classification
+14.3.6 Platform Binding Resolution
+14.3.7 Carried-Property Coeffects
+14.4 Demand-Driven and Cone-Scoped Computation
+14.5 The Control-Flow / Dataflow Pivot
+Scroll to top
+Language Specification
+Program Semantic Graph
+Program Semantic Graph
+1. Overview
+The Program Semantic Graph (PSG) is the unified intermediate representation produced by CCS (Clef Compiler Service). It carries semantic information from type checking through to code generation, preserving the meaning of Clef programs in a form suitable for native compilation.
+The PSG’s binary edges generalize to directed hyperedges of arbitrary source arity in the Program Hypergraph ; every valid PSG is a valid PHG under the single-source embedding, and every discipline of this chapter applies unchanged to binary hyperedges. Constraints that are genuinely multi-way are specified there.
+1.1 Architectural Heritage
+The PSG draws on the nanopass tradition established in Standard ML and Scheme compiler research. Where traditional compilers make large, monolithic transformations between representations, nanopass architecture decomposes compilation into many small, single-purpose passes, each doing one thing well.
+This heritage distinguishes Clef from the F# Compiler Services (FCS) design. FCS was built for .NET integration, where semantic information flows to the CLR runtime. The PSG instead preserves semantic information through to native code generation, carrying proofs about types, memory, and execution that the CLR would normally handle implicitly.
+Key insight : Traversal information is itself semantic information. The classification of what executes during module initialization versus what constitutes a definition versus what serves as an entry point: these are semantic facts about the program that flow through the pipeline as first-class data.
+1.2 Relationship to FCS
+The PSG consumes both the syntax tree ( SynExpr ) and typed tree ( FSharpExpr ) from FCS:
+FCS Output PSG Usage
+SynExpr Structural skeleton, source ranges
+FSharpExpr Resolved types, SRTP resolution, semantic edges
+The typed tree overlay via zipper captures information that exists only after type inference and constraint solving, particularly SRTP (Statically Resolved Type Parameter) resolution, which the syntax tree cannot express.
+2. SemanticGraph Structure
+The SemanticGraph record is the complete result of PSG construction:
+type SemanticGraph = {
+Nodes : Map < NodeId , SemanticNode >
+EntryPoints : NodeId list
+Modules : Map < ModulePath , NodeId list >
+Types : Lazy < Map < string , NodeId >>
+Platform : PlatformContext option
+ModuleClassifications : Lazy < Map < NodeId , ModuleClassification >>
+}
+2.1 Field Specifications
+Field Type Description
+Nodes Map<NodeId, SemanticNode> All semantic nodes indexed by unique identifier
+EntryPoints NodeId list Nodes marked as program entry points
+Modules Map<ModulePath, NodeId list> Module contents indexed by path
+Types Lazy<Map<string, NodeId>> Type definitions, lazily indexed
+Platform PlatformContext option Target platform for NTU resolution
+ModuleClassifications Lazy<Map<NodeId, ModuleClassification>> Module structure analysis, lazily computed
+2.2 Lazy Coeffects
+CCS/Baker owns the type index, module classification and other semantic
+coeffects. Its analyses may be demand-driven, but every fact required by a
+witness boundary SHALL be settled and published before that boundary is
+admitted. Publication retains the checked revision, scope, participants and
+premises described in Program Hypergraph §5.1 .
+Alex observes these settled facts through its Huet position. Observing codata
+does not authorize analysis, inference or repair in the witness.
+2.3 Cutoff Integrity
+Cross-revision region, participant, and obligation-support identities SHALL use
+canonical declaration addresses, such as module:M/binding:f/ordinal , rather
+than graph-local NodeId s, elaboration identifiers, or source offsets. The
+CallableInterfaceDigest , SemanticRealizationDigest , and
+CanonicalProofSupportDigest SHALL remain distinct and SHALL satisfy cutoff
+soundness, structured proof-support coverage, mutual-reference SCC coupling, and
+PremiseBreak = 0 as specified in Program Hypergraph §5.1 .
+2.4 Design-Time Observation and Authority Revocation
+Under EDITOR-PLAIN-SNAPSHOT , design-time and language-server hosts SHALL project
+settled SemanticGraph revisions into immutable plain-data snapshots containing
+diagnostics, hover views, canonical-address symbol-use intervals, and obligation
+summaries. At rest, hosts SHALL release live SemanticGraph nodes, union-find
+cells, and mutable elaboration structures. Documentation hover text from ///
+comments MAY be projected directly from parsed syntax without semantic
+re-saturation.
+A superseding source edit SHALL immediately revoke proof and execution authority
+for the superseded revision under Program Hypergraph §5.1 .
+During an in-flight check, read-only hover , definition , and references
+queries MAY map positions across unchanged declarations only through a fail-closed
+PositionMap . It SHALL refuse mapping for any edited declaration, indentation
+change, module-header shift, #if directive change, or lexical carry-state change.
+Mapped navigation SHALL NOT confer proof or execution authority.
+3. SemanticNode Structure
+Each node in the PSG carries rich semantic information:
+type SemanticNode = {
+Id : NodeId
+Kind : SemanticKind
+Range : SourceRange
+Type : NativeType
+SRTPResolution : WitnessResolution option
+ArenaAffinity : ArenaAffinity
+LayoutHint : TypeLayout option
+Children : NodeId list
+Parent : NodeId option
+Metadata : Map < string , MetadataValue >
+IsReachable : bool
+EmissionStrategy : EmissionStrategy
+}
+3.1 Field Specifications
+Field Type Description
+Id NodeId Unique identifier within the graph
+Kind SemanticKind What construct this node represents
+Range SourceRange Source location for diagnostics
+Type NativeType Resolved type (attached during construction)
+SRTPResolution WitnessResolution option Resolved SRTP constraint, if any
+ArenaAffinity ArenaAffinity Memory region affinity
+LayoutHint TypeLayout option Size/alignment hints
+Children NodeId list Structural children
+Parent NodeId option Parent for navigation
+Metadata Map<string, MetadataValue> Typed extensible metadata
+IsReachable bool Soft-delete marker for reachability
+EmissionStrategy EmissionStrategy How to emit during code generation
+3.2 Type Attachment
+NORMATIVE : Types SHALL be attached to nodes during PSG construction, not post-hoc.
+This ensures that every node carries its resolved type from the moment of creation, enabling downstream passes to make decisions based on complete type information.
+3.3 SRTP Resolution
+The SRTPResolution field captures the compile-time resolution of statically resolved type parameters:
+type WitnessResolution = {
+Operator : string // e.g., "$", "+"
+ArgType : NativeType // The type on which it's resolved
+ResolvedMember : string // Fully qualified member name
+Implementation : WitnessImplementation
+}
+This information comes from the typed tree ( FSharpExpr.TraitCall ) and is not available in the syntax tree. The PSG captures it during the typed tree overlay phase.
+4. SemanticKind
+The SemanticKind discriminated union classifies each node. Key categories include:
+4.1 Bindings and Control
+Kind Description
+Binding Let binding with mutability and entry point flags
+Lambda Function with parameters, captures, and context
+PatternBinding Variable bound by pattern matching
+4.2 Core Expressions
+Kind Description
+Literal Constant value
+VarRef Reference to a binding
+Application Function application
+TypeAnnotation Explicit type annotation
+4.3 Control Flow
+Kind Description
+Match Pattern matching expression
+IfThenElse Conditional expression
+WhileLoop While loop
+ForLoop Numeric for loop
+ForEach Collection iteration
+Sequential Sequential composition
+TryWith Exception handling
+TryFinally Cleanup handler
+4.4 Data Structures
+Kind Description
+TupleExpr Tuple construction
+ArrayExpr Array literal
+ListExpr List literal
+RecordExpr Record construction
+UnionCase Union case construction
+4.5 Compiler Features
+Kind Description
+Intrinsic CCS intrinsic operation
+TraitCall SRTP trait invocation
+PlatformBinding Platform-specific binding
+LazyExpr Lazy computation (PRD-14)
+SeqExpr Sequence expression (PRD-15)
+5. Emission Strategy
+The EmissionStrategy field tells Alex how to emit each node:
+type EmissionStrategy =
+| Inline
+| SeparateFunction of captureCount : int
+| MainPrologue
+Strategy Description
+Inline Emit inline at point of use
+SeparateFunction Emit as separate function (lambdas, seq expressions)
+MainPrologue Emit in main function prologue (module initialization)
+NORMATIVE : Emission strategy SHALL be determined by CCS during construction. Alex SHALL observe this strategy without recomputing it.
+This architectural decision moves traversal logic upstream to CCS, where semantic context is fully available.
+6. Module Classification
+Module classification analyzes the structure of each module:
+type ModuleClassification = {
+Name : string
+ModuleInit : NodeId list
+Definitions : NodeId list
+EntryPoint : NodeId option
+}
+Field Description
+Name Module name
+ModuleInit Bindings that execute at module initialization
+Definitions Regular definitions (functions, types)
+EntryPoint The module’s entry point, if any
+6.1 Classification Algorithm
+CCS/Baker computes module classification from the source activation contract
+and records its settled EmissionStrategy :
+Nodes with MainPrologue strategy → ModuleInit
+Nodes with Inline or SeparateFunction strategy → Definitions
+Bindings marked isEntryPoint → EntryPoint
+This classification is semantic traversal information: it describes how the program executes, not just what it contains.
+7. Intrinsic Metadata
+Intrinsic operations carry structured metadata:
+type IntrinsicInfo = {
+Module : IntrinsicModule
+Operation : string
+Category : IntrinsicCategory
+FullName : string
+}
+NORMATIVE : Intrinsic dispatch SHALL use structured IntrinsicInfo , not string matching on symbol names.
+This ensures that Alex can dispatch on intrinsics without knowledge of namespace structure or symbol naming conventions.
+7.1 Intrinsic Modules
+Module Description Provider
+Sys System calls Compiler
+Array Array operations Compiler
+Math Mathematical functions Compiler
+Lazy Lazy computation (PRD-14) Compiler
+Seq Sequences (PRD-15) Compiler
+Observable , Incremental Reactive observation and demand-driven computation Compiler
+The Signal / Memo / Effect surface , including batching, desugars to these intrinsic semantics. It does not dispatch to a separate reactive library engine. The PSG preserves a compiler-visible plan; active graph instances, cached state and owned subscriptions remain runtime responsibilities of the selected target.
+CCS/Baker elaborates compiler-provided intrinsics and settles library-backed
+call contracts on the graph. Alex witnesses the admitted operations and calls;
+Composer’s backend supplies their target-specific realization.
+8. Reachability
+8.1 Soft-Delete Model
+NORMATIVE : Unreachable nodes SHALL be marked via IsReachable = false , not physically removed.
+This preserves the graph structure for:
+Typed tree zipper navigation
+Diagnostic reporting
+Debugging and inspection
+8.2 Reachability Computation
+Reachability flows from entry points through structural and semantic edges:
+Entry points are reachable
+Children of reachable nodes are reachable
+Definitions referenced by reachable VarRef nodes are reachable
+Type definitions used by reachable nodes are reachable
+8.3 Causal Shadow Pass across Revisions
+When comparing a prior saturated graph $G_0$ with a candidate revision $G_1$,
+a pure shadow pass computes the causal delta cone specified in
+Program Hypergraph §5.1 :
+type ReachableDeltaCone = {
+SeedRoots : Set < NodeId >
+NewlyLitNodes : Set < NodeId >
+ExtinguishedNodes : Set < NodeId >
+AffectedCone : Set < NodeId >
+RetainedReachable : Set < NodeId >
+}
+NORMATIVE :
+NewlyLitNodes SHALL contain every node reachable in $G_1$ that was not reachable in $G_0$ (in user modules, libraries, or platform bindings).
+ExtinguishedNodes SHALL contain every node reachable in $G_0$ that is no longer reachable in $G_1$.
+AffectedCone and RetainedReachable SHALL partition the reachable nodes of $G_1$. AffectedCone SHALL be the directed causal closure in $G_1$ of SeedRoots along structural containment within a declaration, definition-to-use references ($d \to u$), and hyperedge premise-to-target incidence ($s \to t_f$). Changes to a node’s type, numeric carrier, range bound, escape class, or proof premise SHALL cascade forward into AffectedCone without propagating backward through unchanged shared definitions or platform representation descriptors into RetainedReachable .
+9. Platform Context
+The platform context carries target-specific information. Width dimensions are resolved via a Dimensions map rather than discrete WordSize / PointerSize fields, aligning with the parameterized width model in NTU types (see ntu-types.md ):
+type PlatformContext = {
+PlatformId : string
+/// Width dimension resolutions (bits)
+Dimensions : Map < WidthDimension , int > // Pointer → 64, Register → 64, etc.
+PointerAlign : int
+PlatformLibraryPath : string option
+Predicates : Map < PlatformPredicate , bool >
+FreestandingStartup : FreestandingStartup option
+}
+module PlatformContext =
+/// Resolve an NTUWidth to concrete bits
+let resolveWidth ( ctx : PlatformContext ) ( width : NTUWidth ) : int =
+match width with
+| NTUWidth . Fixed bits -> bits
+| NTUWidth . Resolved dim -> ctx . Dimensions .[ dim ]
+/// Convenience: pointer width in bytes
+let pointerSize ( ctx : PlatformContext ) = ctx . Dimensions .[ WidthDimension . Pointer ] / 8
+/// Convenience: machine word width in bytes
+let wordSize ( ctx : PlatformContext ) = ctx . Dimensions .[ WidthDimension . Register ] / 8
+CCS/Baker resolves the selected platform’s declared dimensions and settles each
+required width, representation, layout and boundary contract on the PSG. Alex
+reads those settled facts to emit the admitted MLIR types; it does not call a
+platform resolver or choose widths during emission.
+10. Invariants
+The following invariants SHALL hold for any valid PSG:
+Node identity : Each NodeId maps to exactly one SemanticNode
+Parent consistency : If node A lists B as parent, B lists A as child
+Type completeness : Every node has a resolved NativeType
+Reachability closure : If A is reachable and references B, B is reachable
+Entry point marking : Entry points are marked in both EntryPoints list and node Kind
+Emission strategy presence : Every node has an EmissionStrategy
+11. Traversal
+The PSG supports multiple traversal patterns:
+Pattern Use Case
+foldWithLambdaPreBind Follow semantic dependencies (definitions before uses)
+foldWithSCFRegions Respect SCF region boundaries for control flow
+Pre-order structural Visit parents before children
+Post-order structural Visit children before parents
+CCS/Baker uses graph traversal to establish semantic dependencies and admitted
+control structure. Alex navigates the authorized settled occurrences through
+its Huet zipper and composes Elements, Patterns and Witnesses in that context.
+12. PSG Saturation
+12.1 The Saturation Principle
+NORMATIVE : CCS SHALL saturate the PSG with all semantic structure required for compilation, including synthetic constructs not directly expressed in source code.
+The term saturation refers to making the PSG semantically complete, containing all information needed for downstream compilation without requiring structure synthesis during code generation.
+12.2 Motivation
+Certain F# constructs require runtime structures that don’t appear directly in source code:
+Source Construct Synthetic Structure Location in PSG
+seq { } MoveNext state machine SeqStateMachine nodes
+Pattern matching Decision tree / switch Match decomposition
+Without saturation, code generators must synthesize these structures during emission, leading to:
+Mutable state tracking during emission
+Structure-building logic in the wrong architectural layer
+Coupling between emission and semantic analysis
+Reconstructing semantic dependencies from emission bookkeeping
+12.3 Architectural Separation
+The saturation principle enforces clean layer separation:
+Layer Responsibility NOT Responsible For
+CCS/Baker Source semantics, elaboration, saturation, numeric selection, declaration/ABI settlement and proof premises Target-specific emission
+Alex Passive Huet Element/Pattern/Witness composition; create typed emission operands from settled facts Analysis, inference, semantic structure building or repair
+Composer backend Target-specific lowering with required facts and proof correspondence preserved Replacement source semantics
+Baker nanopass ingredients and recipes retain joint constraints, participants,
+scope and the intermediate rewrite record. SSA operands belong to Alex’s
+emission accumulator and do not establish semantic facts on the graph.
+12.4 Saturation Pass Architecture
+PSG construction flows through saturation phases:
+Phase 1: Structural Construction SynExpr → PSG with basic nodes
+Phase 2: Symbol Correlation + FSharpSymbol attachments
+Phase 3: Reachability Analysis + IsReachable marks
+Phase 4: Typed Tree Overlay + Types, SRTP resolution
+Phase 5: PSG Saturation + Synthetic structures (MoveNext, etc.)
+The saturation phase (Phase 5) transforms high-level semantic constructs into explicit operational structure:
+SeqExpr(body, captures)
+↓ PSG Saturation
+SeqStateMachine {
+StateVariables: [...]
+Captures: [...]
+InitBlock: NodeId
+CheckBlock: NodeId
+YieldBlock: NodeId
+PostYieldBlock: NodeId
+DoneBlock: NodeId
+}
+12.5 Sequence Expression Saturation
+For seq { } expressions, saturation produces explicit state machine structure :
+Input (pre-saturation) :
+SeqExpr of body : NodeId * captures : CaptureInfo list
+Output (post-saturation) :
+SeqStateMachine of {
+BodyKind : SeqBodyKind // Sequential or WhileBased
+StateVariables : StateVar list // Internal mutable state
+Captures : CaptureInfo list // Captured values
+InitBlock : BlockSpec // State 0 initialization
+CheckBlock : BlockSpec // While condition evaluation
+YieldBlock : BlockSpec // Value production
+PostYieldBlock : BlockSpec // Post-yield state transitions
+ConditionalYield : ConditionSpec option // If-guarded yield
+}
+This explicit structure enables Alex to compose typed operands and witnessed
+operations without synthesizing control, capture, layout or demand semantics.
+The source graph retains the settlement and its proof premises independently
+of emission operands.
+12.6 Comparison to F# Compiler
+Clef’s saturation phase parallels LowerSequenceExpressions.fs in the F# compiler:
+F# Compiler Clef Purpose
+CheckSequenceExpressions.fs PSG Builder Initial semantic structure
+LowerSequenceExpressions.fs PSG Saturation State machine elaboration
+IlxGen.fs Alex witnessing followed by Composer backend realization Emission of settled structure, then target code
+The key insight from nanopass architecture: saturation happens at the language level (PSG), not in code generation.
+12.7 Invariants for Saturated PSG
+After saturation, the following additional invariants SHALL hold:
+Synthetic completeness : All constructs requiring runtime structure have explicit nodes
+Block structure : State machine blocks are explicit, traversable nodes
+No deferred synthesis : Code generators need not build structure during emission
+Witness readiness : Every required semantic fact and proof premise is settled; typed emission operands can be composed without further analysis
+13. Enrichment
+13.1 Terminology
+Enrichment is the parent concept encompassing two related processes:
+Term Origin Description
+Elaboration PLT Making implicit program structure explicit
+Saturation Fidelity Filling the PSG with all information needed for lowering
+Both processes synthesize PSG nodes that do not appear directly in source code.
+13.2 Enrichment Categories
+Two categories of enrichment are defined, distinguished by metadata:
+Category Elaboration.Kind Purpose
+Intrinsic Elaboration "Intrinsic" Implement intrinsic operation semantics
+Baker Saturation "Baker" Decompose language features to primitives
+13.2.1 Intrinsic Elaboration
+Intrinsic elaboration synthesizes PSG structure to implement the semantics of intrinsic operations.
+Example : Console.write "Hello" may elaborate to:
+String length extraction nodes
+Buffer pointer calculation nodes
+System call invocation nodes
+13.2.2 Baker Saturation
+Baker saturation decomposes higher-order language constructs into primitive operations:
+Source Construct Baker Decomposition
+List.map f xs Recursion using isEmpty , head , tail , cons
+seq { ... } State machine structure (§12.5)
+lazy expr Thunk structure with memoization
+13.3 Enrichment Metadata
+NORMATIVE : Enriched nodes SHALL carry metadata identifying their origin.
+module ElaborationMetadata =
+/// What kind of enrichment: "Intrinsic" or "Baker"
+[< Literal >]
+let Kind = "Elaboration.Kind"
+/// What construct triggered enrichment (e.g., "List.map", "Console.write")
+[< Literal >]
+let For = "Elaboration.For"
+/// Links related nodes from the same enrichment expansion
+[< Literal >]
+let Id = "Elaboration.Id"
+13.4 Source-Based vs Enriched Nodes
+Node Type Metadata Meaning
+Source-based None Direct from user’s source code
+Intrinsic-elaborated Kind = "Intrinsic" Synthesized for intrinsic implementation
+Baker-saturated Kind = "Baker" Synthesized for language feature decomposition
+NORMATIVE : The absence of Elaboration.Kind metadata SHALL indicate a source-based node.
+13.5 Expansion ID Linking
+When enrichment creates multiple related nodes, they share an Elaboration.Id :
+Node 42: Kind="Baker", For="List.map", Id=7
+Node 43: Kind="Baker", For="List.map", Id=7 ← Same expansion
+Node 44: Kind="Baker", For="List.map", Id=7 ← Same expansion
+Node 45: (no metadata) ← Source-based
+This enables:
+Grouping related enriched nodes in tooling
+“Pierce the veil” debugging (showing source vs synthesized)
+Verification that enrichment preserves semantics
+14. Coeffect Analysis
+14.1 Definition
+Coeffect analysis computes metadata about PSG structure to inform lowering decisions. Unlike enrichment, coeffect analysis does NOT create new PSG nodes; it computes mappings, indices, and tables.
+Aspect Enrichment Coeffect Analysis
+Creates nodes Yes No
+Modifies PSG structure Yes No
+Output Enriched PSG Metadata/indices
+Purpose Implement semantics Inform lowering
+14.2 Pipeline Position
+NORMATIVE : CCS/Baker SHALL establish each coeffect from all of its required
+participants, including structure generated by elaboration. Nanopass recipes
+retain those dependencies through fan-out/fold-in and reconsider dependent
+facts when their premises change. Elaboration and analysis may interact under
+their admitted convergence policies; required unresolved facts prevent
+witnessing under Program Hypergraph §3 .
+CCS/Baker elaboration and saturation → settled publication → passive Alex witnessing → Composer backend
+14.3 Standard Coeffect Analyses
+14.3.1 Binding and Storage Identity
+CCS/Baker establishes binding identity, demand, def-use relationships and mutable
+storage identity on the graph. Those facts retain source occurrences and
+joint premises. They are not preassigned MLIR SSA names or emission costs.
+Alex’s Elements, Patterns and Witnesses create the corresponding typed operands
+while preserving the settled relationships.
+14.3.2 Mutability Analysis
+Mutability analysis identifies mutable state patterns:
+type MutabilityAnalysis = {
+AddressedMutableBindings : Set < NodeId >
+ModifiedVarsInLoopBodies : Set < NodeId >
+ModuleLevelMutableBindings : ( string * NodeId * NodeId ) list
+}
+14.3.3 Yield State Analysis
+For sequence expressions, yield state analysis computes state machine layout:
+type YieldStateAnalysis = {
+SeqExprId : NodeId
+NumYields : int
+BodyKind : SeqBodyKind
+Yields : ( NodeId * int * NodeId ) list
+InternalState : ( string * NodeId * int ) list
+}
+14.3.4 Pattern Binding Analysis
+For match expressions, pattern binding analysis computes binding scopes:
+type PatternBindingAnalysis = {
+EntryPatternBindings : ( NodeId * string * NativeType ) list
+CasePatternBindings : Map < int , ( NodeId * string * NativeType ) list >
+}
+14.3.5 Escape and Lifetime Classification
+Escape analysis classifies each value against the four-point lifetime lattice and records the classification as a coeffect the allocation-emitting passes read. The classification, its lattice, and the no-heap discipline are specified in Closure Representation §3.3 ; as a design-time property it is subject to the preservation obligation through lowering .
+14.3.6 Platform Binding Resolution
+Platform binding resolution maps each platform intrinsic application to the target symbol and calling convention declared for the selected target ( Platform Bindings ), computed once before emission.
+14.3.7 Carried-Property Coeffects
+Several chapters state properties that ride the PSG as coeffects and are committed at target binding. This section is their index; each is specified where cited:
+Coeffect Specified in
+Region reachability Memory Regions , Grade Discipline §4.1
+Width Width Inference
+Representation selection Numeric Selection
+Durability (survives-power-loss, atomic-write, sealed) Modular Blob Storage §7
+Chained, replayable Namespace Storage §5
+Where a coeffect carries a property this specification requires, proof obligations over that property ride the graph with it, in the manner of Modular Blob Storage §5.2 , and discharge is governed by the diagnostic and preservation obligations .
+The research account in Decidable by Construction , §§5 and 6.5, connects these carried facts to automatic procedure dispatch and reuse of checked theorem instances. Reuse depends on the actual participants, semantic interpretation and surviving premises; a stored result does not establish its applicability to a changed graph.
+14.4 Demand-Driven and Cone-Scoped Computation
+NORMATIVE : Coeffect analyses SHOULD be demand-driven, and across differential revisions ($G_0 \to G_1$) saturation analyses SHALL be pure functions of the semantic graph and the active ReachableDeltaCone ( §8.3 ). Saturation passes SHALL evaluate over AffectedCone while preserving validated facts on RetainedReachable , and SHALL NOT retain cross-revision mutable state that bypasses hyperedge incidence.
+PSG Contains Required Analysis
+Seq expressions Yield state analysis
+Mutable bindings Mutability analysis
+Match expressions Pattern binding analysis
+Any bindings Binding, demand and storage identity
+Closures, captured or escaping values Escape and lifetime classification
+Platform intrinsic applications Platform binding resolution
+Durable values (Freestanding Substrate profile) Durability coeffect carriage
+This principle (“only pay for what you use”) ensures compilation efficiency.
+14.5 The Control-Flow / Dataflow Pivot
+Coeffect analysis enables the control-flow / dataflow pivot :
+F# source : Declarative, compositional (dataflow style)
+Native code : Imperative, sequential (control-flow oriented)
+Coeffect analysis provides metadata enabling the compiler to pivot between representations while preserving semantics.
+Example : With yield state analysis, a seq expression can lower to:
+State machine (control-flow emphasis)
+Vectorized operation (dataflow emphasis, if applicable)
+Error Handling Program Hypergraph
+© 2025-2026 Braidpoint

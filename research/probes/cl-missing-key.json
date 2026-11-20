@@ -1,0 +1,28 @@
+{
+  "a key that is not there": ["object/get", ["quote", { "a": 1 }], "b"],
+  "a key that holds null": ["object/get", ["quote", { "b": null }], "b"],
+  "a record with a key that holds null fits an optional key": [
+    "schema/fits?",
+    ["quote", { "b": null }],
+    { "b": ["schema/optional", "value/number?"] }
+  ],
+  "a record without the key fits an optional key": [
+    "schema/fits?",
+    ["quote", {}],
+    { "b": ["schema/optional", "value/number?"] }
+  ],
+  "answers to a pattern for a key that holds null": [
+    "array/length",
+    [
+      "query",
+      ["schema/fits?", ["quote", { "b": null }], ["schema/open", { "b": "?b" }]]
+    ]
+  ],
+  "answers to a pattern for a key that is not there": [
+    "array/length",
+    [
+      "query",
+      ["schema/fits?", ["quote", { "a": 1 }], ["schema/open", { "b": "?b" }]]
+    ]
+  ]
+}

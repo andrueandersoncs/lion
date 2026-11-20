@@ -1,0 +1,47 @@
+[
+  "begin",
+  ["define", "runs", 0],
+  [
+    "define",
+    "promise",
+    [
+      "lambda",
+      ["thunk"],
+      [
+        "begin",
+        ["define", "done", false],
+        ["define", "value", null],
+        [
+          "lambda",
+          [],
+          [
+            "cond",
+            ["done", "value"],
+            [
+              "else",
+              [
+                "begin",
+                ["set!", "value", ["thunk"]],
+                ["set!", "done", true],
+                "value"
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "answer",
+    [
+      "promise",
+      ["lambda", [], ["begin", ["set!", "runs", ["number/add", "runs", 1]], 42]]
+    ]
+  ],
+  {
+    "forced once": ["answer"],
+    "forced again": ["answer"],
+    "times the body ran": "runs"
+  }
+]

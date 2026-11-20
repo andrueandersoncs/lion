@@ -1,0 +1,133 @@
+[
+  "begin",
+  [
+    "schema",
+    "Account",
+    { "balance": "value/integer?", "limit": "value/integer?" }
+  ],
+  [
+    "schema",
+    "Amount",
+    [
+      "schema/allOf",
+      "value/integer?",
+      ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+    ]
+  ],
+  [
+    "schema",
+    "Command",
+    ["schema/anyOf", { "deposit": "Amount" }, { "withdraw": "Amount" }]
+  ],
+  [
+    "define",
+    "step",
+    [
+      "lambda",
+      ["a", "c"],
+      [
+        "cond",
+        [
+          ["value/number?", ["object/get", "c", "deposit"]],
+          {
+            "balance": [
+              "number/add",
+              ["object/get", "a", "balance"],
+              ["object/get", "c", "deposit"]
+            ],
+            "limit": ["object/get", "a", "limit"]
+          }
+        ],
+        [
+          "else",
+          {
+            "balance": [
+              "number/subtract",
+              ["object/get", "a", "balance"],
+              ["object/get", "c", "withdraw"]
+            ],
+            "limit": ["object/get", "a", "limit"]
+          }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "never overdrawn and always overdrawn",
+    [
+      "lambda",
+      ["a"],
+      [
+        "boolean/and",
+        ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0],
+        ["number/lessThan", ["object/get", "a", "balance"], 0]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "keeps",
+    [
+      "lambda",
+      ["rule"],
+      [
+        "number/equals?",
+        1,
+        [
+          "array/length",
+          [
+            "query",
+            [
+              "not",
+              [
+                "exists",
+                ["?a", "?c"],
+                [
+                  "and",
+                  ["schema/fits?", "?a", "Account"],
+                  ["rule", "?a"],
+                  ["schema/fits?", "?c", "Command"],
+                  ["not", ["rule", ["step", "?a", "?c"]]]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "allows a state",
+    [
+      "lambda",
+      ["rule"],
+      [
+        "number/equals?",
+        1,
+        [
+          "array/length",
+          [
+            "query",
+            [
+              "exists",
+              ["?a"],
+              ["and", ["schema/fits?", "?a", "Account"], ["rule", "?a"]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  {
+    "a rule no account can meet, under withdrawals with no limit, is proved kept": [
+      "keeps",
+      "never overdrawn and always overdrawn"
+    ],
+    "the same rule allows some account": [
+      "allows a state",
+      "never overdrawn and always overdrawn"
+    ]
+  }
+]

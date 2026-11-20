@@ -1,0 +1,570 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct The Verification Spectrum
+What the Compiler Provides for Free
+The Four Tiers
+The Graduated Adoption Model
+Proofs as Optimization Enablers
+The MLIR Integration
+Standards-Body Compliance
+Current Status and Honest Scoping
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+The Verification Spectrum
+What the Compiler Provides for Free
+The Four Tiers
+Tier 1: Compilation Byproducts
+Tier 2: Scoped Hoare Assertions
+Tier 3: Parameterized Domain and System Lemmas
+Tier 4: Relational Judgments
+Certificates
+The Graduated Adoption Model
+Proofs as Optimization Enablers
+The MLIR Integration
+Standards-Body Compliance
+Current Status and Honest Scoping
+Scroll to top
+Documentation
+Design
+Categorical Foundations
+Verification as Byproduct
+Formal Verification as Compilation Byproduct
+The Verification Spectrum
+Fidelity’s intended verification workflow begins with information the program already supplies: typed operations, resource relationships, domain contracts and target declarations. The compiler retains that information in the Program Semantic Graph (PSG), generates supported obligations and dispatches the evidence needed to establish them.
+The common application workflow remains the same as coverage grows. Framework and domain-library authors establish reusable laws; application developers receive automatic instances through ordinary code. A new domain requirement may need to be stated, but theorem authoring is not an escalating obligation imposed on every user of a higher tier.
+Proof Composition and Tooling explains the reusable Rocq foundations and their integration boundaries. Composer’s architecture is the engineering record. This article summarizes the design, not completed coverage for every operation and target.
+What the Compiler Provides for Free
+“For free” describes the absence of an additional proof-authoring step in the supported application workflow. Inference, elaboration and evidence checking have implementation and execution costs.
+Dimensional inference solves measure equations under the declared algebra. Integer exponents require integer-preserving reasoning, including divisibility conditions; ordinary elimination over rationals is insufficient. Resource, lifetime, representation and layout facts have their own rules. A dimensional result does not itself prove a memory bound, numerical accuracy or a target capability.
+The PSG connects these facts to their participants and consumers. An automatically derived layout condition can use BAREWire’s actual storage plan and Fidelity.Platform’s declared capacity. A checked fact about one allocation cannot justify an unrelated access with a similar type.
+The Four Tiers
+The Decidable By Construction paper , §§5.1–5.5, develops this division through a distributed reduction. Structural inference supplies compatible quantities, arithmetic checks supply accumulator capacity, reusable system laws supply ownership and acceptance, and a relational argument connects the realized result to its specification. Supported Tiers 1–3 obtain their application parameters from code; Tier 4 retains project-specific relations until a registered construction supplies them.
+The tiers organize reasoning roles. They are neither a fixed sequence of tool invocations nor a scale of mandatory source annotations.
+flowchart TD
+P["Typed code, domain contracts and target facts"] --> T1["Tier 1: structural inference"]
+P --> T2["Tier 2: supported local analysis and solver conditions"]
+P --> T3["Tier 3: parameterized domain and system lemmas"]
+P --> T4["Tier 4: relational derivations"]
+T1 --> E["Checked evidence with shared participant identities"]
+T2 --> E
+T3 --> E
+T4 --> E
+E --> M["Mode composition and preservation through lowering"]
+E --> V["Source-linked Clef Proofs display"]
+Tier 1: Compilation Byproducts
+Admitted structural rules establish properties such as dimensional compatibility. Grade support, escape classification and ownership require their respective interpretations and transfer laws; none inherits a blanket principal-inference result merely by sharing the graph.
+Tier 2: Scoped Hoare Assertions
+The compiler generates local conditions from operations and their contracts. cvc5 handles supported encodings such as linear integer arithmetic, linear real arithmetic and bit vectors. A local range or layout check often fits here without a user-authored assertion.
+An explicitly requested bound remains an obligation to establish. Matrix positive definiteness, general energy conservation and arbitrary loop invariants cannot simply be sent to QF_LIA because they appear in attributes. Each needs an appropriate model, rule and supported encoding. The decidability discussion supplies the surrounding staged-checking account.
+Tier 3: Parameterized Domain and System Lemmas
+Reusable theorems extend coverage to supported resource transfers, protocol invariants, fault-model preservation and restricted probabilistic or termination results. The compiler instantiates a registered law with the actual graph participants and discharges its premises. A conservative range can sometimes be improved by a deterministic domain theorem; it need not become a probabilistic claim.
+A rejection-sampling theorem, for example, requires the stated assumptions about successive trials and acceptance. Arithmetic facts about an acceptance parameter alone do not prove the probabilistic theorem. If Rocq establishes the reusable law, that foundation remains in its evidence dependencies even when cvc5 checks the numerical premises at each use.
+Tier 4: Relational Judgments
+Relational reasoning compares executions, distributions or realizations. Fidelity’s compiler-relational ( cRHL ) and probabilistic-relational ( pRHL ) work needs the corresponding semantics and sound rule libraries. Probabilistic relational judgments can express couplings under stated preconditions; computational indistinguishability additionally requires the appropriate observations, adversary model and quantitative security argument. It is not the meaning of every pRHL judgment.
+The intended application path is automatic elaboration of supported derivations and automatic discharge of their leaves. Rocq-founded libraries such as selected Iris/Clutch developments are reuse candidates, subject to checked semantic correspondence. They are not drop-in implementations of every Fidelity relational judgment.
+Certificates
+A useful evidence record identifies:
+The proposition, program participants, source snapshot and compilation stage.
+The rule or theorem instance, actual parameters and checked premises.
+The retained proof or derivation, its checking mechanism and semantic mapping.
+The permitted axiom basis, remaining environment hypotheses and transitive checking dependencies.
+The dependencies whose changes invalidate the result.
+An emitted certificate is distinct from a checked certificate. An imported result is a proved lemma, never an axiom added because a solver returned success. The tier label alone does not determine the trusted computing base. These requirements are stated in Conformance §6.1 .
+The Graduated Adoption Model
+Coverage grows through admitted operations, domain contracts and reusable laws. The initial authoring community can be small: a law developed for one concrete framework need can serve subsequent applications automatically.
+An application may combine a Tier 2 buffer bound, a Tier 3 handoff invariant and a Tier 4 refinement. Mode shifts retain their justifications and participant identities. An optional editor suggestion may introduce an additional requirement or repair, but required checking cannot depend on accepting a suggestion or displaying proof annotations.
+Proofs as Optimization Enablers
+An established bound can permit removal of a redundant dynamic check. A lifetime result can justify a storage choice. Parallel reassociation requires the applicable numerical and dependency laws, including their target assumptions. A proof of one property does not authorize every optimization in the region.
+These are opportunities to measure on the realized target. Verification does not imply a universal speedup, nor eliminate validation at external boundaries whose inputs remain unknown before execution.
+The MLIR Integration
+The graph’s evidence must remain connected to actual operations through lowering. Copying an attribute is not a preservation proof. A pass needs a sound preservation rule for the property or a re-check that relates the transformed program to its contract. Unsupported translations remain explicit obligations.
+Arithmetic solver leaves and structured relational proofs have different roles. A conservation theorem cannot automatically become an affine constraint, and an llvm.assume instruction cannot establish the truth of its operand. The compilation sheaf account describes the proposed relationship between reasoning modes and compilation stages.
+Standards-Body Compliance
+Source-linked, checked evidence can support external assurance work by making a claim and its dependencies reviewable. Acceptance depends on the requirements of the relevant process and the actual evidence. This architecture does not itself establish certification or automatic regulatory acceptance.
+Current Status and Honest Scoping
+Composer’s Lattice integration record documents implemented source obligations and cvc5 dispatch, along with specific layout/lowering checks and their limits. General theorem-package admission, cross-mode certificate import, the proposed concurrent/distributed library adapters and broad Tier 4 automation remain engineering work.
+The proof-composition gates require an explicit semantic bridge, checked imports, a composed example with negative cases, measured editor dispatch and independent substrate realizations. This is how the architecture can grow useful coverage while keeping each reported guarantee precise.
+Quantum Substrate Continuous Learning
+© 2025-2026 Braidpoint

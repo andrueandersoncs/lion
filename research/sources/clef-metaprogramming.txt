@@ -1,0 +1,597 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming Quotations as Semantic Carriers
+Active Patterns for Compositional Recognition
+Computation Expressions as Delimited Continuations
+The Self-Hosting Path
+Beyond OCaml and Rust
+Latent Machinery
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+Quotations as Semantic Carriers
+Active Patterns for Compositional Recognition
+Computation Expressions as Delimited Continuations
+The Self-Hosting Path
+Beyond OCaml and Rust
+Latent Machinery
+Scroll to top
+Documentation
+Design
+Language Semantics
+Clef Metaprogramming
+Standing Art: Clef Metaprogramming Features in the Composer Compiler
+In today’s “move fast and break things” culture, it’s gratifying to see quiet, principled work hold up over the long run. Don Syme designed F# quotations, active patterns, and computation expressions over a decade ago; they now form the architectural backbone of our Composer native compilation pipeline. I call these “standing art”: capabilities that had been present in the language for years and became first-class features once we had an application for them.
+In the History of Programming Languages paper , section 9.9 describes how quotations emerged from Syme’s research at Intel on staged computation and metaprogramming. The original motivation was GPU code generation and database query translation. Today these same primitives support a complete native compilation pipeline for Clef without runtime dependencies, a use their designer’s original GPU and query-translation work did not target.
+Our Fidelity framework builds on three features Clef inherits from F#, which together provide infrastructure for systems programming:
+Feature Compilation Role Unique Capability
+Quotations Semantic carriers Encode constraints as inspectable data
+Active Patterns Structural recognition Compositional matching without type discrimination
+Computation Expressions Control flow abstraction Continuation capture as notation
+Together they supply the semantic encoding, the structural recognition, and the control-flow representation that self-hosting requires.
+Quotations as Semantic Carriers
+Quotations ( Expr<'T> ) encode program fragments as data. In typical F# usage, this enables dynamic code generation. In our Fidelity framework, quotations serve a purpose set by the context in which they’re employed: one of our first use cases is carrying memory constraints and peripheral descriptors through the compilation pipeline as first-class semantic information.
+Consider how Farscape will generate hardware bindings:
+let gpioQuotation : Expr < PeripheralDescriptor > = <@
+{ Name = "GPIO"
+Instances = Map . ofList [( "GPIOA" , 0x48000000un ); ( "GPIOB" , 0x48000400un )]
+Layout = gpioLayout
+MemoryRegion = Peripheral }
+@>
+This quotation is not evaluated at runtime. Our Composer compiler is designed to inspect its structure during PSG construction, extracting the peripheral layout, memory region classification, and instance addresses. The information flows through the nanopass pipeline and informs code generation: Alex emits volatile loads for peripheral access because the quotation carried that semantic through. This is the Farscape-to-register path for a microcontroller binding, set out in full for the MCU targets .
+This differs from reflection-based approaches. As compile-time artifacts, quotations require no runtime support and add no BCL dependencies or binary overhead. The F# compiler verifies their structure, and our Composer pipeline is designed to transform them.
+Active Patterns for Compositional Recognition
+Active patterns are a second component our Composer compilation draws on. They enable structural recognition without the brittleness of string matching or the complexity of type discrimination hierarchies. They are Clef’s answer to a recurring compiler construction problem: how do you classify program constructs cleanly?
+In our Composer, active patterns let the typed tree zipper and Alex traversal recognize PSG nodes:
+let (| PeripheralAccess |_|) ( node : PSGNode ) =
+match node with
+| CallToExtern name args when isPeripheralBinding name ->
+Some ( extractPeripheralInfo args )
+| _ -> None
+let (| SRTPDispatch |_|) ( node : PSGNode ) =
+match node . TypeCorrelation with
+| Some { SRTPResolution = Some srtp } -> Some srtp
+| _ -> None
+These patterns compose with & and | . They can be tested in isolation, and they encapsulate recognition logic. The traversal code becomes declarative:
+match currentNode with
+| PeripheralAccess info -> emitVolatileAccess info
+| SRTPDispatch srtp -> emitResolvedCall srtp
+| _ -> emitDefault node
+The alternative would be a nested conditional structure that mixes recognition with action, or a visitor pattern that spreads classification across multiple methods. Active patterns keep the structure visible and the logic local. The same recognition idiom becomes the public face of our design-time reflection surface in Opining Upon Reflection .
+Computation Expressions as Delimited Continuations
+As explained in detail in other blog posts, every let! in a computation expression is syntactic sugar for continuation capture:
+maybe {
+let! x = someOption
+let! y = otherOption
+return x + y
+}
+Desugars to:
+builder . Bind ( someOption , fun x ->
+builder . Bind ( otherOption , fun y ->
+builder . Return ( x + y )))
+The nested lambdas are continuations. This observation carries directly into native compilation: computation expressions already express the control flow our Composer compiler saturates as continuation state machines on the Program Semantic Graph.
+The Composer compilation strategy depends on the computation pattern:
+Pattern Regime Strategy
+Sequential effects (async, state) DCont Saturate as a continuation state machine
+Parallel pure (validated, reader) Inet Compile to data flow
+Mixed Both Analyze and split
+An async computation expression is designed to saturate as a continuation state machine, where each let! marks a suspension point whose captured continuation becomes a state index and resume block. A validated computation with and! combinators takes the interaction-net lane, where the independent branches can execute in parallel.
+We describe this construction in DCont Inet Duality . The application here is that referential transparency determines compilation strategy. Our coeffect system tracks what code needs from its environment, and this information guides the decomposition.
+The MLIR builder is itself a computation expression:
+let emitFunction ( node : PSGNode ) : MLIR < Val > = mlir {
+let! funcType = deriveType node
+let! entry = createBlock "entry"
+do ! setInsertionPoint entry
+let! result = emitBody node . Body
+do ! emitReturn result
+return result
+}
+Its own passes compile code written in exactly this computation-expression form.
+The Self-Hosting Path
+These three features provide the infrastructure for our Composer to compile itself. Quotations can represent the compiler’s own AST structures, and active patterns can match on its IR. Computation expressions structure the compilation pipeline.
+The underlying language machinery has been in place for years:
+The PSG builder uses computation expressions for monadic construction
+The typed tree zipper uses active patterns for correlation
+The nanopass pipeline operates on inspectable intermediate representations
+Self-hosting requires that the compiler can process its own source. Quotations encode the semantics, active patterns recognize the structure, and computation expressions express the control flow. The features Don Syme designed for metaprogramming and staged computation are what we intend to carry into bootstrap compilation.
+Beyond OCaml and Rust
+We draw inspiration from several language systems, some as a lesson to follow and some as a decision to read as a warning . OCaml provides native compilation and overlaps substantially with Clef, since we plan to use F* as the design-time proof-delivering component of our platform. Clef’s quotations for compile-time metaprogramming have a separate draw. OCaml’s PPX system operates on strings and requires external tooling. Rust provides procedural macros of comparable reach, but they too are string-based, operating on token streams rather than typed representations.
+Clef through the Fidelity framework offers something different:
+Capability OCaml Rust Clef/Fidelity
+Native compilation Yes Yes Yes (via MLIR)
+Typed quotations No No Yes
+Pattern-based recognition Match only Match only Active patterns
+Continuation notation No No Computation expressions
+Metaprogramming PPX (stringly) proc_macro (stringly) Quotations (typed)
+OCaml and Rust are mature, performant, production-scale language systems. Our Fidelity framework is early-stage, and our understanding of the position we occupy continues to develop. The distinction is architectural: Clef provides typed metaprogramming primitives that other ML-family languages approach through string manipulation. We have found no other representative implementations of this approach in the .NET-lineage literature we have reviewed, and we think it is worth developing further. We expect the metaprogramming primitives Syme designed to remain the basis for this compilation work as our compiler matures.
+The practical implication is design-time tooling. When quotations carry type information, the IDE can provide accurate completions, the compiler can verify structure, and transformations preserve semantics. This is the experience we aim to provide, with the tooling to make manual optimizations where the generated code requires tuning. We intend for our Fidelity framework and Composer to use this tooling internally, which would limit the “innovation budget” a user spends on these design-time tools. Realizing that intent will take time and consideration, and no small amount of head-scratching.
+Latent Machinery
+Three Clef features form the architectural backbone of our Composer compiler:
+Quotations encode memory constraints and semantic information as inspectable compile-time data
+Active patterns enable compositional structural recognition throughout the nanopass pipeline
+Computation expressions provide continuation capture as notation, splitting naturally between the DCont and Inet regimes
+All three predate our framework by years and have been stable in F# the whole time. They are standing art: capabilities Don Syme designed years ago that now carry our ideas around native compilation without runtime dependencies. Our Fidelity framework aims to show that the type-safe features Clef inherits are practical for systems programming, and that self-hosting is built on this infrastructure.
+The path forward involves continued development with appreciation for the foresight embedded in F#’s design. There is substantial work ahead in optimization, platform support, and tooling. We’re gratified the foundation is sound, and we will keep building on these three features, designed for staged computation and translation, as our native compiler takes shape.
+Absorbing Alloy
+© 2025-2026 Braidpoint

@@ -1,0 +1,124 @@
+[
+  "begin",
+  [
+    "define",
+    "exponent",
+    [
+      "lambda",
+      ["unit", "base"],
+      [
+        "cond",
+        [["value/null?", ["object/get", "unit", "base"]], 0],
+        ["else", ["object/get", "unit", "base"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "unitTimes",
+    [
+      "lambda",
+      ["a", "b"],
+      [
+        "array/reduce",
+        ["object/keys", "b"],
+        "a",
+        [
+          "lambda",
+          ["unit", "base"],
+          [
+            "cond",
+            [
+              [
+                "number/equals?",
+                [
+                  "number/add",
+                  ["exponent", "unit", "base"],
+                  ["object/get", "b", "base"]
+                ],
+                0
+              ],
+              ["object/remove", "unit", "base"]
+            ],
+            [
+              "else",
+              [
+                "object/set",
+                "unit",
+                "base",
+                [
+                  "number/add",
+                  ["exponent", "unit", "base"],
+                  ["object/get", "b", "base"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "times",
+    [
+      "lambda",
+      ["x", "y"],
+      {
+        "value": [
+          "number/multiply",
+          ["object/get", "x", "value"],
+          ["object/get", "y", "value"]
+        ],
+        "unit": [
+          "unitTimes",
+          ["object/get", "x", "unit"],
+          ["object/get", "y", "unit"]
+        ]
+      }
+    ]
+  ],
+  ["define", "distance", ["quote", { "value": 120, "unit": { "m": 1 } }]],
+  ["define", "duration", ["quote", { "value": 8, "unit": { "s": 1 } }]],
+  ["define", "rate", ["quote", { "value": 15, "unit": { "m": 1, "s": -1 } }]],
+  {
+    "a length and a time, added as numbers": ["number/add", 120, 8],
+    "a length and a time, as values that carry their units, added": [
+      "number/add",
+      ["object/get", "distance", "value"],
+      ["object/get", "duration", "value"]
+    ],
+    "a rate times a time, with units multiplied in plain code": [
+      "times",
+      "rate",
+      "duration"
+    ],
+    "a length divided into itself has no unit left": [
+      "unitTimes",
+      { "m": 1 },
+      { "m": -1 }
+    ],
+    "a schema says a value is a length": [
+      "schema/fits?",
+      "distance",
+      { "value": "value/number?", "unit": { "m": 1 } }
+    ],
+    "a time does not fit the schema of a length": [
+      "schema/fits?",
+      "duration",
+      { "value": "value/number?", "unit": { "m": 1 } }
+    ],
+    "the solver solves for an exponent": [
+      "array/head",
+      [
+        "find",
+        "?e",
+        [
+          "and",
+          ["schema/fits?", "?e", "value/integer?"],
+          ["=", ["number/add", "?e", -1], 0]
+        ]
+      ]
+    ]
+  }
+]

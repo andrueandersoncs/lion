@@ -1,0 +1,60 @@
+A Lion program is any JSON value. Evaluation depends only on the value's JSON type.
+JSON type Evaluates to
+number Itself.
+boolean Itself.
+null Itself.
+string The value of the name, when a scope it is written in declares it; otherwise a logic variable, for a name like "?x" ; otherwise itself. See Strings .
+array [] for an empty array; otherwise a special form or a function call. See Arrays .
+object (record) A record with the same keys, each value evaluated. See Records .
+Strings
+What a string means is settled by the scopes it is written in, before it runs, so a binding made later never turns data into a name. A scope declares its bindings from its start: a run's top scope declares what the environment and the database bind, every name the program's top level defines, and every relation and schema it declares; a lambda's scope declares its parameters and the names its body defines. A string is read in this order:
+If a scope declares the name, the string evaluates to the name's value. Read before its define has run, it fails with UndefinedYetError .
+If the name has the form ?name , where name starts with a letter or _ and continues with letters, digits, _ , or - , it evaluates to a logic variable. "?_" and names starting with ?_ are anonymous variables.
+If the name has the form module/name and reads as a misspelled name, it is an UnboundNameError that suggests the name: other names of its module are bound, as for "number/ad" , or a bound name is a letter or two away, as for "numbr/add" .
+Otherwise the string evaluates to itself, as "n/a" and "text/plain" do.
+The first element of an array is the one place a string is never data, since it names what the array does: one that no scope declares is looked up where the call runs. See Arrays .
+["begin",
+["define", "name", "lion"],
+{"bound": "name", "unbound": "unbound text", "quoted": ["quote", "name"],
+"with a slash": "n/a"}]
+["number/ad", 1, 2]
+The misspelled name fails wherever it stands: as a function, as a value, as a schema , and inside a rule when the rule is written. ["quote", "number/ad"] is the string.
+To use a string that might be bound as plain text, wrap it in quote .
+Arrays
+An empty array evaluates to [] .
+An array whose first element is the name of a special form or logic form , which no scope around it declares, is evaluated by the form's own rules.
+An array that starts with such a name but does not fit the form's shape, such as ["define", "x"] , fails with MalformedFormError , which says what the form takes.
+Any other array is a function call. Every element is evaluated, from left to right. The first must evaluate to a function, which is called with the rest as arguments. If it does not, evaluation fails with InvalidFunctionCallError .
+The first element names what the array does, so a string there is a name and never data. A name no scope declares is looked up where the call runs: a relation or function that code eval ran has bound by then is called, in plain code and in a rule, query, or find alike. Anywhere else, the same string is data.
+["begin",
+["eval", ["quote", ["begin",
+["relation", "visited", ["city"]],
+["fact", ["visited", "Lima"], ["visited", "Oslo"]]]]],
+{"found": ["find", "?c", ["visited", "?c"]],
+"asked": ["visited", "Oslo"],
+"the string": "visited"}]
+[["lambda", ["fact"], ["fact", 3]], "value/identity"]
+[1, 2, 3]
+Records
+A record evaluates each value and keeps its keys as written, in order. A record with a logic variable among its values waits for it, as a call does. A record holds values, so a goal among them is asked : the record holds true or false . Keys are never evaluated. A key must not be empty or __proto__ ; a program with such a key fails with SchemaError before it runs.
+{"sum": ["number/add", 1, 2], "nested": {"ok": ["boolean/not", false]}}
+Function calls
+Arguments are evaluated before the call, from left to right.
+A function may return a value or an Effect. Lion runs an Effect and uses its result.
+A lambda called with fewer arguments than it has parameters fails with ArgumentMismatchError . Extra arguments are ignored.
+A call with a logic variable among its arguments does not run. It waits : it becomes a value that a rule or query computes once the variable is bound. Every function waits this way, except relations, aggregates, graph algorithms, and lambdas, which take logic variables as they are.
+A function that is given a goal with a relation in it gets the goal's answer, true or false : the goal is asked . Relations, aggregates, graph algorithms, and lambdas take the goal itself.
+Calls nest as deep as memory allows. A call in tail position keeps nothing of the call it is in, as in Scheme. A lambda's body is in tail position, and so are the result of a cond case and the last expression of a begin that are. A lambda that calls itself there is a loop, and runs in constant memory.
+["number/add", "?n", 1]
+["begin",
+["define", "count", ["lambda", ["n", "total"],
+["cond", [["number/equals?", "n", 0], "total"],
+["else", ["count", ["number/subtract", "n", 1], ["number/add", "total", 1]]]]]],
+["count", 100000, 0]]
+Conditions
+A condition is true or false , wherever Lion tests one: a cond case, an argument of and , or , and not , and a filter of a rule or query. Any other value fails, with a message that shows it. A condition that is a goal with a relation in it is asked first, and gives true or false . match predicates fit a value when they return true .
+["cond", [["array/length", ["array/make"]], "empty"], ["else", "some"]]
+Names of forms
+A define , a set! , or a lambda parameter can bind any name but the empty string and __proto__ . A form's name a binding takes is a call where the binding is in scope, as a binding shadows a keyword in Scheme, and the form everywhere else. A body declares what it defines from its start, so a body that defines a form's name cannot also use the form: ["define", "define", 1] calls the name it defines, which has no value yet, and fails with UndefinedYetError , as R7RS Scheme makes such a definition an error. A relation or schema is bound for every run of its database, so its name cannot be a form's: begin , cond , define , set! , eval , lambda , match , quote , relation , schema , rule , fact , retract , query , find , assuming , exists , some , why , not , and , or , = , in , snapshot , or invariant .
+Each run
+Each evaluation ( run in TypeScript, one file on the command line, one live example on this page) starts with a fresh environment holding the bindings it was given, and an empty logic database unless one is passed in. Names defined in one run are gone in the next; a shared database keeps its relations, facts, rules, and invariants. See Names, scope, and environments .

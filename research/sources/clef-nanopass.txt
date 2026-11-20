@@ -1,0 +1,630 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation The Monolith Problem
+Nanopass Throughout the Pipeline
+The Migration to Portable MLIR
+Multi-Stack Compatibility Matrix
+Lessons from Extant Art
+Formal Foundations of Pass Composition
+Strategic Navigation
+Related Reading
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+The Monolith Problem
+Nanopass Throughout the Pipeline
+The Migration to Portable MLIR
+Before: LLVM Dialect Hard-Coded
+After: Portable MLIR Dialects
+Multi-Stack Compatibility Matrix
+Lessons from Extant Art
+Formal Foundations of Pass Composition
+Strategic Navigation
+Related Reading
+Scroll to top
+Documentation
+Compiler Internals
+Concepts
+Nanopass Navigation
+Nanopass Navigation
+Most compilers follow a familiar structure, as we touched on in our blog entry Frontend Unfuzzled . The “front end” parses developer source into an abstract syntax tree, often with type-related and other syntactic checks. The compiler’s “middle end” performs transforms on intermediate representations, and the “back end” generates machine code. Managed runtime compilation, as practiced by .NET and Java, represents a different category altogether. Those systems target virtual machines with garbage collection and JIT compilation, abstracting to ‘assemblies’ handed over to a runtime to manage the workload.
+Traditional ahead-of-time native compilation employs varied implementation strategies, though most established compilers share a common architecture: monolithic passes that recursively process entire program structures through intertwined transformations. The monolithic design began as a practical necessity. When memory was measured in kilobytes and disk space was precious, minimizing intermediate representations and performing multiple transformations in single traversals made economic sense. It evolved as standard practice for languages with stable semantics targeting mature platforms; a pattern that newer systems languages have largely adopted even though those original resource constraints no longer apply. While this architecture represents decades of hard-won engineering stability, it quickly reveals its limits when compiler infrastructure must adapt to emerging hardware architectures and novel execution models.
+As discussed in The Return of the Compiler , we are witnessing a fundamental shift away from managed runtimes toward native compilation, as heterogeneous computing and specialized accelerators dominate the landscape. The current AI super-cycle is clear evidence of that shift.
+Nanopass compilation inverts the traditional compiler approach. Instead of monolithic passes that interleave interdependent transformations in a single traversal, a nanopass compiler decomposes transformations into discrete, single-purpose passes that each perform one well-defined operation on an intermediate representation. The paradigm originated in Scheme compiler research and gained prominence through the nanopass framework developed by Andrew Keep and R. Kent Dybvig. Their work demonstrated that compiler complexity could be managed through numerous small transformations rather than fewer large ones.
+The Composer compiler applies this principle across the entire compilation pipeline, extending nanopass architecture past any single tier. From Clef source code to native binary, Composer currently executes approximately 25 distinct passes, each operating on precisely defined intermediate representations. We made this architectural choice in response to constraints encountered while designing for “multi-stack targeting”.
+The Monolith Problem
+Consider a traditional compiler’s type elaboration pass. It must:
+Resolve type variables to concrete types
+Apply type constructors and check constraints
+Specialize polymorphic functions
+Infer memory layouts for compound types
+Generate runtime type information where needed
+These operations are interdependent, which encourages implementing them in a single recursive traversal. The result is a monolithic pass that becomes difficult to inspect, test, or modify. More critically, it embeds assumptions about the target platform throughout its logic. When targeting x86-64, the pass might directly encode calling conventions or struct padding rules. Adapting this logic for ARM Cortex-M or CUDA GPU requires threading platform parameters through recursive calls or duplicating the pass entirely.
+The nanopass alternative decomposes this work:
+Resolve type variables (platform-agnostic)
+Apply type constructors (platform-agnostic)
+Infer memory layouts (platform-specific parameters)
+Specialize polymorphic functions (uses layout information)
+Each pass maps one specified intermediate representation to another. Platform-specific logic concentrates in Phase 4c, which consumes platform parameters without threading them through recursive calls. The other phases remain portable across all targets.
+Nanopass Throughout the Pipeline
+Composer applies this decomposition at every compilation tier:
+graph TD
+A[Clef Source] --> B[CCS Phase 0: Parse]
+B --> C[CCS Phase 1: Structural Construction]
+C --> D[CCS Phase 2: Symbol Correlation]
+D --> E[CCS Phase 3: Reachability]
+E --> F[CCS Phase 4: Type Overlay]
+F --> G[CCS/Baker Nanopasses: Elaboration and Saturation]
+G --> H[Publish Settled PSG Facts and Proof Premises]
+H --> I[Alex: Passive Huet Elements/Patterns/Witnesses]
+I --> N[Composer Backend: Target Lowering]
+N --> O[LLVM: Optimization]
+O --> P[LLVM: Code Generation]
+P --> Q[Native Binary]
+The FrontEnd (primarily CCS and Baker ) performs six phases that transform Clef syntax into a Program Semantic Graph (PSG). Each phase adds specific information without disturbing prior phases’ work. Phase 1 builds structural relationships from syntax. Phase 2 correlates symbols using Clef Compiler Services - our own hard fork of F#’s vaunted ‘FCS’. Phase 3 performs soft-delete reachability analysis. Phase 4 overlays some ‘intrinsic’ information using a zipper traversal. Phase 5 and beyond add enrichment metadata such as def-use edges and operation classifications - what we call ‘saturation’. At that point, our Program Semantic Graph (PSG) contains all of the information necessary to inform MLIR generation.
+The MiddleEnd , Alex, composes Elements through Patterns and Witnesses at actual Huet occurrences. It consumes immutable published PSG facts and emits admitted portable MLIR operations. Source semantics, declaration/ABI settlement, types, ranges, representations, captures and layouts must already be settled by CCS/Baker.
+CCS/Baker nanopasses establish declaration ownership, call contracts and compatible types before publication. Missing or inconsistent facts surface at that owning source contract. Alex and downstream MLIR passes do not reconstruct declarations or repair semantic mismatches.
+Composer’s BackEnd owns target-specific lowering from the admitted portable memref , arith , func , index , and scf forms through the selected target pathway. It may use standing MLIR and LLVM infrastructure while preserving the published source contract. All custom MLIR plugins and their compatibility dependencies are retired.
+The Migration to Portable MLIR
+Early Composer development hard-coded LLVM types directly into MiddleEnd MLIR generation. String types became !llvm.struct<(ptr, i64)> , pointers became !llvm.ptr , and memory operations used LLVM-specific intrinsics. The hard-coding worked for x86-64 but blocked multi-stack targeting.
+The problem manifested when considering embedded ARM compilation, one of our first targets after CPU compilation is “settled art”. ARM Cortex-M processors lack LLVM’s assumed memory model. Pointers are not opaque. They reference specific memory regions (SRAM, Flash, peripheral registers) with distinct access patterns. Using !llvm.ptr forced Cortex-M code through x86-64 assumptions, producing incorrect or inefficient binaries. Keeping those region distinctions intact down to the register is what Fidelity on MCU builds on.
+In the bigger picture, GPU targeting requires memory operations that LLVM cannot express. CUDA kernels operate on shared memory, global memory, and constant memory with different coherence semantics. AMD ROCm adds coarse-grained and fine-grained regions. FPGA designs need explicit HDL stream buffers. These targets cannot share LLVM’s pointer abstraction.
+The migration from LLVM types to portable MLIR required rethinking type representations at the MiddleEnd tier:
+Before: LLVM Dialect Hard-Coded
+graph LR
+A[Alex Witnesses] --> B["LLVM Types: !llvm.struct, !llvm.ptr"]
+B --> C[mlir-opt: BLOCKED for non-x86 targets]
+C --> D[LLVM Backend: x86-64 only]
+String types mapped to !llvm.struct<(ptr, i64)> . Memory operations used llvm.extractvalue and llvm.insertvalue . This worked for Linux x86-64 but failed for:
+ARM Cortex-M : Requires region-specific pointer types
+CUDA GPU : Needs address space qualifiers (global, shared, constant)
+AMD ROCm : Separate host and device memory spaces
+Xilinx FPGA : Stream interfaces instead of pointer loads/stores
+CGRA : Dataflow edges, not memory operations
+NPU : Tensor descriptors, not scalar pointers
+WebAssembly : Linear memory with bounds checking
+After: Portable MLIR Dialects
+graph LR
+A[Alex Witnesses] --> B[Portable MLIR: memref, arith, func, index, scf]
+B --> C[mlir-opt: Target-Specific Lowering]
+C --> D1[LLVM: x86-64]
+C --> D2[Custom: ARM Cortex-M]
+C --> D3[SPIR-V: GPU]
+C --> D4[HDL: FPGA]
+String types now map to memref<?xi8> , a dynamic-sized buffer of i8 elements. Memory operations use memref.dim , memref.extract_aligned_pointer_as_index , and index.casts . These operations work across all targets because they defer representation decisions to mlir-opt lowering passes.
+Multi-Stack Compatibility Matrix
+The migration unlocked previously blocked targets:
+Target Stack Before Migration After Migration Benefit
+x86-64 CPU !llvm.struct works memref → LLVM lowering Same output, cleaner architecture
+ARM Cortex-M BLOCKED (assumes LLVM memory model) memref → custom embedded lowering NOW POSSIBLE
+CUDA GPU BLOCKED (LLVM-only) memref → SPIR-V/PTX lowering NOW POSSIBLE
+AMD ROCm BLOCKED memref → SPIR-V lowering NOW POSSIBLE
+Xilinx FPGA BLOCKED memref → HDL stream buffer NOW POSSIBLE
+CGRA BLOCKED memref → dataflow lowering NOW POSSIBLE
+NPU (tensor) BLOCKED memref → tensor descriptor NOW POSSIBLE
+WebAssembly BLOCKED memref → WASM linear memory NOW POSSIBLE
+The key transformation occurred in a single function ( TypeMapping.fs:146 ):
+// Before: LLVM struct hard-coded
+| TypeLayout . FatPointer , Some NTUKind . NTUstring ->
+TStruct [ TPtr ; TInt wordWidth ]
+// After: Portable memref
+| TypeLayout . FatPointer , Some NTUKind . NTUstring ->
+TMemRef ( TInt I8 )
+This change propagated through the witness layer: Platform library functions needed updates to how they compose MLIR operations, and memory operations shifted from LLVM intrinsics to portable memref dialect operations. CCS/Baker settle semantic representation choices; Composer’s backend realizes those settled choices for the target.
+Lessons from Extant Art
+The nanopass framework repository provides theoretical grounding for structuring a compiler as single-purpose passes. Keep and Dybvig formalized the notion of pass composition through language definitions that specify valid transformations. Their framework generates pattern matchers and traversal code from declarative language descriptions, ensuring each pass operates only on valid inputs and produces only valid outputs.
+Composer does not use the nanopass framework directly. F# provides quotations, active patterns, and computation expressions as language primitives that enable similar guarantees without code generation. Quotations carry semantic constraints as inspectable data structures. Active patterns provide compositional recognition without type discrimination hierarchies. Computation expressions enable the XParsec combinator library that coordinates witness traversal.
+The Triton-CPU project contributed practical patterns for MLIR-based compilation. Triton-CPU adapts the GPU-focused Triton compiler’s progressive lowering approach to target CPUs instead, demonstrating that the same MLIR dialect architecture could serve different hardware substrates. Their work paralleled our research and showed that portable intermediate dialects could coexist with target-specific lowering passes. We had already arrived at this model in Composer’s early design, with the goal of broader application across devices and architectures.
+Formal Foundations of Pass Composition
+The practical side of nanopass compilation comes from implementation patterns like those in Triton-CPU. Targeting hardware from embedded microcontrollers to neuromorphic processors also depends on a formal account of transformation correctness, which reaches further than exhaustive testing can on its own.
+The formal model underlying nanopass compilation can be expressed through type-theoretic inference rules. Let L i L_i L i ​ denote an intermediate language at pass i i i , and T i : L i → L i + 1 T_i : L_i \to L_{i+1} T i ​ : L i ​ → L i + 1 ​ denote a transformation pass. The fundamental correctness property is captured by this inference rule:
+Γ ⊢ e : L i T i ( e ) = e ′ Γ ′ ⊢ e ′ : L i + 1 \frac{\Gamma \vdash e : L_i \quad T_i(e) = e'}{\Gamma' \vdash e' : L_{i+1}} Γ ′ ⊢ e ′ : L i + 1 ​ Γ ⊢ e : L i ​ T i ​ ( e ) = e ′ ​ This rule states that if expression e e e is well-typed in language L i L_i L i ​ under context Γ \Gamma Γ , and transformation T i T_i T i ​ produces e ′ e' e ′ , then e ′ e' e ′ must be well-typed in language L i + 1 L_{i+1} L i + 1 ​ under potentially updated context Γ ′ \Gamma' Γ ′ . The nanopass framework enforces this property through automatic generation of traversal code. Composer enforces it through F# quotations that carry type information and XParsec patterns that match only valid PSG structures.
+The sequence of transformations forms a pipeline:
+L 0 → T 0 L 1 → T 1 L 2 → T 2 ⋯ → T n − 1 L n L_0 \xrightarrow{T_0} L_1 \xrightarrow{T_1} L_2 \xrightarrow{T_2} \cdots \xrightarrow{T_{n-1}} L_n L 0 ​ T 0 ​ ​ L 1 ​ T 1 ​ ​ L 2 ​ T 2 ​ ​ ⋯ T n − 1 ​ ​ L n ​ Where L 0 L_0 L 0 ​ represents Clef source syntax and L n L_n L n ​ represents native machine code. Each intermediate language L i L_i L i ​ has a precise definition, and each transformation T i T_i T i ​ is independently verifiable. This decomposition enables:
+Local reasoning : Each pass operates on a single language pair without global dependencies
+Independent testing : Passes can be validated in isolation with synthetic inputs
+Incremental development : New passes insert into the pipeline without disrupting existing transformations
+Target flexibility : Late-stage passes vary by platform while early passes remain portable
+Strategic Navigation
+Navigation in this design is both mechanical and strategic. In the mechanical sense, successive passes walk precisely defined intermediate representations, and the PSGZipper provides bidirectional traversal of the Program Semantic Graph so witnesses observe context without threading state. In the strategic sense, we are charting a course through a rapidly evolving hardware landscape.
+Hardware and software codesign historically assumed a stable target architecture. Compilers optimized for x86 or ARM, and hardware vendors provided stable instruction set architectures across product generations. This assumption no longer holds. Neuromorphic processors, photonic accelerators, and reconfigurable fabrics present compilation targets that lack standardized programming models. Domain-specific architectures emerge for machine learning, cryptography, and signal processing, each with unique memory hierarchies and execution models.
+Nanopass architecture addresses this variability by isolating target-specific decisions in late-stage lowering passes. Composer’s FrontEnd and MiddleEnd produce portable MLIR that describes program semantics without committing to a representation for any particular target, and the BackEnd (mlir-opt and LLVM) provides the target-specific transformations. Adding a new target means implementing lowering passes without modifying the compiler core.
+The architectural boundary occurs at dialect selection. Portable dialects ( memref , arith , func , index , scf ) describe operations common across targets. Target-specific dialects ( llvm , spir-v , hls ) encode platform assumptions. Composer emits only portable dialects, delegating specialization to mlir-opt. This division mirrors the distinction in formal language theory between context-free grammars (portable structure) and attribute grammars (context-specific annotations).
+As hardware diversification accelerates, compilers that hard-code target assumptions into their core become brittle. Nanopass architecture provides a framework for managing this complexity through decomposition. The result is a compilation pipeline that navigates from high-level concurrent programming to diverse hardware substrates without requiring monolithic rewrites for each new target.
+Composer builds on decades of programming language theory, adapted to the practical constraints of multi-stack systems programming. Its late-stage lowering is designed to admit neuromorphic arrays, optical switches, and quantum processors as targets.
+This work is a concrete expression of the trajectory that The Return of the Compiler described as inevitable for systems programming. The migration from LLVM-specific types to portable MLIR establishes a unified compilation pipeline where LLVM lowering continues to serve established architectures while the same nanopass framework extends to neuromorphic processors, reconfigurable fabrics, and emerging accelerators.
+Related Reading
+Compiler Architecture & Implementation
+Coeffects and Codata in Composer - The witness/codata approach that enables observation-based MLIR generation
+Standing Art: Clef Metaprogramming in Composer - How quotations, active patterns, and computation expressions enable nanopass compilation
+Delimited Continuations: Fidelity’s Turning Point - Continuation-passing style as a unifying compilation strategy
+Type Systems & Migration
+Clef: From IL to NTU - The evolution from .NET type assumptions to platform-agnostic type representations
+Hardware Diversification
+Hardware Lessons from LISP - Historical context for the specialized hardware renaissance
+Platform Independence
+The Twilight of Lazy Lock-In - Why portable compilation matters for avoiding vendor lock-in
+Seeing Beyond Assemblies - Moving from binary distribution to source-based native compilation
+Coeffects and Codata Seq'ing Simplicity
+© 2025-2026 Braidpoint

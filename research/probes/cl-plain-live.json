@@ -1,0 +1,20 @@
+[
+  "begin",
+  ["relation", "order", ["id"]],
+  ["fact", ["order", 1]],
+  [
+    "define",
+    "counted_in_plain_code",
+    ["aggregate/count", ["find", "?id", ["order", "?id"]]]
+  ],
+  ["relation", "orders", ["n"]],
+  ["rule", ["orders", ["aggregate/count", "?id"]], ["order", "?id"]],
+  ["fact", ["order", 2]],
+  {
+    "a count defined in plain code, after a second order": "counted_in_plain_code",
+    "a count a rule derives, after a second order": [
+      "array/head",
+      ["find", "?n", ["orders", "?n"]]
+    ]
+  }
+]

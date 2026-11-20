@@ -1,0 +1,626 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution The Arity Question
+The .NET Model: Runtime Decides
+The OCaml Model: Arity Is Explicit
+Fidelity’s Approach: Principled Arity Tracking
+Why This Matters for Fidelity
+The Path Forward
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+The Arity Question
+The .NET Model: Runtime Decides
+The OCaml Model: Arity Is Explicit
+The “Arity Curtain”
+Fidelity’s Approach: Principled Arity Tracking
+Arity in the PSG
+Saturation Detection
+Closure Representation When Needed
+Why This Matters for Fidelity
+1. Optimal Code for Common Patterns
+2. Stack-Allocated Closures
+3. Predictable Performance
+4. Information Preserved, Not Discarded
+The Path Forward
+Scroll to top
+Documentation
+Design
+Structure and Performance
+Arity and Caution
+Arity On The Side of Caution
+When Haskell Curry formalized the technique that now bears his name, he established a principle that would shape functional programming for decades: every function takes exactly one argument. What appears to be a multi-parameter function is actually a chain of single-parameter functions, each returning another function until all arguments are consumed. This insight became foundational to the ML family of languages.
+Clef inherits this tradition from its F# lineage. Every multi-parameter function is, under the hood, a chain of single-parameter functions:
+let add x y = x + y
+// Desugars to: let add = fun x -> fun y -> x + y
+In ML-family languages this is the computational model, not syntax sugar. Partial application falls out naturally: add 5 returns a function waiting for one more argument. Higher-order functions compose, pipelines read left-to-right, and function signatures become self-documenting contracts.
+Currying carries an implementation burden. When functions are truly curried, every partial application produces a new function value. In a theoretical lambda calculus, this is immaterial. In a compiler targeting real hardware, it raises immediate questions about representation, allocation, and lifetime.
+In .NET, partial application creates a closure object on the managed heap. The garbage collector handles memory.
+Fidelity doesn’t need or want a managed runtime or garbage collector.
+The Arity Question
+When compiling Clef to native code without a runtime, we face one question: how do we represent function arity?
+Consider this code from our sample applications:
+let greet prefix name =
+Console . writeln $ "{prefix}, {name}!"
+let hello prefix =
+Console . readln () |> greet prefix
+The expression greet prefix is a partial application. In .NET, this silently allocates a closure object. In native compilation, we need to decide: what IS this value?
+The .NET Model: Runtime Decides
+.NET’s approach is to defer arity decisions to the runtime:
+flowchart LR
+A[F# Source] --> B[IL Generation]
+B --> C[CLR JIT]
+C --> D[Native Code]
+subgraph "Arity Unknown Until Runtime"
+B
+C
+end
+The compiler emits IL that creates delegate objects. The JIT compiles these on demand. Partial application? Allocate a closure. Full application? Still might allocate (the JIT doesn’t always optimize this away). The runtime handles everything dynamically.
+This works when you have:
+A garbage collector to reclaim closures
+JIT compilation to optimize hot paths
+Runtime type information for reflection
+Fidelity has none of these. We need arity to be explicit at compile time.
+The OCaml Model: Arity Is Explicit
+OCaml, a progenitor of F#, takes a different approach. In OCaml’s Lambda intermediate representation, every function carries its arity explicitly .
+(* OCaml Lambda IR - arity is part of the representation *)
+Lfunction { kind = Curried ; params = [ x ; y ]; body = ... }
+OCaml’s native compiler ( ocamlopt ) then makes a critical optimization based on observation: most function calls are saturated . That is, most calls provide exactly the number of arguments the function expects.
+Call Pattern OCaml Treatment
+add 5 3 (saturated) Direct call, register passing
+add 5 (partial) Allocate closure struct
+In real code, saturated calls dominate. By tracking arity explicitly, OCaml generates direct code for the common case while still supporting partial application when needed.
+The “Arity Curtain”
+OCaml developers speak of the “arity curtain,” the phenomenon where abstractions hide function arity from the compiler.
+let apply_to_three f = f 3 (* Compiler sees f as arity 1 *)
+let result = apply_to_three ( add 5 ) (* But add has arity 2! *)
+When a function passes through an abstraction boundary, its arity becomes opaque. The compiler can no longer optimize saturated calls because it doesn’t know how many arguments the function ultimately expects.
+This is a standing tension in ML compilation. OCaml accepts it as a tradeoff: optimize what the compiler can see, fall back to closures for what it cannot.
+Fidelity’s Approach: Principled Arity Tracking
+Design update, 26 September 2026: the original January discussion used a packed pointer-bearing closure example and described saturation as flattening nested applications. The current closure contract requires a function value and a separate environment, and source evaluation frontiers constrain when applications can be combined. This section records that contract, rather than claiming every example is already a validated compiler path.
+Arity in the PSG
+The Program Semantic Graph (PSG) retains the function’s source type and its declared application stages. A source type such as 'a -> 'b -> 'c alone does not establish that one native call consumes two arguments: the first application can execute a body that returns another callable. Hidden environment and result-destination parameters belong to the settled physical signature, not the source argument count.
+For a definition with two declared source parameters:
+// let greet prefix name = ...
+// Two declared parameters at one application boundary
+Saturation Detection
+CCS preserves the source applications. Baker can settle a complete direct invocation when the known callable and its argument stages justify it:
+// Source: Console.readln() |> greet prefix
+// Ordinary prefix and readln() arguments retain shared deferred identities.
+// The demanded body decides which values it needs; direct eager arguments
+// would instead be demanded at this activated application boundary.
+If an earlier partial application is stored, its ordinary supplied operands retain their shared deferred identities. Formation does not force them. Direct eager operands are demanded at the activated partial-application boundary; later uses reuse the established values without replay. Combining stages must preserve these distinct frontiers and cannot move a later operand ahead of the body producing a returned callable. The same rule governs stored and bare sequence operations .
+Closure Representation When Needed
+An unsupplied source argument leaves a function value. Its representation follows capture and use analysis: a captureless function needs no environment, while captured values travel in the flat closure representation . Saturation alone does not remove an existing environment. Before layout commitment, capture types and target layout facts must determine its extent; lifetime evidence selects stack, region, static storage, or permitted heap storage.
+Binding a partial application to a name does not by itself prove escape:
+let partial = greet "Hello" // Retains the supplied argument when formed
+partial "Ada" // Uses decide the required lifetime
+The portable closure form carries the function value and environment as two SSA values. Code is never stored as an integer or pointer field in that environment, and the pair is never packed or cast. Invocation passes the environment first, followed by the explicit arguments. A known implementation permits a direct call, provided it uses the environment recalled from this particular function value.
+Why This Matters for Fidelity
+The arity-aware approach gives us several benefits:
+1. Optimal Code for Common Patterns
+Most Clef code uses saturated calls. With explicit arity tracking, these compile to direct function calls with no closure overhead:
+List . map ( fun x -> x + 1 ) items // map has arity 2, fully applied
+2. Stack-Allocated Closures
+Scope-bounded environments can live on the stack. Escaping environments require storage covering all uses: an established region, static storage for a value constructed once and held for the program’s lifetime, or permitted heap storage for genuinely dynamic extent. Every referenced capture has its own covering-lifetime obligation. A target without suitable storage must diagnose an unsatisfied lifetime obligation.
+let addFive = add 5
+items |> List . map addFive // Captures and demanded uses determine residence
+3. Predictable Performance
+The PSG makes application stages, captured values, and selected storage inspectable. This exposes the allocation and initialization costs of the selected representation without making the source programmer choose a storage mechanism. A callback passed to a lazy operation can remain live in its deferred result; local syntax alone does not establish stack residence.
+4. Information Preserved, Not Discarded
+Tracking arity conservatively keeps a fact the source makes explicit: how many arguments a function expects. Erasing that information early treats every function value as an opaque arity-one thing and leaves a later stage to determine whether a call is saturated. Once the information is gone it cannot be recovered, which is the “arity curtain” above.
+Clef declines to make that erasure. Arity is recorded in the PSG and carried forward, so the decision “is this call saturated” is answered from a fact the compiler still holds rather than reconstructed from one it threw away. Arity tracking is one case of a discipline the framework applies throughout: information the compiler establishes is not discarded in lowering . Arity is preserved here for the same reason dimensional constraints are preserved through MLIR generation and a discharged proof is carried through the middle end rather than re-derived from the binary.
+MLIR carries this discipline the rest of the way. Its SSA form is already functional in shape, values immutable and scope following dominance, so Clef’s computational model maps to it without reconstruction. Its attribute system keeps a fact intact through the dialect conversions rather than losing it at each boundary. Explicit arity tracking preserves this alignment:
+flowchart TD
+subgraph "Clef Semantics"
+A[Curried Functions]
+B[Partial Application]
+C[Full Application]
+end
+subgraph "PSG Representation"
+D[Lambda with Arity]
+E[Settled application stages]
+F[Flattened Application]
+end
+subgraph "MLIR/SSA"
+G[func.func with N args]
+H[Function value + environment + call]
+I[Direct func.call]
+end
+A --> D --> G
+B --> E --> H
+C --> F --> I
+The Path Forward
+With arity tracking in the design, our sample applications are meant to compile without special handling for the curried function patterns idiomatic in Clef:
+items |> List . map transform
+data |> filter predicate |> map projection
+result |> Option . map processValue
+The next steps involve:
+Arity propagation through higher-order functions : When possible, infer arity through abstractions
+Closure escape analysis : Establish storage covering the environment and every referenced capture, using the target’s available lifetime classes
+Defunctionalization for closed sets : When all uses of a higher-order function are known, eliminate closures entirely
+The C-series delivery must cover these forms together: direct calls, stored partials, returned functions, higher-order uses, and dynamically selected callables. Completion requires preservation of source evaluation order, actual capture identity, typed calling conventions, and valid storage through target lowering. A successful direct-call example cannot stand in for that complete contract.
+This post is part of a series on Fidelity’s compiler architecture. See also Absorbing Alloy for how types became intrinsic to CCS, and Why Clef Is A Natural Fit for MLIR for the SSA-functional correspondence.
+Coupling & Cohesion Getting Inline
+© 2025-2026 Braidpoint

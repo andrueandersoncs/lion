@@ -1,0 +1,546 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types The two reference constructions
+Bidirectional composition and reversal
+Dimensions, resources and ordinary sharing
+One graph with joint relationships
+Resolution without application ceremony
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+On this page
+The two reference constructions
+Bidirectional composition and reversal
+Dimensions, resources and ordinary sharing
+One graph with joint relationships
+Resolution without application ceremony
+Scroll to top
+Documentation
+Design
+Type System
+Negative & Fractional Types
+Negative and Fractional Types
+Negative and fractional types would let Clef describe directed evaluation and value-sensitive resource use in its Native Type Universe. Their useful promise is that a compiler could keep those relationships available while choosing control flow, storage and a target realization. An application could use ordinary domain operations while Baker derives the supported obligations and instantiates the laws that justify them.
+Status: proposed extension. The reference calculi supply operational foundations. Their integration with Clef’s sharing, effects, inference and target representations still needs explicit rules and preservation arguments. The specification glossary keeps these forms non-normative; the working companion Composer/docs/Negative_Fractional_Types_Architecture.md develops their proposed compiler contract. A Path Less Traveled explains the relationship to native bidirectional composition and a quieter application interface. The working Composer/docs/Bidirectional_Composition_Plan.md tracks the coordinated work in one place.
+The two reference constructions
+James and Sabry distinguish additive and multiplicative extensions of reversible computation. Chen and Sabry subsequently give the fractional construction a value-indexed account. We propose the latter as Clef’s first reference core, keeping logic-variable search as a separate research direction.
+The additive construction gives a negative type Neg<A> . Its unit and counit turn evaluation between the positive and negative directions under the calculus’s directed semantics. The signature 0 -> A + Neg<A> does not describe allocating a tuple containing two ordinary values. Here 0 is the additive unit and + is a sum; ordinary Clef unit has a different meaning. Reading the construction as a bijection between ordinary sets would miss its operational interpretation.
+The value-indexed fractional construction pairs a particular v : A with a resource indexed by that value. Discharging the resource against w : A requires the specified match with v ; the reference calculus includes failure on a mismatch. A provisional surface name such as Recip<A> therefore leaves information that the elaborated construction must retain: the value index, the pairing instance and its usage conditions. The separate logic-variable calculus instead creates a variable whose resolution participates in its search semantics. Choosing one account changes the operational contract.
+Fractional Types: Expressive and Safe Space Management for Ancilla Bits makes the storage consequence concrete: allocation supplies a matching deallocation resource, and safe reclamation requires restoring the ancilla’s initial value. This is a classical reversible-language construction. ReQWIRE addresses the related quantum-circuit problem of proving that temporary qubits return to their initial state. Connecting the two to Clef requires an interpretation of its resource operations and, for quantum use, evidence that cleanup preserves the remaining quantum state. A matching type name or a live buffer alone cannot establish that result.
+The categorical conclusion also needs care. Chen and Sabry’s February 7, 2021 erratum corrects Theorem 25’s inverse-category claim: generalized inverses need not be unique. It does not withdraw Theorem 24’s compact-closure result or the separate pointed fractional construction. A selected reversal operation can still have checked laws; its selection and those laws must remain explicit.
+Compact closure itself supplies dual objects and unit/counit maps satisfying snake equations. It does not make every program invertible, make every dagger unitary, or make every object a tensor inverse. The extension must state which additional equations its operations establish.
+Bidirectional composition and reversal
+A computation can receive requirements from a later use while producing values for that use. The compiler can represent both dependencies without promising to recover an earlier runtime state. For example, a required odd output from an addition constrains its inputs but does not uniquely identify them. Reversibility adds an inverse or reconstruction law over an admitted state domain.
+The distinction matters for library composition. Two state constructions can share the arrow shape S -> (A, S) while connecting intermediate state in different directions. Baker needs the selected operation’s semantics to establish the connection. Removing a source wrapper does not remove that obligation. A Haskell reference can help specify the composition laws without determining Clef’s public names or requiring a dedicated application-facing monadic builder.
+Nor does every reversible operation need a backup beside its result. Consider a model whose existing state consists of coordinates q and momenta p . This schematic update has a computed inverse:
+forward: reverse:
+p := p + F(q) q := q - G(p)
+q := q + G(p) p := p - F(q)
+The equalities hold for total pure F and G under unchanged parameters, with exact addition/subtraction on the admitted domain or explicitly modular arithmetic. Reverse order restores the inputs needed to recompute each increment. The two state components already belong to the model; no sequence of their earlier values is required. Ordinary rounded floating-point updates need a further argument. JANUS is a concrete example of constructing bitwise reversible numerical updates with integer and floating-point arithmetic.
+For a many-to-one operation, enough distinguishing information must instead remain available or be reproducible. The recovery policy can use a smaller residual, a checkpoint, or deterministic replay. An inverse recipe and its proof are compiler information; retained execution values consume runtime storage. The Lyapunov window describes a proposed error-bounded reconstruction policy and its separate numerical and storage obligations.
+Dimensions, resources and ordinary sharing
+The proposed notations describe different kinds of information:
+Neg<float<N>> a force value participating in directed reverse evaluation
+Recip<float<N>> provisional notation for a value-sensitive force resource
+float<N^-1> a numerical quantity with reciprocal-force dimension
+A reciprocal resource does not automatically invert a physical dimension. Rational measure exponents are likewise a separate dimensional extension. Kennedy-style dimensional unification can supply one component of the analysis; it does not establish value matching, inverse laws or resource usage.
+Clef’s lifetime analysis and flat closure representation help identify where a value lives and which delayed computation can access it. Those properties do not make all values linear or all operations information-preserving. Ordinary immutable sharing must coexist with explicit rules for exclusive resources. Copying a frame or forcing a memoized value twice cannot silently create two independently consumable instances of one resource.
+A captured immutable scalar retains its value across a delay. A captured mutable location retains its storage identity while its contents may change. Reversal or resource discharge must establish which value it actually needs. BAREWire schemas and lifetime contracts extend the representation account across boundaries, while delivery, external effects and recovery require their own protocols.
+One graph with joint relationships
+The PHG gives an operation and its requirements shared participant identities. Some facts can be attached to one node, such as a known dimension. Other obligations relate several participants: an operation, a value index, a resource instance, a later consumer and their storage. A typed hyperedge makes that relation explicit. It is part of the program’s semantic representation, not a second running computation.
+For this extension the relation would retain:
+the selected operation and its ordered inputs and outputs;
+the carrier type, value index and scoped pairing instance;
+the allowed resource uses and matching or failure behavior;
+the applicable law, its premises and discharge evidence;
+any retained runtime information required by the selected realization.
+Static source identities also need an interpretation for repeated execution. Two calls to the same allocation site do not create the same resource instance. Likewise, attaching a proof-obligation label does not establish the obligation. A lowering must preserve the checked relationship or re-establish the property its target operations require.
+The analyses have different mathematical structures. Dimensional equations, lifetime orders, support joins and value equalities need their own transfer rules and sound interfaces. A particular analysis may use a lattice to organize improving knowledge. That does not make the hypergraph itself a lattice or give the combined system one unification algorithm and complexity bound.
+Resolution without application ceremony
+The intended application path uses domain operations whose laws are admitted by the framework or library author. Baker identifies the construction, derives its obligations and checks the available premises. Alex witnesses the settled construction into a permitted target realization. Proof composition and tooling describes how reusable laws can support this ordinary-code workflow without requiring a handwritten proof at each use.
+A matching condition known statically can be discharged before execution. A contract that permits runtime matching must preserve both its success and failure behavior. A required static condition that remains unresolved blocks the boundary relying on it. A solver’s satisfying assignment cannot replace an actual input, and convergence of compiler analysis does not prove productivity of a source-level recursive value.
+The memory objective is similarly concrete. Keep current state and required live work; retain recovery information only where the selected contract requires it. For a fixed number of forward-AD directions, current tangents need not form a history tape. Tangents carry derivatives, however, and do not themselves establish an inverse. Representation, reconstruction tolerance, checkpoint policy and peak live storage should meet in the same region’s constraints before a realization is selected.
+These mechanisms could support reversible simulation, controlled resource discharge and recovery-aware model updates. Bayesian evidence, quantum unitarity and adiabatic approximation each add their own domain laws. A common graph can preserve their connections while keeping the conclusions distinct. The useful compiler result is a supported construction with an inspectable justification and a realizable resource budget.
+For the adiabatic case, Jansen, Ruskai and Seiler give error bounds with explicit gap dependence. Applying such a bound also requires its Hamiltonian regularity, derivative bounds, initial-state and schedule assumptions. A fractional resource can track a value needed by that schedule; it does not prove the adiabatic approximation or account for physical noise by itself. The quantum design keeps those device obligations separate.
+From BCL to NTU Structural Polymorphism
+© 2025-2026 Braidpoint

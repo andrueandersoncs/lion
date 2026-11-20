@@ -1,0 +1,9 @@
+DECISIONS.md, the section lambda-arity, at commit 7e4b4ad:
+<a id="lambda-arity"></a>
+
+## lambda-arity
+
+Now: `extra-arguments-ignored`.
+
+- 2026-04-01 `lambda-arity`: `extra-arguments-ignored`: "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback." (`c771be4`, `2026-11-13-core-0.8.0.json`, `356e74a`, `arity-rule.json`, `README.md`)
+

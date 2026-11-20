@@ -1,0 +1,599 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development Overview
+Semantic Requirements
+Clef Interactive (clefx)
+Script Files
+Memory Model in Interactive Mode
+Platform Targeting
+Value Display Without Runtime Reflection
+Tooling Architecture
+Package Management Integration
+Tooling Integration
+Interoperability
+Diagnostics
+Grammar
+JavaScript Boundary Semantics
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+Overview
+Semantic Requirements
+Clef Interactive (clefx)
+Invocation
+Session Model
+Execution Model
+Script Files
+File Extension
+Script Structure
+Script Directives
+Shebang Support
+Memory Model in Interactive Mode
+Platform Targeting
+Value Display Without Runtime Reflection
+Tooling Architecture
+Package Management Integration
+Tooling Integration
+Interoperability
+Diagnostics
+Grammar
+Scroll to top
+Language Specification
+Interactive Development
+Interactive Development
+This chapter specifies native interactive Clef execution, script files, session
+state, and integration with development tooling.
+Overview
+Interactive development keeps the compiler available for repeated submissions,
+inspection and native invocation. Clef source has the same type, effect,
+lifetime and target requirements whether submitted interactively or compiled
+ahead of time.
+Name Role
+.clef Clef implementation source, compiled through CCS and Composer.
+.clefx Clef script file.
+clefx Clef interactive CLI.
+Clef has no separate signature-file extension. Module signatures are declared
+inline; see Namespace and Module Signatures .
+Semantic Requirements
+One semantic pipeline. CCS and Baker perform source admission,
+construction, saturation and proof checking. Composer and Alex witness the
+resulting graph under the ordinary target and lowering contracts.
+Native execution. Interactive Clef behavior comes from the admitted
+native code.
+Versioned observations. Types, graphs, proofs, artifacts and execution
+results retain their source, compiler-generation and target identities.
+Shared authority. Editors, agents and other clients consume the same
+compiler-owned facts and session contract.
+Comparable behavior. For an admitted computation, interactive and AOT
+execution must agree under equivalent inputs and initialization.
+Clef Interactive (clefx)
+Invocation
+The interactive CLI is named clefx .
+Session Model
+A session identifies its source submissions, selected project and dependencies,
+target, compiler generation, checked definitions, evidence and native execution
+products. Session-visible results must distinguish checking from execution:
+a checked declaration alone establishes neither completed initialization nor
+the existence of a native value.
+A submission and any derived result retain the revision and origin needed to
+distinguish current state from stale work.
+Changed source, dependencies, target or compiler implementation invalidate the
+products that depend on them. Reuse requires valid provenance for every
+dependency.
+Required unresolved premises remain explicit at the computation’s commitment
+boundary. Native invocation requires those premises to be established.
+Shared clients must select their session and target explicitly.
+A session must define the behavior of binding and type redefinition, references
+retained by earlier code, submission commitment, and recovery after partial
+execution failure for each operation it admits. It must reject an operation
+whose required session semantics it cannot provide.
+Execution Model
+The native interactive pathway is:
+Clef source
+-> CCS and Baker
+-> versioned semantic graph and required evidence
+-> Alex witnesses
+-> admitted MLIR
+-> LLVM JIT
+-> native invocation
+The backend lowering contract applies at the
+same boundaries as in AOT compilation. Interactive execution uses native code;
+there is no separate interpreter or hybrid execution mode.
+A .NET or FSI host may execute the compiler implementation and inspect its data.
+The host’s evaluation and value representations do not define Clef semantics.
+The session contract does not require a particular actor or process topology.
+Script Files
+File Extension
+Clef script files use the .clefx extension. A Clef script uses Clef source and
+semantics through the native compilation pipeline.
+Script Structure
+A script contains declarations and expressions. Script admission and execution
+must preserve source identity, dependency resolution and initialization order.
+Repeated loading and effect replay are subject to the same checking, lifetime
+and invalidation requirements as other session operations.
+Script Directives
+Script directives are subject to the ordinary compiler, project and lifetime
+contracts. F# assembly-loading directives are not Clef dependency mechanisms.
+Shebang Support
+The lexer treats a leading shebang as a comment, as described in
+Lexical Analysis .
+Memory Model in Interactive Mode
+Native interactive values follow the ordinary
+lifetime and
+memory-region contracts, including ownership, region,
+representation and target-admission requirements.
+Retained values require an explicit storage lifetime and an admitted host/native
+boundary. Reset, unloading or replacing code must account for live values,
+closures and external references that depend on that code or storage. The
+session must not expose invalidated native storage as a valid value.
+Platform Targeting
+Types, widths, layouts, extern bindings and evidence come from the selected
+target’s declarations. The host’s .NET types and ABI do not choose Clef layouts.
+Native invocation requires a compatible, explicitly selected execution
+environment and its admitted boundary contracts.
+Changing target invalidates target-dependent compiler, proof and execution
+products.
+Value Display Without Runtime Reflection
+Native value presentation must use compiler-known type and layout information
+and an admitted representation/lifetime boundary. Clef does not provide a
+universal obj container or runtime reflection. The ordinary
+formatting contracts
+apply.
+Formatting must not require evaluating the user’s computation a second time.
+Tooling Architecture
+Composer provides the compiler/execution service. CCS supplies semantic facts.
+Lattice and other clients present those facts through versioned projections
+with the source, compiler-generation and target identities of the underlying
+observations.
+When a source edit advances an interactive or design-time session from accepted
+revision $G_0$ to candidate revision $G_1$:
+Causal Delta Cone : The compiler SHALL determine the ReachableDeltaCone
+( Program Hypergraph §5.1 ,
+Program Semantic Graph §8.3 ),
+identifying SeedRoots , NewlyLitNodes , ExtinguishedNodes , AffectedCone ,
+and RetainedReachable .
+Cone-Scoped Re-evaluation : Saturation and proof-discharge analyses SHALL
+re-evaluate affected judgments over AffectedCone , retaining previously
+established judgments and proof certificates on RetainedReachable only
+where their complete support remains valid in $G_1$.
+Revision-Authorized Projections : Client and execution projections SHALL
+publish updated semantic facts, diagnostics, proof statuses, and executable
+replacements for AffectedCone and retire observations for ExtinguishedNodes
+under the revision identity of $G_1$.
+Note : In the Fidelity toolchain, editor edits settled across a debounce
+interval trigger the causal shadow pass in CCS/Baker, update design-time hover
+and proof projections in ClefAutoComplete and Lattice over AffectedCone ,
+and—when execution or hot module replacement is demanded—witness only the
+affected scopes through Alex and link them against retained realization
+segments in Composer.
+Package Management Integration
+Interactive dependencies must participate in the ordinary project/dependency
+identity, checking and invalidation contracts. A package-loading directive must
+not bypass those contracts.
+Tooling Integration
+Editor evaluation and shared client observations use the same session
+authority. Clients must distinguish source diagnostics from execution results.
+Interoperability
+Native interactive calls retain the ordinary
+FFI boundary requirements, including source declarations,
+target ABI, ownership and lifetime. JIT linking must preserve these requirements
+and the evidence on which admission depends.
+Diagnostics
+Interactive clients must distinguish source diagnostics, unresolved premises,
+unsupported session operations, stale observations, target incompatibility and
+execution failures.
+Grammar
+Clef source within submissions follows the ordinary language grammar.
+FFI Boundary Semantics JavaScript Boundary Semantics
+© 2025-2026 Braidpoint

@@ -376,5 +376,67 @@
       ["net_rank", "joins", "?net_rank"],
       ["stage", "joins", "?stage"]
     ]
+  ],
+  "Clef: verdicts, ranks, and what each would change": [
+    "query",
+    [
+      "and",
+      ["weighed_in", "?idea", ["quote", "clef"]],
+      ["verdict", "?idea", "?verdict"],
+      [
+        "or",
+        ["rank", "?idea", "?rank"],
+        ["and", ["not", ["rank", "?idea", "?_"]], ["=", "?rank", null]]
+      ],
+      [
+        "or",
+        [
+          "and",
+          ["waits", "?idea", "?_"],
+          [
+            "=",
+            "?would_change",
+            ["aggregate/unique", ["find", "?x", ["waits", "?idea", "?x"]]]
+          ]
+        ],
+        ["and", ["not", ["waits", "?idea", "?_"]], ["=", "?would_change", null]]
+      ]
+    ],
+    { "order": "rank" }
+  ],
+  "Clef: beliefs about Lion, and the evidence against them": [
+    "query",
+    [
+      "and",
+      ["assumption", "?belief", "?said"],
+      ["string/startsWith", "?belief", "cl-"],
+      [
+        "or",
+        ["and", ["violated", "?belief", "?evidence"]],
+        [
+          "and",
+          ["confirmed", "?belief"],
+          ["=", "?evidence", ["quote", "confirmed"]]
+        ],
+        [
+          "and",
+          ["unsettled", "?belief", "?_"],
+          ["=", "?evidence", ["quote", "no evidence yet"]]
+        ]
+      ]
+    ]
+  ],
+  "Clef: techniques Clef designs but does not say it has built": [
+    "find",
+    "?technique",
+    ["stated", { "designed": "?technique", "in": ["quote", "Clef"] }, true]
+  ],
+  "Clef: caveats": [
+    "query",
+    [
+      "and",
+      ["weighed_in", "?idea", ["quote", "clef"]],
+      ["caveat", "?idea", "?not_given", "?technique"]
+    ]
   ]
 }

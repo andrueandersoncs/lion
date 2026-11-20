@@ -1,0 +1,42 @@
+A failed evaluation is a typed Effect failure. Each error has a _tag you can catch with Effect.catchTag . On this page and in the editor, failures show as Tag: message .
+Tag Raised when
+SchemaError The program is not a valid Lion expression, such as a record key __proto__ ; a function receives an argument of the wrong type; or eval is given something that is not JSON.
+UnboundNameError A string of the form module/name is evaluated, nothing is bound to it, and it reads as a misspelled name: other names of its module are bound, or a bound name is a letter or two away, which the message suggests. The error holds the string as unbound and the suggestion, or null , as nearest . Inside quote the string is data.
+InvalidFunctionCallError An array's first element does not evaluate to a function, including a string no scope declares. A misspelled module/name is an UnboundNameError instead.
+MalformedFormError An array starts with a special form's name that no scope declares, but does not have the form's shape, such as ["define", "x"] . The message says what the form takes, with an example. The error holds the array as expression , the form's name as form , and what it takes as usage .
+UndefinedYetError A name is read before the define , relation , or schema form that binds it has run. A body declares the names it defines from its start, so the string means that definition, which has no value yet. A body that defines the name of a form it uses, as ["define", "define", 1] does, fails with it too, and the message says so. The error holds the name as unassigned .
+ArgumentMismatchError A lambda is called with fewer arguments than it has parameters.
+ArithmeticError Arithmetic has no finite result, such as division by zero or an overflow. JSON cannot hold Infinity or NaN.
+LogicError A logic form fails: an unsafe goal or rule, a recursion or question that breaks the rules, a broken invariant or query assertion, a key conflict, a bad option, and more. The message says what and where.
+WaitingError A value was needed before it is known. A host function gets this error from call when a Lion function's value is not known yet; the call the host function is part of then waits, so a program does not see it. A program sees it when a fact , retract , or why written inside a rule, query, or find is given a question: those forms act right away, so they cannot wait.
+NotAnObjectError A function that reads keys received something that is not an object, or a method function received null .
+KeyNotFoundError object/get-path reached a key that is not there.
+IndexOutOfBoundsError object/get-path indexed past the end of a list.
+NotAnArrayError object/get-path used a numeric segment on something that is not a list.
+PathTraversalError A path passed through a value that is not an object before its last key, or a key that is not there.
+InvalidPathError A path argument is not a string.
+NotAFunctionError object/call-method or object/get-method named something that is not a method.
+MethodNotFoundError The end of a method path is not a method.
+EmptyPathError A method path is empty.
+NotAConstructorError object/new was given something that is not a class.
+Examples
+["number/add", "one", 2]
+["number/plus", 1, 2]
+["plus", 1, 2]
+["define", "x"]
+["begin", ["define", "total", ["number/add", "tax", 1]], ["define", "tax", 2]]
+["number/multiply", 1e308, 10]
+[["lambda", ["a", "b"], "a"], 1]
+["begin",
+["relation", "edge", ["from", "to"]],
+["relation", "lonely", ["node"]],
+["rule", ["lonely", "?n"], ["not", ["edge", "?n", "?_"]]]]
+["object/get-path", ["quote", {"a": {"b": 1}}], "a.c"]
+Errors inside rules and queries
+A function that fails while a rule or query runs it fails the rule or query. The failure is a LogicError that names the call and the values it ran on. An ArithmeticError stays as it is, since it already names both. A filter that is not true or false , and an answer that is not data, fail with a LogicError too.
+["begin",
+["relation", "reading", ["value"]],
+["fact", ["reading", 4], ["reading", "n/a"]],
+["query", ["and", ["reading", "?v"], ["number/greaterThan", "?v", 3]]]]
+Errors from host functions
+A host function that returns a failed Effect fails the program with that Effect's error. A host function that throws, or a defect inside the evaluator, fails the program as a defect rather than a typed error; Effect.runPromise rejects with it.

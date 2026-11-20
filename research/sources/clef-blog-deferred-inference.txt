@@ -1,0 +1,554 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference Deliberate Optionality
+Immutable Evidence
+A Force in Context
+Target Knowledge
+Pending Obligations
+Inferred Fabric
+Exact Accumulation
+Implementation Horizon
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+Deliberate Optionality
+Immutable Evidence
+A Force in Context
+Target Knowledge
+Pending Obligations
+Inferred Fabric
+Exact Accumulation
+Implementation Horizon
+Scroll to top
+Blog
+The Gift of Deferred Inference
+The Gift of Deferred Inference
+How information preservation can be a power tool for optimization
+June 27, 2026 · Houston Haynes · 18 min read
+Compilation Types Analysis
+Every developer, whether by accident of history or through a specific educational arc, lands somewhere on the spectrum between concrete and abstract code conventions. The concrete end commits early and commits by hand: name the type, fix the width, pin the layout, and carry those decisions forward as the program grows. The abstract end leaves what it is made of to be settled later, by inference, by a compiler pass, by anything other than a decision made at the keyboard before the shape of the work is known. Anyone who has read APL or one of its descendants has seen the far pole of that end. An operation is written across a whole array as a single verb. The shape and the element layout are the runtime’s business and never the programmer’s. The notation describes the transformation and says nothing about the storage. Most working code lives nowhere near that extreme. It nudges toward the concrete end, less a theoretic conviction than merely when the language asks . A statically typed language is usually the one that asks earliest and most insistently, and that is where static typing earned its reputation for burden: it is read as the bargain where safety is paid for in decisions made up front, before there is enough information to make them well. The up-front decision and the static guarantee are not actually the same thing, though, and a type system can keep the second while giving back the first.
+Nowhere is the concrete end of that spectrum more exposed than in the choice of a numeric format. The first quantities of a computation go down before the computation has a shape, a force, a velocity, a voltage off a sensor, and already the language wants a concrete answer: store this as what, a float , a double ? The answer is not available, because the range these values will take is a property of the computation that is not finished being built. So the developer does what everyone does, reaches for double because it is wide and forgiving, and keeps going, because the work was to get the computation right and not to stop at the door and adjudicate a number format before the second line is written. The cost of that reflex shows up years later, if ever, when a float would have held the precision that mattered, or when a long run drifts because the format spent its bits in the wrong place.
+The reflex can do worse than drift. Here is a running accumulation, the kind at the heart of any integrator or sensor total, written in C the way it gets written, with float chosen because the inputs were sensor readings and float is what the sensor library returned:
+// running total of a long stream of small increments
+float total = 0.0f ;
+for ( long i = 0 ; i < n ; i ++ ) {
+total += sample [ i ]; // each sample is small; total grows without bound
+}
+A float carries about seven significant decimal digits. Once total is large enough, adding a small sample[i] can round back to total . The sum then stops advancing while the loop keeps running. A wider format postpones that point, and an accumulation method that preserves the small contributions can address it directly. Either choice requires information about the values and the calculation. Naming a format before that information exists leaves the developer carrying the numerical obligation by hand.
+The other extreme exacts the same tax in a different currency. Take a numerical staple, the variance of a sample, written in APL close to its mathematical definition and a pleasure to read:
+var ← { ( + / ( ⍵ - ( + / ⍵ ) ÷≢ ⍵ ) * 2 ) ÷≢ ⍵ } ⍝ mean of squared deviations
+That one line is the entire computation: subtract the mean from each element, square, sum, divide by the count, with ≢ the tally and +/ the sum across the array. Nothing on the page names a width, a shape, a length, or a format, and that economy is what draws people to it. But none of it is gone. The rank of the argument, whether ⍵ is a vector or a matrix, which axis a reduction folds along, whether the result is a scalar or an array the next stage can consume, all of it has to be true for the line to mean what the author intended, and none of it is stated where the language could hold the author to it. The discipline did not disappear. It moved into the developer’s head, and it stays there, carried from the keyboard through every later call. C makes the developer commit the format too early. APL lets the developer commit almost nothing and carry the rest by hand instead. The expressive distance between the two poles is enormous, and the tax at both ends is the same: whatever the language leaves unstated, the human holds in their head.
+Clef splits the static guarantee from the up-front decision, so the developer can keep the choice open until there is enough information to settle it. Write a force in newtons, a velocity in meters per second, or a voltage from a sensor. float<newtons> carries a checked dimensional type while the rest of the calculation supplies the context for its representation. We want the editor to show that decision as it develops: the pending range obligation, then the selected representation and the evidence behind it. The developer can keep working on the model while those facts become available.
+The destination makes that freedom particularly useful. A CPU offers a menu of arithmetic formats and register widths. On an FPGA, a width can determine the circuit itself, down to the number of flip-flops and carry stages. Our integer width-inference path already gives us a working example of that second case. The real-valued selector would extend the same discipline to choosing an arithmetic format: gather the range and target facts, then make the decision where it can be checked.
+Deliberate Optionality
+Decidable By Construction §§2 and 7.1 gives this distinction a formal setting. A principal dimensional scheme retains the admissible specializations; choosing among them is a separate operation. An unresolved inference variable, a justified range and a probability distribution carry different information, so delaying a representation choice does not turn missing evidence into a bound or a probability model.
+Pinning a representation before the range is known discards alternatives that could be evaluated once the range is established. Deferred selection retains those candidates until the compiler has the range and target facts needed to compare them. Mary and Tom Poppendieck describe the scheduling principle as “decide as late as possible” in Lean Software Development . Here, the decision point is representation commitment in the compiler service.
+Poppendieck’s advice concerns when to decide. Liskov’s substitution principle gives us a related obligation: a replacement must preserve the properties its clients rely on. 1 If the compiler chooses a different representation for a force calculation on another target, the result must still be a force, with the numerical guarantees the calculation requires. Coverage establishes that the interval is within the format’s envelope. The error model describes the rounding that remains. Together with the retained dimension, those checks make the later choice accountable to the original program.
+For decades the range of options was short enough that the format choice barely was one. A real number was an IEEE float or an IEEE double , and which one a value got was decided less by the value than by what the target register held.
+A scarce option set was not simply about limited choices. It placed the burden of understanding hardware squarely on the designer.
+The C programmer choosing between float , double , and long double was choosing register widths. To choose well they had to know the target. Was this platform’s long double eighty bits or sixty-four? Which width landed in a register, and which spilled? What was the precision once the hardware had its say? The knowledge that should have decided the format lived in the engineer, not in the toolchain, and the engineer carried it by being hardware-cognizant on every line.
+That scarcity is gone, and the knowledge no longer has to be a standing engineering burden. Posit , IEEE, and fixed-point each answer to range in a different way. The choice between them is now real, and our spec distinguishes their precision profiles:
+IEEE-754 has approximately uniform relative precision across its normal range. Posits taper, with the greatest precision near magnitude 1.0 . Fixed-point fixes a scale and therefore an absolute spacing.
+The range and the offered formats determine which representation is selected. Posit precision is concentrated near magnitude one, while IEEE relative precision is approximately uniform over its normal range. Neither observation establishes a winner without comparing the candidates over the actual interval. For a bare float whose range remains unknown, Numeric Selection §6 explicitly permits the IEEE f64 default when the target offers it and the capability policy allows it. That language rule does not establish a bound or override a known coverage error.
+A developer staring at float<newtons> cannot see which of these applies. The dimension newtons does not tell them the range. The same dimension covers the gravitational tug between two grains of dust and the force binding a star to its galaxy. Knowing the kind is not knowing the range, and the target declarations must be known before selection. That relationship between a quantity’s dimension and the representation its range selects is the subject of the DTS/DMM paper , worked through for the framework in posit arithmetic and dimensional type systems .
+Our design obtains ranges from three sources: from the dataflow when the arithmetic itself bounds the values, from a domain library that states the physics, or from an annotation the developer writes to pin it explicitly. Once it has the range, the choice is not a judgment call. It is a deterministic function: pick the representation that minimizes worst-case relative error across the interval.
+For a real value with range [ a , b ] [a, b] [ a , b ] on a target T T T with permitted representation set R ( T ) R(T) R ( T ) , the selected representation is
+r ∗    =    arg min ⁡   r   ∈   R c o v ( T ,   [ a , b ] )       max ⁡   x   ∈   [ a , b ]       e r r r ( x )
+r^{*} \;=\; \operatorname*{arg\,min}_{\,r \,\in\, R_{\mathrm{cov}}(T,\,[a,b])}\;\;\max_{\,x \,\in\, [a,b]}\;\; \mathrm{err}_{r}(x)
+r ∗ = r ∈ R cov ​ ( T , [ a , b ]) arg min ​ x ∈ [ a , b ] max ​ err r ​ ( x ) Pick the representation, among those whose dynamic range covers the interval, whose worst case over the interval is least. The score is accuracy alone: no cost, latency, or area term enters it.
+Here R(T) includes only offered formats permitted by the build’s emulation policy. Coverage further filters the candidates before selection:
+R c o v ( T ,   [ a , b ] )    =    {   r ∈ R ( T )    :    d y n r a n g e ( r ) ⊇ [ a , b ]   }
+R_{\mathrm{cov}}(T,\,[a,b]) \;=\; \bigl\{\, r \in R(T) \;:\; \mathrm{dynrange}(r) \supseteq [a, b] \,\bigr\}
+R cov ​ ( T , [ a , b ]) = { r ∈ R ( T ) : dynrange ( r ) ⊇ [ a , b ] } Keep only the representations whose dynamic range contains the interval. An empty R c o v R_{\mathrm{cov}} R cov ​ requires a reported error.
+The error term is a mixed absolute and relative form with an ULP floor, so a range that straddles zero does not send the worst case to infinity:
+e r r r ( x )    =    ∣   x − r o u n d r ( x )   ∣ max ⁡ ( ∣ x ∣ ,    u l p m i n ( r ) )
+\mathrm{err}_{r}(x) \;=\; \frac{\lvert\, x - \mathrm{round}_{r}(x) \,\rvert}{\max\bigl(\lvert x \rvert,\; \mathrm{ulp_{min}}(r)\bigr)}
+err r ​ ( x ) = max ( ∣ x ∣ , ul p min ​ ( r ) ) ∣ x − round r ​ ( x ) ∣ ​ The floor keeps the denominator positive at zero, where a purely relative-error formula is undefined. Zero itself can be represented exactly. The selector evaluates the stated metric over the full interval. Each candidate’s absolute spacing near zero and relative precision across the rest of the interval contribute to that score.
+The developer writes the units the problem requires and supplies the context needed to establish ranges. The program graph retains the range and selected representation as coeffects for later passes to reuse. Fearless concurrency describes the corresponding analysis for memory placement: the compiler classifies the escape of a value such as let mutable x = 0 and determines its placement. The proof companion piece describes how the compiler assembles proof terms from the routine and its established properties.
+Immutable Evidence
+A useful deferred decision depends on keeping what we already know. If the developer has established a relationship between two values, the compiler should retain it as the program grows. A dimension, a guarded range, and a selected representation each contribute something different. We can know that a value is a force before we know its range, and know its range before the target has been chosen. Width Inference §6 and Conformance §5 specify where those pending decisions must be settled.
+Immutability makes many of those facts reusable. Suppose a buffer routine checks count <= length - offset before accessing a slice. For the same unchanged integer values, that guard also establishes offset + count <= length . Keeping only separate intervals for offset and count can lose that relationship. Clef’s relational range rule keeps the relationship, its guard, and its dependencies with the program graph.
+The same reasoning should remain useful when the work is delayed. A flat closure copies an immutable captured value and shares a mutable captured storage cell. A lazy value memoizes the result when demanded. A fact about an immutable scalar can survive that delay. A fact about mutable contents must still hold when those contents are read. An immutable binding to a mutable array does not freeze the array. Tracking sharing, effects, and demand lets us keep valid facts without mistaking an earlier snapshot for the current contents.
+Our proof-carrying PSG is designed to keep those constraints together with their evidence. We currently cross-check that mechanism with a separate proof ledger, a temporary scaffold for verifying the graph’s own preservation work. As a checked buffer slice becomes a physical memory access, lowering must preserve its established property or re-check it at the affected edge, as Conformance §6 requires. The developer’s guard should still justify the access after the compiler has finished translating it.
+A Force in Context
+The gravitational force between two masses can be written with dimensional inputs and a force result:
+open Fidelity.Physics.OrbitalMechanics
+let gravForce ( m1 : float < kg >) ( m2 : float < kg >) ( r : float < m >) : float < N > =
+GravConst * m1 * m2 / ( r * r )
+Kennedy-style unit-of-measure inference checks the result as a force: the gravitational constant supplies m³/(kg·s²) , and the expression produces kg·m/s² , or newtons. The same result dimension can be inferred if its annotation is omitted. The force law alone supplies no finite range, however. Its inputs still need bounds, including a positive lower bound on separation.
+A domain library would supply the applicable law together with its preconditions. For example, bounded masses and a separation bounded away from zero permit a finite force interval. Opening a physics module cannot establish those preconditions for arbitrary inputs. The compiler must check them where the law is applied.
+Suppose a particular model establishes [1e-11, 1e30] newtons. A proposed editor readout could show:
+gravForce result : float<newtons>
+value range [1e-11, 1e30]
+provenance checked bounds on masses and positive separation
+representation selected from this target's covering, permitted formats
+accuracy worst-case error over that same interval
+The editor would let us follow that same interval through the decision. If we normalize the model into natural units, the source calculation establishes a transformed range that can be inspected in turn. If most observations cluster near one, the extremes still participate in the worst-case comparison. Native posit hardware may make a format available, but the selector still compares its accuracy against the other permitted formats, including a wider IEEE format where one is offered.
+The developer supplies the masses and separation in the problem’s units, the model’s valid input domain, and the intended target. The proposed editor readout would expose the selected format and the evidence used to choose it.
+Target Knowledge
+Naming a target supplies facts the source quantity does not carry. Our Fidelity.Platform description declares the formats that target offers and classifies each as native, emulated, or unavailable. The build’s capability policy determines whether emulated candidates participate. The selector then compares accuracy across the permitted candidates that cover the range.
+A target declaration might look like this:
+[ compilation ]
+target = "riscv64-posit" # Illustrative platform binding
+Hardware support alone does not determine the winner. If an emulated format is permitted and scores best, the specified accuracy objective selects it. The tooling can report its cost separately. If no permitted candidate covers the range, compilation reports the missing coverage.
+flowchart TD
+Q["float‹newtons›<br>analyzed value range"]
+Plat["Fidelity.Platform<br>offered formats and capabilities"]
+Policy["Build policy<br>permitted emulation"]
+Candidates["Covering, permitted candidates"]
+Select["Minimize worst-case error<br>over the analyzed range"]
+Result["Representation coeffect<br>with range and selection evidence"]
+Error["Hard coverage or capability error"]
+Q --> Candidates
+Plat --> Candidates
+Policy --> Candidates
+Candidates -->|"nonempty"| Select --> Result
+Candidates -->|"empty"| Error
+A concrete destination narrows the choice without putting hardware type names into the source. float<newtons> retains its dimensional identity while the selected representation becomes a fact for later lowering.
+Pending Obligations
+A developer should be able to write a consistent partial program before every representation question has an answer. Consider a bare value flowing into a dimensioned expression:
+let x : float = bareInput
+let y : float < newtons > = x * oneNewton
+The bare x has the specified IEEE default available under the target conditions described above. The dimensioned y introduces a range obligation whose provenance leads back to x . Its dimension tells us the kind of quantity. Bounds must come from further context, a checked domain law, or an applicable boundary declaration. During editing, that obligation may remain pending. If it is still unresolved when a concrete representation must be committed, the compiler must report it at its origin.
+The designed readout would make the distinction visible:
+y : float<newtons>
+pending range obligation
+derives from x (bare float), whose input range is unresolved
+needed before representation commitment
+possible sources of evidence:
+- a bound on bareInput, established at its source or by a guard
+- a domain law whose preconditions hold for this input
+- an applicable platform or interface boundary declaration
+A boundary declaration must still cover the established range. Clef has no source-level representation seal. The source continues to describe arithmetic and dimensions, while the platform or interface states its representation requirements.
+A known range with no covering candidate is a different condition. Its diagnostic is a hard error:
+E_COVERAGE no permitted representation covers the established range
+value astronomicalDistance : float<meters>
+range [1e-11, 1e72]
+target candidates each fail the coverage check
+establish a smaller valid domain or change the platform/interface declaration
+Rescaling is useful only when the transformed range is established and checked again. Expressing that example in astronomical units would leave the upper magnitude around 1e61 , so it would not fit a format whose upper magnitude is around 1e36 . The editor should offer remedies supported by the same analysis that found the problem.
+Inferred Fabric
+On an FPGA, inferred width becomes circuit structure. FPGA and hardware inference follows the integer case in HelloArty: a counter bounded by [0, 399999999] needs 29 bits. A target with fixed instruction widths may realize it in a wider register. A synthesized datapath can instead use the required number of flip-flops and carry stages. Real-valued representation selection would extend that discipline to the arithmetic format, subject to an available hardware realization.
+Hardened arithmetic blocks add a separate mapping constraint. A multiplier with 17-bit and 29-bit inputs does not fit directly into an 18-by-27-bit block. The synthesis tool may decompose it or use additional fabric, depending on the device. A narrower inferred range can reduce the work, but neither a dimensional annotation nor a width calculation establishes the final DSP count or timing.
+flowchart TB
+subgraph SRC["Idiomatic Clef (BlinkState, no widths declared)"]
+C0["Counter : int<br>resets mod ~4e8"]
+T0["ticksPerMs : int<br>literal-bounded"]
+end
+subgraph IA["PSG range analysis (retains constraints)"]
+CR["Counter range [0, 399999999]<br>ceil(log2(400000000)) = 29"]
+TR["ticksPerMs range fits 17"]
+end
+subgraph DP["Synthesized datapath (widths are the structure)"]
+REG["seq.compreg Counter<br>29 flip-flops"]
+MUL["multiplier 17 x 29<br>bounded operand widths"]
+ADD["adder 29-bit<br>carry stages follow target mapping"]
+end
+C0 --> CR --> REG
+T0 --> TR --> MUL
+REG --> ADD
+MUL --> ADD
+ADD -->|"next-state, settled at synthesis"| REG
+Our hardware path represents this computation as a state transition, State × Inputs → State × Outputs . The counter’s inferred 29-bit width is settled before synthesis, independently of its current value at a clock tick. The lowering checks described in From Proofs to Silicon are intended to preserve the relevant bounds through the hardware pathway.
+Each state field gets the width its range requires , derived from the range recorded in the PSG. HelloArty implements this integer width inference:
+State field Inferred range Width Example 64-bit host realization
+Counter [0, 399999999] i29 i64
+ticksPerMs literal-bounded i17 i64
+PeriodMs [100, 2000] i11 i64
+Those widths appear directly in the synthesized register declarations and remain fixed during operation:
+%counter_reg = seq . compreg %counter_next , %clk : i29
+%period_reg = seq . compreg %period_next , %clk : i11
+hw . output %report : ! hw . struct < counter : i29 , periodMs : i11 > // Moore : state - only , registered
+Deferred inference settles this datapath’s widths during compilation, after range analysis and before synthesis. Hardware that changes precision during operation needs explicit storage and control logic for that behavior, with corresponding costs and correctness requirements.
+Exact Accumulation
+Sometimes the developer needs to state a numerical intent: this sum must accumulate without intermediate rounding. A dot product or force sum can lose small contributions when each addition rounds separately. A quire holds exact products in a wide fixed accumulator and rounds when the result is converted to the selected real representation.
+A finite accumulator can overflow if enough same-sign products are added. Showing that each product fits does not show that their accumulated sum fits, and cancellation at the end does not bound every earlier partial sum. The compiler needs evidence for the partial sums as well as the product layout.
+For products a i b i a_i b_i a i ​ b i ​ , let the exact running sum be
+S j = ∑ i = 1 j a i b i .
+S_j = \sum_{i=1}^{j} a_i b_i.
+S j ​ = i = 1 ∑ j ​ a i ​ b i ​ . Exact accumulation in a fixed quire requires every reached S j S_j S j ​ to remain within its representable envelope. A bound on the number and magnitude of terms can establish that fact. An invariant that bounds the partial sums can also establish capacity for an open-ended iteration.
+Our numeric-selection design keeps quire sizing with the selected format. A 512-bit accumulator occupies 64 bytes, but its placement and the machine’s cache-line size are separate target facts. Selecting that storage does not make its capacity infinite.
+The dimensional result remains available throughout. Products of newtons × meters accumulate as joules , and the final rounding preserves that result dimension. The source describes the quantities and the exact-accumulation intent. The platform declaration and selected format determine the concrete quire configuration.
+Source intent or established fact Compiler obligation or consequence
+Exact accumulation requested Require an offered native or emulated exact accumulator
+Products of float<newtons> and float<meters> Accumulate a quantity with dimension joules
+Bounds or an invariant over partial sums Check capacity throughout the accumulation
+Selected numeric representation Determine the format’s quire layout and final rounding
+Captured values and lifetime Place storage under the platform’s lifetime contract
+The proposed source request is to accumulate these products exactly, then round the result. The selected platform representation supplies the concrete format and storage, including names such as Posit32 . Exactness begins at the operations carried out in the accumulator. If an operand has already been rounded, the accumulator preserves that represented value, with the earlier error still part of the calculation’s numerical contract.
+flowchart TD
+Intent["Exact-accumulation intent<br>with dimensional operands"]
+Facts["Checked product layout<br>and partial-sum capacity"]
+Cap{"Target capability"}
+CPU["Permitted software realization<br>declared storage and cost"]
+FPGA["Hardware realization<br>validated layout and timing"]
+ISA["Native accumulator operation<br>declared instruction semantics"]
+Error["Capability or capacity error<br>before representation commitment"]
+Intent --> Facts --> Cap
+Cap -->|"emulated"| CPU
+Cap -->|"fabric"| FPGA
+Cap -->|"native instruction"| ISA
+Cap -->|"missing required facts"| Error
+The proposed editor readout would show the accumulator’s storage requirements alongside the capacity evidence and target capability used to support exact accumulation.
+Implementation Horizon
+HelloArty’s 29-bit counter gives us a concrete starting point: source-level arithmetic, an inferred range, and a width realized in hardware. Extending that experience to real-valued selection means keeping the source dimension and the evidence for its range available through compilation. The selector and editor readouts above describe the experience we are building toward, with domain libraries supplying checked laws that ordinary application code can use. The source remains about quantities and calculations, while the platform supplies its representation choices.
+flowchart LR
+Dim["Dimension<br><code>float‹newtons›</code><br><i>DTS authority</i>"]
+Rep["Representation<br>posit / IEEE / fixed-point<br><i>selection coeffect</i><br>checked range · target declarations"]
+Foot["Footprint<br>width · selected accumulator layout<br><i>quire pass</i>"]
+Alloc["Allocation<br>lifetime and target storage<br><i>escape analysis</i>"]
+Range["Analyzed range<br>guards, domain laws, boundaries"] --> Rep
+Dim -->|"quantity identity"| Rep
+Rep -->|"(width)"| Foot
+Foot -->|"(escape)"| Alloc
+Our PSG carries the source dimension and the constraints used to establish a range. Target declarations constrain selection, and the selected representation determines the footprint. Lifetime analysis determines placement. These are related decisions with distinct evidence. Their representations may be released at different lowering boundaries once the properties needed below that boundary have been preserved or re-checked.
+A pending range obligation should remain visible while the partial program is consistent. Before representation commitment, a contradiction or a range with no covering representation should be reported with a precise source location and supporting evidence.
+The preserved dimensions and range constraints can also support safety proofs and the editor observations explored in Opining Upon Reflection .
+Liskov, Barbara, and Jeannette Wing. “A Behavioral Notion of Subtyping.” ACM Transactions on Programming Languages and Systems 16.6 (1994): 1811-1841. The subtyping requirement traces to Liskov’s 1987 OOPSLA keynote, recounted in her 2009 Turing Award lecture “The Power of Abstraction,” where she separates implementation inheritance, which breaks encapsulation, from the substitution relation a type hierarchy actually requires. ↩︎
+Going Deep with Flow Loss Analysis A Lesson in Memory Safety
+© 2025-2026 Braidpoint

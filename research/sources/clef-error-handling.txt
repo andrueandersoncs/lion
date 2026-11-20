@@ -1,0 +1,916 @@
+Clef Programming Language
+Specification
+Docs
+Blog
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Light
+Dark
+System
+CTRL K
+Atlas
+Atlas
+pre-prints
+spec
+docs
+blog
+cited
+Concentric
+Grouped
+3D
+edges
+Links
+Citations
+Themes
+Clear
+?
+Exit
+× How to use the Atlas
+Frozen nodes stay lit while the rest fades. Build outward by activating a lit node, then freezing its neighbor.
+pre-prints
+spec
+docs
+blog
+cited
+Share
+Clear
+Exit
+AI Summary
+×
+Type to search across documentation, design docs, and blog posts
+Summarize with AI
+Blog
+ThreeBody and Rational Dimensions
+Designing with D3 and Ranvier
+Rust's Retrofits
+Retrieving Fidelity
+A Path Less Traveled
+Pitch, slew and demand
+Carrying Proofs into JavaScript
+Pondering Fearless Parallelism
+Flight-Qualified Bytecode
+The Web on Native Terms
+An Emergent File System Model
+Beyond the Bitter Lesson
+Fixing on Falcon
+Another Moog Enters the Conversation
+The Cold Half of Concurrency
+Surfacing The Scheduler
+Opining Upon Reflection
+Building Bulletproof eBPF Programs
+Getting to the Heart of Unikernels
+Weaving the Braid
+A Lesson in Memory Safety
+The Gift of Deferred Inference
+Going Deep with Flow Loss Analysis
+Between Rocq & A Hard Case
+Counting the Cost of Coordination
+Fearless Concurrency Gets Real
+Where Native Goes, Mobile Follows
+Don't Assume All Proofs Are Bulletproof
+A Triangle Without Mystery
+Runtime Revolution
+Proofs for the Real World
+'Free' Proofs from Dimensional Types
+Hardware Inference
+DMM and DTS
+WREN Stack
+XOR Post-Quantum Case Study
+Unified Actor Architecture
+Getting the Signal with BAREWire
+A Vision For Unified Cognitive Architecture
+Unexpected Fusion
+Breaking the P vs NP Mystique
+Abstract Machine Model Paradox
+The Advent of Neuromorphic AI
+Categorical Deep Learning
+Fewer Tests; Greater Safety
+Quantum Optionality
+Native Reactivity in Clef
+Hardware Lessons from LISP
+Why Types Matter
+Ternary Models Vision
+DUs in Post-Transformer AI
+Wrapping C and C++
+HKTs Dialectic Analysis
+Scaling Fidelity.UI
+Leveraging Fabulous for Native UI
+High Speed Inference
+Fidelity UI Model
+Dotnet to Fidelity Concurrency
+Return of the Compiler
+Farscape Bridge
+Window Layout System
+Fidelity Primer
+Ode to Erlang
+CNN to TopOC Transfer Learning
+Beyond Transformers
+The Case for Actor-Oriented Architecture
+Musings on Mojo: Partially Parallel Paths
+Fidelity as AI Refinery
+Pondering Python
+The Hidden Dominance of Functional Programming
+Rust Revisited
+Beyond Assemblies
+Cryptographic Certainty
+Documentation
+Guides
+Getting Started
+Design
+Language Semantics
+Null-Free by Construction
+Managed Mutability
+Collect Yourself
+Absorbing Alloy
+Clef Metaprogramming
+Type System
+From BCL to NTU
+Negative & Fractional Types
+Structural Polymorphism
+ByRef Resolved
+Dimensional Type Safety
+Posit Arithmetic
+Rounding on Real Hardware
+The Lyapunov Window
+Concurrency
+Continuation Preservation
+Delimited Continuations
+DCont/Inet Duality
+Graph-Direct Parallelism
+Deadlock Freedom
+Ariel Under Prospero
+Three-Layer Actor Contract
+Memory Model
+Arena Hoisting
+Spatial Mechanics
+Gaining Closure
+Inferring Memory Lifetimes
+Beyond Zero-Allocation
+Memory Management by Choice
+RAII in Olivier and Prospero
+Native Memory Management
+Structure and Performance
+Why Clef Fits MLIR
+Information Accrual
+Coupling & Cohesion
+Arity and Caution
+Getting Inline
+Lazy Evaluation
+Source-Level Dependencies
+Flow Loss
+Categorical Foundations
+CDL Adjoint Correspondence
+Posit Arithmetic & DTS
+Forward Gradients & Exact Accumulation
+Target Architectures
+Quantum Substrate
+Verification as Byproduct
+Continuous Learning
+The Braid as a Fourth Sheaf
+The Compilation Sheaf
+Structured Recurrence
+Constrained Machine Learning
+Utility of Adaptive Domain Models
+A Scaffold for Constrained Models
+Building a Constrained Language Model
+Architecture and Arithmetic
+Forward-Mode Efficiency
+The Constellation
+Reversible Cores
+Adapting Inference on a Gradient
+Managing Context
+The Ultimate Constraint
+JavaScript Targeting
+JSIR
+JS / JSX Toolchain
+Design-Time Spec
+The Foreign Pair
+Constructed Witnesses
+Fickl and Composer
+Fully Informed Bindings
+Cloudflare Agents
+Ledger Lowering
+Actor and Workflow Proofs
+Streaming Inference
+WebAssembly Targeting
+Coroutines vs Stack Switching
+Linear Memory Mapping
+One Module, Many Hosts
+The Component Half-Step
+Threads Without a Scheduler
+The Clef Use Case For Multi-Threaded WASM hosting
+User Interfaces
+FFI
+TypeScript Binding (Xantham)
+C & Cpp Binding
+Compiler Internals
+Concepts
+Coeffects and Codata
+Nanopass Navigation
+Seq'ing Simplicity
+Referential Transparency
+Compiler Pipeline
+Proof-Aware Compilation
+Learning to Walk
+Baker Saturation Engine
+Hyping Hypergraphs
+Graph Coloring
+Intelligent Tree Shaking
+Transparent Verification
+From Double Annotation to Discovery
+The Decidability Sweet Spot
+Memory Coeffect Algebra
+From Proofs to Silicon
+Mode Shifts In Fidelity Verification
+Proof Composition and Tooling
+MLIR Integration
+MLIR Testing with Teeth
+Hello World Goes Native
+Context-Aware Compilation
+Farscape Interop
+C++ Binding via Farscape
+Farscape Entry Points
+Numerics
+Arithmetic Construction
+On Hardware
+Fidelity on MCU
+On Metal Extended
+Cache-Conscious Memory: CPU
+GPU Cache-Aware Compilation
+Scheduling on Metal
+Storage on Metal
+Bring-Up Beyond the CPU
+Memory Fabrics
+The KV Cache as a Shared Fabric Region
+RDNA and the Unified Memory Desktop
+Accelerating Network Communication
+Next-Generation Memory Coherence
+Tooling
+Editor Integration
+Leveling Up With Lattice
+ClefPak
+Atelier
+Language Specification
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling Overview
+The Dual Nature of Error Handling
+Application Runtime Error Handling
+Tooling Integration
+Error Handling Patterns
+Grammar
+Diagnostics
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+Front Matter
+Change Process and Specification Management
+Scope
+Normative References
+Terms and Definitions
+Conformance
+Behavior Classification
+Introduction
+Program Structure
+Lexical Analysis
+Basic Grammar Elements
+Lexical Filtering
+Types and Type Constraints
+Type Representation Architecture
+Clef Type Universe Specification
+Native Type Mappings
+NTU Type Nomenclature Specification
+NTU Dimensional Type Architecture
+Units of Measure
+Grade Discipline
+Special Attributes and Types
+Type Definitions
+Expressions
+Patterns
+Namespaces and Modules
+Namespace and Module Signatures
+Error Handling
+Program Semantic Graph
+Program Hypergraph
+Closure Representation
+Lazy Value Representation
+Discriminated Union Representation
+Sequence Expression Representation
+Delimited Continuation Representation
+Sequence Operations Representation
+List Operations Representation
+Map Representation
+Set Representation
+Option Operations Representation
+Incremental Computation
+Observable Computation
+Reactive Signals
+Width Inference
+Numeric Selection
+Rounding and Directed Rounding
+Memory Regions
+Access Kinds
+Modular Blob Storage
+Credential Authority
+Namespace Storage
+Cryptography and Bits Intrinsic Modules Specification
+Program Structure and Execution
+Atomic Operations and Memory Ordering
+Synchronous RPC and Wait Classification
+Scheduler Contract
+Platform Bindings and System Intrinsics
+Platform Predicates Specification
+ClefExpr: CCS Typed Expression Representation
+Inference Procedures
+Application Resolution
+Constraint Solving and Definition Checking
+Name Resolution
+Supplementary Inference Procedures
+Backend Lowering Architecture
+FFI Boundary Semantics
+Interactive Development
+JavaScript Boundary Semantics
+On this page
+Overview
+The Dual Nature of Error Handling
+Application Runtime Error Handling
+The Result Type
+Native Result Operations
+Standard Error Types
+The voption Type
+Result Propagation
+Try/With Syntax Compatibility
+Null-Freedom
+Tooling Integration
+CCS Error Propagation
+Diagnostic Format
+Error Codes
+The CCS code table
+Callable aggregate and ordinary-demand diagnostics
+Native callable components in Alex
+LSP Compatibility
+Lattice Integration Model
+Extension Points
+Compatibility Considerations
+Editor Experience
+Error Handling Patterns
+Railway-Oriented Programming
+Error Aggregation
+Partial Success
+Grammar
+Diagnostics
+Scroll to top
+Language Specification
+Error Handling
+Error Handling
+This chapter specifies error handling semantics in Clef, including the relationship between compile-time error propagation through tooling and runtime error handling in compiled applications.
+Overview
+Clef takes a fundamentally different approach to error handling than managed F#:
+Aspect Managed F# Clef
+Optional values option<'T> with null representation for None voption<'T> (ValueOption) with no null
+Failure handling Exceptions ( raise , try/with ) Result<'T, 'E> with explicit propagation
+Null values Permitted for reference types Not permitted; null-free by construction
+Runtime type errors InvalidCastException , NullReferenceException Cannot occur; prevented by type system
+Design Principle : Errors are values, not control flow. The type system encodes fallibility explicitly, making error handling visible and verifiable at compile time.
+The Dual Nature of Error Handling
+Clef error handling operates at two distinct levels:
+Application Runtime : How compiled Fidelity framework applications handle errors during execution
+Tooling Integration : How Clef Compiler Service (CCS) propagates errors through the Language Server Protocol to editors like Lattice
+These two domains have different requirements and constraints, but must remain coherent.
+Application Runtime Error Handling
+The Result Type
+The Result<'T, 'E> type is the primary mechanism for representing operations that may fail:
+type Result < ' T , ' E > =
+| Ok of ' T
+| Error of ' E
+Operations that can fail return Result values rather than raising exceptions:
+// Managed F# style (NOT used in Clef applications)
+let divide x y =
+if y = 0 then raise ( DivideByZeroException () )
+else x / y
+// Clef style
+let divide x y : Result < int , DivisionError > =
+if y = 0 then Error DivisionByZero
+else Ok ( x / y )
+Native Result Operations
+The operations below use the canonical Result<'a, 'e> identity and independently
+quantified NTU payload types:
+Result . map : ( ' a -> ' b ) -> Result < ' a , ' e > -> Result < ' b , ' e >
+Result . mapError : ( ' e -> ' f ) -> Result < ' a , ' e > -> Result < ' a , ' f >
+Result . bind : ( ' a -> Result < ' b , ' e >) -> Result < ' a , ' e > -> Result < ' b , ' e >
+Result . defaultValue : ' a -> Result < ' a , ' e > -> ' a
+Result . defaultWith : ( ' e -> ' a ) -> Result < ' a , ' e > -> ' a
+Result . iter : ( ' a -> unit ) -> Result < ' a , ' e > -> unit
+Result . isOk : Result < ' a , ' e > -> bool
+Result . isError : Result < ' a , ' e > -> bool
+Explicit type arguments are ordered Result.map<'a, 'b, 'e> ,
+Result.mapError<'a, 'e, 'f> , Result.bind<'a, 'b, 'e> ,
+Result.defaultValue<'a, 'e> , Result.defaultWith<'a, 'e> ,
+Result.iter<'a, 'e> , Result.isOk<'a, 'e> and Result.isError<'a, 'e> .
+Their case behavior is:
+let map mapper input =
+match input with
+| Ok value -> Ok ( mapper value )
+| Error error -> Error error
+let mapError mapper input =
+match input with
+| Ok value -> Ok value
+| Error error -> Error ( mapper error )
+let bind binder input =
+match input with
+| Ok value -> binder value
+| Error error -> Error error
+let defaultValue fallback input =
+match input with
+| Ok value -> value
+| Error _ -> fallback
+let defaultWith fallback input =
+match input with
+| Ok value -> value
+| Error error -> fallback error
+let iter action input =
+match input with
+| Ok value -> action value
+| Error _ -> ()
+let isOk input =
+match input with
+| Ok _ -> true
+| Error _ -> false
+let isError input =
+match input with
+| Ok _ -> false
+| Error _ -> true
+Result operations follow default demand and sharing .
+The rules below concern ordinary arguments. Direct explicit eager arguments
+retain their intentional demand at the activated application frontier, including
+when their values are not selected by the Result case.
+A demanded case selection requires the input’s tag, not every supplied operand
+or payload. The callback is used only for the indicated case and only to the
+extent required by the demanded operation result or explicit iteration effect.
+Unused callbacks and fallbacks remain deferred, including their initializer
+effects. Repeated demand through the same operation result shares evaluation.
+An untouched payload
+SHALL retain its value, dimensional type and resource identity; changing the
+other case’s type does not authorize a conversion of that payload. The enclosing
+Result may require a different realized layout and is not required to retain the
+same allocation identity. A bind callback’s Result is returned with its case
+unchanged.
+For defaultValue , an Ok input returns the success payload without demanding the
+fallback; an Error input selects the fallback’s shared computation. For
+defaultWith , only Error demands the fallback callable and its result, with the
+error payload as one logical argument. This is an error handler, not the unit
+thunk used by Option.defaultWith . For a demanded iter , only Ok demands and
+invokes the action, with the success payload as one logical argument; Error
+returns unit without forcing the action expression.
+The action and the operation return unit. Unit-valued and callable payloads
+retain these logical argument boundaries.
+The mapping, binding, defaulting and iteration operations have two operands.
+Direct applications and pipelines preserve those logical argument associations
+and shared deferred identities; their written order does not force all operands.
+When the result type 'a
+of defaultValue or defaultWith is itself a function, later arguments apply
+that selected or produced function after the two-operand operation boundary.
+Later arguments remain deferred until demanded by that returned function.
+They SHALL NOT be forced before case selection merely because they appear in
+the same application syntax. Extra application of the unit result of iter is
+a type error.
+Demanded isOk and isError each demand their single Result operand’s case tag,
+including when applied through a pipe. They SHALL observe only that tag;
+neither operation demands an unused payload or invokes a callable payload.
+Constructing the supplied Result does not itself force its payload initializer.
+Each predicate returns bool, so extra application is a
+type error. Bare aliases of either predicate SHALL instantiate both payload types
+independently at each admitted use.
+Partial applications SHALL retain the supplied fallback or callback value or
+shared deferred identity without forcing it at formation, while preserving the
+identities and obligations of its captured storage. Bare aliases
+SHALL instantiate the quantified types independently at each admitted use.
+Binder input and output share the same error type; changing it requires an
+explicit operation such as mapError .
+Baker SHALL elaborate these operations into typed case discrimination and, where
+required by the operation, case-specific payload extraction, callback application and Result
+construction before Alex witnesses the graph. Payload reads SHALL occur only within their
+established case. Joint dimensional, lifetime and resource constraints remain
+attached to the actual participating values. The operations introduce no new
+allocation rule: placement follows the settled
+DU lifetime contract .
+Standard Error Types
+Clef defines standard error types for common failure modes:
+type ArithmeticError =
+| DivisionByZero
+| Overflow
+| Underflow
+type IndexError =
+| OutOfBounds of index : int * length : int
+type ParseError =
+| InvalidFormat of input : string * expected : string
+| UnexpectedEnd
+type IOError =
+| NotFound of path : string
+| PermissionDenied of path : string
+| DeviceError of code : int
+The voption Type
+For optional values where absence is not an error, voption<'T> (ValueOption) provides a null-free representation:
+type voption < ' T > =
+| ValueSome of ' T
+| ValueNone
+The voption<'T> type has an explicit discriminator with no null representation.
+// Looking up a value that may not exist
+let tryFind key ( map : Map < ' K , ' V >) : voption < ' V > =
+match Map . tryFind key map with
+| ValueSome v -> ValueSome v
+| ValueNone -> ValueNone
+Result Propagation
+Clef provides computation expression syntax for Result propagation:
+let result {
+let! x = tryParseInt "42"
+let! y = tryParseInt "17"
+return x + y
+}
+This is equivalent to explicit binding:
+match tryParseInt "42" with
+| Error e -> Error e
+| Ok x ->
+match tryParseInt "17" with
+| Error e -> Error e
+| Ok y -> Ok ( x + y )
+Try/With Syntax Compatibility
+Clef preserves try / with / finally syntax for compatibility with standard F# tooling:
+try
+riskyOperation ()
+with
+| :? SomeException as e -> handleError e
+Native compilation uses Result values and pattern matching for recoverable
+failures. Exception-style error handling is diagnosed with CCS8300 .
+Null-Freedom
+Clef is null-free by construction . The following are compile-time errors:
+let x : string = null // ERROR: null literal not available
+let y = Unchecked . defaultof <_> // ERROR for reference types in most contexts
+This eliminates entire classes of runtime errors:
+Managed F# Runtime Error Clef
+NullReferenceException Cannot occur
+InvalidCastException Cannot occur (static typing)
+ArrayTypeMismatchException Cannot occur (no covariant arrays)
+Tooling Integration
+CCS Error Propagation
+Clef Compiler Service (CCS) must propagate errors through the tooling stack in a format compatible with existing F# tooling infrastructure.
+Diagnostic Format
+CCS diagnostics follow the F# compiler diagnostic format:
+filepath(line,col)-(line,col): severity code: message
+For example:
+src/Main.clef(12,5)-(12,15): error CCS8010: 'null' is not permitted in Clef; use 'ValueNone' for an absent value
+Error Codes
+CCS uses error codes in the CCS8xxx range to distinguish native-specific diagnostics:
+Range Category
+CCS8000-CCS8099 Type system: identity, measures, seals and ranges, null-freedom ( CCS8010 , Types and Type Constraints ), access kinds
+CCS8100-CCS8199 Memory management (regions, lifetimes)
+CCS8200-CCS8299 Platform bindings
+CCS8300-CCS8399 Effect system
+CCS8400-CCS8499 Code generation
+The CCS code table
+Every diagnostic the compiler service reports carries a code in the CCS series. Codes are allocated inside the blocks above and never reassigned. Inherited lexer and parser diagnostics keep their F# number under the CCS prefix ( FS0058 becomes CCS0058 ); the block CCS0000 – CCS0999 is reserved for that family.
+Code Severity Meaning
+CCS8000 Error An operator’s operand is not numeric ( Width Inference , the numeric constraint)
+CCS8001 Error The kind of an operator’s operands cannot be determined at a binding that is not generalisable
+CCS8002 Error A conversion’s source is not numeric
+CCS8003 Error Type mismatch
+CCS8004 Error Type constructor arity mismatch
+CCS8005 Error Infinite type (a type variable occurs in its own solution)
+CCS8006 Error Tuple mismatch (length or struct kind)
+CCS8007 Error Byref kind mismatch
+CCS8008 Error The constructor is not defined
+CCS8009 Error The value or constructor is not defined
+CCS8010 Error The null keyword is not permitted ( Types and Type Constraints )
+CCS8011 Error An integer or dimensioned real whose range is unobservable; for a bare real flowing into a dimension, at the dimensioning seam naming the bare source ( Width Inference §6 , Numeric Selection §6 )
+CCS8012 Error A value’s analysed range is not covered by the boundary’s declared representation ( Numeric Selection §5 ); warning policy cannot authorize failed coverage
+CCS8013 retired “two seals meet”: there are no seals ( NTU Types )
+CCS8014 Info A declared boundary representation wider than the range requires; the representation the open argmin would select is named
+CCS8015 retired “sealed arithmetic may wrap”: arithmetic on analysed ranges never overflows
+CCS8016 Warning (error under --warnaserror ) An analysed range exceeds a higher-provenance claim, a library law’s range or a declaration ( Numeric Selection §3.4 )
+CCS8017 retired “a conversion cannot hold the range”: there are no conversions
+CCS8018 Error A literal suffix: every width suffix ( L , u , uy , s , n , f ), I , and any suffix the language does not have ( Width Inference §7 )
+CCS8019 Warning (not promoted by --warnaserror ) A compatibility alias uses a width-named spelling ( uint32 , byte , float32 , &mldr;) or a width suffix on a literal ( 0L , 5u , 1.0f , &mldr;); the alias denotes the numeric kind with a declared boundary representation
+CCS8020–CCS8022 Error Access kinds ( Access Kinds )
+CCS8030–CCS8033 Error Platform intrinsics ( Platform Bindings )
+CCS8040–CCS8050 Error Units of measure ( Units of Measure ): mismatch, no integer solution, not in scope, cyclic abbreviation, variable in a literal, sort mismatch, no dimension, unresolved at a non-generalisable binding, rational exponent, parameterised definition, arity
+CCS8060 Error obj is not a Clef type
+CCS8061 Error Boxing is not a Clef operation
+CCS8062 Error Dynamic invocation is not a Clef operation
+CCS8063 Error Quote expression patterns are not a Clef construct
+CCS8064 Error Instance member patterns (object expressions) are not a Clef construct
+CCS8065 Error Expression splices ( %e , %%e ) are not a Clef construct: a quotation is compile-time data read whole ( Expressions, Quoted Expressions )
+CCS8066 Error A quotation referenced from executed code: a quotation has no run-time value; reported at each reachable reference, or at the quotation when it stands in executed expression position
+CCS8080 Error A BCL type or namespace is not available in Clef
+CCS8081 Error The System namespace is not available in Clef
+CCS8082 Error The Microsoft namespace is not available in Clef
+CCS8083 Error Unchecked.defaultof is not available in Clef
+CCS8090 Error Internal invariant violated in the compiler service (reported, never swallowed)
+CCS8091 Warning A nullable annotation is ignored; native types are null-free by design
+CCS8092 Warning Type arguments applied to a value that is not a type scheme
+CCS8096 Error Invalid closed callback adapter declaration or application: factory/adapter are not unique immutable module functions, the factory body is not the exact zeroed placeholder, the native listener ABI is missing or incompatible, a handler is not a known closed module function, an adapter captures its handler in a nested closure, or a declared factory escapes without static specialization
+CCS8100 Error Region mismatch ( Memory Regions )
+CCS8101 Error Lifetime error
+CCS8102 Error A reference escapes its region
+CCS8200 Error Platform binding error
+CCS8201 Error Unsupported platform operation
+CCS8202 Error Platform binding undefined
+CCS8203 Error A site needs a width dimension the platform description does not declare ( Platform Bindings , NTU Dimensional Architecture §7.1 ); never a default
+CCS8204 Error A sealed value’s representation is not offered by the platform description, absent or declared unavailable ( Numeric Selection §7 )
+CCS8205 Info A [platform] key the project file carries that the compiler does not read ( word_size ): width dimensions and representations come from the platform description
+CCS8206 Error An element of the platform description the compiler cannot read (a field that is not a literal, an element that is not the record its list is declared over, a Core that is neither Some core nor None ), reported at the declaration
+CCS8207 Error An element of the platform description outside its vocabulary (a capability, family or boundary tag not in its closed set, a width or representation of no bits, a name declared twice, a Register width disagreeing with the word size), reported at the declaration
+CCS8208 Error A second platform description of one form among the platform binding’s sources; the first is read, each other is reported at its declaration
+CCS8209 Error Malformed, inconsistent or ambiguous device-access declaration or plan selection
+CCS8210 Error A used MMIO operation lacks established access evidence, including a contradicted or pending required predicate
+CCS8300 Warning Exception-style error handling detected; use the Result-based pattern
+CCS8400 Error Code generation error
+CCS8401 Error Unsupported construct in code generation
+CCS8403 Error A settlement obligation the compiler committed to could not be established from current source premises (program initialization order, ordinary binding demand); reported at that commitment, never discharged by a default ( Conformance §6.1 )
+CCS8410 Error A callable aggregate component is assigned ordinary data placement, including an address or integer slot for its code value
+CCS8411 Error A callable aggregate component lacks an established finite alternative family, or its selector domain does not correspond exactly to that family’s alternatives
+CCS8412 Error A callable aggregate selection does not pair its code with the environment instance belonging to the same formation, including unestablished environment absence for a closed component
+CCS8413 Error A callable aggregate slot lacks a required contract identity or combines incompatible contract identities without an established adaptation
+CCS8414 Error Required callable aggregate formation, tag, selection or dependency evidence is absent, ambiguous or stale at commitment
+CCS8415 Error A commitment relies on an ordinary-execution exclusion whose required activation, use, ownership or dependency evidence is absent, ambiguous or stale
+CCS8416 Error A retained library declaration exposes a native callable value in its checked public interface without an admitted host loading contract; source retention and program-image code lifetime do not establish that contract ( FFI Boundary Semantics §5.6 )
+CCS8417 Error An owned source declaration explicitly marked EntryPoint conflicts with library output; reported at that declaration’s name ( Program Structure and Execution )
+CCS8418 Error REC-TABLE-PROJECTION : An interior record containing callable components crosses the FFI boundary as a native callback table without a separately declared and admitted table projection, or through a pointer hop or reinterpretation ( FFI Boundary Semantics §3.6 , §5.5 )
+CCS8419 Error REC-TABLE-LAYOUT : A declared native callback table projection disagrees with the selected target’s measured StructDescriptor layout in size, alignment, field count or field byte offsets ( FFI Boundary Semantics §3.6 , §5.3 )
+CCS8420 Error REC-TABLE-CONTRACT : A native callback table field lacks its declared CallbackDescriptor or receiving contract identity, mismatches a parameter or result representation or calling convention, or supplies None or narrows nullability without established absence evidence ( FFI Boundary Semantics §3.6 , §5.5 )
+CCS8421 Error REC-TABLE-WRITE : A native callback table entry is mutated after initialization, initialized from a non-admitted or zero-filled entry, or read other than as an immutable snapshot ( FFI Boundary Semantics §3.6 )
+CCS8422 Error REC-TABLE-RESIDENCE : A native callback table’s storage or an entry’s captured environment is borrowed beyond the call, placed in a region that does not outlive every interval in which foreign code may read the table or invoke an entry, or lacks its required environment retirement or release obligation ( FFI Boundary Semantics §3.6 , §5.6 )
+CCS8423 Error REC-TABLE-DISCRIMINANT : A native callback table projection selects between alternative callback fields without a declared discriminant establishing which field is active ( FFI Boundary Semantics §3.6 , §5.5 )
+CCS8701–CCS8705 Error Record field label resolution ( Name Resolution )
+CCS8706 Error A type name in an annotation that resolves to nothing (no abbreviation, definition, primitive or built-in constructor), reported at the annotation; the error type it leaves unifies with anything, so this is the one report of the failure
+CCS8710 Error Null constraint is not a Clef constraint
+CCS8711 Error Unsupported constraint
+Callable aggregate and ordinary-demand diagnostics
+CCS8416 identifies the retained declaration and its exposed native callable
+parameter, result or aggregate slot, including mutable values. Internal native
+callable formation behind a public interface with no such value does not by
+itself trigger this diagnostic. The refusal remains independent of an ordinary
+demand failure; in-image residence evidence does not discharge host loading.
+CCS8417 reports the explicit executable-entry annotation, not a binding merely
+named main . Library retention preserves the checked declaration and does not
+grant process-entry, native ABI or activation authority.
+CCS8403 names a settlement the compiler required and could not establish: an
+initialization order with no complete invocation scope, or an ordinary binding
+whose first-demand frontier the implementation committed to realize directly
+without the proof Expressions
+requires. Demand that remains conditional is not an error by itself; its
+realization is a deferred carrier.
+CCS8410 – CCS8415 are allocated for the callable component protocol in
+Closure Representation §2.4 ,
+Discriminated Union Representation §9.1
+and FFI Boundary Semantics §3.6 .
+These allocations state the required meanings; they do not establish that a
+compiler version implements the protocol or emits these codes.
+At a source commitment requiring the property, the diagnostic SHALL identify
+the aggregate construction, assignment, projection or invocation that requires
+the missing property, or the ordinary binding or callable whose exclusion is
+being used. It SHALL name the relevant slot and failed premise where applicable.
+A standalone PSG integrity check SHALL reject invalid rows and identify their
+participants; it SHALL NOT fabricate a source location when none is available.
+When source provenance is available, the source diagnostic SHALL retain it.
+CCS8410 distinguishes a code value from the selector and environment data
+which the component protocol permits in data storage. For a callable component
+with N > 0 alternatives, CCS8411 requires its selector domain to be exactly
+0 through N - 1 , with one alternative for each selector value. A union case
+without a callable payload requires no callable selector. CCS8412 applies to
+each formation even when two formations share an implementation or produce
+equal values. CCS8413 compares contract identity, not only a function type or
+equal contract content; an adaptation must be established before the slot is
+accepted. CCS8414 includes incomplete dependency accounts and duplicated
+evidence where the protocol requires a unique row. A known lifetime or region
+violation retains CCS8100 – CCS8102 ; these new codes do not replace those
+diagnostics.
+The absence of a proof that an ordinary body is inactive, or that an ordinary
+binding is unused, SHALL normally preserve its demand obligations. It SHALL NOT
+by itself produce CCS8415 , force an ordinary initializer, or make a valid
+inactive callable illegal. CCS8415 applies only when a commitment relies on
+an exclusion without current evidence establishing it. The exclusion SHALL be
+withdrawn when its supporting activation, use, capture or ownership facts
+change; any commitments still required follow their existing diagnostics.
+CCS8418 – CCS8423 are the REC-TABLE diagnostics allocated for native
+callback and listener table projections under
+FFI Boundary Semantics §3.6 ,
+§5.3 ,
+§5.5 and
+§5.6 :
+CCS8418 ( REC-TABLE-PROJECTION ) enforces §3.6 item 5 and §5.5 when an
+interior record containing callable components crosses the FFI boundary as a
+C callback or listener struct without a separately declared and admitted table
+projection, or when a crossing attempts a pointer hop or reinterpretation
+through the table.
+CCS8419 ( REC-TABLE-LAYOUT ) enforces §3.6 item 5 and §5.3 when a declared
+native callback table projection disagrees with the selected target’s
+measured StructDescriptor layout in total byte size, alignment, field count
+or any field’s byte offset.
+CCS8420 ( REC-TABLE-CONTRACT ) enforces §3.6 items 2 and 6 and §5.5 when a
+table field lacks its declared CallbackDescriptor or receiving contract
+identity, when two fields or alternatives with equal machine signatures are
+treated as interchangeable across distinct contract identities, when a
+parameter or result representation or calling convention mismatches the
+declared contract, or when a field supplies None or narrows nullability
+without established absence evidence.
+CCS8421 ( REC-TABLE-WRITE ) enforces §3.6 items 3 and 6 when a native
+callback table field is mutated after initialization, initialized from a
+non-admitted or zero-filled entry, or read other than as an immutable
+snapshot.
+CCS8422 ( REC-TABLE-RESIDENCE ) enforces §3.6 item 5 and §5.6 when a native
+callback table’s storage or an entry’s captured environment is borrowed beyond
+the call, placed in a stack or region allocation that does not outlive every
+interval in which foreign code may read the table or invoke an entry, or lacks
+its required environment release or retirement obligation (including
+exactly-once destroy-hook release, failed-registration undo, or explicit
+retirement when no hook exists).
+CCS8423 ( REC-TABLE-DISCRIMINANT ) enforces §3.6 items 3 and 5 and §5.5 when
+a native callback table projection selects between alternative callback fields
+(such as sa_handler and sa_sigaction ) without a declared discriminant
+establishing which field is active.
+At a source commitment or contract-row check, a REC-TABLE diagnostic SHALL
+identify the table projection, C struct and field or operation that violates the
+rule, together with its source provenance when available. Changed measured
+layout, field descriptor or nullability evidence SHALL invalidate dependent
+table construction regions and discharges under §3.6 item 6 and §5.6.
+Native callable components in Alex
+Code Severity Meaning
+AX4002 Error The callable receiving contract is published, but native callable-component reconstruction is not admitted by the selected witness pathway
+AX4002 is allocated for the witness commitment of a native callable component
+under FFI Boundary §3.6 .
+It applies when the callable receiving contract and code-lifetime evidence are
+published and the requested reconstruction remains unsupported. Missing or
+inconsistent source evidence retains its applicable diagnostic.
+The diagnostic SHALL identify the aggregate construction, assignment or
+projection and its resolved slot. It SHALL retain source location information
+when available and state which witness realization is unsupported. The witness
+SHALL refuse the operation without emitting operations or binding a result.
+This allocation does not establish that a compiler version implements native
+callable-component reconstruction.
+LSP Compatibility
+CCS implements the Language Server Protocol for editor integration. Key considerations:
+Diagnostic Publishing : Errors are published via textDocument/publishDiagnostics in standard LSP format
+Code Actions : Quick fixes (e.g., “Insert the explicit conversion”, “Add the measure annotation”) are provided via textDocument/codeAction
+Hover Information : Type information displays native types
+Lattice Integration Model
+The multi-target editor model is well established in the F# ecosystem: Ionide routes a single editing experience across several F# compilation backends.
+Target Integration Point
+.NET FSharp.Compiler.Service
+Fable Fable.Compiler (JavaScript output)
+WebSharper WebSharper.Compiler
+Lattice, the Clef editor tooling, follows this model:
+Lattice ←→ LSP ←→ CCS ←→ Composer Compiler ←→ MLIR/LLVM
+Extension Points
+CCS provides extension points for Lattice integration:
+Project Recognition : .fidproj files identify Clef projects
+Target Selection : Lattice can route to CCS when native compilation is detected
+Shared Parsing : Syntax parsing uses standard F# lexer/parser for compatibility
+Semantic Divergence : Type checking and code generation use native semantics
+Compatibility Considerations
+To maintain compatibility with the broader F# ecosystem:
+Syntax Compatibility : Clef code parses as valid F# syntax
+Type Notation : Types are expressed using standard F# type notation
+Error Format : Diagnostics follow F# compiler conventions
+Incremental Adoption : Projects can mix managed and native targets during migration
+Editor Experience
+The design-time experience for Clef should be consistent with managed F#:
+Feature Behavior
+Syntax highlighting Standard F# highlighting
+Error underlining Red squiggles for errors, yellow for warnings
+Hover types Shows native type representations
+Autocomplete Suggests native library members
+Go to definition Navigates to native library source
+Quick fixes Offers native-appropriate fixes
+Error Handling Patterns
+Railway-Oriented Programming
+Clef encourages railway-oriented programming with Result:
+let processOrder orderId =
+orderId
+|> validateOrderId
+|> Result . bind fetchOrder
+|> Result . bind validateInventory
+|> Result . bind processPayment
+|> Result . bind shipOrder
+Error Aggregation
+For operations that may produce multiple errors:
+type ValidationErrors = ValidationErrors of ValidationError list
+let validateAll validators input =
+validators
+|> List . map ( fun v -> v input )
+|> List . fold aggregateErrors ( Ok input )
+Partial Success
+For operations where partial results are meaningful:
+type PartialResult < ' T , ' E > =
+| Complete of ' T
+| Partial of ' T * ' E list
+| Failed of ' E list
+Grammar
+result-type := Result < type , type >
+voption-type := voption < type >
+result-expr :=
+Ok expr
+Error expr
+voption-expr :=
+ValueSome expr
+ValueNone
+result-bind := let! pattern = expr in expr
+result-return := return expr
+Diagnostics
+Null-freedom is by construction and has exactly one diagnostic, CCS8010 (the null keyword is not permitted, Types and Type Constraints ). There is no second null diagnostic: no type “supports null”, no value is uninitialised, and Unchecked.defaultof is BCL surface rejected as such. The codes this chapter contributes:
+Code Severity Message
+CCS8100 Error Region mismatch: a handle of region ‘{r1}’ where region ‘{r2}’ is required ( Memory Regions )
+CCS8300 Warning Exception-style error handling detected; use the Result-based pattern
+A warning is promoted to an error under the --warnaserror policy, the rule every warning in the framework follows (the FPGA timing budget’s CCS0100 is the reference case).
+Namespace and Module Signatures Program Semantic Graph
+© 2025-2026 Braidpoint
