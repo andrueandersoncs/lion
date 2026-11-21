@@ -282,8 +282,8 @@ const CAPABILITY_MUTATIONS: readonly Mutation[] = [
   {
     name: "a task's check passes every value",
     file: corpus("tasks/sicp-ex-2.18-reverse.json"),
-    find: '["and",',
-    replace: '["or", true,',
+    find: '      "and",',
+    replace: '      "or",\n      true,',
     ...CAPABILITY_TESTS,
   },
 ];
@@ -1080,7 +1080,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a relation goal reads a relation's rows before they are derived",
     file: core("logic/model.ts"),
-    find: "    rows === undefined ? toRead(model, literal.relation, true) : undefined;",
+    find: "    rows === undefined ? toRead(model, literal.relation) : undefined;",
     replace: "    undefined as ReturnType<typeof toRead>;",
   },
   {

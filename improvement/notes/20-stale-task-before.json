@@ -1,0 +1,23 @@
+{
+  "observations": [
+    {
+      "id": "stale-task-before-3",
+      "question": {
+        "seconds of check": "mutations-0",
+        "observation": "stale-task-before"
+      },
+      "quote": "ran mutations-0: bun run mutate a task's check passes every value, exit 1, 5 s",
+      "source": "stale-task-before",
+      "value": 5
+    },
+    {
+      "id": "stale-task-before-4",
+      "question": {
+        "mutation": "a task's check passes every value"
+      },
+      "quote": "mutation, a task's check passes every value: stale",
+      "source": "stale-task-before",
+      "value": "stale"
+    }
+  ]
+}

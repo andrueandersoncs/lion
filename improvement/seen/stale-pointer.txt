@@ -1,0 +1,19 @@
+$ bun run loop scores "--skip" "bench,replay,check,capability" "--mutations" "a relation goal reads a relation's rows before they are derived|a task's check passes every value"
+$ bun run --cwd packages/metrics loop scores --skip "bench,replay,check,capability" --mutations "a relation goal reads a relation's rows before they are derived|a task's check passes every value"
+$ bun run loop.ts scores --skip "bench,replay,check,capability" --mutations "a relation goal reads a relation's rows before they are derived|a task's check passes every value"
+ran measure: bun run measure, exit 0, 1 s
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 3
+ran scale: bun run scale, exit 0, 40 s
+workloads faster than linear, scale: 0
+ran record: bun run history check, exit 0, 63 s
+record check, history: holds
+rules no probe checks, record: 101
+ran tests: bun run test, exit 0, 131 s
+failing test tasks, all packages: 0
+ran mutations-0: bun run mutate a relation goal reads a relation's rows before they are derived a task's check passes every value, exit 0, 12 s
+mutation, a relation goal reads a relation's rows before they are derived: caught
+mutation, a task's check passes every value: caught
+[exit status 0]

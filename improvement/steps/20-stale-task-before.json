@@ -1,0 +1,88 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "stale-task-before"
+   ],
+   [
+    "quote",
+    "ran"
+   ],
+   [
+    "quote",
+    "bun run loop scores \"--skip\" \"measure,capability,scale,record,tests,bench,replay,check,instruments\" \"--mutations\" \"a task's check passes every value\""
+   ]
+  ],
+  [
+   "about",
+   [
+    "quote",
+    "stale-task-before"
+   ],
+   [
+    "quote",
+    "."
+   ],
+   [
+    "quote",
+    "cb9f2c374985492c218828b20fc96bce8b4989d4"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "stale-task-before-3"
+   ],
+   [
+    "quote",
+    "stale-task-before"
+   ],
+   [
+    "quote",
+    "ran mutations-0: bun run mutate a task's check passes every value, exit 1, 5 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "mutations-0",
+     "observation": "stale-task-before"
+    }
+   ],
+   [
+    "quote",
+    5
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "stale-task-before-4"
+   ],
+   [
+    "quote",
+    "stale-task-before"
+   ],
+   [
+    "quote",
+    "mutation, a task's check passes every value: stale"
+   ],
+   [
+    "quote",
+    {
+     "mutation": "a task's check passes every value"
+    }
+   ],
+   [
+    "quote",
+    "stale"
+   ]
+  ]
+ ],
+ "recorded"
+]

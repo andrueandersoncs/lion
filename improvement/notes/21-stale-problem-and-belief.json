@@ -1,0 +1,24 @@
+{
+  "problems": [
+    {
+      "id": "p-stale-task",
+      "statement": "A listed mutation of the corpus has never applied: the text it replaces is not in its task's file as the formatter writes it",
+      "question": { "mutation": "a task's check passes every value" },
+      "value": "stale"
+    }
+  ],
+  "beliefs": [
+    {
+      "id": "stale-1",
+      "tries": "stale-pointer",
+      "statement": "Pointed at the lines that now hold their code, both stale mutations apply and are caught; the change removes two lines of the mutations, an instrument, so this version's scores do not count, and nothing fails",
+      "predicts": [
+        { "question": { "mutation": "a relation goal reads a relation's rows before they are derived" }, "value": "caught" },
+        { "question": { "mutation": "a task's check passes every value" }, "value": "caught" },
+        { "question": { "instrument lines removed": "since the base" }, "value": 2 },
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" }
+      ]
+    }
+  ]
+}

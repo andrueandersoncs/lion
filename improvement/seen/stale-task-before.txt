@@ -1,0 +1,6 @@
+$ bun run loop scores "--skip" "measure,capability,scale,record,tests,bench,replay,check,instruments" "--mutations" "a task's check passes every value"
+$ bun run --cwd packages/metrics loop scores --skip "measure,capability,scale,record,tests,bench,replay,check,instruments" --mutations "a task's check passes every value"
+$ bun run loop.ts scores --skip "measure,capability,scale,record,tests,bench,replay,check,instruments" --mutations "a task's check passes every value"
+ran mutations-0: bun run mutate a task's check passes every value, exit 1, 5 s
+mutation, a task's check passes every value: stale
+[exit status 0]

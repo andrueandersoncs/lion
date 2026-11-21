@@ -1,0 +1,7 @@
+{
+ "hashes": {
+  ".": "043c9fcfe400cdebfce953f17d0cbb73c24f5c44"
+ },
+ "kind": "ran",
+ "what": "bun run loop scores \"--skip\" \"bench,replay,check,capability\" \"--mutations\" \"a relation goal reads a relation's rows before they are derived|a task's check passes every value\""
+}
