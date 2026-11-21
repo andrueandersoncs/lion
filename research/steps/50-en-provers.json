@@ -1,0 +1,2052 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "https://dafny.org/latest/DafnyRef/DafnyRef"
+   ],
+   [
+    "quote",
+    "Dafny Reference Manual"
+   ],
+   [
+    "quote",
+    "the Dafny project"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "acl2-numbers"
+   ],
+   [
+    "quote",
+    "https://github.com/acl2/acl2/blob/20f0b3c447a6e967d924c50fe5403039313f2d33/books/system/doc/acl2-doc.lisp#L111377-L111495"
+   ],
+   [
+    "quote",
+    "NUMBERS: Numbers in ACL2 and operations on them (with NUMBERS-INTRODUCTION)"
+   ],
+   [
+    "quote",
+    "ACL2 (Kaufmann and Moore, UT Austin)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "acl2-df"
+   ],
+   [
+    "quote",
+    "https://github.com/acl2/acl2/blob/20f0b3c447a6e967d924c50fe5403039313f2d33/books/system/doc/acl2-doc.lisp#L27968-L29386"
+   ],
+   [
+    "quote",
+    "DF: Support for floating-point operations"
+   ],
+   [
+    "quote",
+    "ACL2 (Kaufmann and Moore, UT Austin)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "acl2-defun"
+   ],
+   [
+    "quote",
+    "https://github.com/acl2/acl2/blob/20f0b3c447a6e967d924c50fe5403039313f2d33/books/system/doc/acl2-doc.lisp#L26404-L26936"
+   ],
+   [
+    "quote",
+    "DEFUN: Define a function symbol (through DEFUN-MODE)"
+   ],
+   [
+    "quote",
+    "ACL2 (Kaufmann and Moore, UT Austin)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "acl2-induction"
+   ],
+   [
+    "quote",
+    "https://github.com/acl2/acl2/blob/20f0b3c447a6e967d924c50fe5403039313f2d33/books/system/doc/acl2-doc.lisp#L53795-L53987"
+   ],
+   [
+    "quote",
+    "INDUCTION: Make a rule that suggests a certain induction"
+   ],
+   [
+    "quote",
+    "ACL2 (Kaufmann and Moore, UT Austin)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "acl2-linear-arithmetic"
+   ],
+   [
+    "quote",
+    "https://github.com/acl2/acl2/blob/20f0b3c447a6e967d924c50fe5403039313f2d33/books/system/doc/acl2-doc.lisp#L63037-L63134"
+   ],
+   [
+    "quote",
+    "LINEAR-ARITHMETIC: A description of the linear arithmetic decision procedure"
+   ],
+   [
+    "quote",
+    "ACL2 (Kaufmann and Moore, UT Austin)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "acl2-non-linear-arithmetic"
+   ],
+   [
+    "quote",
+    "https://github.com/acl2/acl2/blob/20f0b3c447a6e967d924c50fe5403039313f2d33/books/system/doc/acl2-doc.lisp#L79097-L79325"
+   ],
+   [
+    "quote",
+    "NON-LINEAR-ARITHMETIC: Non-linear Arithmetic"
+   ],
+   [
+    "quote",
+    "ACL2 (Kaufmann and Moore, UT Austin)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "acl2-real"
+   ],
+   [
+    "quote",
+    "https://github.com/acl2/acl2/blob/20f0b3c447a6e967d924c50fe5403039313f2d33/books/system/doc/acl2-doc.lisp#L124758-L124813"
+   ],
+   [
+    "quote",
+    "REAL: ACL2(r) support for real numbers"
+   ],
+   [
+    "quote",
+    "ACL2 (Kaufmann and Moore, UT Austin)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "smtlib-floatingpoint"
+   ],
+   [
+    "quote",
+    "https://smt-lib.org/theories-FloatingPoint.shtml"
+   ],
+   [
+    "quote",
+    "SMT-LIB theory FloatingPoint"
+   ],
+   [
+    "quote",
+    "SMT-LIB"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20240721
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "bitwuzla"
+   ],
+   [
+    "quote",
+    "https://bitwuzla.github.io/"
+   ],
+   [
+    "quote",
+    "Bitwuzla"
+   ],
+   [
+    "quote",
+    "the Bitwuzla project (Niemetz and Preiner)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "flocq"
+   ],
+   [
+    "quote",
+    "https://flocq.gitlabpages.inria.fr/"
+   ],
+   [
+    "quote",
+    "Flocq"
+   ],
+   [
+    "quote",
+    "Inria (Flocq)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "flocq-nutshell"
+   ],
+   [
+    "quote",
+    "https://flocq.gitlabpages.inria.fr/theos.html"
+   ],
+   [
+    "quote",
+    "Flocq in a Nutshell"
+   ],
+   [
+    "quote",
+    "Inria (Flocq)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "wikipedia-hilbert-tenth"
+   ],
+   [
+    "quote",
+    "https://en.wikipedia.org/wiki/Hilbert%27s_tenth_problem"
+   ],
+   [
+    "quote",
+    "Hilbert's tenth problem"
+   ],
+   [
+    "quote",
+    "Wikipedia"
+   ],
+   [
+    "quote",
+    "tertiary"
+   ],
+   [
+    "quote",
+    20261120
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "wikipedia-presburger"
+   ],
+   [
+    "quote",
+    "https://en.wikipedia.org/wiki/Presburger_arithmetic"
+   ],
+   [
+    "quote",
+    "Presburger arithmetic"
+   ],
+   [
+    "quote",
+    "Wikipedia"
+   ],
+   [
+    "quote",
+    "tertiary"
+   ],
+   [
+    "quote",
+    20261029
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "wikipedia-real-closed-field"
+   ],
+   [
+    "quote",
+    "https://en.wikipedia.org/wiki/Real_closed_field"
+   ],
+   [
+    "quote",
+    "Real closed field"
+   ],
+   [
+    "quote",
+    "Wikipedia"
+   ],
+   [
+    "quote",
+    "tertiary"
+   ],
+   [
+    "quote",
+    20261111
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "wikipedia-cad"
+   ],
+   [
+    "quote",
+    "https://en.wikipedia.org/wiki/Cylindrical_algebraic_decomposition"
+   ],
+   [
+    "quote",
+    "Cylindrical algebraic decomposition"
+   ],
+   [
+    "quote",
+    "Wikipedia"
+   ],
+   [
+    "quote",
+    "tertiary"
+   ],
+   [
+    "quote",
+    20240505
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "jovanovic-demoura-nlsat-2012"
+   ],
+   [
+    "quote",
+    "https://www.microsoft.com/en-us/research/publication/solving-non-linear-arithmetic/"
+   ],
+   [
+    "quote",
+    "Solving Non-Linear Arithmetic (MSR-TR-2012-20, Jovanović and de Moura)"
+   ],
+   [
+    "quote",
+    "Microsoft Research"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c1"
+   ],
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "it never overflows, since int has no upper bound"
+   ],
+   [
+    "quote",
+    {
+     "covers": "integers kept exact past two to the 53rd",
+     "by": "arbitrary-precision integers",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c1"
+   ],
+   [
+    "quote",
+    "5.7 Newtypes"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c2"
+   ],
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "Dafny supports numeric types of two kinds, integer-based , which includes the basic type int of all integers, and real-based , which includes the basic type real of all real numbers."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "arbitrary-precision integers",
+     "in": "Dafny"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c2"
+   ],
+   [
+    "quote",
+    "5.2.2 Numeric Types"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c3"
+   ],
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "which is to choose a native type that can hold any value satisfying the constraints, if possible, and otherwise to use BigInteger."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs that hold of the code's own arithmetic",
+     "by": "arbitrary-precision integers",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c3"
+   ],
+   [
+    "quote",
+    "11.1.2 {:nativeType}: the default compiled representation of an integer-based type; plain int is compiled as BigInteger"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c4"
+   ],
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "(You must have bignumber . js installed.)"
+   ],
+   [
+    "quote",
+    {
+     "needs": "a big-number library in the host language",
+     "by": "arbitrary-precision integers"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c4"
+   ],
+   [
+    "quote",
+    "compiling to JavaScript (--target:js)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c5"
+   ],
+   [
+    "quote",
+    "dafny-user-guide"
+   ],
+   [
+    "quote",
+    "Every [bounded number operation](#sec-numeric-types) yields an _assertion_ that the result will be within the same bounds (no overflow, no underflows)."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs that hold of the code's own arithmetic",
+     "by": "verification conditions",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c5"
+   ],
+   [
+    "quote",
+    "assertions Dafny generates; for bounded (machine-integer) newtypes"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c6"
+   ],
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "Decreases clauses are used to prove termination in the presence of recursion."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "termination measures",
+     "in": "Dafny"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c6"
+   ],
+   [
+    "quote",
+    "7.1.3 Decreases Clause"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c7"
+   ],
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "To ensure that function definitions are mathematically consistent, Dafny insists that recursive calls be well-founded,"
+   ],
+   [
+    "quote",
+    {
+     "needs": "a proof that the function ends",
+     "by": "recursive definitions as axioms"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c7"
+   ],
+   [
+    "quote",
+    "5.14.3.1 Well-Founded Function/Method Definitions"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c8"
+   ],
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "Control flow statements correspond to proof techniques—case splits are introduced with if statements, recursion and loops are used for induction, and method calls for structuring the proof."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "induction over recursive definitions",
+     "in": "Dafny"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c8"
+   ],
+   [
+    "quote",
+    "5.14.3.1 lemmas"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c9"
+   ],
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "Lemmas in Dafny are commonly introduced by declaring a method, stating the property of the lemma in the postcondition (keyword ensures ) of the method, perhaps restricting the domain of the lemma by also giving a precondition (keyword requires ), and using the lemma by invoking the method."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs written by hand and checked by machine",
+     "by": "verification conditions",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c9"
+   ],
+   [
+    "quote",
+    "5.14.3.1 lemmas"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c10"
+   ],
+   [
+    "quote",
+    "dafny-ref"
+   ],
+   [
+    "quote",
+    "Since Dafny automatically inserts calls to the induction hypothesis at the beginning of each lemma, the bodies of the given extreme lemmas EvenNat and Always can be empty and Dafny still completes the proofs."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs about functions that call themselves",
+     "by": "induction over recursive definitions",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c10"
+   ],
+   [
+    "quote",
+    "12.5 extreme lemmas: automatic induction"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c11"
+   ],
+   [
+    "quote",
+    "dafny-user-guide"
+   ],
+   [
+    "quote",
+    "since Z3 can sometimes get stuck down an unproductive path while attempting to prove things about those operators."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear integer arithmetic",
+     "by": "smt solving",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c11"
+   ],
+   [
+    "quote",
+    "--disable-nonlinear-arithmetic; the operators are *, /, %"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c12"
+   ],
+   [
+    "quote",
+    "dafny-user-guide"
+   ],
+   [
+    "quote",
+    "Enabling this option will typically require more manual work to complete proofs (by explicitly applying lemmas about non-linear operators), but will also result in more predictable behavior,"
+   ],
+   [
+    "quote",
+    {
+     "needs": "lemmas about nonlinear operators applied by hand",
+     "by": "verification conditions"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c12"
+   ],
+   [
+    "quote",
+    "--disable-nonlinear-arithmetic"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c13"
+   ],
+   [
+    "quote",
+    "acl2-numbers"
+   ],
+   [
+    "quote",
+    "ACL2 numbers are precisely represented and unbounded."
+   ],
+   [
+    "quote",
+    {
+     "covers": "integers kept exact past two to the 53rd",
+     "by": "arbitrary-precision integers",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c13"
+   ],
+   [
+    "quote",
+    "NUMBERS-INTRODUCTION"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c14"
+   ],
+   [
+    "quote",
+    "acl2-numbers"
+   ],
+   [
+    "quote",
+    "ACL2 numbers are precisely represented and unbounded."
+   ],
+   [
+    "quote",
+    {
+     "covers": "fractions kept exact",
+     "by": "exact rational arithmetic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c14"
+   ],
+   [
+    "quote",
+    "NUMBERS-INTRODUCTION (subtypes listed: integers, non-integral rationals, complex rationals)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c15"
+   ],
+   [
+    "quote",
+    "acl2-real"
+   ],
+   [
+    "quote",
+    "ACL2 supports rational numbers but not real numbers."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "exact rational arithmetic",
+     "in": "ACL2"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c15"
+   ],
+   [
+    "quote",
+    "REAL"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c16"
+   ],
+   [
+    "quote",
+    "acl2-df"
+   ],
+   [
+    "quote",
+    "So we can't simply apply @('+') to floating-point numbers in ACL2, because @(see guard)-verified code leads to raw Lisp computations that would violate this axiom."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs that hold of the code's own arithmetic",
+     "by": "binary64 floating point",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c16"
+   ],
+   [
+    "quote",
+    "DF, Section 2, Problem #1: addition isn't associative on floating-point numbers"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c17"
+   ],
+   [
+    "quote",
+    "acl2-df"
+   ],
+   [
+    "quote",
+    "Treat floating-point values as rationals."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "floating point read as exact rationals",
+     "in": "ACL2"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c17"
+   ],
+   [
+    "quote",
+    "DF, Section 3, principle (A)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c18"
+   ],
+   [
+    "quote",
+    "acl2-df"
+   ],
+   [
+    "quote",
+    "ACL2 differs from Common Lisp by imposing syntactic restrictions on expressions that represent floating-point computations, to ensure that these computations respect the ACL2 axioms."
+   ],
+   [
+    "quote",
+    {
+     "needs": "syntactic restrictions on floating-point expressions",
+     "by": "floating point read as exact rationals"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c18"
+   ],
+   [
+    "quote",
+    "DF, Section 1"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c19"
+   ],
+   [
+    "quote",
+    "acl2-df"
+   ],
+   [
+    "quote",
+    "in Common Lisp can be much faster when applied to floating-point numbers than to rational numbers."
+   ],
+   [
+    "quote",
+    {
+     "covers": "arithmetic as fast as a double's",
+     "by": "exact rational arithmetic",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c19"
+   ],
+   [
+    "quote",
+    "DF, opening paragraph"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c20"
+   ],
+   [
+    "quote",
+    "acl2-defun"
+   ],
+   [
+    "quote",
+    "But it is also possible to reason deductively about the function because each definition extends the underlying logic with a definitional axiom."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "recursive definitions as axioms",
+     "in": "ACL2"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c20"
+   ],
+   [
+    "quote",
+    "DEFUN-MODE"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c21"
+   ],
+   [
+    "quote",
+    "acl2-defun"
+   ],
+   [
+    "quote",
+    "But the most challenging restriction is that the system must prove that the recursion in the new definition terminates."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a proof that the function ends",
+     "by": "recursive definitions as axioms"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c21"
+   ],
+   [
+    "quote",
+    "DEFUN-MODE; the sentence before: to ensure that the logic is sound after the addition of this axiom"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c22"
+   ],
+   [
+    "quote",
+    "acl2-defun"
+   ],
+   [
+    "quote",
+    "The notion of ``measure'' is crucial to ACL2's definitional principle."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "termination measures",
+     "in": "ACL2"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c22"
+   ],
+   [
+    "quote",
+    "DEFUN"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c23"
+   ],
+   [
+    "quote",
+    "acl2-induction"
+   ],
+   [
+    "quote",
+    "Because every recursively defined function must be admitted with a justification in terms of a measure that decreases in a well-founded way on a given set of ``controlling'' arguments, every recursive definition suggests a dual induction scheme that ``unwinds'' the function from a given application."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a proof that the function ends",
+     "by": "induction over recursive definitions"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c23"
+   ],
+   [
+    "quote",
+    "INDUCTION"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c24"
+   ],
+   [
+    "quote",
+    "acl2-induction"
+   ],
+   [
+    "quote",
+    "In ACL2, as in Nqthm, the functions in a conjecture ``suggest'' the inductions considered by the system."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "induction over recursive definitions",
+     "in": "ACL2"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c24"
+   ],
+   [
+    "quote",
+    "INDUCTION"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c25"
+   ],
+   [
+    "quote",
+    "acl2-linear-arithmetic"
+   ],
+   [
+    "quote",
+    "ACL2 incorporates a rational linear arithmetic decision procedure."
+   ],
+   [
+    "quote",
+    {
+     "defines": "linear arithmetic decision procedure"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c25"
+   ],
+   [
+    "quote",
+    "LINEAR-ARITHMETIC"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c26"
+   ],
+   [
+    "quote",
+    "acl2-non-linear-arithmetic"
+   ],
+   [
+    "quote",
+    "In the non-linear arithmetic case, we are using the fact that the product of two positive polynomials is itself positive."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "nonlinear preprocessing by products of hypotheses",
+     "in": "ACL2"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c26"
+   ],
+   [
+    "quote",
+    "NON-LINEAR-ARITHMETIC"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c27"
+   ],
+   [
+    "quote",
+    "acl2-non-linear-arithmetic"
+   ],
+   [
+    "quote",
+    "so ACL2 multiplies polynomials together when the product of their largest unknowns is itself the largest unknown of another polynomial."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs about arithmetic the solver cannot decide",
+     "by": "nonlinear preprocessing by products of hypotheses",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c27"
+   ],
+   [
+    "quote",
+    "NON-LINEAR-ARITHMETIC (an extension of the linear procedure, off by default)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c28"
+   ],
+   [
+    "quote",
+    "acl2-non-linear-arithmetic"
+   ],
+   [
+    "quote",
+    "Usually, one would not set up an arithmetic-theory on one's own but would instead load a library book or books which do so."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a library of arithmetic lemmas",
+     "by": "nonlinear preprocessing by products of hypotheses"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c28"
+   ],
+   [
+    "quote",
+    "NON-LINEAR-ARITHMETIC"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c29"
+   ],
+   [
+    "quote",
+    "smtlib-floatingpoint"
+   ],
+   [
+    "quote",
+    "This is a theory of floating point numbers largely based on the IEEE standard 754-2008 for floating-point arithmetic (http://grouper.ieee.org/groups/754/) but restricted to the binary case only."
+   ],
+   [
+    "quote",
+    {
+     "defines": "ieee floating-point theory"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c29"
+   ],
+   [
+    "quote",
+    ":notes"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c30"
+   ],
+   [
+    "quote",
+    "smtlib-floatingpoint"
+   ],
+   [
+    "quote",
+    "[[(_ FloatingPoint eb sb)]] is the set of all the binary floating point numbers with eb bits for the exponent and sb bits for the significand, as defined by IEEE 754-2008."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs that hold of the code's own arithmetic",
+     "by": "ieee floating-point theory",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c30"
+   ],
+   [
+    "quote",
+    "Semantics; Float64 is (_ FloatingPoint 11 53), IEEE binary64"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c31"
+   ],
+   [
+    "quote",
+    "smtlib-floatingpoint"
+   ],
+   [
+    "quote",
+    "[[(_ to_fp eb sb)]](r, x) = y otherwise, where y is the finite number such that [[fp.to_real]](y) is closest to x according to rounding mode r."
+   ],
+   [
+    "quote",
+    {
+     "covers": "fractions kept exact",
+     "by": "ieee floating-point theory",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c31"
+   ],
+   [
+    "quote",
+    "Semantics: conversion from Real"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c32"
+   ],
+   [
+    "quote",
+    "bitwuzla"
+   ],
+   [
+    "quote",
+    "Bitwuzla is a Satisfiability Modulo Theories (SMT) solver for the theories of fixed-size bit-vectors, floating-point arithmetic, arrays and uninterpreted functions and their combinations."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "ieee floating-point theory",
+     "in": "Bitwuzla"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c33"
+   ],
+   [
+    "quote",
+    "bjorner-programming-z3"
+   ],
+   [
+    "quote",
+    "Floating points are bit-vectors with an interpretation specified by the IEEE floating point standard."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "ieee floating-point theory",
+     "in": "Z3"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c33"
+   ],
+   [
+    "quote",
+    "3.4.2 Floating Point Arithmetic"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c34"
+   ],
+   [
+    "quote",
+    "flocq"
+   ],
+   [
+    "quote",
+    "Flocq (Floats for Coq) is a formalization of floating-point arithmetic for the Rocq proof assistant."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "formalized floating point",
+     "in": "Coq"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c35"
+   ],
+   [
+    "quote",
+    "flocq-nutshell"
+   ],
+   [
+    "quote",
+    "On finite inputs, several theorems express that the operators behave as if they first computed the infinitely-precise result and then rounded it to the format."
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs that hold of the code's own arithmetic",
+     "by": "formalized floating point",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c35"
+   ],
+   [
+    "quote",
+    "IEEE-754 operators (binary_float, e.g. binary64)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c36"
+   ],
+   [
+    "quote",
+    "wikipedia-hilbert-tenth"
+   ],
+   [
+    "quote",
+    "Hilbert's tenth problem has been solved in the negative: no such general algorithm can exist."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear integer arithmetic",
+     "by": "any algorithm",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c37"
+   ],
+   [
+    "quote",
+    "wikipedia-hilbert-tenth"
+   ],
+   [
+    "quote",
+    "The related problem of polynomial identity testing is a decidable (exponentiation-free) variation of Tarski's high school algebra problem"
+   ],
+   [
+    "quote",
+    {
+     "covers": "polynomial identities decided exactly",
+     "by": "polynomial identity testing",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c37"
+   ],
+   [
+    "quote",
+    "Extensions and variations"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c38"
+   ],
+   [
+    "quote",
+    "wikipedia-presburger"
+   ],
+   [
+    "quote",
+    "The decidability of Presburger arithmetic can be shown using quantifier elimination , supplemented by reasoning about arithmetical congruence ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for linear integer arithmetic",
+     "by": "quantifier elimination",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c38"
+   ],
+   [
+    "quote",
+    "Properties"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c39"
+   ],
+   [
+    "quote",
+    "wikipedia-presburger"
+   ],
+   [
+    "quote",
+    "More recent satisfiability modulo theories solvers use complete integer programming techniques to handle quantifier-free fragment of Presburger arithmetic theory."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for linear integer arithmetic",
+     "by": "smt solving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c39"
+   ],
+   [
+    "quote",
+    "Applications"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c40"
+   ],
+   [
+    "quote",
+    "wikipedia-presburger"
+   ],
+   [
+    "quote",
+    "In contrast, Peano arithmetic , which is Presburger arithmetic augmented with multiplication, is not decidable, as proved by Church alongside the negative answer to the Entscheidungsproblem ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear integer arithmetic",
+     "by": "any algorithm",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c40"
+   ],
+   [
+    "quote",
+    "Properties"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c41"
+   ],
+   [
+    "quote",
+    "wikipedia-presburger"
+   ],
+   [
+    "quote",
+    "The asymptotic running-time computational complexity of this algorithm is at least doubly exponential , however, as shown by Fischer & Rabin (1974) ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "decisions in time polynomial in the formula's size",
+     "by": "quantifier elimination",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c41"
+   ],
+   [
+    "quote",
+    "lead; quantified formulas (the quantifier-free fragment is NP-complete, per Computational complexity)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c42"
+   ],
+   [
+    "quote",
+    "wikipedia-real-closed-field"
+   ],
+   [
+    "quote",
+    "Furthermore, 𝒯 rcf is decidable , meaning that there is an algorithm to determine the truth or falsity of any such sentence."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear real arithmetic",
+     "by": "quantifier elimination",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c42"
+   ],
+   [
+    "quote",
+    "Decidability and quantifier elimination (Tarski; sentences over +, ×, ≤)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c43"
+   ],
+   [
+    "quote",
+    "wikipedia-real-closed-field"
+   ],
+   [
+    "quote",
+    "There is no contradiction, since the statement \" x is an integer\" cannot be formulated as a first-order formula in the language ℒ rcf ."
+   ],
+   [
+    "quote",
+    {
+     "needs": "unknowns that range over the real numbers",
+     "by": "quantifier elimination"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c43"
+   ],
+   [
+    "quote",
+    "Decidability and quantifier elimination"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c44"
+   ],
+   [
+    "quote",
+    "wikipedia-real-closed-field"
+   ],
+   [
+    "quote",
+    "The cylindrical algebraic decomposition , introduced by George E. Collins , provides a much more practicable algorithm of complexity"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear real arithmetic",
+     "by": "cylindrical algebraic decomposition",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c44"
+   ],
+   [
+    "quote",
+    "Complexity of deciding T rcf"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c45"
+   ],
+   [
+    "quote",
+    "wikipedia-cad"
+   ],
+   [
+    "quote",
+    "CAD provides an effective version of quantifier elimination over the reals that has a much better computational complexity than that resulting from the original proof of Tarski–Seidenberg theorem ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear real arithmetic",
+     "by": "cylindrical algebraic decomposition",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c46"
+   ],
+   [
+    "quote",
+    "wikipedia-cad"
+   ],
+   [
+    "quote",
+    "There are also examples for which the minimal number of cells is doubly exponential, showing that every general algorithm for cylindrical algebraic decomposition has a double exponential complexity."
+   ],
+   [
+    "quote",
+    {
+     "covers": "decisions in time polynomial in the formula's size",
+     "by": "cylindrical algebraic decomposition",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c47"
+   ],
+   [
+    "quote",
+    "jovanovic-demoura-nlsat-2012"
+   ],
+   [
+    "quote",
+    "The algorithm performs a Conflict-Driven Clause Learning (CDCL)-style search for a feasible assignment, while using projection operators adapted from cylindrical algebraic decomposition to guide the search away from the conflicting states."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear real arithmetic",
+     "by": "cylindrical algebraic decomposition",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c47"
+   ],
+   [
+    "quote",
+    "abstract; the sentence before: a new algorithm for deciding satisfiability of non-linear arithmetic constraints"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c48"
+   ],
+   [
+    "quote",
+    "bjorner-programming-z3"
+   ],
+   [
+    "quote",
+    "NRA Polynomial Real Arithmetic Model based CAD"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "cylindrical algebraic decomposition",
+     "in": "Z3"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c48"
+   ],
+   [
+    "quote",
+    "Table 1, Arithmetic Theories (row cites [42], the nlsat paper)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-c49"
+   ],
+   [
+    "quote",
+    "bjorner-programming-z3"
+   ],
+   [
+    "quote",
+    "It is a decision procedure for quantifier-free formulas over the reals using polynomial arithmetic."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear real arithmetic",
+     "by": "smt solving",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-c49"
+   ],
+   [
+    "quote",
+    "6.5 NLSat (Z3's engine for QF_NRA)"
+   ]
+  ]
+ ],
+ "recorded"
+]

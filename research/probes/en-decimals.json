@@ -1,0 +1,23 @@
+{
+  "0.1 plus 0.2": ["number/add", 0.1, 0.2],
+  "0.1 plus 0.2 equals 0.3": ["number/equals?", ["number/add", 0.1, 0.2], 0.3],
+  "1 divided by 3": ["number/divide", 1, 3],
+  "1 divided by 3, times 3, equals 1": [
+    "number/equals?",
+    ["number/multiply", ["number/divide", 1, 3], 3],
+    1
+  ],
+  "1 divided by 49, times 49, equals 1": [
+    "number/equals?",
+    ["number/multiply", ["number/divide", 1, 49], 49],
+    1
+  ],
+  "a sum of ten tenths": [
+    "array/reduce",
+    ["quote", [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]],
+    0,
+    "number/add"
+  ],
+  "a number written with 21 decimal places, 0.100000000000000000001": 0.100000000000000000001,
+  "it equals 0.1": ["number/equals?", 0.100000000000000000001, 0.1]
+}

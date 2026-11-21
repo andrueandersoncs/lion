@@ -23662,5 +23662,14 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "feature": "research-exact-numbers",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "research/runs/exact-numbers/report.md"]],
+      1
+    ]
   }
 ]

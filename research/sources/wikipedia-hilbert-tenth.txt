@@ -1,0 +1,366 @@
+Jump to content
+Main menu
+Main menu
+move to sidebar
+hide
+Navigation
+Main page
+Contents
+Current events
+Random article
+About Wikipedia
+Contact us
+Contribute
+Help
+Learn to edit
+Community portal
+Recent changes
+Upload file
+Special pages
+Search
+Search
+Appearance
+Donate
+Create account
+Log in
+Personal tools
+Donate
+Create account
+Log in
+Contents
+move to sidebar
+hide
+(Top)
+1
+Background
+Toggle Background subsection
+1.1
+Original formulation
+1.2
+Diophantine sets
+1.3
+Recursively enumerable sets
+2
+History
+3
+Applications
+4
+Further results
+5
+Extensions and variations of Hilbert's tenth problem
+6
+See also
+7
+Notes
+8
+References
+Toggle References subsection
+8.1
+Works cited
+9
+Further reading
+10
+External links
+Toggle the table of contents
+Hilbert's tenth problem
+13 languages
+العربية
+Ελληνικά
+Español
+فارسی
+Français
+עברית
+Nederlands
+Polski
+Português
+Русский
+Simple English
+Svenska
+中文
+Edit links
+Article
+Talk
+English
+Read
+Edit
+View history
+Save
+Tools
+Tools
+move to sidebar
+hide
+Actions
+Read
+Edit
+View history
+Save
+General
+What links here
+Related changes
+Upload file
+Permanent link
+Page information
+Cite this page
+Get shortened URL
+Switch to legacy parser
+Print/export
+Download as PDF
+Printable version
+In other projects
+Wikidata item
+Appearance
+move to sidebar
+hide
+From Wikipedia, the free encyclopedia
+On solvability of Diophantine equations
+Hilbert's tenth problem is the tenth on the list of mathematical problems that the German mathematician David Hilbert posed in 1900. It is the challenge to provide a general algorithm that, for any given Diophantine equation (a polynomial equation with integer coefficients and a finite number of unknowns), can decide whether the equation has a solution with all unknowns taking integer values.
+For example, the Diophantine equation 3 x 2 − 2 x y − y 2 z − 7 = 0 has an integer solution: x = 1 , y = 2 , z = − 2 . By contrast, the Diophantine equation x 2 + y 2 + 1 = 0 has no such solution.
+Hilbert's tenth problem has been solved in the negative: no such general algorithm can exist. This is the result of combined work of Martin Davis , Yuri Matiyasevich , Hilary Putnam , and Julia Robinson spanning 21 years, with Matiyasevich completing the theorem in 1970. [ 1 ] [ 2 ] [ 3 ] The theorem is now known as Matiyasevich's theorem or the MRDP theorem (an initialism for the surnames of the four principal contributors to its solution).
+Later research has studied how far the degree and the number of unknowns can be restricted while the problem remains undecidable.
+Hilbert's tenth problem has also been studied over other rings besides the integers.
+Background
+[ edit ]
+Original formulation
+[ edit ]
+Hilbert formulated the problem as follows: [ 4 ]
+Given a Diophantine equation with any number of unknown quantities and with rational integral numerical coefficients: To devise a process according to which it can be determined in a finite number of operations whether the equation is solvable in rational integers.
+The words "process" and "finite number of operations" have been taken to mean that Hilbert was asking for an algorithm . The term "rational integers" simply refers to the integers, positive, negative, or zero: 0, ±1, ±2, ... . So Hilbert was asking for a general algorithm to decide whether a given polynomial Diophantine equation with integer coefficients has a solution in integers.
+Hilbert's problem is not concerned with finding the solutions. It only asks whether, in general, we can decide whether one or more solutions exist. The answer to this question is negative, in the sense that no "process can be devised" for answering that question. In modern terms, Hilbert's tenth problem is an undecidable problem .
+Diophantine sets
+[ edit ]
+Main article: Diophantine set
+In a Diophantine equation, there are two kinds of variables: the parameters and the unknowns. The Diophantine set consists of the parameter assignments for which the Diophantine equation is solvable. A typical example is the linear Diophantine equation in two unknowns,
+a 1 x + a 2 y = a 3 ,
+where the equation is solvable if and only if the greatest common divisor gcd ⁡ ( a 1 , a 2 ) evenly divides a 3 . The set of all ordered triples ( a 1 , a 2 , a 3 ) satisfying this restriction is called the Diophantine set defined by a 1 x + a 2 y = a 3 .
+In these terms, Hilbert's tenth problem asks whether there is an algorithm to determine if the Diophantine set corresponding to an arbitrary polynomial is non-empty.
+The problem is generally understood in terms of the natural numbers (that is, the non-negative integers) rather than arbitrary integers. However, the two problems are equivalent: any general algorithm that can decide whether a given Diophantine equation has an integer solution could be modified into an algorithm that decides whether a given Diophantine equation has a natural-number solution, and vice versa. By Lagrange's four-square theorem , every natural number is the sum of the squares of four integers, so we could rewrite every natural-valued unknown in terms of the sum of the squares of four new integer-valued unknowns. Similarly, since every integer is the difference of two natural numbers, we could rewrite every integer-valued unknown as the difference of two natural-valued unknowns. [ 3 ] Furthermore, we can always rewrite a system of simultaneous equations p 1 = 0 , … , p k = 0 (where each p i is a polynomial) as a single equation p 1 2 + ⋯ + p k 2 = 0 .
+Recursively enumerable sets
+[ edit ]
+A recursively enumerable set can be characterized as one for which there exists an algorithm that will eventually halt when a member of the set is provided as input, but may continue indefinitely when the input is a non-member. It was the development of computability theory (also known as recursion theory) that provided a precise explication of the intuitive notion of algorithmic computability, thus making the notion of recursive enumerability perfectly rigorous. It is evident that Diophantine sets are recursively enumerable (also known as semi-decidable). This is because one can arrange all possible tuples of values of the unknowns in a sequence and then, for a given value of the parameter(s), test these tuples, one after another, to see whether they are solutions of the corresponding equation. The unsolvability of Hilbert's tenth problem is a consequence of the surprising fact that the converse is true: [ 5 ]
+Every recursively enumerable set is Diophantine.
+This result is variously known as Matiyasevich's theorem (because he provided the crucial step that completed the proof) and the MRDP theorem (for Yuri Matiyasevich , Julia Robinson , Martin Davis , and Hilary Putnam ). Because there exists a recursively enumerable set that is not computable, the unsolvability of Hilbert's tenth problem is an immediate consequence. In fact, more can be said: there is a polynomial
+p ( a , x 1 , … , x n )
+with integer coefficients such that the set of values of a for which the equation
+p ( a , x 1 , … , x n ) = 0
+has solutions in natural numbers is not computable. So, not only is there no general algorithm for testing Diophantine equations for solvability, but there is none even for this family of single-parameter equations.
+History
+[ edit ]
+Year
+Events
+1944
+Emil Leon Post declares that Hilbert's tenth problem "begs for an unsolvability proof".
+1949
+Martin Davis uses Kurt Gödel 's method for applying the Chinese remainder theorem as a coding trick to obtain his normal form for recursively enumerable sets:
+{ a ∣ ∃ y ∀ k ⩽ y ∃ x 1 , … , x n : p ( a , k , y , x 1 , … , x n ) = 0 }
+where p is a polynomial with integer coefficients. Purely formally, it is only the bounded universal quantifier that stands in the way of this being a definition of a Diophantine set.
+Using a non-constructive but easy proof, he derives as a corollary to this normal form that the class of Diophantine sets is not closed under complementation, by showing that there exists a Diophantine set whose complement is not Diophantine. Because the recursively enumerable sets also are not closed under complementation, he conjectures that the two classes are identical.
+1950
+Julia Robinson , unaware of Davis's work, investigates the connection of the exponential function to the problem, and attempts to prove that EXP, the set of triplets ( a , b , c ) for which a = b c , is Diophantine. Not succeeding, she makes the following hypothesis (later called J.R.):
+There is a Diophantine set D of pairs ( a , b ) such that ( a , b ) ∈ D ⇒ b < a a and for every positive k , there exists ( a , b ) ∈ D such that a^k."}}'> b > a k .
+Using properties of the Pell equation, she proves that J.R. implies that EXP is Diophantine, as well as the binomial coefficients, the factorial, and the primes.
+1959
+Working together, Davis and Putnam study exponential Diophantine sets : sets definable by Diophantine equations in which some of the exponents may be unknowns. Using the Davis normal form together with Robinson's methods, and assuming the then unproved conjecture that there are arbitrarily long arithmetic progressions consisting of prime numbers , they prove that every recursively enumerable set is exponential Diophantine. They also prove as a corollary that J.R. implies that every recursively enumerable set is Diophantine, which in turn implies that Hilbert's tenth problem is unsolvable. [ 6 ]
+1960
+Robinson simplifies the proof of the conditional result for exponential Diophantine sets and makes it independent from the conjecture about primes and thus a formal theorem. [ 6 ] This makes the J.R. hypothesis a sufficient condition for the unsolvability of Hilbert's tenth problem. However, many doubted that J.R. was true. [ a ]
+1961–1969
+During this period, Davis and Putnam find various propositions that imply J.R., and Robinson, having previously shown that J.R. implies that the set of primes is a Diophantine set, proves that this is an if and only if condition. Yuri Matiyasevich publishes some reductions of Hilbert's tenth problem.
+1970
+Drawing from the recently published work of Nikolai Vorob'ev on Fibonacci numbers, [ 7 ] Matiyasevich proves that the set 0, b = F_{2a} \\},"}}'> P = { ( a , b ) ∣ a > 0 , b = F 2 a } , where F n is the n th Fibonacci number , is Diophantine and exhibits exponential growth. [ 8 ] This proves the J.R. hypothesis, which by then had been an open question for 20 years. Combining J.R. with the theorem that every recursively enumerable set is exponential Diophantine, proves that recursively enumerable sets are Diophantine. This makes Hilbert's tenth problem unsolvable.
+Applications
+[ edit ]
+The Matiyasevich/MRDP theorem relates two notions — one from computability theory, the other from number theory — and has some surprising consequences. Perhaps the most surprising is the existence of a universal Diophantine equation:
+There exists a polynomial p ( a , n , x 1 , … , x k ) such that, given any Diophantine set S there is a number n 0 such that
+S = { a ∣ ∃ x 1 , … , x k [ p ( a , n 0 , x 1 , … , x k ) = 0 ] } .
+This is true because the Diophantine sets are exactly the recursively enumerable sets, each of which is the set of inputs on which some Turing machine halts, and there exist universal Turing machines that can simulate any other Turing machine. Moreover, the translation is effective: from a program or machine accepting a recursively enumerable set, a Diophantine equation defining that set can be computed algorithmically. [ 9 ]
+Hilary Putnam has pointed out [ 10 ] that for any Diophantine set S of positive integers, there is a polynomial
+q ( x 0 , x 1 , … , x n )
+such that S consists of exactly the positive numbers among the values assumed by q as
+the variables
+x 0 , x 1 , … , x n
+range over all natural numbers. This can be seen as follows: If
+p ( a , y 1 , … , y n ) = 0
+provides a Diophantine definition of S , then it suffices to set
+q ( x 0 , x 1 , … , x n ) = x 0 [ 1 − p ( x 0 , x 1 , … , x n ) 2 ] .
+So, for example, there is a polynomial for which the positive part of its range is exactly the prime numbers. [ 11 ] (On the other hand, no non-constant polynomial can take only prime values.) The same holds for other recursively enumerable sets of natural numbers, such as the factorials, the binomial coefficients and the Fibonacci numbers.
+Other applications concern what logicians refer to as Π 1 0 propositions, sometimes also called propositions of Goldbach type . \\Pi^{0}_1</math> sentences are at one of the lowest levels of the so-called [[arithmetical hierarchy]]."}},"i":0}}]}'> [ b ] These are like Goldbach's conjecture , in stating that all natural numbers possess a certain property that is algorithmically checkable for each particular number. n</math> the number <math>2n+4</math> is the sum of two prime numbers. Of course there is a simple algorithm to test a given number for being the sum of two primes."}},"i":0}}]}'> [ c ] The Matiyasevich/MRDP theorem implies that each such proposition is equivalent to a statement that asserts that some particular Diophantine equation has no solutions in natural numbers. [ d ] A number of important and celebrated problems are of this form: in particular, Fermat's Last Theorem , the Riemann hypothesis , and the four color theorem . In addition the assertion that particular formal systems such as Peano arithmetic or ZFC are consistent can be expressed as Π 1 0 sentences. The idea is to follow Kurt Gödel in coding proofs by natural numbers in such a way that the property of being the number representing a proof is algorithmically checkable.
+Π 1 0 sentences have the special property that if they are false, that fact will be provable in any of the usual formal systems. This is because the falsity amounts to the existence of a counter-example that can be verified by simple arithmetic. So if a Π 1 0 sentence is such that neither it nor its negation is provable in one of these systems, that sentence must be true. [ citation needed ]
+A particularly striking form of Gödel's incompleteness theorem is also a consequence of the Matiyasevich/MRDP theorem:
+Let
+p ( a , x 1 , … , x k ) = 0
+provide a Diophantine definition of a non-computable set. Let A be an algorithm that outputs a sequence of natural numbers n such that the corresponding equation
+p ( n , x 1 , … , x k ) = 0
+has no solutions in natural numbers. Then there is a number n 0 that is not output by A while in fact the equation
+p ( n 0 , x 1 , … , x k ) = 0
+has no solutions in natural numbers.
+To see that the theorem is true, it suffices to notice that if there were no such number n 0 , one could algorithmically test membership of a number n in this non-computable set by simultaneously running the algorithm A to see whether n is output while also checking all possible k -tuples of natural numbers seeking a solution of the equation
+p ( n , x 1 , … , x k ) = 0
+and we may associate an algorithm A with any of the usual formal systems such as Peano arithmetic or ZFC by letting it systematically generate consequences of the axioms and then output a number n whenever a sentence of the form
+¬ ∃ x 1 , … , x k [ p ( n , x 1 , … , x k ) = 0 ]
+is generated. Then the theorem tells us that either a false statement of this form is proved or a true one remains unproved in the system in question. Such an equation has been fully constructed by Merlin Carl and Boris Moroz for NBG set theory , a conservative extension of ZFC. [ 12 ]
+Further results
+[ edit ]
+We may speak of the degree of a Diophantine set as being the least degree of a polynomial in an equation defining that set. Similarly, we can call the dimension of such a set the fewest unknowns in a defining equation. Because of the existence of a universal Diophantine equation, it is clear that there are absolute upper bounds to both of these quantities, and there has been much interest in determining these bounds. Unless stated otherwise, the bounds below concern solutions in natural numbers.
+Already in the 1920s Thoralf Skolem showed that any Diophantine equation is equivalent to one of degree 4 or less. His trick was to introduce new unknowns by equations setting them equal to the square of an unknown or the product of two unknowns. Repetition of this process results in a system of second degree equations; then an equation of degree 4 is obtained by summing the squares. So every Diophantine set is trivially of degree 4 or less. It is not known whether this result is best possible.
+Julia Robinson and Yuri Matiyasevich showed that every Diophantine set has dimension no greater than 13. Later, Matiyasevich sharpened their methods to show that 9 unknowns suffice. Although it may well be that this result is not the best possible, there has been no further progress. [ e ] So, in particular, there is no algorithm for testing Diophantine equations with 9 or fewer unknowns for solvability in natural numbers. For the case of rational integer solutions (as Hilbert had originally posed it), the 4-squares trick shows that there is no algorithm for equations with no more than 36 unknowns. But Zhi-Wei Sun showed that the problem for integers is unsolvable even for equations with no more than 11 variables. [ 13 ]
+Martin Davis studied algorithmic questions involving the number of solutions of a Diophantine equation. Hilbert's tenth problem asks whether or not that number is 0. Let A = { 0 , 1 , 2 , 3 , … , ℵ 0 } and let C be a proper non-empty subset of A . Davis proved that there is no algorithm to test a given Diophantine equation to determine whether the number of its solutions is a member of the set C . Thus there is no algorithm to determine whether the number of solutions of a Diophantine equation is finite, odd, a perfect square, a prime, etc.
+The proof of the MRDP theorem has been formalized in Rocq (previously known as Coq ) [ 14 ] and in Isabelle . [ 15 ]
+Extensions and variations of Hilbert's tenth problem
+[ edit ]
+Alexandra Shlapentokh (middle) in 2003
+The version of Hilbert's tenth problem where all coefficients and unknowns are restricted to be positive integers is solvable: there exists a general algorithm that decides whether any given polynomial equation with positive coefficients has a solution where the values of all unknowns are positive. The related problem of polynomial identity testing is a decidable (exponentiation-free) variation of Tarski's high school algebra problem , sometimes denoted H S I ‾ . [ 16 ]
+Although Hilbert posed the problem for the integers, it can be just as well asked for many other rings (in particular, for any ring whose number of elements is countable ). Obvious examples are the rings of integers of algebraic number fields as well as the rational numbers ℚ .
+There has been much work on Hilbert's tenth problem for the rings of integers of algebraic number fields. Basing themselves on earlier work by Jan Denef and Leonard Lipschitz and using class field theory , Harold N. Shapiro and Alexandra Shlapentokh were able to prove:
+Hilbert's tenth problem is unsolvable for the ring of integers of any algebraic number field whose Galois group over the rationals is abelian .
+Shlapentokh and Thanases Pheidas (independently of one another) obtained the same result for algebraic number fields admitting exactly one pair of complex conjugate embeddings.
+In 2024, Peter Koymans and Carlo Pagano published a preprint with a claimed proof that Hilbert's tenth problem is unsolvable for the ring of integers of any algebraic number field. Their proof uses additive combinatorics and establishes the unsolvability of the problem for any ring that is finitely generated over the integers ℤ . [ 17 ] [ 18 ] Another team of mathematicians shortly thereafter proved the same result using different methods. [ 17 ] [ 19 ]
+Hilbert's tenth problem for equations over the rational numbers has also received much interest. Barry Mazur has conjectured that for any variety over the rationals, the topological closure over the reals of the set of solutions has only finitely many components. [ 20 ] This conjecture implies that the integers are not Diophantine over the rationals, which would mean that a negative answer to Hilbert's Tenth Problem for the rationals would require a different approach than that used for other rings.
+In a preprint dated 24 September 2026, released as part of a collection of more than 700 mathematical manuscripts produced by an unreleased internal large language model , OpenAI claimed a proof that Hilbert's tenth problem over the rationals is unsolvable. [ 21 ] OpenAI stated that not all results in the collection had been formalized in Lean and that unformalized results could contain errors. [ 22 ]
+See also
+[ edit ]
+Tarski's high school algebra problem
+Notes
+[ edit ]
+↑ A review of the joint publication by Davis, Putnam, and Robinson in Mathematical Reviews ( MR 0133227 ) conjectured, in effect, that J.R. was false.
+↑ Π 1 0 sentences are at one of the lowest levels of the so-called arithmetical hierarchy .
+↑ Thus, the Goldbach Conjecture itself can be expressed as saying that for each natural number n the number 2 n + 4 is the sum of two prime numbers. Of course there is a simple algorithm to test a given number for being the sum of two primes.
+↑ In fact the equivalence is provable in Peano arithmetic .
+↑ At this point, even 3 cannot be excluded as an absolute upper bound.
+References
+[ edit ]
+↑ Matiyasevich 1970 .
+↑ Cooper 2003 , p. 98.
+1 2 Matiyasevich 1993 ; Harizanov 1995 .
+↑ Hilbert 1902 , p. 458.
+↑ Davis 1973 , p. 264, Theorem 8.1.
+1 2 Davis, Putnam & Robinson 1961 .
+↑ Matiyasevich 1992 .
+↑ Sacks 2003 , pp. 269–273.
+↑ Jones & Matiyasevich 1984 ; Jones & Matiyasevich 1991 ; Chaitin 1987 .
+↑ Putnam 1960 .
+↑ Jones et al. 1976 .
+↑ Carl & Moroz 2014 .
+↑ Gasarch 2021 .
+↑ Larchey-Wendling & Forster 2019 .
+↑ Bayer et al. 2022 .
+↑ Burris & Lee 1993 .
+1 2 Howlett 2025 .
+↑ Koymans & Pagano 2024 .
+↑ Alpöge et al. 2025 .
+↑ Poonen 2003 .
+↑ OpenAI 2026a .
+↑ OpenAI 2026b .
+Works cited
+[ edit ]
+\\mathbb{Q}</math>"},"journal":{"wt":"[[Journal of the American Mathematical Society]]"},"volume":{"wt":"16"},"issue":{"wt":"4"},"year":{"wt":"2003"},"pages":{"wt":"981–990"},"url":{"wt":"https://klein.mit.edu/~poonen/papers/subrings.pdf"},"doi":{"wt":"10.1090/S0894-0347-03-00433-8"},"mr":{"wt":"1992832"},"s2cid":{"wt":"8486815"}},"i":24}},"\n* ",{"template":{"target":{"wt":"cite journal\n","href":"./Template:Cite_journal"},"params":{"last":{"wt":"Putnam"},"first":{"wt":"Hilary"},"author-link":{"wt":"Hilary Putnam"},"title":{"wt":"An unsolvable problem in number theory"},"journal":{"wt":"[[Journal of Symbolic Logic]]"},"volume":{"wt":"25"},"issue":{"wt":"3"},"year":{"wt":"1960"},"pages":{"wt":"220–232"}},"i":25}},"\n* ",{"template":{"target":{"wt":"cite book\n","href":"./Template:Cite_book"},"params":{"last":{"wt":"Sacks"},"first":{"wt":"Gerald E."},"title":{"wt":"Mathematical Logic in the 20th century"},"publisher":{"wt":"World Scientific"},"year":{"wt":"2003"}},"i":26}},"\n",{"template":{"target":{"wt":"refend","href":"./Template:Refend"},"params":{},"i":27}}]}'>
+Alpöge, Levent; Bhargava, Manjul; Ho, Wei; Shnidman, Ari (December 2025). "Rank stability in quadratic extensions and Hilbert's tenth problem for the ring of integers of a number field". Inventiones Mathematicae . 243 : 1129– 1139. arXiv : 2501.18774 . doi : 10.1007/s00222-025-01392-3 .
+Bayer, Jonas; David, Marco; Stock, Benedikt; Pal, Abhik; Matiyasevich, Yuri ; Schleicher, Dierk (June 2022). "Diophantine Equations and the DPRM Theorem" . Archive of Formal Proofs . ISSN 2150-914X .
+Burris, Stanley; Lee, Simon (1993). "Tarski's high school identities". American Mathematical Monthly . 100 (3): 231– 236.
+Carl, M.; Moroz, B. Z. (1 May 2014). "On a Diophantine Representation of the Predicate of Provability" (PDF) . Journal of Mathematical Sciences . 199 (1): 36– 52. doi : 10.1007/s10958-014-1830-2 . ISSN 1573-8795 .
+Chaitin, Gregory J. (1987). "The Arithmetization of Register Machines". Algorithmic Information Theory . Cambridge Tracts in Theoretical Computer Science. Vol. 1. Cambridge: Cambridge University Press . ISBN 0-521-34306-2 .
+Cooper, S. Barry (17 November 2003). Computability theory . Chapman & Hall/CRC. ISBN 9781584882374 . OCLC 909209807 .
+Davis, Martin (1973). "Hilbert's Tenth Problem is Unsolvable". American Mathematical Monthly . 80 (3): 233– 269. doi : 10.2307/2318447 . JSTOR 2318447 . Reprinted as an appendix in Davis, Martin (1982). Computability and Unsolvability (reprint ed.). Dover. ISBN 978-0-486-61471-7 .
+Davis, Martin ; Putnam, Hilary ; Robinson, Julia (1961). "The decision problem for exponential Diophantine equations". Annals of Mathematics . 74 (3): 425– 436. doi : 10.2307/1970289 . JSTOR 1970289 .
+Gasarch, William (February 2021). "Hilbert's Tenth Problem for Fixed d and n" . Bulletin of the EATCS . 133 .
+Harizanov, Valentina (1995). "Review of Yuri V. Matiyasevich, Hilbert's Tenth Problem" . Modern Logic . 5 (3). Modern Logic Publishing: 345– 355. ISSN 1047-5982 . Retrieved 19 October 2026 – via Project Euclid.
+Hilbert, David (July 1902). "Mathematical problems" . Bull. Amer. Math. Soc. 8 (10): 437– 479. doi : 10.1090/S0002-9904-1902-00923-3 .
+Howlett, Joseph (9 March 2025). "New Proofs Expand the Limits of What Cannot Be Known" . Wired . ISSN 1059-1028 . Retrieved 14 March 2025 .
+Jones, James P.; Matiyasevich, Yuri V. (1984). "Register machine proof of the theorem on exponential Diophantine representation of enumerable sets". Journal of Symbolic Logic . 49 (3): 818– 829. doi : 10.2307/2274135 .
+Jones, James P.; Matiyasevich, Yuri V. (1991). "Proof of Recursive Unsolvability of Hilbert's Tenth Problem". American Mathematical Monthly . 98 (8): 689– 709. doi : 10.1080/00029890.1991.11995778 .
+Jones, James P.; Sato, Daihachiro; Wada, Hideo; Wiens, Douglas (1976). "Diophantine representation of the set of prime numbers". American Mathematical Monthly . 83 (6): 449– 464.
+Koymans, Peter; Pagano, Carlo (2 December 2024). "Hilbert's tenth problem via additive combinatorics". arXiv : 2412.01768 [ math.NT ].
+Larchey-Wendling, Dominique; Forster, Yannick (2019). "Hilbert's Tenth Problem in Coq". 4th International Conference on Formal Structures for Computation and Deduction (FSCD 2019) . LIPIcs. Vol. 131. pp. 27:1–27:20. doi : 10.4230/LIPIcs.FSCD.2019.27 .
+Matiyasevich, Yu. V. (1970). "The diophantineness of enumerable sets" . Doklady Akademii Nauk SSSR (in Russian). 191 : 279– 282.
+Matiyasevich, Yuri (1992). "My Collaboration with Julia Robinson" . The Mathematical Intelligencer . 14 (4): 38– 45. doi : 10.1007/bf03024472 . S2CID 123582378 . Archived from the original on 12 November 2020 . Retrieved 8 December 2014 .
+Matiyasevich, Yuri V. (1993). Hilbert's Tenth Problem . Foundations of Computing. Foreword by Martin Davis. Cambridge, MA: MIT Press. ISBN 9780262132954 . OCLC 908983760 .
+OpenAI (24 September 2026). "Hilbert's tenth problem over the rational numbers" (PDF) . GitHub . Retrieved 7 October 2026 .
+OpenAI. "README" . GitHub (openai/math) . Retrieved 9 October 2026 .
+Poonen, Bjorn (2003). "Hilbert's tenth problem and Mazur's conjecture for large subrings of ℚ " (PDF) . Journal of the American Mathematical Society . 16 (4): 981– 990. doi : 10.1090/S0894-0347-03-00433-8 . MR 1992832 . S2CID 8486815 .
+Putnam, Hilary (1960). "An unsolvable problem in number theory". Journal of Symbolic Logic . 25 (3): 220– 232.
+Sacks, Gerald E. (2003). Mathematical Logic in the 20th century . World Scientific.
+Further reading
+[ edit ]
+Davis, Martin ; Matiyasevich, Yuri ; Robinson, Julia (1976). "Hilbert's Tenth Problem: Diophantine Equations: Positive Aspects of a Negative Solution". In Felix E. Browder (ed.). Mathematical Developments Arising from Hilbert Problems . Proceedings of Symposia in Pure Mathematics . Vol. XXVIII.2. American Mathematical Society . pp. 323– 378. ISBN 0-8218-1428-1 . Zbl 0346.02026 . Reprinted in Robinson, Julia (1996). Feferman, Solomon (ed.). The Collected Works of Julia Robinson . Collected Works. Vol. 6. American Mathematical Society. pp. 269– 378. ISBN 978-0-8218-0575-6 .
+Davis, Martin ; Hersh, Reuben (1973). "Hilbert's 10th Problem". Scientific American . 229 (5): 84– 91. Bibcode : 1973SciAm.229e..84D . doi : 10.1038/scientificamerican1173-84 .
+Denef, Jan ; Lipschitz, Leonard; Pheidas, Thanases; van Geel, Jan, eds. (2000). Hilbert's Tenth Problem: Relations with Arithmetic and Algebraic Geometry . Contemporary Mathematics. Vol. 270. American Mathematical Society.
+Hilbert, David (1901). "Mathematische Probleme". Archiv der Mathematik und Physik . 3rd series (in German). 1 : 44– 63, 213– 247.
+Murty, M. Ram ; Fodden, Brandon (June 2019). Hilbert's Tenth Problem: An Introduction to Logic, Number Theory, and Computability . Student Mathematical Library. Vol. 88. American Mathematical Society. ISBN 978-1-4704-4399-3 .
+Raatikainen, Panu (1997). "The problem of the simplest Diophantine representation" (PDF) . Nordic Journal of Philosophical Logic . 2 (2): 47– 54 . Retrieved 12 August 2026 .
+Shlapentokh, Alexandra (2007). Hilbert's tenth problem. Diophantine classes and extensions to global fields . New Mathematical Monographs. Vol. 7. Cambridge: Cambridge University Press . ISBN 978-0-521-83360-8 . Zbl 1196.11166 .
+External links
+[ edit ]
+"Hilbert's Tenth Problem: a History of Mathematical Discovery" . goldenmuseum.com . Archived from the original on 8 February 2007.
+Vsemirnov, Maxim (14 March 2007). "Hilbert's Tenth Problem page!" . logic.pdmi.ras.ru . St. Petersburg Department of Steklov Institute of Mathematics. Archived from the original on 16 May 2026 . Retrieved 29 October 2026 .
+"Hilbert's Tenth Problem (book by Yuri Matiyasevich)" . logic.pdmi.ras.ru . Retrieved 29 October 2026 .
+Sun, Zhi-Wei (14 April 2000). "On Hilbert's Tenth Problem and Related Topics" (PDF) . maths.nju.edu.cn . Retrieved 27 September 2025 .
+Csicsery, George Paul (director) (2007). Trailer for Julia Robinson and Hilbert's Tenth Problem . Zala Films . Retrieved 17 November 2026 – via YouTube.
+Poonen, Bjorn (15 September 2025). Diophantine sets and Hilbert's tenth problem . Hausdorff Center for Mathematics . Retrieved 17 November 2026 – via YouTube.
+"Search results for "Hilbert's tenth problem" (including references)" . zbMATH Open . FIZ Karlsruhe . Retrieved 27 October 2026 .
+v
+t
+e
+Hilbert's problems
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+( 24 )
+Authority control databases
+International GND
+FAST
+National United States
+France
+BnF data
+Israel
+Other IdRef
+Yale LUX
+Retrieved from " https://en.wikipedia.org/w/index.php?title=Hilbert%27s_tenth_problem&oldid=1386782181 "
+Categories : Hilbert's problems
+Diophantine equations
+Undecidable problems
+Hidden categories: Articles with short description
+Short description is different from Wikidata
+Use dmy dates from September 2025
+All articles with unsourced statements
+Articles with unsourced statements from September 2015
+CS1 Russian-language sources (ru)
+CS1: long volume value
+CS1 German-language sources (de)
+This page was last edited on 20 November 2026, at 15:25 (UTC) .
+Page was rendered with Parsoid .
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License ;
+additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy . Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc. , a non-profit organization.
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Legal & safety contacts
+Code of Conduct
+Developers
+Statistics
+Cookie statement
+Mobile view
+Search
+Search
+Toggle the table of contents
+Hilbert's tenth problem
+13 languages
+Add topic

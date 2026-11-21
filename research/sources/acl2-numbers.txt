@@ -1,0 +1,119 @@
+(defxdoc numbers
+  :parents (programming)
+  :short "Numbers in ACL2 and operations on them"
+  :long "<p>See @(see numbers-introduction) for introductory background.  See @(see
+arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
+
+(defxdoc numerator
+  :parents (numbers acl2-built-ins)
+  :short "Dividend of a ratio in lowest terms"
+  :long "<p>Completion Axiom (@('completion-of-numerator')):</p>
+
+ @({
+  (equal (numerator x)
+         (if (rationalp x)
+             (numerator x)
+           0))
+ })
+
+ <p>@(see Guard) for @('(numerator x)'):</p>
+
+ @({
+  (rationalp x)
+ })")
+
+(defxdoc |Name the Formula Above|
+  :parents (|Pages Written Especially for the Tours|)
+  :short "Name the Formula Above"
+  :long "<p>When the theorem prover explicitly assigns a name, like @('*1'), to
+ a formula, it has decided to prove the formula by induction.</p>")
+
+(defxdoc |Nontautological Subgoals|
+  :parents (|Pages Written Especially for the Tours|)
+  :short "Prover output omits some details"
+  :long "<p>The theorem prover's proof output is intended to suggest an outline
+ of the reasoning process employed by its proof engine, which is virtually
+ always more than is necessary for the ACL2 user.  In particular, the output
+ often omits subgoals that are sufficiently trivial, including
+ tautologies.</p>")
+
+(defconst *xdoc-long-numbers-introduction*
+
+; Warning: Do not add references requiring a tiny warning sign, because this
+; :long string is used not only in The Tours, but also in regular ACL2
+; documentation.
+
+  "<p>ACL2 numbers are precisely represented and unbounded.  They can be
+ partitioned into the following subtypes:</p>
+
+ @({
+  ACL2 Numbers
+   |
+   |- Rationals
+   |  |
+   |  |- Integers
+   |  |  |- Positive integers                 3
+   |  |  |- Zero                              0
+   |  |  |- Negative Integers                 -3
+   |  |
+   |  |- Non-Integral Rationals
+   |  |  |
+   |  |  |- Positive Non-Integral Rationals   19/3
+   |  |  |- Negative Non-Integral Rationals   -22/7
+   |
+   |- Complex Rational Numbers                 #c(3 5/2) ; i.e., 3 + (5/2)i
+ })
+
+ <p>Signed integer constants are usually written (as illustrated above) as
+ sequences of decimal digits, possibly preceded by @('+') or @('-').  Decimal
+ points are not allowed.  Integers may be written in binary, as in @('#b1011')
+ (= 23) and @('#b-111') (= -7).  Octal may also be used, @('#o-777') = -511.
+ Non-integral rationals are written as a signed decimal integer and an unsigned
+ decimal integer, separated by a slash.  Complex rationals are written as
+ #c(rpart ipart) where rpart and ipart are rationals.</p>
+
+ <p>Of course, 4/2 = 2/1 = 2 (i.e., not every rational written with a slash is
+ a non-integer).  Similarly, #c(4/2 0) = #c(2 0) = 2.</p>
+
+ <p>The common arithmetic functions and relations are denoted by @('+'),
+ @('-'), @('*'), @('/'), @('='), @('<'), @('<='), @('>') and @('>=').  However
+ there are many others, e.g., @('floor'), @('ceiling'), and @('lognot').  See
+ any Common Lisp language documentation.</p>
+
+ <p>The primitive predicates for recognizing numbers are illustrated below.
+ The following ACL2 function will classify an object, x, according to its
+ numeric subtype, or else return 'NaN (not a number).  We show it this way just
+ to illustrate programming in ACL2.</p>
+
+ @({
+  (defun classify-number (x)
+    (cond ((rationalp x)
+           (cond ((integerp x)
+                  (cond ((< 0 x) 'positive-integer)
+                        ((= 0 x) 'zero)
+                        (t 'negative-integer)))
+                 ((< 0 x) 'positive-non-integral-rational)
+                 (t 'negative-non-integral-rational)))
+          ((complex-rationalp x) 'complex-rational)
+          (t 'NaN)))
+ })")
+
+(defxdoc |Numbers in ACL2|
+
+; This topic is essentially the same as numbers-introduction, but it has a name
+; that shows up more nicely when taking the walking tour of ACL2.
+
+  :parents (|Pages Written Especially for the Tours|)
+  :short "Numbers in ACL2"
+  :long *xdoc-long-numbers-introduction*)
+
+(defxdoc numbers-introduction
+
+; This topic is essentially the same as |Numbers in ACL2|, which is a topic for
+; the walking tour, but here the name provides a nicer link when browsing the
+; ACL2 documentation, especially if using the Emacs-based ACL2-Doc browser.
+
+  :parents (numbers)
+  :short "Numbers in ACL2"
+  :long *xdoc-long-numbers-introduction*)
+

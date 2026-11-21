@@ -1,0 +1,40 @@
+{
+  "the solver proves that no integer from two to the 53rd up is unchanged by adding 1": [
+    "query",
+    [
+      "not",
+      [
+        "exists",
+        ["?n"],
+        [
+          "and",
+          ["schema/fits?", "?n", "value/integer?"],
+          ["number/greaterThanOrEqualTo", "?n", 9007199254740992],
+          ["=", ["number/add", "?n", 1], "?n"]
+        ]
+      ]
+    ]
+  ],
+  "the solver finds an integer past 9007199254740991": [
+    "query",
+    [
+      "exists",
+      ["?n"],
+      [
+        "and",
+        ["schema/fits?", "?n", "value/integer?"],
+        ["number/greaterThan", "?n", 9007199254740991]
+      ]
+    ]
+  ],
+  "plain code: two to the 53rd is an integer": [
+    "value/integer?",
+    9007199254740992
+  ],
+  "plain code: two to the 53rd plus 1": ["number/add", 9007199254740992, 1],
+  "plain code: two to the 53rd plus 1 equals two to the 53rd": [
+    "number/equals?",
+    ["number/add", 9007199254740992, 1],
+    9007199254740992
+  ]
+}

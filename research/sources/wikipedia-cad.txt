@@ -1,0 +1,127 @@
+Jump to content
+Main menu
+Main menu
+move to sidebar
+hide
+Navigation
+Main page
+Contents
+Current events
+Random article
+About Wikipedia
+Contact us
+Contribute
+Help
+Learn to edit
+Community portal
+Recent changes
+Upload file
+Special pages
+Search
+Search
+Appearance
+Donate
+Create account
+Log in
+Personal tools
+Donate
+Create account
+Log in
+Contents
+move to sidebar
+hide
+(Top)
+1
+Implementations
+2
+References
+Toggle the table of contents
+Cylindrical algebraic decomposition
+Add languages
+Add links
+Article
+Talk
+English
+Read
+Edit
+View history
+Save
+Tools
+Tools
+move to sidebar
+hide
+Actions
+Read
+Edit
+View history
+Save
+General
+What links here
+Related changes
+Upload file
+Permanent link
+Page information
+Cite this page
+Get shortened URL
+Switch to legacy parser
+Print/export
+Download as PDF
+Printable version
+In other projects
+Wikidata item
+Appearance
+move to sidebar
+hide
+From Wikipedia, the free encyclopedia
+Decomposing n-space into cells in which each of a set of polynomials has constant sign
+In mathematics , cylindrical algebraic decomposition ( CAD ) is a notion, along with an algorithm to compute it, that is fundamental for computer algebra and real algebraic geometry . Given a set S of polynomials in R n , a cylindrical algebraic decomposition is a decomposition of R n into connected semialgebraic sets called cells , on which each polynomial has constant sign, either +, − or 0. To be cylindrical , this decomposition must satisfy the following condition: If 1 ≤ k < n and π is the projection from R n onto R n − k consisting in removing the last k coordinates, then for every pair of cells c and d , one has either π ( c ) = π ( d ) or π ( c ) ∩ π ( d ) = ∅. This implies that the images by π of the cells define a cylindrical decomposition of R n − k .
+The notion was introduced by George E. Collins in 1975, together with an algorithm for computing it.
+Collins' algorithm has a computational complexity that is double exponential in n . This is an upper bound, which is reached on most entries. There are also examples for which the minimal number of cells is doubly exponential, showing that every general algorithm for cylindrical algebraic decomposition has a double exponential complexity.
+CAD provides an effective version of quantifier elimination over the reals that has a much better computational complexity than that resulting from the original proof of Tarski–Seidenberg theorem . It is efficient enough to be implemented on a computer. It is one of the most important algorithms of computational real algebraic geometry . Searching to improve Collins' algorithm, or to provide algorithms that have a better complexity for subproblems of general interest, is an active field of research.
+Implementations
+[ edit ]
+Mathematica : CylindricalDecomposition
+QEPCAD -- Quantifier Elimination by Partial Cylindrical Algebraic Decomposition
+redlog
+Maple : The RegularChains Library and ProjectionCAD
+References
+[ edit ]
+Basu, Saugata; Pollack, Richard; Roy, Marie-Françoise Algorithms in real algebraic geometry. Second edition. Algorithms and Computation in Mathematics, 10. Springer-Verlag, Berlin, 2006. x+662 pp. ISBN 978-3-540-33098-1 ; 3-540-33098-4
+Strzebonski, Adam. Cylindrical Algebraic Decomposition from MathWorld .
+Cylindrical Algebraic Decomposition in Chapter 6 ("Combinatorial Motion Planning") of Planning algorithms by Steven M. LaValle. Accessed 8 February 2023
+Caviness, Bob; Johnson, Jeremy; Quantifier Elimination and Cylindrical Algebraic Decomposition . Texts and Monographs in Symbolic Computation. Springer-Verlag, Berlin, 1998.
+Collins, George E.: Quantifier elimination for the elementary theory of real closed fields by cylindrical algebraic decomposition, Second GI Conf. Automata Theory and Formal Languages, Springer LNCS 33, 1975.
+Davenport, James H.; Heintz, Joos : Real quantifier elimination is doubly exponential, Journal of Symbolic Computation, 1988. Volume 5, Issues 1–2, ISSN 0747-7171,
+This algebraic geometry –related article is a stub . You can help Wikipedia by adding missing information .
+v
+t
+e
+Retrieved from " https://en.wikipedia.org/w/index.php?title=Cylindrical_algebraic_decomposition&oldid=1222321659 "
+Categories : Computer algebra
+Real algebraic geometry
+Polynomials
+Quantifier (logic)
+Algebraic geometry stubs
+Hidden categories: Articles with short description
+Short description is different from Wikidata
+All stub articles
+This page was last edited on 5 May 2024, at 09:24 (UTC) .
+Page was rendered with Parsoid .
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License ;
+additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy . Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc. , a non-profit organization.
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Legal & safety contacts
+Code of Conduct
+Developers
+Statistics
+Cookie statement
+Mobile view
+Search
+Search
+Toggle the table of contents
+Cylindrical algebraic decomposition
+Add languages
+Add topic

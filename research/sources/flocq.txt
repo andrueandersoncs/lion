@@ -1,0 +1,77 @@
+Flocq
+Flocq (Floats for Coq) is a formalization of floating-point arithmetic
+for the Rocq proof assistant. It provides
+a comprehensive library of theorems on a multi-radix multi-precision
+arithmetic. It also supports efficient numerical computations inside Rocq.
+This package is free software; you can redistribute it and/or modify it
+under the terms of GNU Lesser General Public License
+(see the COPYING file in the archive).
+The library was first mentioned in the article "Flocq: a Unified
+Library for Proving Floating-Point Algorithms in Coq"
+[DOI]
+[HAL] .
+A lot more details are given in the book "Computer Arithmetic and
+Formal Proofs"
+[Elsevier] .
+A presentation of the major concepts of the Flocq library is available
+on the following page: Flocq in a Nutshell .
+See below for links to the various files of the
+library.
+Building and Installing using OPAM
+If you are managing your Rocq installation using
+Opam , you can install the library
+using the following command:
+opam install --jobs=2 coq-flocq
+Note that the coq-flocq package is hosted in the Opam
+repository dedicated to
+Rocq libraries .
+So, you have to type the following command beforehand, if your Opam
+installation does not yet know about this repository.
+opam repo add coq-released https://coq.inria.fr/opam/released
+Building and Installing from Sources
+Downloading
+version 4.2.2 (Coq 8.15 to 9.2),
+version 4.1.4 (Coq 8.12 to 8.19),
+version 4.0.0 (Coq 8.12 to 8.15),
+version 3.4.3 (Coq 8.7 to 8.15),
+version 3.3.1 (Coq 8.7 to 8.13),
+version 3.2.1 (Coq 8.7 to 8.12),
+version 3.1.0 (Coq 8.7 to 8.9),
+version 3.0.0 (Coq 8.7 & 8.8),
+version 2.6.1 (Coq 8.4 to 8.8),
+version 2.5.2 (Coq 8.4 to 8.6),
+version 2.4.0 ,
+version 2.3.0 ,
+version 2.2.2 (Coq 8.3 & 8.4),
+version 2.1.0 ,
+version 2.0.0 ,
+version 1.4.0 ,
+version 1.3 ,
+version 1.2 ,
+version 1.1 ,
+version 1.0 .
+This library is hosted on the
+Inria Gitlab
+server. It was mainly developed by
+Sylvie Boldo and
+Guillaume Melquiond .
+Configuring, compiling, and installing
+Ideally, you should just have to type:
+./configure && ./remake --jobs=2 && ./remake install
+The environment variable COQC can be passed to the
+configure script in order to set the Coq compiler command. The configure
+script defaults to coqc . Similarly, COQDEP can
+be used to specify the location of coqdep . The
+COQBIN environment variable can be used to set both
+variables at once.
+The library files are compiled at the logical location Flocq .
+The COQUSERCONTRIB environment variable can be used to override
+the physical location where the Flocq directory containing these
+files will be installed by ./remake install . By default, the
+target directory is `$COQC -where`/user-contrib .
+Documentation
+A presentation of the major concepts of the Flocq library is available
+on the following page: Flocq in a Nutshell .
+The following graph shows the various files and their
+dependencies. A browsable version of the library can be
+accessed by clicking the nodes.

@@ -1,0 +1,11 @@
+research/probes/exact-model/test.ts run with bun 1.4.3 at commit 4e8e625, 2026-11-21, 10000 runs.
+E1  for 10000 random triples of decimals with two places, exact numbers broke associativity or distributivity 0 times; doubles broke associativity of addition 3298 times, of multiplication 3488 times, and distributivity 4638 times
+E2  for 10000 random decimals, writing an exact number as JSON and reading it back changed it 0 times, and a third of one was refused as JSON exactly when no decimal writes it 10000 times out of 10000
+E3  for 10000 random decimals of up to 15 significant digits, the shortest digits of the double a host would pass read as another number 0 times
+E4  for 10000 random pairs of integers up to 2^80, exact sums and products differed from BigInt's 0 times; double sums differed 9978 times
+E5  exact: (0.1 + 0.2) - 0.2 is 0.1, which equals 0.1: true; 2^53 + 1 is 9007199254740993, which equals 2^53: false
+T1  adding a million small integers: exact 6.1 ms, doubles 0.9 ms, 6.8 times as long
+T2  adding a hundred thousand decimals with two places: exact 13.4 ms, doubles 0.3 ms, 39.7 times as long
+T3  adding a hundred thousand products of decimals with two places: exact 37.0 ms, doubles 0.6 ms, 57.4 times as long
+T4  halving and adding 0.1 2000 times: the exact result's denominator has 603 digits, and it took 1.2 ms
+T5  Lion's evaluator adding the same hundred thousand decimals with array/reduce: 17.5 ms

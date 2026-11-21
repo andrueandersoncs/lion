@@ -1,0 +1,193 @@
+(defxdoc induction
+  :parents (rule-classes)
+  :short "Make a rule that suggests a certain induction"
+  :long "@({
+  Example:
+  (defthm recursion-by-sub2-induction-rule
+    t
+    :rule-classes ((:induction :pattern (* 1/2 i)
+                               :condition (and (integerp i) (>= i 0))
+                               :scheme (recursion-by-sub2 i))))
+ })
+
+ <p>In ACL2, as in Nqthm, the functions in a conjecture ``suggest'' the
+ inductions considered by the system.  Because every recursively defined
+ function must be admitted with a justification in terms of a measure that
+ decreases in a well-founded way on a given set of ``controlling'' arguments,
+ every recursive definition suggests a dual induction scheme that ``unwinds''
+ the function from a given application.  The case analysis in the induction
+ scheme suggested by a function call is determined by the case analysis used to
+ prove termination.  That case analysis chooses a subset of the tests governing
+ recursive calls and then generates base cases for the combinations of tests
+ that do not lead to recursive calls and induction steps for the combinations
+ that do.  See @(see rulers) and @(see induction-coarse-v-fine-grained).</p>
+
+ <p>For example, since @(tsee append) (actually @(tsee binary-append), but
+ we'll ignore the distinction here) decomposes its first argument by successive
+ @(tsee cdr)s as long as it is a cons, the induction scheme suggested by
+ @('(append x y)') has a base case supposing @('x') to be an atom (i.e., not a
+ cons) and then has an induction step in which the induction hypothesis is
+ obtained by replacing @('x') by @('(cdr x)').  This substitution decreases the
+ same measure used to justify the definition of @(tsee append).  Observe that
+ an induction scheme is suggested by a recursive function application only if
+ the controlling actuals are distinct variables, a condition that is sufficient
+ to ensure that the ``substitution'' used to create the induction hypothesis is
+ indeed a substitution and that it drives down a certain measure.  In
+ particular, @('(append (foo x) y)') does not suggest an induction unwinding
+ @(tsee append) because the induction scheme suggested by @('(append x y)')
+ requires that we substitute @('(cdr x)') for @('x') and we cannot do that if
+ @('x') is not a variable symbol.</p>
+
+ <p>Once ACL2 has collected together all the suggested induction schemes it
+ massages them in various ways, combining some to simultaneously unwind certain
+ cliques of functions and vetoing others because they ``flaw'' others.  We do
+ not further discuss the induction heuristics here; the interested reader
+ should see @(see induction-heuristics).</p>
+
+ <p>However, unlike Nqthm, ACL2 provides a means by which the user can
+ elaborate the rules under which function applications suggest induction
+ schemes.  Such rules are called @(':induction') rules.  The definitional
+ principle automatically creates an @(':induction') rule, named @('(:induction
+ fn)'), for each admitted recursive function, @('fn').  It is this rule that
+ links applications of @('fn') to the induction scheme it suggests.  Disabling
+ @('(:induction fn)') will prevent @('fn') from suggesting the induction scheme
+ derived from its recursive definition (with an exception for induction schemes
+ by way of user-defined induction rules, as discussed at the end below).  It is
+ possible for the user to create additional @(':induction') rules by using the
+ @(':induction') rule class in @(tsee defthm).</p>
+
+ <p>Technically we are ``overloading'' @(tsee defthm) by using it in the
+ creation of @(':induction') rules because no theorem need be proved to set up
+ the heuristic link represented by an @(':induction') rule.  However, since
+ @(tsee defthm) is generally used to create rules and rule-class objects are
+ generally used to specify the exact form of each rule, we maintain that
+ convention and introduce the notion of an @(':induction') rule.  An
+ @(':induction') rule can be created from any lemma whatsoever.</p>
+
+ @({
+  General Form of an :induction Lemma or Corollary:
+  T
+
+  General Form of an :induction rule-class:
+  (:induction :pattern pat-term
+              :condition cond-term
+              :scheme scheme-term)
+ })
+
+ <p>where @('pat-term'), @('cond-term'), and @('scheme-term') are all terms,
+ @('pat-term') is the application of a function symbol, @('fn'),
+ @('scheme-term') is the application of a function symbol, @('rec-fn'), that
+ suggests an induction, and, finally, every free variable of @('cond-term') and
+ @('scheme-term') is a free variable of @('pat-term').  We actually check that
+ @('rec-fn') is either recursively defined &mdash; so that it suggests the
+ induction that is intrinsic to its recursion &mdash; or else that another
+ @(':induction') rule has been proved linking a call of @('rec-fn') as the
+ @(':pattern') to some scheme.</p>
+
+ <p>The induction rule created is used as follows.  When an instance of the
+ @(':pattern') term occurs in a conjecture to be proved by induction and the
+ corresponding instance of the @(':condition') term is known to be non-@('nil')
+ (by @(see type-reasoning) alone), the corresponding instance of the
+ @(':scheme') term is created and the rule ``suggests'' the induction, if any,
+ suggested by that term.  (Analysis of that term may further involve induction
+ rules, though the applied rule is removed from consideration during that
+ further analysis, in order to avoid looping.)  If @('rec-fn') has a recursive
+ definition, then the definition's dual induction scheme is suggested (i.e.,
+ unwinding the function).</p>
+
+ <p>(Remark.  Unlike @(':induct') @(see hints), the @(':scheme') of an
+ @(':induction') rule only introduces induction schemes based on the top-level
+ function symbol of the indicated term, not of any of its subterms.  End of
+ Remark.)</p>
+
+ <p>Consider, for example, the example given above,</p>
+
+ @({
+  (:induction :pattern (* 1/2 i)
+              :condition (and (integerp i) (>= i 0))
+              :scheme (recursion-by-sub2 i)).
+ })
+
+ <p>In this example, we imagine that @('recursion-by-sub2') is the
+ function:</p>
+
+ @({
+  (defun recursion-by-sub2 (i)
+    (if (and (integerp i)
+             (< 1 i))
+        (recursion-by-sub2 (- i 2))
+        t))
+ })
+
+ <p>Observe that this function recursively decomposes its natural number
+ argument by subtracting @('2') from it repeatedly and stops when the argument
+ is @('1') or less.  The value of the function is irrelevant; it is its
+ induction scheme that concerns us.  The induction scheme suggested by
+ @('(recursion-by-sub2 i)') is</p>
+
+ @({
+  (and (implies (not (and (integerp i) (< 1 i)))   ; base case
+                (:p i))
+       (implies (and (and (integerp i) (< 1 i))    ; induction step
+                     (:p (- i 2)))
+                (:p i)))
+ })
+
+ <p>We can think of the base case as covering two situations.  The first is
+ when @('i') is not an integer.  The second is when the integer @('i') is less
+ than or equal to @('1').  In the base case we must prove @('(:p i)') without
+ further help.  The induction step deals with those natural numbers @('i')
+ greater than @('1'), and inductively assumes the conjecture for @('i-2') while
+ proving it for @('i').  Let us call this scheme ``induction on @('i') by
+ twos.''</p>
+
+ <p>Suppose the above @(':induction') rule has been added.  Then an occurrence
+ of, say, @('(* 1/2 k)') in a conjecture to be proved by induction would
+ suggest, via this rule, an induction on @('k') by twos, provided @('k') was
+ known to be a nonnegative integer.  This is because the induction rule's
+ @(':pattern') is matched in the conjecture, its @(':condition') is satisfied,
+ and the @(':scheme') suggested by the rule is that derived from
+ @('(recursion-by-sub2 k)'), which is induction on @('k') by twos.  Similarly,
+ the term @('(* 1/2 (length l))') would suggest no induction via this rule,
+ even though the rule ``fires'' because it creates the @(':scheme')
+ @('(recursion-by-sub2 (length l))') which suggests no inductions unwinding
+ @('recursion-by-sub2') (since the controlling argument of
+ @('recursion-by-sub2') in this @(':scheme') is not a variable symbol).</p>
+
+ <p>Continuing this example one step further illustrates the utility of
+ @(':induction') rules.  We could define the function @('recursion-by-cddr')
+ that suggests the induction scheme decomposing its @(tsee consp) argument two
+ @(tsee cdr)s at a time.  We could then add the @(':induction') rule linking
+ @('(* 1/2 (length x))') to @('(recursion-by-cddr x)') and arrange for @('(*
+ 1/2 (length l))') to suggest induction on @('l') by @(tsee cddr).</p>
+
+ <p>Observe that @(':induction') rules require no proofs to be done.  Such a
+ rule is merely a heuristic link between the @(':pattern') term, which may
+ occur in conjectures to be proved by induction, and the @(':scheme') term,
+ from which an induction scheme may be derived.  Hence, when an @(':induction')
+ rule-class is specified in a @(tsee defthm) event, the theorem proved is
+ irrelevant.  The easiest theorem to prove is, of course, @('t').  Thus, we
+ suggest that when an @(':induction') rule is to be created, the following form
+ be used:</p>
+
+ @({
+  (defthm name T
+    :rule-classes ((:induction :pattern pat-term
+                               :condition cond-term
+                               :scheme scheme-term)))
+ })
+
+ <p>The name of the rule created is @('(:induction name)').  When that @(see
+ rune) is @(see disable)d the heuristic link between @('pat-term') and
+ @('scheme-term') is broken.</p>
+
+ <p>Note that if @('fn') is defined recursively and @('(:induction fn)') is
+ @(see disable)d, then normally the induction scheme for @('fn') will not be
+ available during a proof.  However, the induction scheme for @('fn') is
+ available, even if it is disabled, when it is indicated by application of a
+ user-defined @(':induction') rule.  So for the @(':induction') rule above,
+ @('recursion-by-sub2-induction-rule'): even if @('(:induction
+ recursion-by-sub2)') is disabled, nevertheless the induction scheme for
+ @('recursion-by-sub2') will be available to apply to the instantiated
+ @(':scheme-term').</p>")
+

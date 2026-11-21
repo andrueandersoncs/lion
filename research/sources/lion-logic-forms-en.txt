@@ -1,0 +1,490 @@
+The logic layer stores facts in relations, derives more with rules, and answers queries. Relations, goals, and logic variables are ordinary Lion values, and answers are plain Lion data. For the rules every program must follow, see Logic database guarantees .
+Logic variables
+An unbound string of the form "?name" evaluates to a logic variable. See Strings for the exact form.
+The same name refers to the same variable throughout one goal or rule.
+"?_" , and any name starting with ?_ , is anonymous: each occurrence is a separate variable, and it never appears in answers.
+A call or record that mentions a logic variable waits for it.
+A variable that only a question mentions belongs to the question. A variable that exists lists, or that some stands for, belongs to that form.
+Goals
+A goal is a value that a query, rule, or invariant can solve. Goals are built by calling a relation, by not , and , or , = , in , and exists , by calling a graph algorithm , and by calling any other function on logic variables, which makes a filter. The booleans true and false are goals that always and never hold. Any expression can also ask a goal.
+Waiting for values
+A rule or query is written before its variables have values. Anything that needs the value of a logic variable waits, and runs once for each answer that binds the variable.
+A call waits when one of its arguments is a logic variable or a value that waits. Every function waits this way: standard functions, functions from the host, and functions made by func/partial .
+cond waits when a condition is not known yet, match when its value is not, eval when its code is not, begin when an expression before its last is not, and a record when one of its values is not.
+What a rule, query, or find holds runs when it does. A call on values that are already known may be computed when the rule is written. So a rule, query, or find refuses a set! of a binding made outside it, whose change would happen once, or as often as the engine chose, rather than once for each answer.
+Relations, aggregates, and graph algorithms take logic variables as they are, and build goals and aggregates from them. A lambda's body runs right away, so a lambda can build goals; whatever in the body needs a value waits. Only an argument that asks a question makes a lambda's call wait, so the question is answered first, as it is in plain code.
+What waits computes what it would compute with the value in place of the variable.
+As a goal, a call that waits is a filter, and so is a variable. A filter must be true or false ; any other value fails the query.
+Names are replaced by their values when the rule or query is written, also inside a cond or lambda that waits. A lambda that calls itself by name still looks that name up each time it runs.
+["begin",
+["relation", "reading", ["sensor", "celsius"]],
+["fact", ["reading", "attic", 30], ["reading", "cellar", 10]],
+["query",
+["and", ["reading", "?sensor", "?c"],
+["=", "?summary",
+{"fahrenheit": ["number/add", ["number/multiply", "?c", 1.8], 32],
+"level": ["cond", [["number/greaterThan", "?c", 25], "hot"], ["else", "fine"]]}]],
+{"order": "sensor"}]]
+["query",
+["and", ["in", "?word", ["array/make", "apple", "cherry"]],
+["string/indexOf", "?word", "a"]]]
+Asking questions
+A goal with a relation in it is a question, and so is exists , which has variables of its own. Any expression can ask a question. As a goal of a rule or query it matches rows and binds variables. Anywhere else it is asked:
+Under not , it holds when it has no match.
+As a value, it is true when it has a match and false when it has none. A goal is a value in a cond condition, as an argument of a function, as an operand of = or in , as a value of a record or an argument of a fact , and as the value match looks at. A relation is a predicate for match and for functions that are given it, such as array/map .
+find gives what it matches, as a list.
+assuming gives what an expression gives in the database as it would be after some changes.
+When a question is asked, the variables that the rule or query around it has bound have their values. Every other variable in it is the question's own: the question binds it, and it never appears in an answer. Two questions that use the same name for a variable of their own do not share it.
+In plain code a question is asked as soon as something needs its value, and every variable in it is its own. In a rule, query, invariant, or find, a question is part of what is written: it is asked for each answer, when that runs.
+A question asked from a rule sees every row of the relations it asks about, so those are derived first. A rule cannot ask about a relation that depends on the rule's own head.
+define , and , or , not , and a lambda keep a goal as it is, so goals can still be named, combined, and passed around. So does a program, or a begin , whose value is a goal: it gives the goal as written.
+["begin",
+["relation", "parent", ["parent", "child"]],
+["relation", "retired", ["name"]],
+["fact", ["parent", "ada", "ben"], ["parent", "ada", "cy"], ["parent", "ben", "dee"]],
+["fact", ["retired", "ada"]],
+{"children of ada": ["find", "?child", ["parent", "ada", "?child"]],
+"ada has a grandchild":
+["cond", [["and", ["parent", "ada", "?c"], ["parent", "?c", "?_"]], "yes"], ["else", "no"]],
+"ben is retired": ["retired", "ben"],
+"who is retired": ["array/map", ["array/make", "ada", "ben"], "retired"]}]
+["begin",
+["relation", "parent", ["parent", "child"]],
+["relation", "person", ["name"]],
+["relation", "family", ["name", "children", "kind"]],
+["fact", ["person", "ada"], ["person", "ben"], ["person", "cy"]],
+["fact", ["parent", "ada", "ben"], ["parent", "ada", "cy"]],
+["rule",
+["family", "?p",
+["find", "?c", ["parent", "?p", "?c"]],
+["cond", [["parent", "?p", "?_"], "has children"], [["parent", "?_", "?p"], "has a parent"], ["else", "alone"]]],
+["person", "?p"]],
+["query", ["family", "?name", "?children", "?kind"], {"order": "name"}]]
+relation
+["relation", name, [column, ...]]
+["relation", name, [column, ...], {"key": column-or-columns, "schema": schema-name}]
+["relation", name, [column, ...], {"key": column-or-columns, "merge": {column: aggregate, ...}}]
+Declares a relation in the current database and binds name to it in the global environment. Returns the relation, a function: calling it with one term per column builds a goal. Each term is a schema for its column: a value, a variable, a pattern , or a predicate.
+Column names must be distinct. Options are read as written, not evaluated. They are "key" , "schema" , and "merge" .
+With a key, the relation holds at most one row per key: adding a fact whose key is present replaces the old row. A key can name one column or several.
+With a merge, which needs a key, the rows a key gets combine instead: each column the merge names, outside the key, combines the values of every candidate with its aggregate, such as "aggregate/min" , "aggregate/sum" , or "aggregate/count" . Every fact of the relation and every row its rules give is a candidate, counted once, a fact never replaces another, and a column the merge does not name must agree. A rule's head gives a merged column plainly, or with the same aggregate. The relation is aggregated: it is derived in full before the rules that read it, and with a lattice aggregate, "aggregate/min" , "aggregate/max" , "aggregate/shortest" , or "aggregate/union" , it can go through recursion.
+A relation whose rules aggregate merges the same way, with the aggregates of its rules' heads and the other columns of the head as its key: its facts, and the rows of its rules with plain heads, are candidates too, whatever order they come in.
+With a schema, the name of a declared schema , every row must fit it, taken as a record of every column, so the schema names every column or is schema/open . The option adds the invariant ["invariant", ["and", [name, "?column", ...], ["not", [schema, {"column": "?column", ...}]]], {"assert": "none"}] , and is nothing more: it must hold for the rows that are there, it is kept and reported like every invariant , and a snapshot writes it as one.
+Declaring a relation that already exists with the same columns and key does nothing; declaring it with different ones fails. A relation cannot take the name of a schema.
+["begin",
+["relation", "order", ["id", "status"], {"key": "id"}],
+["fact", ["order", 1, "open"], ["order", 1, "paid"]],
+["query", ["order", "?id", "?status"]]]
+With a merge, the cheapest offer for each item is the row its key holds, whether a fact or a rule gives it:
+["begin",
+["relation", "offer", ["sku", "usd"]],
+["relation", "best", ["sku", "usd"], {"key": "sku", "merge": {"usd": "aggregate/min"}}],
+["fact", ["offer", "a1", 5], ["offer", "a1", 4], ["offer", "b2", 9]],
+["rule", ["best", "?sku", "?usd"], ["offer", "?sku", "?usd"]],
+["fact", ["best", "b2", 7]],
+["query", ["best", "?sku", "?usd"], {"order": "sku"}]]
+A relation whose rules aggregate combines the same way: a fact, and a rule with a plain head, give it candidates too. Here refunds come in through a plain rule, and a fact gives the lab a total no sale gives:
+["begin",
+["relation", "sale", ["id", "team", "usd"]],
+["relation", "refund", ["id", "team", "usd"]],
+["relation", "spend", ["team", "usd"]],
+["fact", ["sale", 1, "web", 500], ["sale", 2, "web", 20], ["sale", 3, "ops", 70]],
+["fact", ["refund", 1, "web", -50]],
+["rule", ["spend", "?t", ["aggregate/sum", "?usd"]], ["sale", "?id", "?t", "?usd"]],
+["rule", ["spend", "?t", "?usd"], ["refund", "?id", "?t", "?usd"]],
+["fact", ["spend", "lab", 0]],
+["query", ["spend", "?team", "?usd"], {"order": "team"}]]
+With a schema, a change that would leave a row that does not fit is refused. Here the schema is open, so it need not name the note column:
+["begin",
+["schema", "Order",
+["schema/open", {"id": "value/integer?", "status": ["schema/anyOf", "open", "paid"]}]],
+["relation", "order", ["id", "status", "note"], {"key": "id", "schema": "Order"}],
+["fact", ["order", 1, "open", "gift"]],
+["fact", ["order", 2, "lost", "none"]]]
+schema
+["schema", name, shape]
+["schema", name, shape, name, shape, ...]
+Declares a schema in the current database and binds name to it in the global environment. Returns the schema, a function: calling it with a value says whether the value fits the shape.
+shape is evaluated once, with the values its names have then, as a rule holds the values of its names. It can name the schema being declared, so a schema can describe nested data.
+One form can declare several schemas, and each shape can name any of them, so schemas can be defined in terms of each other. A value fits only when that follows from the shapes in finitely many steps. A shape can name the schemas of its form but cannot call them, since they have no shape yet.
+What a name in a shape means is settled when the shape is declared. A name that nothing has yet is a plain string, and nothing can be declared under it afterwards: the later form fails, and says to declare that name first, to declare the two in one form, or to write the string inside quote .
+A schema that comes back to itself without going into the value does not fit: only 1 fits ["schema", "Loop", ["schema/anyOf", "Loop", 1]] .
+A lambda in a shape can ask about its own schema again. About a smaller value, one that holds fewer values, counting each character of a string, the schema is checked as any schema is. About the same value, it gets the least answer that agrees with itself: first that the value does not fit, then that it fits; when neither agrees, the check fails, since whether the value fits has no answer. About any other value the check is refused, since it need not end. Such a failure inside another schema's lambda makes that schema not fit, as any lambda that fails does.
+A shape cannot ask the database while it is declared, since a snapshot writes the shape and it must mean the same when loaded. A relation in a shape, or a lambda that asks, asks when a value is checked.
+Declaring a schema that already exists with the same shape does nothing; declaring it with a different one fails. A schema cannot take the name of a relation.
+["begin",
+["schema", "Tree", {"value": "value/number?", "children": ["schema/arrayOf", "Tree"]}],
+{"fits": ["Tree", ["quote", {"value": 1, "children": [{"value": 2, "children": []}]}]],
+"problems": ["schema/problems",
+["quote", {"value": 1, "children": [{"value": "two", "children": []}]}], "Tree"]}]
+Schemas that one form declares can name each other. Here an expression is a number or a sum, and a sum holds expressions. Loop comes back to itself without going into the value, so only 1 fits it:
+["begin",
+["schema",
+"Expr", ["schema/anyOf", "value/number?", "Sum"],
+"Sum", {"add": ["schema/arrayOf", "Expr"]},
+"Loop", ["schema/anyOf", "Loop", 1]],
+{"a sum of sums": ["Expr", ["quote", {"add": [1, {"add": [2, 3]}]}]],
+"a word in it": ["Expr", ["quote", {"add": [1, {"add": [2, "x"]}]}]],
+"loop": ["array/map", ["array/make", 1, 2], "Loop"]}]
+A lambda in a shape can ask about its own schema. EvenList asks about the list's tail, a smaller value, so it is plain recursion. Same asks the same question again, and its least answer that agrees with itself is that the value does not fit:
+["begin",
+["schema", "EvenList", ["schema/anyOf", ["quote", []],
+["lambda", ["v"], ["and", ["value/array?", "v"], ["number/greaterThan", ["array/length", "v"], 0],
+["not", ["schema/fits?", ["array/tail", "v"], "EvenList"]]]]]],
+["schema", "Same", ["lambda", ["v"], ["schema/fits?", "v", "Same"]]],
+{"even lengths": ["array/map", ["quote", [[], [1], [1, 2]]], "EvenList"],
+"asks the same question": ["Same", 1]}]
+Odd would fit exactly the values that do not fit it, so no answer agrees with it, and the check fails:
+["begin",
+["schema", "Odd", ["lambda", ["v"], ["not", ["schema/fits?", "v", "Odd"]]]],
+["Odd", 1]]
+Asking about a value that is no smaller, such as a list that holds it, is refused:
+["begin",
+["schema", "Grows", ["lambda", ["v"], ["schema/fits?", ["array/make", "v"], "Grows"]]],
+["Grows", 1]]
+Declared in two forms, the first shape would take "Line" for a plain string, so the second form is refused:
+["begin",
+["schema", "Order", {"lines": ["schema/arrayOf", "Line"]}],
+["schema", "Line", {"sku": "value/string?"}]]
+What fits a schema
+Anything is a schema, and one rule says what fits it. match , the functions of the schema module , a schema's own parts, and the schema of a relation's rows all ask through it.
+A function is a predicate: a value fits when the function returns true . A failure, or any other result, counts as not fitting, except a misspelled name, which is an error . A relation with one column, a named schema, and a schema that a schema function built are functions. A relation with more columns is not the schema of one value, and using it as one is an error.
+A record fits a record with the same keys, with values that fit. A key whose schema is schema/optional can be left out, and schema/open allows keys the record does not name: what a record or list of schemas leaves over is its rest, which is nothing on its own, anything in ["schema/open", record] , and what fits rest in ["schema/open", record, rest] .
+A list fits a list of the same length, item by item.
+Any other value fits a value equal to it.
+So data is a schema for itself: it fits exactly the values equal to it.
+{"a function": ["schema/fits?", 3, "value/number?"],
+"a record": ["schema/fits?",
+{"id": 1, "tag": "new"},
+{"id": "value/integer?", "tag": "value/string?"}],
+"a key too many": ["schema/fits?", {"id": 1, "tag": "new"}, {"id": "value/integer?"}],
+"a list": ["schema/fits?",
+["array/make", 2, "kg"],
+["array/make", "value/number?", ["schema/anyOf", "kg", "lb"]]],
+"a list too long": ["schema/fits?",
+["array/make", 2, "kg", "net"],
+["array/make", "value/number?", "value/string?"]],
+"a value": ["schema/fits?", "open", "open"],
+"data for itself": ["schema/fits?", ["quote", {"a": [1, 2]}], ["quote", {"a": [1, 2]}]]}
+A relation with one column is a predicate, so it is a schema: a value fits when it is one of the relation's rows.
+["begin",
+["relation", "person", ["name"]],
+["fact", ["person", "ada"], ["person", "ben"]],
+{"a person": ["schema/fits?", "ada", "person"],
+"a stranger": ["schema/problems", {"owner": "cy"}, {"owner": "person"}]}]
+["begin",
+["relation", "parent", ["parent", "child"]],
+["fact", ["parent", "ada", "ben"]],
+["schema/fits?", "ada", "parent"]]
+A schema check is a call, so it waits for logic variables like any other: as a goal it is a filter, and it gives in a rule what it gives in plain code. A logic variable inside a schema is its value once it is bound, and until then it takes the value it meets; see Patterns . A schema that holds a relation asks the database when it checks a value, so a rule cannot use one that asks about the relation the rule derives.
+["begin",
+["relation", "reading", ["sensor", "value"]],
+["schema", "Celsius", ["schema/allOf", "value/number?",
+["lambda", ["c"], ["number/greaterThan", "c", -273.15]]]],
+["fact", ["reading", "attic", 30], ["reading", "cellar", "cold"], ["reading", "void", -300]],
+{"good": ["find", "?s", ["and", ["reading", "?s", "?v"], ["Celsius", "?v"]]],
+"bad": ["find", "?s", ["and", ["reading", "?s", "?v"], ["not", ["Celsius", "?v"]]]]}]
+Patterns
+A schema with a logic variable in it is a pattern. Once the variable is bound it is its value, and until then any value fits it, and binds it. A pattern tests a value and takes it apart at once. These goals bind the variables of a pattern:
+["schema/fits?", value, schema] binds the variables in the schema. When nothing else binds the value, it binds the value too, to each value the schema allows, if the schema can list them: data lists itself, a record or list of schemas every way of choosing its parts, with and without a key whose schema is optional, schema/anyOf what its schemas list, schema/allOf what its first schema that can list lists, value/boolean? false and true, value/null? null, and ["schema/arrayOf", schema, most] every list of at most most items. Each value is then checked, so the value takes exactly the values that fit. A schema that cannot list its values but says what kind they are makes the value symbolic instead, and the goals about it are solved for .
+A relation call binds the variables in its arguments, each a schema for its column. An argument that is not data, such as a predicate or a variable that holds one, is a schema like any other.
+= and in bind the variables of a record or list, on either side of = or as the element of in . They compare values, so a function in the record is a value there, and not a predicate.
+A record in a pattern fits a record with the same keys, and schema/open takes the keys it names from a record that has more. A list fits a list of the same length, and schema/open around a list takes its first items. A variable as the rest, as in ["schema/open", {"id": "?id"}, "?rest"] , binds the record of the other keys or the list of the other items.
+?_ fits any value and binds nothing. A variable that occurs twice must take the same value.
+Every schema function works in a pattern. schema/anyOf gives the answers of every schema that fits, each once; in plain code, where nothing is left to bind, the first that fits decides.
+A predicate made from a variable, as ["func/partial", "number/lessThan", "?max"] is, is the predicate made from the variable's value.
+["schema/open", "?shape"] does not bind ?shape : it waits for another goal to bind it to a record of schemas.
+A goal gives the same answers whether it binds a variable through a pattern or finds it bound by another goal, so the order of a body's goals does not matter. A schema lists its values only where no relation goal, = , or in can bind the value first.
+In plain code, a check with an unbound variable in it is a goal, like = with one. Give it to query .
+["begin",
+["relation", "inbox", ["doc"]],
+["fact",
+["inbox", ["quote", {"type": "order", "id": 1, "lines": [{"sku": "a1", "qty": 2}]}]],
+["inbox", ["quote", {"type": "order", "id": 2, "lines": [], "rush": true}]],
+["inbox", ["quote", {"type": "refund", "id": 3}]]],
+{"refunds": ["query", ["inbox", {"type": "refund", "id": "?id"}]],
+"orders": ["find", "?id", ["inbox", ["schema/open", {"type": "order", "id": "?id"}]]],
+"lines": ["find", ["array/make", "?order", "?sku"],
+["and",
+["inbox", ["schema/open", {"id": "?order", "lines": "?lines"}]],
+["in", {"sku": "?sku", "qty": "?_"}, "?lines"]]],
+"one value": ["query", ["schema/fits?", ["quote", {"a": 1, "b": 2}],
+["schema/anyOf", ["schema/open", {"a": "?x"}], ["schema/open", {"b": "?x"}]]]],
+"ends": ["query", ["=", ["array/make", "?first", "?_", "?last"], ["quote", ["a", "b", "c"]]]]}]
+A variable that occurs twice takes one value, a variable can hold a schema for a later goal, and in plain code a check with an unbound variable is a goal to give to query :
+["begin",
+["relation", "reading", ["sensor", "celsius"]],
+["fact", ["reading", "attic", 30], ["reading", "cellar", 10], ["reading", "roof", "n/a"]],
+{"the same twice": ["query",
+["schema/fits?", ["quote", {"low": 3, "high": 3}], {"low": "?n", "high": "?n"}]],
+"not the same": ["query",
+["schema/fits?", ["quote", {"low": 3, "high": 4}], {"low": "?n", "high": "?n"}]],
+"a schema in a variable": ["find", "?sensor",
+["and", ["=", "?wanted", ["schema/anyOf", 10, 30]], ["reading", "?sensor", "?wanted"]]],
+"a predicate from a variable": ["find", "?sensor",
+["and", ["reading", "?sensor", ["func/partial", "number/lessThan", "?least"]],
+["=", "?least", 20]]],
+"a goal for query": ["query", ["schema/fits?", 1, "?x"]]}]
+Solving for values
+A schema stands for every value it allows. When nothing else binds the value schema/fits? checks, a schema that lists finitely many values binds it to each (see Patterns ). A schema that cannot list them, but says what kind they are, makes the value symbolic instead: the goals about it are solved for.
+value/integer? stands for a whole number, and value/number? for any number. A record or list of schemas stands for a record or list of what its parts stand for, schema/anyOf for any of its schemas' values, ["schema/arrayOf", schema, most] for a list of each length up to most , and schema/allOf for what its first part stands for that fits the others. Data, value/boolean? , and value/null? stand for their values. A predicate alone, such as a lambda, says no kind, so a variable it types is still unbound.
+A goal that waits only for such variables joins one step that runs after every other goal its variables need. = with such a variable on one side gives it the value of the other.
+The step works the goals out on the values: number/add , number/subtract , number/multiply by a known number, and number/divide by one make sums; number/lessThan , number/lessThanOrEqualTo , number/greaterThan , number/greaterThanOrEqualTo , number/equals? , and = make constraints; cond , number/min , number/max , number/absolute , boolean/and , boolean/or , boolean/not , and not make cases; object/get reads a record; a lambda runs by its body; on a list of known length, such as one ["schema/arrayOf", schema, most] stands for, array/reduce , array/reductions , array/map , array/flat-map , array/some? , array/every? , array/length , array/head , array/tail , array/concat , and array/includes? run item by item, and in takes each item. Anything else on such a value, such as a product of two unknowns, a string function, or a question, waits: the step lists the values of the variables it needs and runs it on each, as plain code does. When those are infinitely many, the step fails and names what the solver cannot reason about .
+The solver decides with exact numbers, so every question gets yes or no on every machine: Fourier and Motzkin's method for numbers that may be any number, and Pugh's Omega test for whole ones. Plain code computes with floating-point numbers, which can round where the solver does not.
+The step binds the variables whose values make the answers, to each combination of values they take, when they are finitely many: a whole number bounded on both sides, or any number the goals fix to one value. In a query or a find , which give one answer or value for every match, and in a rule that aggregates, which combines one value from each, those are every variable of the body, as for values a schema lists; in any other rule, those its head shows. A variable a cond defines takes the value of each case that can hold. A variable with infinitely many values fails the step, and says so. The others, such as a plain rule's own, those exists lists, and a question's own under not , only need some values to exist, so exists asks whether one does and not proves that none does, for every value.
+why explains a row the step gave with an example : values that meet its goals. Where the step stopped a rule, its absent has a certificate for each case the solver split the goals into, which plain arithmetic checks: whole-number sums compared with 0, and steps that add earlier lines multiplied by whole numbers and, over whole numbers, tighten them, down to a false line. It also has contradicting , the fewest of the step's goals that have no values together, and, where the step denies a goal and those goals leave out every goal it denies, "vacuous": true : the other goals allow no values at all. An exists under not that the solver decides as a whole is told the same way.
+A step gives at most 100,000 answers, splits into at most 4,096 cases, and makes at most 20,000 constraints while it eliminates its variables. Past those it is refused, so every question ends soon.
+["begin",
+["define", "fee", ["lambda", ["amount"],
+["cond", [["number/lessThan", "amount", 100], 2],
+["else", ["number/divide", "amount", 50]]]]],
+{"amounts with a fee of 3": ["find", "?amount",
+["and", ["schema/fits?", "?amount", "value/integer?"],
+["number/lessThanOrEqualTo", "?amount", 200],
+["=", ["fee", "?amount"], 3]]],
+"is the fee ever below 2": ["query",
+["exists", ["?amount"],
+["and", ["schema/fits?", "?amount", "value/number?"],
+["number/greaterThanOrEqualTo", "?amount", 0],
+["number/lessThan", ["fee", "?amount"], 2]]]]}]
+fact
+["fact", goal, ...]
+Adds each fact, a relation call with data and no logic variables, and returns the facts given. Data is JSON values and unknowns . A question among a fact's arguments is asked, and the fact holds its answer.
+A fact can be exists over a relation call or an and of them. It adds the rows with an unknown for each listed variable, the rows a rule with that head would invent, whether or not the head holds already.
+A relation's facts are a set; adding a fact that is present changes nothing.
+For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing. A relation that merges what a key gets keeps every fact as a candidate instead.
+A relation that a graph algorithm computes cannot have facts.
+The form is one change: it is checked in full, made in full, and checked against every invariant , or it fails and changes nothing. A rule or invariant form among its facts fails before any part is evaluated, so it adds no rule.
+retract
+["retract", goal, ...]
+Removes each fact, and returns the facts that were present and removed. A fact can be exists , as in fact .
+A rule or invariant form among them, written as it was added, takes that rule or invariant back, and is returned too. The relations whose rules changed are derived again. A rule that says two values are the same takes its invariant back with it.
+A row of a keyed relation is removed only when every column matches.
+Facts derived by rules cannot be retracted. What rules derived from a removed fact changes with it.
+Like fact , the form is one all-or-nothing change.
+["begin",
+["relation", "edge", ["from", "to"]],
+["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+["retract", ["edge", "a", "b"], ["edge", "x", "y"]]]
+["begin",
+["relation", "edge", ["from", "to"]],
+["relation", "linked", ["from", "to"]],
+["fact", ["edge", "a", "b"]],
+["rule", ["linked", "?x", "?y"], ["edge", "?x", "?y"]],
+["rule", ["linked", "?y", "?x"], ["edge", "?x", "?y"]],
+{"taken": ["retract", ["rule", ["linked", "?y", "?x"], ["edge", "?x", "?y"]]],
+"linked": ["query", ["linked", "?from", "?to"]]}]
+rule
+["rule", head, goal, ...]
+Adds a rule: head holds for every way of satisfying all the goals. Returns the rule as written, with values as evaluated.
+The head is a relation call, an = between two values, an and of those, which adds a row for each call, or exists over relation calls, which invents a value for each variable it lists.
+A head ["=", a, b] makes an equality rule: whenever the body holds, a and b are one value. It holds as the invariant ["and", goal, ..., ["not", ["=", a, b]]] , so a rule that does not hold is not added and a change that would break it is refused, in an invariant's words. While the relations its body reads are derived, an unknown the rules there invented takes the value on the other side, as under a key. It runs with the relations of every rule that invents an unknown it can meet, which are derived together with every relation it reads, so nothing between them can ask a question about them. See Say that something exists .
+Head arguments can be values, variables bound by the body, computed values , questions , and aggregates .
+The rule is checked when added: every head variable must be bound by the body, unless the head lists it in exists , every goal must be safe , and the whole program must stay stratified and terminating. A rule that fails a check is not added.
+An or in the body makes one rule with several alternatives.
+Adding a rule the database already holds, one a snapshot would write the same way, changes nothing.
+Adding a rule is one all-or-nothing change, checked against every invariant.
+query
+["query", goal]
+["query", goal, options]
+Returns one record per distinct answer, with one key per named variable, without its ? . A goal with no variables returns [{}] when it holds and [] when it does not. A variable that only a question in the goal mentions is not part of an answer.
+Without the "order" option, answers come in the order they are found, which can change between versions of Lion.
+Options sort, page, and assert on the answers; see Query options .
+["begin",
+["relation", "edge", ["from", "to"]],
+["fact", ["edge", "a", "b"], ["edge", "a", "c"]],
+{"targets": ["query", ["edge", "a", "?to"], {"order": "to"}],
+"holds": ["query", ["edge", "a", "b"]],
+"fails": ["query", ["edge", "b", "a"]]}]
+find
+["find", template, goal]
+Returns the value of template for every match of goal , as a list. The template is any expression over the goal's variables: a variable, a record, a call, or another find .
+The list is sorted, in the order that values sort in, so it never depends on how the matches were found. A template such as ["array/make", "?points", "?name"] sorts by points first.
+Every match gives one value, so the list can repeat a value, as aggregate/collect does. A match that several alternatives of an or find gives one. Use aggregate/unique for distinct values.
+The goal must bind every variable of the template that the rule or query around the find does not.
+A find is a question : in plain code it is asked right away, and in a rule, query, or another find it is asked for each answer, with the variables that answer has bound.
+An aggregate of a find combines what it found, also as a whole argument of a rule head. A find with no match is an empty list, so a count of it is 0 .
+["begin",
+["relation", "customer", ["name"]],
+["relation", "order", ["id", "customer", "amount"]],
+["fact", ["customer", "ana"], ["customer", "bo"], ["customer", "cy"]],
+["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20], ["order", 3, "bo", 50]],
+["find",
+{"customer": "?c",
+"orders": ["find", "?id", ["order", "?id", "?c", "?_"]],
+"total": ["aggregate/sum", ["find", "?amount", ["order", "?_", "?c", "?amount"]]]},
+["customer", "?c"]]]
+assuming
+["assuming", change, ..., expression]
+Returns what expression gives in the database as it would be after the changes, and leaves the database as it is. Each change is a fact , retract , or rule form, made in order as that form would make it: a key replaces a row, a merge takes a candidate, a rule form adds its rule, a fact or retract states rows with exists as it does on its own, and a retract takes back the rules and invariants it names as well as facts. Each change has its own form's shape, checked as that form checks it. No invariant refuses the change, not even the one an assumed rule that says two values are the same holds as: an invariant keeps the database, and the change is only assumed. So an invariant can ask with assuming without asking itself again.
+The expression is asked there: a goal is true or false , a find is what it finds, and any other expression is its value. As a goal of a rule or query, the expression must be a goal.
+An assuming is a question : in plain code it is asked right away, and in a rule, query, or find it is asked for each answer, with the values the answer bound in place. The facts a change states must be known then; every other variable of the expression is its own. A rule a change adds or takes back has variables of its own too: those the answer bound take their values, and the rest are the held rule's.
+An inner assuming starts from the database the outer one assumed. A rule cannot ask, through one, about a relation that depends on the rule's own head.
+Each assuming derives what its expression needs in a database of its own, which shares the facts it does not change. Asked for each answer of a rule, it derives once per answer.
+["begin",
+["relation", "road", ["from", "to"]],
+["relation", "reaches", ["from", "to"]],
+["fact", ["road", "a", "b"], ["road", "b", "c"]],
+["rule", ["reaches", "?x", "?y"], ["road", "?x", "?y"]],
+["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]],
+["invariant", ["road", "?_", "a"], {"assert": "none"}],
+{"with c to d": ["assuming", ["fact", ["road", "c", "d"]], ["find", "?t", ["reaches", "a", "?t"]]],
+"without b to c": ["assuming", ["retract", ["road", "b", "c"]], ["reaches", "a", "c"]],
+"if reaching went both ways": ["assuming",
+["rule", ["reaches", "?y", "?x"], ["reaches", "?x", "?y"]],
+["find", "?t", ["reaches", "c", "?t"]]],
+"without the rule that goes on": ["assuming",
+["retract", ["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]]],
+["find", "?t", ["reaches", "a", "?t"]]],
+"with c to a, which the invariant keeps out": ["assuming", ["fact", ["road", "c", "a"]], ["reaches", "c", "b"]],
+"through a town nobody has named": ["assuming",
+["fact", ["exists", ["?m"], ["and", ["road", "c", "?m"], ["road", "?m", "e"]]]],
+["reaches", "a", "e"]],
+"as it is": ["find", "?t", ["reaches", "a", "?t"]]}]
+why
+["why", fact]
+Returns a tree that explains how fact , a relation call with no variables or exists over one, holds, or why it does not.
+When several answers give a fact, why tells the one deriving from nothing finds first: of the answers at the level the fact is held from, the least of the first rule that has one. The tree does not depend on the order the facts came in.
+A node for a fact that holds has the fact , and either "given": true , "computed": true for a graph algorithm's row, or the rule that derived it with the premises it used under because .
+A row that a rule which invents gives only because a key or an equality rule made its unknown equal to another value ends with {"same": [unknown, value]} : the unknown the rule named, and the value it was made. See Say that something exists .
+Premises are facts, {"absent": goal} for a goal under not , and {"check": goal} for every other goal that held: a filter, a schema, an in , and an = , which shows a computed value with the arithmetic that made it, as ["=", 26.4, ["number/divide", …]] . Each is written with the answer's values in place of its variables, so a check , asked as it stands, is true , and an absent is false . A variable that a question binds for itself keeps its name. See Explain a result .
+A goal that does not hold is {"absent": goal, "because": [way, ...]} , whether it is the fact asked about or a goal under not . A way is something that could have made the goal hold. For a relation call, each rule whose head can give a row it matches is a way, and for a goal made of others, each of its alternatives. A fact no rule could give has an empty because .
+A way is told once for each answer of its first goals that its next goal stops: {"rule": rule, "because": [premise, ...], "but": node} , without rule for an alternative of a goal. because holds the goals that held, and but the other side of the goal that did not: an absent goal, or for a not , what it denies as it holds, a fact or a check . A rule's body runs from the values the goal gives its head, in the order that reaches them first.
+When a rule's whole body holds, the rule gave another row than the one asked about: its head computes, combines, or invents a value. That way is {"rule": rule, "but": node} , where the node explains the row the rule gave.
+An absent goal is explained once in a tree. Where the tree comes to it again, as recursion does, it is written without because . So is a filter, and a goal over a computed relation, which have no ways.
+"assumed": true marks what could change once an unknown is known: an absent goal that could come to hold, a check that computes with an unknown, and a row that combines matches when one holds an unknown or its rule's body could gain one. An absent goal that is not marked stays absent whatever the unknowns are, and a fact holds whatever they are when nothing it rests on is marked. The mark is safe, not exact: a goal that is marked may still not change. See Explain a result .
+A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first: by the first rule, in the order rules were added, that gives it in the earliest round, and the least of that rule's answers, comparing the values its body binds in the order it binds them. The tree does not depend on the order facts were added in, or on what the database derived before they changed. See Explain a result .
+An aggregated fact lists every match it combines under matches , in the order of their answers; for min , max , and shortest , it explains the match that produced the value, the least where several did.
+A relation goal's premise is the row it matched, also when the goal says which rows with a pattern or a predicate. When several rows fit, since a variable of the goal is its own, it is the row that sorts first. A schema check that held is a check .
+Explanations use every relation computed in full.
+["begin",
+["relation", "inbox", ["doc"]],
+["relation", "order", ["id"]],
+["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+["fact", ["inbox", {"id": 1, "status": "open"}], ["inbox", {"id": 2, "status": "opne"}]],
+["rule", ["order", "?id"],
+["inbox", "?doc"], ["Order", "?doc"],
+["inbox", ["schema/open", {"id": "?id"}]]],
+["why", ["order", 1]]]
+No document has the id 3, and why says where the rule stopped: at the goal that looks for one.
+["begin",
+["relation", "inbox", ["doc"]],
+["relation", "order", ["id"]],
+["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+["fact", ["inbox", {"id": 1, "status": "open"}], ["inbox", {"id": 2, "status": "opne"}]],
+["rule", ["order", "?id"],
+["inbox", "?doc"], ["Order", "?doc"],
+["inbox", ["schema/open", {"id": "?id"}]]],
+["why", ["order", 3]]]
+not
+["not", goal]
+Holds when the goal has no match. The goal can be any goal: a relation call, a filter, = , in , or a combination of goals with and , or , and not . It is a question , so a variable that appears nowhere else in the rule or query is its own, and it can join relations on such a variable. A filter in it still needs its variables bound. With a boolean, returns its negation.
+["begin",
+["relation", "order", ["id", "amount"]],
+["fact", ["order", 1, 30], ["order", 2, 120], ["order", 3, 75]],
+["query",
+["and", ["order", "?id", "?amount"],
+["not", ["or", ["number/lessThan", "?amount", 50], ["number/greaterThan", "?amount", 100]]]]]]
+["begin",
+["relation", "author", ["person", "paper"]],
+["relation", "cites", ["paper", "cited"]],
+["fact", ["author", "ann", "p1"], ["author", "bob", "p2"], ["author", "cyd", "p3"]],
+["fact", ["cites", "p1", "p3"], ["cites", "p3", "p1"]],
+["query",
+["and", ["author", "?person", "?_"],
+["not", ["and", ["author", "?person", "?paper"], ["cites", "?_", "?paper"]]]]]]
+and
+["and", goal, ...]
+Holds when every goal holds, sharing variables between them. On booleans it is the boolean operator: it reads its arguments in order and stops at the first that is false , so later arguments are not evaluated.
+or
+["or", goal, ...]
+Holds when any goal holds. On booleans it is the boolean operator, and stops at the first argument that is true . An answer leaves out a variable that the alternative it came from does not bind. A choice between filters is one test; goals that combine and and or over relations may expand to at most 64 alternatives.
+{"and": ["and", true, false],
+"or": ["or", false, true],
+"not": ["not", true],
+"stops early": ["and", false, ["number/divide", 1, 0]]}
+=
+["=", term, term]
+Binds an unbound variable on either side to the other side's value, or tests that both sides are equal. A side can be a record or list with variables in it, a pattern that takes the other side apart. Without logic variables, it is structural equality of JSON values, and identity for other values. An unknown equals only an unknown written the same way. The numbers 0 and -0 are equal, as JSON writes both as 0 .
+["=", ["quote", {"a": [1, 2]}], {"a": ["array/make", 1, 2]}]
+in
+["in", element, list]
+With an unbound element, binds it to each distinct item of the list; with a bound one, tests membership. The element can be a record or list with variables in it, a pattern for the items. The list must be bound first. Without logic variables, it is plain membership and returns a boolean.
+["in", "b", ["array/make", "a", "b"]]
+exists
+["exists", [variable, ...], goal]
+Holds when goal holds for some value of each listed variable. The variables must be named logic variables, each listed once, and the goal must mention each.
+The listed variables are its own wherever it stands, as a question's own variables are: they never bind or meet a variable of the same name outside it, and they never appear in an answer.
+It is a question, also when its goal has no relation in it. As a value it is true or false , and it works in a query, a rule body, under not , in a find , as a value, and in an invariant.
+As a rule head, over a relation call or an and of them, it says the head holds for values nobody has given. For each answer of the body whose head does not hold already, the rule invents an unknown for each listed variable. It cannot list a variable the body binds, and a rule that invents cannot aggregate. A listed variable can stand as an argument of the head, or inside a record or list there, but nothing can compute with it.
+Rules that invent wait until every rule that invents nothing has finished. Then every rule that invents, and whose head does not hold, invents, all at once. The other rules then run on what was invented, and so on until nothing more is invented. The result does not depend on the order rules or facts were added in.
+Rules that invent may recurse only as long as what they invent never flows back into inventing more; see Termination . A relation that rules invent rows of is derived in full, as an aggregated relation is.
+In a fact or retract , it states the rows that the same head would invent, whether or not the head holds already. why takes one too.
+A key makes unknowns equal. When two rows of a keyed relation have the same key and differ only where one holds an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented, the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that nests fewer unknowns, and of those the one that sorts first. Every row that holds it is then replaced, and the value kept never depends on the order rules or facts were added in. Two different values that are not such unknowns are still an error, and an unknown that a fact holds is given, so a key never changes it.
+["begin",
+["relation", "link", ["from", "to"]],
+["relation", "node", ["id"]],
+["fact", ["link", 3, 4], ["node", 3], ["node", 5]],
+["rule", ["exists", ["?next"], ["link", "?n", "?next"]], ["node", "?n"]],
+{"3 links": ["exists", ["?y"], ["link", 3, "?y"]],
+"a value": ["exists", ["?y"], ["=", "?y", 1]],
+"links": ["query", ["link", "?from", "?to"], {"order": "from"}]}]
+["begin",
+["relation", "person", ["name"]],
+["relation", "mother", ["child", "mother"]],
+["rule", ["exists", ["?m"], ["mother", "?c", ["string/concat", "?m", "!"]]], ["person", "?c"]]]
+some
+["some", variable, goal]
+The unknown that variable stands for in a match of goal : a value that exists, though nobody has said what it is. A rule that invents gives its unknowns this form, as in ["some", "?m", ["mother", "ben", "?m"]] , the value ?m stands for in a row ["mother", "ben", ?m] . Evaluating the form gives the same unknown, so a program can write one.
+The goal is a relation call or an and of them, and mentions the variable. With an and , the unknown is in every row of it; with several variables in exists , each has its own unknown, and its goal mentions the others.
+An argument of the goal can be a value, one of its variables, or a record or list of those. A question among the arguments is asked. Nothing may compute with one of its own variables; that is an error.
+In plain code every variable of the goal is its own. Inside a rule, query, or find , some waits for the variables the rule binds, and every other variable of its goal is its own, so ["some", "?m", ["mother", "?c", "?m"]] is the unknown mother of each ?c .
+An unknown is data, as a string is: rows, facts, answers, finds, and aggregates hold it. It equals itself and nothing else, as a constant does, and two unknowns are the same when they are written the same way. It sorts after every record, and unknowns sort by how they are written.
+value/unknown? is true for an unknown, and value/object? is false for one. A function that needs a number or a string fails on one, as it does on any value of the wrong kind.
+Lion stays closed-world: not holds for anything that is not known, so ["not", ["=", "?m", "eve"]] holds for an unknown ?m .
+["begin",
+["relation", "person", ["name"]],
+["relation", "mother", ["child", "mother"]],
+["relation", "tall", ["name"]],
+["fact", ["person", "ben"], ["person", "cy"]],
+["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]],
+{"written": ["some", "?m", ["mother", "ben", "?m"]],
+"in a query": ["query", ["and", ["person", "?p"], ["tall", ["some", "?m", ["mother", "?p", "?m"]]]]],
+"not eve": ["find", "?c", ["and", ["mother", "?c", "?m"], ["not", ["=", "?m", "eve"]]]]}]
+snapshot
+["snapshot"]
+Returns a begin program that rebuilds the current database: a relation form per relation, a schema form for the schemas each schema form declared, every rule , one fact form with every fact, and every invariant , in that order. Loading it checks the facts and the invariants once, against the whole program, as the database was checked, so facts that hold only beside every rule load as they were saved.
+A schema is written with the form of its shape, and schemas that one form declared are written in one form, so they can name each other when it is loaded. The schema of a relation's rows is written as the invariant it stands for.
+Strings that would evaluate to something else are written inside quote : logic variable names, relation names, names bound in the environment, and namespaced names such as "number/add" . Lists and records are quoted too.
+A function is written by the name the environment binds it to, so a rule that calls number/add under another name is written with number/add .
+A cond , match , or record that waits is written as it was, and a lambda as its lambda form. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it.
+A function that another function built is written as the call that built it, such as ["func/partial", "number/lessThan", 3] or ["schema/arrayOf", "value/number?"] .
+A rule whose head says exists is written as it was, and an unknown in a fact as its some form.
+Fails if a rule or invariant holds a lambda that calls itself, or a function that the environment does not name and that is neither a lambda nor built by a function it can write.
+["begin",
+["relation", "note", ["text"]],
+["fact", ["note", "plain"], ["note", ["quote", "?x"]], ["note", ["array/make", 1, 2]]],
+["snapshot"]]
+["begin",
+["schema",
+"Expr", ["schema/anyOf", "value/number?", "Sum"],
+"Sum", {"add": ["schema/arrayOf", "Expr"]}],
+["schema", "Order", ["schema/open", {"id": "value/integer?", "total": "Expr"}]],
+["relation", "order", ["id", "total", "note"], {"key": "id", "schema": "Order"}],
+["relation", "summed", ["id"]],
+["fact", ["order", 1, ["quote", {"add": [2, 3]}], "gift"]],
+["rule", ["summed", "?id"], ["order", "?id", {"add": "?parts"}, "?_"]],
+["snapshot"]]
+invariant
+["invariant", goal, {"assert": "none"}]
+["invariant", goal, {"assert": "some"}]
+Adds a query assertion the database keeps: the goal must have no answers ( "none" ) or at least one ( "some" ). Returns the invariant as written.
+The goal is compiled and checked like a query's. The options record is read as written and must hold exactly "assert" .
+The invariant must hold when added; otherwise it is not added.
+After that, every fact , retract , and rule form is checked against every invariant once it has made all of its changes. A form that breaks one, or whose check fails, is undone and fails, leaving the database exactly as it was.
+Adding an invariant the database already holds changes nothing. ["retract", ["invariant", goal, options]] takes one back.
+["begin",
+["relation", "edge", ["from", "to"]],
+["invariant", ["edge", "?x", "?x"], {"assert": "none"}],
+["fact", ["edge", "a", "b"], ["edge", "c", "c"]]]

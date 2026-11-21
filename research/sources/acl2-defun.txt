@@ -1,0 +1,533 @@
+(defxdoc defun
+  :parents (events programming)
+  :short "Define a function symbol"
+  :long "@({
+  Examples:
+  (defun app (x y)
+    (if (consp x)
+        (cons (car x) (app (cdr x) y))
+        y))
+
+  (defun fact (n)
+    (declare (xargs :guard (and (integerp n)
+                                (>= n 0))))
+    (if (zp n)
+        1
+        (* n (fact (1- n)))))
+
+  General Form:
+  (defun fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string; see below
+    body)
+ })
+
+ <p>where @('fn') is the symbol you wish to define and is a new symbolic name
+ (see @(see name)), @('(var1 ... varn)') is its list of formal parameters (see
+ @(see name)), and @('body') is its body.  The definitional axiom is logically
+ admissible provided certain restrictions are met.  These are sketched
+ below.</p>
+
+ <p>See also @(see mutual-recursion) for how to use @('defun') to make mutually
+ recursive definitions, including discussion of how the @(tsee xargs) @(see
+ declaration)s in one @('defun') may affect the other definitions.</p>
+
+ <p>Note that ACL2 does not support the use of @('lambda-list') keywords (such
+ as @('&optional')) in the formals list of functions.  We do support some such
+ keywords in macros and often you can achieve the desired syntax by defining a
+ macro in addition to the general version of your function.  See @(see
+ defmacro).</p>
+
+ <p>The <i>declarations</i> (see @(see declare)), @('dcl'), are optional.  If
+ more than one @('dcl') form appears, they are effectively grouped together as
+ one.  Perhaps the most commonly used ACL2 specific declaration is of the form
+ @('(declare (xargs :guard g :measure m))').  This declaration in the
+ @('defun') of some function @('fn') has the effect of making the ``@(see
+ guard)'' for @('fn') be the term @('g') and the ``measure'' be the term
+ @('m').  The notion of ``measure'' is crucial to ACL2's definitional
+ principle.  The notion of ``guard'' is not, and is discussed elsewhere; see
+ @(see verify-guards) and see @(see set-verify-guards-eagerness).  Note that a
+ @(':measure') is not allowed for a non-recursive definition unless it is part
+ of a @(tsee mutual-recursion) (exception: a measure of @('nil') is treated as
+ though the @('measure') was omitted); moreover, if a @(':measure') is
+ supplied, then it must be a legal term.  Apart from these restrictions, the
+ @(':measure') is ignored in @(':')@(tsee program) mode; see @(see
+ defun-mode).</p>
+
+ <p>One documentation string may be included between the list of formal
+ parameters and the body, but it is essentially ignored by ACL2.  See @(see
+ documentation) for a discussion of documentation in ACL2.</p>
+
+ <p>We now briefly discuss the ACL2 definitional principle, using the following
+ definition form which is offered as a more or less generic example.</p>
+
+ @({
+  (defun fn (x y)
+    (declare (xargs :guard (g x y)
+                    :measure (m x y)))
+    (if (test x y)
+        (stop x y)
+      (step (fn (d x) y))))
+ })
+
+ <p>Note that in our generic example, @('fn') has just two arguments, @('x')
+ and @('y'), the @(see guard) and measure terms involve both of them, and the
+ body is a simple case split on @('(test x y)') leading to a ``non-recursive''
+ branch, @('(stop x y)'), and a ``recursive'' branch.  In the recursive branch,
+ @('fn') is called after ``decrementing'' @('x') to @('(d x)') and some step
+ function is applied to the result.  Of course, this generic example is quite
+ specific in form but is intended to illustrate the more general case.</p>
+
+ <p>Provided this definition is admissible under the logic, as outlined below,
+ it adds the following axiom to the logic.</p>
+
+ @({
+  Defining Axiom:
+  (fn x y)
+    =
+  (if (test x y)
+      (stop x y)
+    (step (fn (d x) y)))
+ })
+
+ <p>Note that the @(see guard) of @('fn') has no bearing on this logical
+ axiom.</p>
+
+ <p>This defining axiom is actually implemented in the ACL2 system by a
+ @(':')@(tsee definition) rule, namely</p>
+
+ @({
+  (equal (fn x y)
+         (if (test a b)
+             (stop a b)
+           (step (fn (d a) b)))).
+ })
+
+ <p>See @(see definition) for a discussion of how definition rules are applied.
+ Roughly speaking, the rule causes certain instances of @('(fn x y)') to be
+ replaced by the corresponding instances of the body above.  This is called
+ ``opening up'' @('(fn x y)').  The instances of @('(fn x y)') opened are
+ chosen primarily by heuristics which determine that the recursive calls of
+ @('fn') in the opened body (after simplification) are more desirable than the
+ unopened call of @('fn').</p>
+
+ <p>This discussion has assumed that the definition of @('fn') was admissible.
+ Exactly what does that mean?  First, @('fn') must be a previously
+ unaxiomatized function symbol (however, see @(see ld-redefinition-action)).
+ Second, the formal parameters must be distinct variable names.  Third, the
+ @(see guard), measure, and body should all be terms and should mention no free
+ variables except the formal parameters.  Thus, for example, body may not
+ contain references to ``global'' or ``special'' variables; ACL2 constants or
+ additional formals should be used instead.</p>
+
+ <p>The final conditions on admissibility concern the termination of the
+ recursion.  Roughly put, all applications of @('fn') must terminate.  In
+ particular, there must exist a binary relation, @('rel'), and some unary
+ predicate @('mp') such that @('rel') is well-founded on objects satisfying
+ @('mp'), the measure term @('m') must always produce something satisfying
+ @('mp'), and the measure term must decrease according to @('rel') in each
+ recursive call, under the hypothesis that all the tests ruling the call are
+ satisfied (see @(see rulers)).  By the meaning of well-foundedness, we know
+ there are no infinitely descending chains of successively @('rel')-smaller
+ @('mp')-objects.  Thus, the recursion must terminate.</p>
+
+ <p>The default well-founded relation is @(tsee o<), an ``ordinal less-than''
+ relation (discussed further below) that reduces to ordinary @('<') on the
+ natural numbers.  The default measure term is @('(acl2-count var)'), where
+ @('var') is a formal parameter that is chosen heuristically: roughly speaking,
+ it is the first formal that is tested along every branch and changed in each
+ recursive call.</p>
+
+ <p>The only primitive well-founded relation in ACL2 is @(tsee o<), which is
+ known to be well-founded on the @(tsee o-p)s.  For the proof of
+ well-foundedness, see @(see proof-of-well-foundedness).  However it is
+ possible to add new well-founded relations.  For details, see @(see
+ well-founded-relation).  We discuss later how to specify which well-founded
+ relation is selected by @('defun') and in the present discussion we assume,
+ without loss of generality, that it is @(tsee o<) on the @(tsee o-p)s.</p>
+
+ <p>For example, for our generic definition of @('fn') above, with measure term
+ @('(m x y)'), two theorems must be proved.  The first establishes that @('m')
+ produces an ordinal:</p>
+
+ @({
+  (o-p (m x y)).
+ })
+
+ <p>The second shows that @('m') decreases in the (only) recursive call of
+ @('fn'):</p>
+
+ @({
+  (implies (not (test x y))
+           (o< (m (d x) y) (m x y))).
+ })
+
+ <p>Observe that in the latter formula we must show that the ``@('m')-size'' of
+ @('(d x)') and @('y') is ``smaller than'' the @('m')-size of @('x') and
+ @('y'), provided the test, @('(test x y)'), in the body fails, thus leading to
+ the recursive call @('(fn (d x) y)').</p>
+
+ <p>See @(see o<) for a discussion of this notion of ``smaller than.''  It
+ should be noted that the most commonly used ordinals are the natural numbers
+ and that on natural numbers, @(tsee o<) is just the familiar ``less than''
+ relation (@(tsee <)).  Thus, it is very common to use a measure @('m') that
+ returns a nonnegative integer, for then @('(o-p (m x y))') becomes a simple
+ conjecture about the type of @('m') and the second formula above becomes a
+ conjecture about the less-than relationship of nonnegative integer
+ arithmetic.</p>
+
+ <p>The most commonly used measure function is @(tsee acl2-count), which
+ computes a nonnegative integer size for all ACL2 objects.  See @(see
+ acl2-count).</p>
+
+ <p>Probably the most common recursive scheme in Lisp @(see programming) is
+ when some formal is supposed to be a list and in the recursive call it is
+ replaced by its @(tsee cdr).  For example, @('(test x y)') might be simply
+ @('(atom x)') and @('(d x)') might be @('(cdr x)').  In that case,
+ @('(acl2-count x)') is a suitable measure because the @(tsee acl2-count) of a
+ @(tsee cons) is strictly larger than the @(tsee acl2-count)s of its @(tsee
+ car) and @(tsee cdr).  Thus, ``recursion by @(tsee car)'' and ``recursion by
+ @(tsee cdr)'' are trivially admitted if @(tsee acl2-count) is used as the
+ measure and the definition protects every recursive call by a test insuring
+ that the decremented argument is a @(tsee consp).  Similarly, ``recursion by
+ @(tsee 1-)'' in which a positive integer formal is decremented by one in
+ recursion, is also trivially admissible.  See @(see built-in-clause) to extend
+ the class of trivially admissible recursive schemes.</p>
+
+ <p>We now turn to the question of which well-founded relation @('defun') uses.
+ It should first be observed that @('defun') must actually select both a
+ relation (e.g., @(tsee o<)) and a domain predicate (e.g., @(tsee o-p)) on
+ which that relation is known to be well-founded.  But, as noted elsewhere (see
+ @(see well-founded-relation-rule)), every known well-founded relation has a
+ unique domain predicate associated with it and so it suffices to identify
+ simply the relation here.</p>
+
+ <p>The @(tsee xargs) field of a @(tsee declare) permits the explicit
+ specification of any known well-founded relation with the keyword
+ @(':well-founded-relation').  An example is given below.  If the @(tsee xargs)
+ for a @('defun') specifies a well-founded relation, that relation and its
+ associated domain predicate are used in generating the termination conditions
+ for the definition.</p>
+
+ <p>If no @(':well-founded-relation') is specified, @('defun') uses the
+ @(':well-founded-relation') specified in the @(tsee acl2-defaults-table).  See
+ @(see set-well-founded-relation) to see how to set the default well-founded
+ relation (and, implicitly, its domain predicate).  The initial default
+ well-founded relation is @(tsee o<) (with domain predicate @(tsee o-p)).</p>
+
+ <p>This completes the brief sketch of the ACL2 definitional principle.
+ Optionally, see @(see rulers) for a more detailed discussion of the
+ termination analysis and resulting proof obligations for admissibility, as
+ well as a discussion of the relation to how ACL2 stores induction schemes.
+ See @(see induction-coarse-v-fine-grained) for a discussion of how well-chosen
+ rulers can affect the induction scheme.</p>
+
+ <p>On very rare occasions ACL2 will seem to \"hang\" when processing a
+ definition, especially if there are many subexpressions of the body whose
+ function symbol is @(tsee if) (or which macroexpand to such an expression).
+ In those cases you may wish to supply the following to @(tsee xargs):
+ @(':normalize nil').  This is an advanced feature that turns off certain
+ simplification of @(see definition) bodies and @(see guard)s; @(see
+ normalize).</p>
+
+ <p>When a @('defun') form is submitted, ACL2 sometimes computes and stores a
+ @(see type-prescription) rule for the function.  See @(see
+ type-prescription-debugging) for relevant discussion.</p>
+
+ <p>The following example illustrates all of the available declarations, but it
+ is completely nonsensical and it shows only a few of the many @(':xargs')
+ keywords.  See @(see xargs) for a complete list of @(':xargs') keywords; also
+ see @(see hints).</p>
+
+ @({
+  (defun example (x y z a b c i j)
+    (declare (ignore a b c)
+             (ignorable x y)
+             (irrelevant c)
+             (type integer i j)
+             (optimize (safety 3))
+             (xargs :guard (symbolp x)
+                    :measure (- i j)
+                    :hints ((\"Goal\"
+                             :do-not-induct t
+                             :do-not '(generalize fertilize)
+                             :expand ((assoc x a) (member y z))
+                             :restrict ((<-trans ((x x) (y (foo x)))))
+                             :hands-off (length binary-append)
+                             :in-theory (set-difference-theories
+                                          (current-theory :here)
+                                          '(assoc))
+                             :induct (and (nth n a) (nth n b))
+                             :use ((:instance assoc-of-append
+                                              (x a) (y b) (z c))
+                                   (:functional-instance
+                                     (:instance p-f (x a) (y b))
+                                     (p consp)
+                                     (f assoc)))))
+                    :guard-hints ((\"Subgoal *1/3'\"
+                                   :use ((:instance assoc-of-append
+                                                    (x a) (y b) (z c)))))
+                    :mode :logic
+                    :verify-guards nil
+                    :type-prescription (natp (example x y z a b c i j))))
+    (example-body x y z i j))
+ })")
+
+(defxdoc defun$
+  :parents (defun events apply$)
+  :short "Define a function symbol and generate a warrant"
+  :long "<p>@('Defun$') is just a macro that expands to the obvious @(tsee
+  defun) followed by @(tsee defwarrant).</p>")
+
+(defxdoc defun-inline
+  :parents (defun events)
+  :short "Define a potentially inlined function symbol and associated macro"
+  :long "<p>You may be able to improve performance by replacing an event
+ @('(defun f ...)') with a corresponding event @('(defun-inline f ...)'), in
+ order to encourage the host Lisp compiler to inline calls of @('f').</p>
+
+ @({
+  Example Form:
+  (defun-inline lng (x)
+    (declare (xargs :guard (true-listp x)))
+    (if (endp x) 0 (1+ (lng (cdr x)))))
+
+  General Form:
+  (defun-inline fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string; as for defun
+    body)
+ })
+
+ <p>satisfying the same requirements as in the General Form for @(tsee defun).
+ The effect is to define a macro @('fn') and a function @('fn$inline') (i.e., a
+ symbol in the same package as @('fn') but whose @(tsee symbol-name) has the
+ suffix @('\"$INLINE\"')), such that each call of @('fn') expands to a call of
+ the function symbol @('fn$inline') on the same arguments.  Moreover, @(tsee
+ table) @(see events) are generated that allow the use of @('fn') in @(see
+ theory) expressions to represent @('fn$inline') and that cause any
+ untranslated (user-level) call of @('fn$inline') to be printed as the
+ corresponding call of @('fn').  The documentation string is an optional string
+ that can provide documentation but is essentially ignored by ACL2.</p>
+
+ <p>A form @('(defun-inline f ...)') actually defines a function named
+ @('f$inline') and a corresponding macro named @('f') whose calls expand to
+ calls of @('f$inline'), while providing the illusion that there is just the
+ ``function'' @('f').  For example, the Example Form above macroexpands in one
+ step to the following form.</p>
+
+ @({
+  (progn (defmacro lng (non-stobj-var0)
+           (list 'lng$inline non-stobj-var0))
+         (add-macro-fn lng lng$inline)
+         (defun lng$inline (x)
+           (declare (xargs :guard (true-listp x)))
+           (if (endp x) 0 (1+ (lng (cdr x))))))
+ })
+
+ <p>Note that the above call of @(tsee add-macro-fn) generates the
+ aforementioned two table events (see @(see add-macro-fn)), which provide the
+ illusion that we are just defining a function @('lng'), as you can see in the
+ following log: @('lng') appears rather than @('lng$inline').</p>
+
+ @({
+  ACL2 !>(set-gag-mode nil)
+  <state>
+  ACL2 !>(thm (equal (lng (append x y))
+                     (+ (lng x) (lng y)))
+              :hints ((\"Goal\" :in-theory (enable lng))))
+
+  [.. output omitted ..]
+
+  Subgoal *1/2
+  (IMPLIES (AND (NOT (ENDP X))
+                (EQUAL (LNG (APPEND (CDR X) Y))
+                       (+ (LNG (CDR X)) (LNG Y))))
+           (EQUAL (LNG (APPEND X Y))
+                  (+ (LNG X) (LNG Y)))).
+
+  [.. output omitted ..]
+ })
+
+ <p>Under the hood, ACL2 arranges that every function symbol with suffix
+ @('\"$INLINE\"') is presented to the compiler as one whose calls we would
+ prefer to inline.  Technically: the Common Lisp form @('(declaim (inline
+ f$inline))') is generated for a function symbol @('f$inline') before that
+ symbol's definition is submitted.  However, the Common Lisp spec explicitly
+ avoids requiring that the compiler respect this @('declaim') form.
+ Fortunately, Common Lisp implementations often do respect it.</p>
+
+ <p>Also see @(see defund-inline), see @(see defun-notinline), and see @(see
+ defund-notinline).</p>
+
+ <p><i>Remarks</i>.</p>
+
+ <p>(1) None of these macros (including @('defun-inline')) is supported for use
+ inside a @(tsee mutual-recursion).</p>
+
+ <p>(2) Every function symbol defined in ACL2 whose @(tsee symbol-name) has the
+ suffix @('\"$INLINE\"') is proclaimed to be inline; similarly for
+ @('\"$NOTINLINE\"') and notinline.  These suffix restrictions are explained in
+ a comment in the ACL2 source definition of macro @('defun-inline').  Note that
+ only the functions themselves are thus proclaimed, not their executable
+ counterparts (also known as *1* functions; see @(see evaluation)).</p>
+
+ <p>(3) No special treatment for inlining (or notinlining) is given for
+ function symbols locally defined by @(tsee flet), with two exceptions: when
+ explicitly declared @('inline') or @('notinline') by the @('flet') form, and
+ for symbols discussed in (1) and (2) above that, at some point in the current
+ ACL2 session, were defined as function symbols in ACL2 (even if not currently
+ defined because of undoing or being @(see local)).</p>
+
+ <p>(4) The function symbol actually being defined by @('(defun-inline foo
+ ...)')  is @('foo$inline').  As mentioned above, one can be oblivious to this
+ fact when writing @(see theory) expressions or perusing prover output.
+ However, for other purposes (for example, @(tsee verify-guards) and @(tsee
+ defabsstobj) @(':exports')) you will need to supply the name of the function
+ symbol rather than the name of the macro; e.g., for the above form
+ @('(defun-inline foo ...)'), you may subsequently issue the event
+ @('(verify-guards foo$inline)') but not @('(verify-guards foo)').</p>
+
+ <p>(5) Obscure Remark.  Suppose that you certify a book with compilation (the
+ default) in one host Lisp, saving the expansion file.  Suppose that you then
+ compile in another host Lisp by using @(tsee include-book) with argument
+ @(':load-compiled-file :comp').  Then in subsequent sessions, including that
+ book with the second host Lisp will not result in any inline or notinline
+ behavior for functions defined in the book.</p>")
+
+(defxdoc defun-mode
+  :parents (defun)
+  :short "Determines whether a function definition is a logical act"
+  :long "<p>Two ``@(see defun-mode)s'' are supported, @(':')@(tsee program) and
+ @(':')@(tsee logic).  Roughly speaking, @(':')@(tsee program) mode allows you
+ to prototype a function for execution without any proof burdens, while
+ @(':')@(tsee logic) mode allows you to add a new definitional axiom to the
+ logic.  The system comes up in @(':')@(tsee logic) mode.  Execution of
+ functions whose @(see defun-mode) is @(':')@(tsee program) may render ACL2
+ unsound!  See @(see defun-mode-caveat).</p>
+
+ <p>Note that calls of @(tsee local) and of many @(see events) are skipped in
+ @(':program') mode; see @(see program).</p>
+
+ <p>When you define a function in the ACL2 logic, that function can be run on
+ concrete data.  But it is also possible to reason deductively about the
+ function because each definition extends the underlying logic with a
+ definitional axiom.  To ensure that the logic is sound after the addition of
+ this axiom, certain restrictions have to be met.  One restriction is that
+ every function called by the newly defined one must be in @(':logic') mode.
+ (However, see @(see defun-mode-lambdas) for some clarification concerning
+ @(tsee apply$).)  But the most challenging restriction is that the system must
+ prove that the recursion in the new definition terminates.</p>
+
+ <p>Because ACL2 is a @(see programming) language, you often may wish simply to
+ program in ACL2.  For example, you may wish to define your system and test it,
+ without any logical burden.  Or, you may wish to define ``utility'' functions
+ &mdash; functions that are executed to help manage the task of building your
+ system but functions whose logical properties are of no immediate concern.
+ Such functions might be used to generate test data or help interpret the
+ results of tests.  They might create files or explore the ACL2 database.  The
+ termination arguments for such functions are an unnecessary burden provided no
+ axioms about the functions are ever used in deductions.</p>
+
+ <p>Thus, ACL2 introduces the idea of the ``@(see defun-mode)'' of a function.
+ The @(':mode') keyword of @(tsee defun)'s @(tsee declare) @('xarg') allows you
+ to specify the @(see defun-mode) of a given definition.  If no @(':mode')
+ keyword is supplied, the default @(see defun-mode) is used; see @(see
+ default-defun-mode).</p>
+
+ <p>There are two @(see defun-mode)s, each of which is written as a
+ keyword:</p>
+
+ <p>@(':')@(tsee program) &mdash; logically undefined but executable outside
+ deductive contexts.</p>
+
+ <p>@(':')@(tsee logic) &mdash; axiomatically defined as per the ACL2
+ definitional principle.</p>
+
+ <p>It is possible to change the @(see defun-mode) of a function from
+ @(':')@(tsee program) to @(':')@(tsee logic).  We discuss this below.</p>
+
+ <p>We think of functions having @(':')@(tsee program) mode as ``dangerous''
+ functions, while functions having @(':')@(tsee logic) mode are ``safe.''  The
+ only requirement enforced on @(':')@(tsee program) mode functions is the
+ syntactic one: each definition must be well-formed ACL2.  Naively speaking, if
+ a @(':')@(tsee program) mode function fails to terminate then no harm is done
+ because no axiom is added (so inconsistency is avoided) and some invocations
+ of the function may simply never return.  This simplistic justification of
+ @(':')@(tsee program) mode execution is faulty because it ignores the damage
+ that might be caused by ``mis-guarded'' functions.  See @(see
+ defun-mode-caveat).</p>
+
+ <p>We therefore implicitly describe an imagined implementation of @(see
+ defun-mode)s that is safe and, we think, effective.  But please see @(see
+ defun-mode-caveat).</p>
+
+ <p>The default @(see defun-mode) is @(':')@(tsee logic).  This means that when
+ you @(tsee defun) a function the system will try to prove termination.  If you
+ wish to introduce a function of a different @(see defun-mode) use the
+ @(':mode') @(tsee xargs) keyword.  Below we show @('fact') introduced as a
+ function in @(':')@(tsee program) mode.</p>
+
+ @({
+  (defun fact (n)
+    (declare (xargs :mode :program))
+    (if (or (not (integerp n)) (= n 0))
+        1
+      (* n (fact (1- n)))))
+ })
+
+ <p>No axiom is added to the logic as a result of this definition.  By
+ introducing @('fact') in @(':')@(tsee program) mode we avoid the burden of a
+ termination proof, while still having the option of executing the function.
+ For example, you can type</p>
+
+ @({
+  ACL2 !>(fact 3)
+ })
+
+ <p>and get the answer @('6').  If you type @('(fact -1)') you will get a hard
+ lisp error due to ``infinite recursion.''</p>
+
+ <p>However, the ACL2 theorem prover knows no axioms about @('fact').  In
+ particular, if the term @('(fact 3)') arises in a proof, the theorem prover is
+ unable to deduce that it is @('6').  From the perspective of the theorem
+ prover it is as though @('fact') were an undefined function symbol of arity
+ @('1').  Thus, modulo certain important issues (see @(see defun-mode-caveat)),
+ the introduction of this function in @(':')@(tsee program) mode does not
+ imperil the soundness of the system &mdash; despite the fact that the
+ termination argument for @('fact') was omitted &mdash; because nothing of
+ interest can be proved about @('fact').  Indeed, we do not allow @('fact') to
+ be used in logical contexts such as conjectures submitted for proof.</p>
+
+ <p>It is possible to convert a function from @(':')@(tsee program) mode to
+ @(':')@(tsee logic) mode at the cost of proving that it is admissible.  This
+ can be done by invoking</p>
+
+ @({
+  (verify-termination fact)
+ })
+
+ <p>which is equivalent to submitting the @(tsee defun) of @('fact'), again,
+ but in @(':')@(tsee logic) mode.</p>
+
+ @({
+  (defun fact (n)
+    (declare (xargs :mode :logic))
+    (if (or (not (integerp n)) (= n 0))
+        1
+      (* n (fact (1- n)))))
+ })
+
+ <p>This particular event will fail because the termination argument requires
+ that @('n') be nonnegative.  A repaired @(tsee defun), for example with @(tsee
+ =) replaced by @(tsee <=), will succeed, and an axiom about @('fact') will
+ henceforth be available.</p>
+
+ <p>Technically, @(tsee verify-termination) submits a redefinition of the
+ @(':')@(tsee program) mode function.  This is permitted, even when @(tsee
+ ld-redefinition-action) is @('nil'), because the new definition is identical
+ to the old (except for its @(':mode') and, possibly, other non-logical
+ properties).</p>
+
+ <p>See @(see guard) for a discussion of how to restrict the execution of
+ functions.  @(see Guard)s may be ``verified'' for functions in @(':')@(tsee
+ logic) mode; see @(see verify-guards).</p>")
+

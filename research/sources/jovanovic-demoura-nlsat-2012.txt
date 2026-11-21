@@ -1,0 +1,158 @@
+Research
+Publications
+Code, datasets and models
+Artificial intelligence
+Audio & acoustics
+Computer vision
+Graphics & multimedia
+Human-computer interaction
+Human language technologies
+Search & information retrieval
+Data platforms and analytics
+Hardware & devices
+Programming languages & software engineering
+Quantum computing
+Security, privacy & cryptography
+Systems & networking
+Algorithms
+Mathematics
+Ecology & environment
+Economics
+Medical, health & genomics
+Social sciences
+Technology for emerging markets
+Academic programs
+Events & academic conferences
+Microsoft Research Forum
+Microsoft Research Blog
+Microsoft Research Podcast
+Microsoft Research Stories
+About Microsoft Research
+Careers & internships
+People
+News & awards
+AI for Science
+Asia-Pacific
+Cambridge
+Catalyst Lab
+India
+Montreal
+New England
+New York City
+Redmond
+Register: Research Forum
+Microsoft Security
+Azure
+Dynamics 365
+Microsoft 365
+Microsoft Teams
+Windows 365
+Microsoft AI
+Azure Space
+Mixed reality
+Microsoft HoloLens
+Microsoft Viva
+Quantum computing
+Sustainability
+Education
+Automotive
+Financial services
+Government
+Healthcare
+Manufacturing
+Retail
+Find a partner
+Become a partner
+Partner Network
+Microsoft Marketplace
+Software companies
+Blog
+Microsoft Advertising
+Developer Center
+Documentation
+Events
+Licensing
+Microsoft Learn
+Microsoft Research
+View Sitemap
+Solving Non-Linear Arithmetic
+Dejan Jovanovic
+,
+Leonardo de Moura
+MSR-TR-2012-20 | February 2012
+Download BibTex
+We present a new algorithm for deciding satisfiability of non-linear arithmetic constraints. The algorithm performs a Conflict-Driven Clause Learning (CDCL)-style search for a feasible assignment, while using projection operators adapted from cylindrical algebraic decomposition to guide the search away from the conflicting states.
+Opens in a new tab
+PDF
+Research Areas
+Algorithms
+Follow us:
+Follow on X
+Like on Facebook
+Follow on LinkedIn
+Subscribe on Youtube
+Follow on Instagram
+Subscribe to our RSS feed
+Share this page:
+Share on X
+Share on Facebook
+Share on LinkedIn
+Share on Reddit
+Surface Laptop Ultra
+Surface Pro
+Surface Laptop
+Surface RTX Spark Dev Box
+Explore Copilot
+Explore Microsoft products
+Windows 11 apps
+Account profile
+Download Center
+Microsoft Store support
+Returns
+Order tracking
+Certified Refurbished
+Why buy from Microsoft Store
+Flexible Payments
+Microsoft in education
+Devices for education
+Microsoft Teams for Education
+Microsoft 365 Education
+How to buy for your school
+Educator training and development
+Deals for students and parents
+AI for education
+Microsoft AI
+Microsoft Security
+Dynamics 365
+Microsoft 365
+Microsoft Power Platform
+Microsoft Teams
+Microsoft Copilot
+Small Business
+Azure
+Microsoft Developer
+Microsoft Learn
+Support for AI marketplace apps
+Microsoft Tech Community
+Microsoft Marketplace
+Software companies
+Visual Studio
+Careers
+About Microsoft
+Company news
+Privacy at Microsoft
+Investors
+Diversity and inclusion
+Accessibility
+Sustainability
+Your Privacy Choices
+Consumer Health Privacy
+Sitemap
+Contact Microsoft
+Privacy
+Manage cookies
+Terms of use
+Trademarks
+Safety & eco
+Recycling
+About our ads

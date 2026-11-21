@@ -1,0 +1,899 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "candidate",
+   "exact-rationals",
+   [
+    "quote",
+    "Make every Lion number exact, as Scheme's exact numbers are: integers of any size and fractions, each number read as the exact value its digits write, and a fraction no decimal writes refused when it is written as JSON"
+   ]
+  ],
+  [
+   "weighed_in",
+   "exact-rationals",
+   "exact-numbers"
+  ],
+  [
+   "uses",
+   "exact-rationals",
+   [
+    "quote",
+    "arbitrary-precision integers"
+   ]
+  ],
+  [
+   "uses",
+   "exact-rationals",
+   [
+    "quote",
+    "exact rational arithmetic"
+   ]
+  ],
+  [
+   "uses",
+   "exact-rationals",
+   [
+    "quote",
+    "json.parse source text access"
+   ]
+  ],
+  [
+   "offers",
+   "exact-rationals",
+   [
+    "quote",
+    "integers kept exact past two to the 53rd"
+   ]
+  ],
+  [
+   "offers",
+   "exact-rationals",
+   [
+    "quote",
+    "fractions kept exact"
+   ]
+  ],
+  [
+   "offers",
+   "exact-rationals",
+   [
+    "quote",
+    "decimals written in JSON kept exact"
+   ]
+  ],
+  [
+   "offers",
+   "exact-rationals",
+   [
+    "quote",
+    "proofs that hold of the code's own arithmetic"
+   ]
+  ],
+  [
+   "rewrites",
+   "exact-rationals",
+   [
+    "quote",
+    "plain code computes with floating-point numbers, which can round where the solver does not"
+   ]
+  ],
+  [
+   "candidate",
+   "scheme-tower",
+   [
+    "quote",
+    "Keep two kinds of number side by side, as Scheme does: exact integers and fractions, and inexact floats, with a number written with a decimal point or an exponent read as inexact"
+   ]
+  ],
+  [
+   "weighed_in",
+   "scheme-tower",
+   "exact-numbers"
+  ],
+  [
+   "uses",
+   "scheme-tower",
+   [
+    "quote",
+    "scheme's numeric tower"
+   ]
+  ],
+  [
+   "uses",
+   "scheme-tower",
+   [
+    "quote",
+    "arbitrary-precision integers"
+   ]
+  ],
+  [
+   "uses",
+   "scheme-tower",
+   [
+    "quote",
+    "binary64 floating point"
+   ]
+  ],
+  [
+   "offers",
+   "scheme-tower",
+   [
+    "quote",
+    "integers kept exact past two to the 53rd"
+   ]
+  ],
+  [
+   "offers",
+   "scheme-tower",
+   [
+    "quote",
+    "fractions kept exact"
+   ]
+  ],
+  [
+   "offers",
+   "scheme-tower",
+   [
+    "quote",
+    "proofs that hold of the code's own arithmetic"
+   ]
+  ],
+  [
+   "rewrites",
+   "scheme-tower",
+   [
+    "quote",
+    "plain code computes with floating-point numbers, which can round where the solver does not"
+   ]
+  ],
+  [
+   "candidate",
+   "exact-decimals",
+   [
+    "quote",
+    "Keep every number as a decimal, as decimal arithmetic does: read the digits a number writes exactly, add, subtract, and multiply exactly, and round a division to a fixed number of digits"
+   ]
+  ],
+  [
+   "weighed_in",
+   "exact-decimals",
+   "exact-numbers"
+  ],
+  [
+   "uses",
+   "exact-decimals",
+   [
+    "quote",
+    "decimal floating point"
+   ]
+  ],
+  [
+   "offers",
+   "exact-decimals",
+   [
+    "quote",
+    "decimals written in JSON kept exact"
+   ]
+  ],
+  [
+   "offers",
+   "exact-decimals",
+   [
+    "quote",
+    "integers kept exact past two to the 53rd"
+   ]
+  ],
+  [
+   "offers",
+   "exact-decimals",
+   [
+    "quote",
+    "proofs that hold of the code's own arithmetic"
+   ]
+  ],
+  [
+   "rewrites",
+   "exact-decimals",
+   [
+    "quote",
+    "plain code computes with floating-point numbers, which can round where the solver does not"
+   ]
+  ],
+  [
+   "candidate",
+   "float-theory",
+   [
+    "quote",
+    "Keep JavaScript's doubles, and have the solver reason about them bit for bit, as SMT-LIB's floating-point theory does"
+   ]
+  ],
+  [
+   "weighed_in",
+   "float-theory",
+   "exact-numbers"
+  ],
+  [
+   "uses",
+   "float-theory",
+   [
+    "quote",
+    "ieee floating-point theory"
+   ]
+  ],
+  [
+   "offers",
+   "float-theory",
+   [
+    "quote",
+    "proofs that hold of the code's own arithmetic"
+   ]
+  ],
+  [
+   "on",
+   "float-theory",
+   [
+    "quote",
+    "a decision procedure for floating point"
+   ]
+  ],
+  [
+   "candidate",
+   "opaque-floats",
+   [
+    "quote",
+    "Keep JavaScript's doubles, and have the solver refuse what a double does not do exactly, integers past two to the 53rd and arithmetic on fractions, as Lean keeps opaque the float operations its logic does not model"
+   ]
+  ],
+  [
+   "weighed_in",
+   "opaque-floats",
+   "exact-numbers"
+  ],
+  [
+   "uses",
+   "opaque-floats",
+   [
+    "quote",
+    "opaque floating point"
+   ]
+  ],
+  [
+   "uses",
+   "opaque-floats",
+   [
+    "quote",
+    "errors at the edges of exact arithmetic"
+   ]
+  ],
+  [
+   "offers",
+   "opaque-floats",
+   [
+    "quote",
+    "proofs that hold of the code's own arithmetic"
+   ]
+  ],
+  [
+   "candidate",
+   "ring-normalization",
+   [
+    "quote",
+    "Decide whether two polynomial expressions are equal for every value, by putting both in a normal form, as Lean's ring tactic does"
+   ]
+  ],
+  [
+   "weighed_in",
+   "ring-normalization",
+   "exact-numbers"
+  ],
+  [
+   "uses",
+   "ring-normalization",
+   [
+    "quote",
+    "commutative ring normalization"
+   ]
+  ],
+  [
+   "offers",
+   "ring-normalization",
+   [
+    "quote",
+    "polynomial identities decided exactly"
+   ]
+  ],
+  [
+   "on",
+   "ring-normalization",
+   [
+    "quote",
+    "proofs that hold of the code's own arithmetic"
+   ]
+  ],
+  [
+   "candidate",
+   "nonlinear-products",
+   [
+    "quote",
+    "Prove nonlinear facts the solver cannot decide by multiplying hypotheses together and adding squares, then deciding what results as linear arithmetic, as Lean's nlinarith does"
+   ]
+  ],
+  [
+   "weighed_in",
+   "nonlinear-products",
+   "exact-numbers"
+  ],
+  [
+   "uses",
+   "nonlinear-products",
+   [
+    "quote",
+    "nonlinear preprocessing by products of hypotheses"
+   ]
+  ],
+  [
+   "offers",
+   "nonlinear-products",
+   [
+    "quote",
+    "proofs about arithmetic the solver cannot decide"
+   ]
+  ],
+  [
+   "on",
+   "nonlinear-products",
+   [
+    "quote",
+    "proofs that hold of the code's own arithmetic"
+   ]
+  ],
+  [
+   "candidate",
+   "checked-proofs",
+   [
+    "quote",
+    "Let a proof be a Lion value, the steps by which a fact follows, that a small checker accepts or refuses when the program runs, with the solver as one way to find steps, as Lean's kernel checks what its tactics find"
+   ]
+  ],
+  [
+   "weighed_in",
+   "checked-proofs",
+   "exact-numbers"
+  ],
+  [
+   "uses",
+   "checked-proofs",
+   [
+    "quote",
+    "proof checking by a small kernel"
+   ]
+  ],
+  [
+   "offers",
+   "checked-proofs",
+   [
+    "quote",
+    "proofs written by hand and checked by machine"
+   ]
+  ],
+  [
+   "offers",
+   "checked-proofs",
+   [
+    "quote",
+    "proofs about arithmetic the solver cannot decide"
+   ]
+  ],
+  [
+   "offers",
+   "checked-proofs",
+   [
+    "quote",
+    "a proof a small checker can recheck"
+   ]
+  ],
+  [
+   "on",
+   "checked-proofs",
+   [
+    "quote",
+    "proofs that hold of the code's own arithmetic"
+   ]
+  ],
+  [
+   "candidate",
+   "recursive-induction",
+   [
+    "quote",
+    "Prove what a function that calls itself gives for every input by induction, after showing by a measure that it ends: each call inside is replaced by an unknown that meets what is being proved, as ACL2 and Dafny do"
+   ]
+  ],
+  [
+   "weighed_in",
+   "recursive-induction",
+   "exact-numbers"
+  ],
+  [
+   "uses",
+   "recursive-induction",
+   [
+    "quote",
+    "induction over recursive definitions"
+   ]
+  ],
+  [
+   "uses",
+   "recursive-induction",
+   [
+    "quote",
+    "termination measures"
+   ]
+  ],
+  [
+   "offers",
+   "recursive-induction",
+   [
+    "quote",
+    "proofs about functions that call themselves"
+   ]
+  ],
+  [
+   "uses",
+   "exact-rationals",
+   [
+    "quote",
+    "fixnums"
+   ]
+  ],
+  [
+   "uses",
+   "exact-rationals",
+   [
+    "quote",
+    "json"
+   ]
+  ],
+  [
+   "uses",
+   "scheme-tower",
+   [
+    "quote",
+    "fixnums"
+   ]
+  ],
+  [
+   "uses",
+   "exact-decimals",
+   [
+    "quote",
+    "json"
+   ]
+  ],
+  [
+   "uses",
+   "float-theory",
+   [
+    "quote",
+    "a logical model of floating point"
+   ]
+  ],
+  [
+   "uses",
+   "checked-proofs",
+   [
+    "quote",
+    "certificates written by hand"
+   ]
+  ],
+  [
+   "uses",
+   "scheme-tower",
+   [
+    "quote",
+    "exact rational arithmetic"
+   ]
+  ]
+ ],
+ [
+  "fact",
+  [
+   "concern",
+   [
+    "quote",
+    "arithmetic as fast as a double's"
+   ]
+  ],
+  [
+   "concern",
+   [
+    "quote",
+    "fractions written as JSON"
+   ]
+  ],
+  [
+   "concern",
+   [
+    "quote",
+    "numbers that every JSON reader reads the same"
+   ]
+  ],
+  [
+   "concern",
+   [
+    "quote",
+    "proofs that hold of the code's own arithmetic"
+   ]
+  ]
+ ],
+ [
+  "fact",
+  [
+   "assumption",
+   "en-solver-sound",
+   [
+    "quote",
+    "What Lion's solver proves about numbers holds of what Lion's code computes"
+   ]
+  ],
+  [
+   "assumption",
+   "en-refusal",
+   [
+    "quote",
+    "Lion refuses every integer result of arithmetic it cannot hold exactly, as the Clef build set out to"
+   ]
+  ],
+  [
+   "assumption",
+   "en-lean-exact",
+   [
+    "quote",
+    "Lean's natural numbers and integers are exact at any size, in compiled code as in proofs"
+   ]
+  ],
+  [
+   "assumption",
+   "en-racket-decimal",
+   [
+    "quote",
+    "Scheme and Racket read a decimal such as 0.1 as an inexact number unless told otherwise"
+   ]
+  ],
+  [
+   "assumption",
+   "en-racket-json",
+   [
+    "quote",
+    "Racket's JSON library, which reads integers exactly, will not write a fraction such as 1/3"
+   ]
+  ],
+  [
+   "assumption",
+   "en-json-any",
+   [
+    "quote",
+    "JSON's grammar puts no limit on a number's size or precision"
+   ]
+  ],
+  [
+   "assumption",
+   "en-host-digits",
+   [
+    "quote",
+    "The runtimes Lion runs on can give a reader the digits a JSON number writes"
+   ]
+  ],
+  [
+   "assumption",
+   "en-undecidable",
+   [
+    "quote",
+    "No algorithm decides every question of nonlinear integer arithmetic"
+   ]
+  ],
+  [
+   "assumption",
+   "en-reals",
+   [
+    "quote",
+    "Nonlinear arithmetic over the real numbers is decidable"
+   ]
+  ],
+  [
+   "assumption",
+   "en-kernel",
+   [
+    "quote",
+    "Lean need not trust its tactics, since its kernel checks the proofs they make"
+   ]
+  ],
+  [
+   "assumption",
+   "en-ring",
+   [
+    "quote",
+    "Lean's ring decides every equation between polynomial expressions in a commutative ring"
+   ]
+  ],
+  [
+   "assumption",
+   "en-termination",
+   [
+    "quote",
+    "A prover proves what a recursive function gives by induction only after showing that the function ends"
+   ]
+  ]
+ ],
+ [
+  "fact",
+  [
+   "expects",
+   "en-solver-sound",
+   [
+    "quote",
+    {
+     "lion has": "proofs that hold of the code's own arithmetic"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "en-refusal",
+   [
+    "quote",
+    {
+     "lion has": "an integer refused when it cannot be held exactly"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "en-lean-exact",
+   [
+    "quote",
+    {
+     "covers": "integers kept exact past two to the 53rd",
+     "by": "arbitrary-precision integers"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "en-racket-decimal",
+   [
+    "quote",
+    {
+     "covers": "decimals written in JSON kept exact",
+     "by": "scheme's numeric tower"
+    }
+   ],
+   false
+  ],
+  [
+   "expects",
+   "en-racket-json",
+   [
+    "quote",
+    {
+     "covers": "fractions written as JSON",
+     "by": "racket's json library"
+    }
+   ],
+   false
+  ],
+  [
+   "expects",
+   "en-json-any",
+   [
+    "quote",
+    {
+     "covers": "numbers of any size and precision",
+     "by": "json"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "en-host-digits",
+   [
+    "quote",
+    {
+     "covers": "a way to read a JSON number's text exactly",
+     "by": "json.parse source text access"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "en-undecidable",
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear integer arithmetic",
+     "by": "any algorithm"
+    }
+   ],
+   false
+  ],
+  [
+   "expects",
+   "en-reals",
+   [
+    "quote",
+    {
+     "covers": "a decision procedure for nonlinear real arithmetic",
+     "by": "cylindrical algebraic decomposition"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "en-kernel",
+   [
+    "quote",
+    {
+     "covers": "a proof a small checker can recheck",
+     "by": "proof checking by a small kernel"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "en-ring",
+   [
+    "quote",
+    {
+     "covers": "polynomial identities decided exactly",
+     "by": "commutative ring normalization"
+    }
+   ],
+   true
+  ],
+  [
+   "expects",
+   "en-termination",
+   [
+    "quote",
+    {
+     "needs": "a proof that the function ends",
+     "by": "induction over recursive definitions"
+    }
+   ],
+   true
+  ]
+ ],
+ [
+  "relation",
+  "en_cost",
+  [
+   "workload",
+   "lion_ms",
+   "exact_ms",
+   "double_ms"
+  ]
+ ],
+ [
+  "rule",
+  [
+   "en_cost",
+   "?w",
+   "?lion",
+   "?exact",
+   "?double"
+  ],
+  [
+   "stated",
+   {
+    "lion measured": "?w"
+   },
+   "?lion"
+  ],
+  [
+   "stated",
+   {
+    "lion measured": [
+     "string/concat",
+     "?w",
+     ", exact numbers in the model"
+    ]
+   },
+   "?exact"
+  ],
+  [
+   "stated",
+   {
+    "lion measured": [
+     "string/concat",
+     "?w",
+     ", doubles in the model"
+    ]
+   },
+   "?double"
+  ]
+ ],
+ [
+  "relation",
+  "en_slowdown",
+  [
+   "workload",
+   "times"
+  ]
+ ],
+ [
+  "rule",
+  [
+   "en_slowdown",
+   "?w",
+   [
+    "number/divide",
+    [
+     "number/round",
+     [
+      "number/multiply",
+      10,
+      [
+       "number/divide",
+       [
+        "number/add",
+        "?lion",
+        [
+         "number/subtract",
+         "?exact",
+         "?double"
+        ]
+       ],
+       "?lion"
+      ]
+     ]
+    ],
+    10
+   ]
+  ],
+  [
+   "en_cost",
+   "?w",
+   "?lion",
+   "?exact",
+   "?double"
+  ]
+ ],
+ [
+  "fact",
+  [
+   "assumption",
+   "en-cost",
+   [
+    "quote",
+    "Exact numbers would at most double the time Lion takes to add numbers"
+   ]
+  ]
+ ],
+ [
+  "rule",
+  [
+   "violated",
+   "en-cost",
+   "?w"
+  ],
+  [
+   "en_slowdown",
+   "?w",
+   "?t"
+  ],
+  [
+   "number/greaterThan",
+   "?t",
+   2
+  ]
+ ],
+ "en framed"
+]

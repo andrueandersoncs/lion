@@ -1,0 +1,160 @@
+► The Racket Reference
+1 Language Model
+2 Notation for Documentation
+3 Syntactic Forms
+4 Datatypes
+5 Structures
+6 Classes and Objects
+7 Units
+8 Contracts
+9 Pattern Matching
+10 Control Flow
+11 Concurrency and Parallelism
+12 Macros
+13 Input and Output
+14 Reflection and Security
+15 Operating System
+16 Memory Management
+17 Unsafe Operations
+18 Running Racket
+Bibliography
+Index
+► 4 Datatypes
+4.1 Equality
+4.2 Booleans
+4.3 Numbers
+4.4 Strings
+4.5 Byte Strings
+4.6 Characters
+4.7 Symbols
+4.8 Regular Expressions
+4.9 Keywords
+4.10 Pairs and Lists
+4.11 Mutable Pairs and Lists
+4.12 Vectors
+4.13 Stencil Vectors
+4.14 Boxes
+4.15 Hash Tables
+4.16 Treelists
+4.17 Sequences and Streams
+4.18 Dictionaries
+4.19 Sets
+4.20 Procedures
+4.21 Void
+4.22 Undefined
+▼ 4.3 Numbers
+4.3.1 Number Types
+4.3.2 Generic Numerics
+4.3.3 Flonums
+4.3.4 Fixnums
+4.3.5 Extflonums
+Racket
+top contents &larr; prev up next &rarr;
+4.3 Numbers 🔗 ℹ
+Numbers in The Racket Guide introduces numbers.
+All numbers are complex numbers . Some of them are
+real numbers , and all of the real numbers that can be
+represented are also rational numbers , except for
++inf.0 (positive infinity),
++inf.f (single-precision variant, when
+enabled via read-single-flonum ),
+-i nf.0 (negative infinity),
+-inf.f (single-precision variant, when
+enabled), +nan.0 ( not-a-number), and
++nan.f (single-precision variant, when
+enabled). Among the rational numbers, some are integers ,
+because round applied to the number produces the same number.
+See Reading Numbers for information on the
+syntax of number literals.
+Orthogonal to those categories, each number is also either an
+exact number or an inexact number . Unless
+otherwise specified, computations that involve an inexact number
+produce inexact results. Certain operations on inexact numbers,
+however, produce an exact number, such as multiplying an inexact
+number with an exact 0 . Operations that mathematically produce
+irrational numbers for some rational arguments (e.g., sqrt ) may
+produce inexact results even for exact arguments.
+In the case of complex numbers, either the real and imaginary parts
+are both exact or inexact with the same precision, or the number has
+an exact zero real part and an inexact imaginary part; a complex
+number with an exact zero imaginary part is a real number.
+Inexact real numbers are implemented as double-precision
+IEEE floating-point numbers, also known as
+flonums , or as single-precision IEEE floating-point numbers,
+also known as single-flonums . Single-flonums are
+supported only when ( single-flonum-available? ) reports
+#t . Although we write +inf.f ,
+-inf.f , and +nan.f to mean
+single-flonums, those forms read as double-precision flonums by
+default, since read-single-flonum is #f by default.
+When single-flonums are supported, inexact numbers are still
+represented as flonums by default, and single precision is used only
+when a computation starts with single-flonums.
+Inexact numbers can be coerced to exact form, except for the inexact
+numbers +inf.0 , +inf.f ,
+-i nf.0 , -inf.f , +nan.0 , and +nan.f , which
+have no exact form. Dividing a
+number by exact zero raises an exception; dividing a non-zero number
+other than +nan.0 or +nan.f by an inexact zero returns +inf.0 ,
++inf.f , -i nf.0
+or -inf.f , depending on the sign and precision of the dividend. The
++nan.0 value is not = to itself, but +nan.0
+is eqv? to itself, and +nan.f is similarly eqv? but
+not = to itself. Conversely, ( = 0.0 -0 .0 ) is
+#t , but ( eqv? 0.0 -0 .0 ) is #f , and the
+same for 0.0f0 and -0.0f0 (which are single-precision variants). The datum
+-nan.0 refers to the same constant as +nan.0 ,
+and -nan.f is the same as +nan.f .
+Calculations with infinities produce results consistent with IEEE
+double- or single-precision floating point where IEEE specifies the result; in
+cases where IEEE provides no specification,
+the result corresponds to the limit approaching
+infinity, or +nan.0 or +nan.f if no such limit exists.
+The precision and size of exact numbers is limited only by available
+memory (and the precision of operations that can produce irrational
+numbers). In particular, adding, multiplying, subtracting, and
+dividing exact numbers always produces an exact result.
+A fixnum is an exact integer whose two’s complement
+representation fits into 30 or 31 bits (depending on the Racket variant)
+on a 32-bit platform or 61 or 63 bits (depending on the Racket variant) on a
+64-bit platform. No allocation is required when computing
+with fixnums. See also the racket/fixnum module, below.
+Two fixnums that are = are also the same
+according to eq? . Otherwise, the result of eq?
+applied to two numbers is undefined, except that numbers produced
+by the default reader in read-syntax mode are interned and therefore eq?
+when they are eqv? .
+Two real numbers are eqv? when they are both inexact with the same precision or both
+exact, and when they are = (except for +nan.0 , +nan.f ,
+0.0 , +0.0f0 , -0 .0 , and -0.0f0 , as noted above).
+Two complex numbers are eqv? when their real and imaginary parts are eqv? .
+Two numbers are equal? when they are eqv? .
+See Reading Numbers
+for information on read ing
+numbers and Printing Numbers
+for information on print ing numbers.
+4.3.1 Number Types
+4.3.2 Generic Numerics
+4.3.2.1 Arithmetic
+4.3.2.2 Number Comparison
+4.3.2.3 Powers and Roots
+4.3.2.4 Trigonometric Functions
+4.3.2.5 Complex Numbers
+4.3.2.6 Bitwise Operations
+4.3.2.7 Random Numbers
+4.3.2.8 Other Randomness Utilities
+4.3.2.9 Number–String Conversions
+4.3.2.10 Extra Constants and Functions
+4.3.3 Flonums
+4.3.3.1 Flonum Arithmetic
+4.3.3.2 Flonum Vectors
+4.3.4 Fixnums
+4.3.4.1 Fixnum Arithmetic
+4.3.4.2 Fixnum Vectors
+4.3.4.3 Fixnum Range
+4.3.5 Extflonums
+4.3.5.1 Extflonum Arithmetic
+4.3.5.2 Extflonum Constants
+4.3.5.3 Extflonum Vectors
+4.3.5.4 Extflonum Byte Strings
+top contents &larr; prev up next &rarr;

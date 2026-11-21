@@ -1,0 +1,1098 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "research/probes/en-*.json"
+   ],
+   [
+    "quote",
+    "Lion programs run for the exact-numbers run: proofs over numbers, integers past two to the 53rd, decimals, products, and recursion, at commit 4e8e625"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121120000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-logic-forms-en"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/reference/logic-forms.html"
+   ],
+   [
+    "quote",
+    "Lion reference: Logic forms, as of core 0.15.0"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121120000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "research/probes/exact-model"
+   ],
+   [
+    "quote",
+    "A model of exact numbers for Lion run beside JavaScript's doubles: field laws, JSON round trips, host values, big integers, and timings"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121120000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "json-source-hosts"
+   ],
+   [
+    "quote",
+    "research/probes/json-source/check.mjs"
+   ],
+   [
+    "quote",
+    "Whether Node and Bun give JSON.parse's reviver the source text of each number"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121120000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "user-2026-11-21"
+   ],
+   [
+    "quote",
+    "session of 2026-11-21"
+   ],
+   [
+    "quote",
+    "The user's directions on exact numbers, 2026-11-21"
+   ],
+   [
+    "quote",
+    "the user"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121120000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l1"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "\"the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away\": [ {} ], \"plain code: 0.1 with 0.2 added and taken away\": 0.10000000000000003"
+   ],
+   [
+    "quote",
+    {
+     "lion": "proofs that hold of the code's own arithmetic",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l1"
+   ],
+   [
+    "quote",
+    "program en-fraction-proof.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l2"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "\"plain code: two to the 53rd plus 1\": 9007199254740992"
+   ],
+   [
+    "quote",
+    {
+     "lion": "an integer refused when it cannot be held exactly",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l2"
+   ],
+   [
+    "quote",
+    "program en-big-integer-proof.json; Lion refuses 9007199254740991 + 2, whose inputs it holds exactly (en-integer-refused.json), but past two to the 53rd a number is a float and its sums round without a word"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l3"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "\"plain code: two to the 53rd plus 1\": 9007199254740992"
+   ],
+   [
+    "quote",
+    {
+     "lion": "integers kept exact past two to the 53rd",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l3"
+   ],
+   [
+    "quote",
+    "program en-big-integer-proof.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l4"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "\"plain code: two to the 53rd plus 1 equals two to the 53rd\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "proofs that hold of the code's own arithmetic",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l4"
+   ],
+   [
+    "quote",
+    "program en-big-integer-proof.json, beside the solver's proof that no integer from two to the 53rd up is unchanged by adding 1"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l5"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "\"0.1 plus 0.2 equals 0.3\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "decimals written in JSON kept exact",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l5"
+   ],
+   [
+    "quote",
+    "program en-decimals.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l6"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "\"1 divided by 49, times 49, equals 1\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "fractions kept exact",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l6"
+   ],
+   [
+    "quote",
+    "program en-decimals.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l7"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "\"a number written with 21 decimal places, 0.100000000000000000001\": 0.1"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a way to read a JSON number's text exactly",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l7"
+   ],
+   [
+    "quote",
+    "program en-decimals.json; Lion's reader checks the digits of an integer, and reads a number with a fraction or an exponent as the nearest double"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l8"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "The solver cannot reason about number/multiply of two unknowns"
+   ],
+   [
+    "quote",
+    {
+     "lion": "polynomial identities decided exactly",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l8"
+   ],
+   [
+    "quote",
+    "program en-polynomial.json: (x + 1)(x + 1) = x*x + 2x + 1 for every integer"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l9"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "The solver cannot reason about number/multiply of two unknowns"
+   ],
+   [
+    "quote",
+    {
+     "lion": "proofs about arithmetic the solver cannot decide",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l9"
+   ],
+   [
+    "quote",
+    "program en-square.json: no integer's square is below 0"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l10"
+   ],
+   [
+    "quote",
+    "lion-probes-en"
+   ],
+   [
+    "quote",
+    "The solver cannot reason about a function that calls itself"
+   ],
+   [
+    "quote",
+    {
+     "lion": "proofs about functions that call themselves",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l10"
+   ],
+   [
+    "quote",
+    "program en-recursion.json; bounded to 0 through 50 (en-bounded-recursion.json) the same question is answered by listing"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l11"
+   ],
+   [
+    "quote",
+    "lion-logic-forms-en"
+   ],
+   [
+    "quote",
+    "Plain code computes with floating-point numbers, which can round where the solver does not."
+   ],
+   [
+    "quote",
+    {
+     "lion": "plain code computes with floating-point numbers, which can round where the solver does not",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l11"
+   ],
+   [
+    "quote",
+    "Solving for values"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m1"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "exact numbers broke associativity or distributivity 0 times; doubles broke associativity of addition 3298 times"
+   ],
+   [
+    "quote",
+    {
+     "covers": "fractions kept exact",
+     "by": "exact rational arithmetic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m1"
+   ],
+   [
+    "quote",
+    "E1"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m2"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "exact numbers broke associativity or distributivity 0 times; doubles broke associativity of addition 3298 times"
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs that hold of the code's own arithmetic",
+     "by": "binary64 floating point",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m2"
+   ],
+   [
+    "quote",
+    "E1"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m3"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "exact: (0.1 + 0.2) - 0.2 is 0.1, which equals 0.1: true; 2^53 + 1 is 9007199254740993, which equals 2^53: false"
+   ],
+   [
+    "quote",
+    {
+     "covers": "proofs that hold of the code's own arithmetic",
+     "by": "exact rational arithmetic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m3"
+   ],
+   [
+    "quote",
+    "E5: the two proofs Lion's solver gives that its doubles break"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m4"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "writing an exact number as JSON and reading it back changed it 0 times"
+   ],
+   [
+    "quote",
+    {
+     "covers": "decimals written in JSON kept exact",
+     "by": "exact rational arithmetic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m4"
+   ],
+   [
+    "quote",
+    "E2"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m5"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "a third of one was refused as JSON exactly when no decimal writes it"
+   ],
+   [
+    "quote",
+    {
+     "covers": "fractions written as JSON",
+     "by": "exact rational arithmetic",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m5"
+   ],
+   [
+    "quote",
+    "E2"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m6"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "the shortest digits of the double a host would pass read as another number 0 times"
+   ],
+   [
+    "quote",
+    {
+     "defines": "a host's double read from its shortest digits"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m6"
+   ],
+   [
+    "quote",
+    "E3: for decimals of up to 15 significant digits"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m7"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "exact sums and products differed from BigInt's 0 times; double sums differed 9978 times"
+   ],
+   [
+    "quote",
+    {
+     "covers": "integers kept exact past two to the 53rd",
+     "by": "arbitrary-precision integers",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m7"
+   ],
+   [
+    "quote",
+    "E4"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m8"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "exact sums and products differed from BigInt's 0 times; double sums differed 9978 times"
+   ],
+   [
+    "quote",
+    {
+     "covers": "integers kept exact past two to the 53rd",
+     "by": "binary64 floating point",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m8"
+   ],
+   [
+    "quote",
+    "E4"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m9"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "adding a hundred thousand decimals with two places: exact 13.4 ms, doubles 0.3 ms, 39.7 times as long"
+   ],
+   [
+    "quote",
+    {
+     "covers": "arithmetic as fast as a double's",
+     "by": "exact rational arithmetic",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m9"
+   ],
+   [
+    "quote",
+    "T2"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m10"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "adding a hundred thousand decimals with two places: exact 13.4 ms"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "adding a hundred thousand decimals, exact numbers in the model",
+     "ms": 13.4
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m10"
+   ],
+   [
+    "quote",
+    "T2"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m11"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "doubles 0.3 ms, 39.7 times as long"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "adding a hundred thousand decimals, doubles in the model",
+     "ms": 0.3
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m11"
+   ],
+   [
+    "quote",
+    "T2"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m12"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "Lion's evaluator adding the same hundred thousand decimals with array/reduce: 17.5 ms"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "adding a hundred thousand decimals",
+     "ms": 17.5
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m12"
+   ],
+   [
+    "quote",
+    "T5"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m13"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "adding a million small integers: exact 6.1 ms, doubles 0.9 ms, 6.8 times as long"
+   ],
+   [
+    "quote",
+    {
+     "result": "arbitrary-precision integers",
+     "measure": "time to add a million small integers, with a fast path for safe integers, against doubles",
+     "bound": "about",
+     "times": 6.8
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m13"
+   ],
+   [
+    "quote",
+    "T1"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-m14"
+   ],
+   [
+    "quote",
+    "exact-model-tests"
+   ],
+   [
+    "quote",
+    "halving and adding 0.1 2000 times: the exact result's denominator has 603 digits"
+   ],
+   [
+    "quote",
+    {
+     "counted": "digits of an exact fraction's denominator after halving and adding 0.1 2000 times",
+     "n": 603
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-m14"
+   ],
+   [
+    "quote",
+    "T4"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-h1"
+   ],
+   [
+    "quote",
+    "json-source-hosts"
+   ],
+   [
+    "quote",
+    "node v26.7.0: JSON.parse of [0.1, 9007199254740993, 0.100000000000000000001] gives a reviver 0.1 from \"0.1\", 9007199254740992 from \"9007199254740993\", 0.1 from \"0.100000000000000000001\"."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a way to read a JSON number's text exactly",
+     "by": "json.parse source text access",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-h2"
+   ],
+   [
+    "quote",
+    "json-source-hosts"
+   ],
+   [
+    "quote",
+    "node v26.7.0: JSON.parse of [0.1, 9007199254740993, 0.100000000000000000001] gives a reviver 0.1 from \"0.1\", 9007199254740992 from \"9007199254740993\", 0.1 from \"0.100000000000000000001\"."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "json.parse source text access",
+     "in": "Node"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-h3"
+   ],
+   [
+    "quote",
+    "json-source-hosts"
+   ],
+   [
+    "quote",
+    "bun 1.4.3: JSON.parse of [0.1, 9007199254740993, 0.100000000000000000001] gives a reviver 0.1 from \"0.1\", 9007199254740992 from \"9007199254740993\", 0.1 from \"0.100000000000000000001\"."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "json.parse source text access",
+     "in": "Bun"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-u1"
+   ],
+   [
+    "quote",
+    "user-2026-11-21"
+   ],
+   [
+    "quote",
+    "Start with exact numbers, do the research run first"
+   ],
+   [
+    "quote",
+    {
+     "allowed": "exact-rationals",
+     "by": "the user"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-l12"
+   ],
+   [
+    "quote",
+    "lion-logic-forms-en"
+   ],
+   [
+    "quote",
+    "The solver decides with exact numbers, so every question gets yes or no on every machine: Fourier and Motzkin's method for numbers that may be any number, and Pugh's Omega test for whole ones."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a decision procedure for floating point",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-l12"
+   ],
+   [
+    "quote",
+    "Solving for values"
+   ]
+  ]
+ ],
+ "recorded"
+]

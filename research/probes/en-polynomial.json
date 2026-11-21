@@ -1,0 +1,31 @@
+[
+  "query",
+  [
+    "not",
+    [
+      "exists",
+      ["?x"],
+      [
+        "and",
+        ["schema/fits?", "?x", "value/integer?"],
+        [
+          "not",
+          [
+            "number/equals?",
+            [
+              "number/multiply",
+              ["number/add", "?x", 1],
+              ["number/add", "?x", 1]
+            ],
+            [
+              "number/add",
+              ["number/multiply", "?x", "?x"],
+              ["number/multiply", 2, "?x"],
+              1
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

@@ -1,0 +1,334 @@
+Documentation
+Init . Data . Rat . Basic
+Search
+return to top
+source
+Imports Init.Data.Hashable
+Init.Data.Int.Lemmas
+Init.Data.Int.Order
+Init.Data.Int.Pow
+Init.Data.Nat.Coprime
+Init.Data.Nat.Dvd
+Init.Data.OfScientific.Basic
+Init.Data.String.Defs
+Init.Data.ToString.Extra
+Init.Data.ToString.Macro
+Init.Data.Int.DivMod.Basic
+Init.Data.Int.DivMod.Bootstrap
+Init.Data.Int.DivMod.Lemmas
+Imported by
+Rat
+instDecidableEqRat . decEq
+instDecidableEqRat
+instHashableRat . hash
+instHashableRat
+instInhabitedRat
+instToStringRat
+instReprRat
+Rat . den_pos
+Rat . maybeNormalize
+Rat . normalize . dvd_num
+Rat . normalize . dvd_den
+Rat . normalize . den_nz
+Rat . normalize . reduced
+Rat . normalize
+mkRat
+Rat . ofInt
+Rat . instNatCast
+Rat . instIntCast
+Rat . instOfNat
+Rat . isInt
+Rat . divInt
+Rat . «term_/ . _»
+Rat . ofScientific
+Rat . instOfScientific
+Rat . blt
+Rat . instLT
+Rat . instDecidableLt
+Rat . instLE
+Rat . instDecidableLe
+Rat . instMin
+Rat . instMax
+Rat . mul
+Rat . instMul
+Rat . inv
+Rat . instInv
+Rat . pow
+Rat . instPowNat
+Rat . zpow
+Rat . instPowInt
+Rat . div
+Rat . instDiv
+Rat . add . aux
+Rat . add
+Rat . instAdd
+Rat . neg
+Rat . instNeg
+Rat . sub . aux
+Rat . sub
+Rat . instSub
+Rat . floor
+Rat . ceil
+Rat . abs
+Basics for the Rational Numbers #
+source
+structure Rat : Type
+Rational numbers, implemented as a pair of integers num / den such that the
+denominator is positive and the numerator and denominator are coprime.
+mk' :: (
+num : Int
+The numerator of the rational number is an integer.
+den : Nat
+The denominator of the rational number is a natural number.
+den_nz : self . den ≠ 0
+The denominator is nonzero.
+reduced : self . num . natAbs . Coprime self . den
+The numerator and denominator are coprime: it is in "reduced form".
+)
+Instances For
+source
+def instDecidableEqRat . decEq ( x✝ x✝¹ : Rat ) : Decidable ( x✝ = x✝¹ )
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+@[instance_reducible]
+instance instDecidableEqRat : DecidableEq Rat
+Equations instDecidableEqRat = instDecidableEqRat.decEq
+source
+def instHashableRat . hash : Rat → UInt64
+Equations instHashableRat.hash { num := a , den := a_1 , den_nz := a_2 , reduced := a_3 } = mixHash ( mixHash ( mixHash ( mixHash 0 ( hash a ) ) ( hash a_1 ) ) ( hash a_2 ) ) ( hash a_3 )
+Instances For
+source
+@[instance_reducible]
+instance instHashableRat : Hashable Rat
+Equations instHashableRat = { hash := instHashableRat.hash }
+source
+@[instance_reducible]
+instance instInhabitedRat : Inhabited Rat
+Equations instInhabitedRat = { default := { num := 0 , den_nz := instInhabitedRat._proof_1 , reduced := instInhabitedRat._proof_2 } }
+source
+@[instance_reducible]
+instance instToStringRat : ToString Rat
+Equations instToStringRat = { toString := fun ( a : Rat ) =>
+if a . den = 1 then toString a . num else toString a . num ++ toString "/" ++ toString a . den }
+source
+@[instance_reducible]
+instance instReprRat : Repr Rat
+Equations instReprRat = { reprPrec := fun ( a : Rat ) ( x : Nat ) =>
+if a . den = 1 then repr a . num
+else Std.Format.text ( toString "(" ++ toString a . num ++ toString " : Rat)/" ++ toString a . den ) }
+source
+theorem Rat . den_pos ( self : Rat ) : 0 < self . den
+source
+@[inline]
+def Rat . maybeNormalize ( num : Int ) ( den g : Nat ) ( dvd_num : ↑ g ∣ num ) ( dvd_den : g ∣ den ) ( den_nz : den / g ≠ 0 ) ( reduced : ( num / ↑ g ). natAbs . Coprime ( den / g ) ) : Rat
+Auxiliary definition for Rat.normalize . Constructs num / den as a rational number,
+dividing both num and den by g (which is the gcd of the two) if it is not 1.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+theorem Rat . normalize . dvd_num { num : Int } { den g : Nat } ( e : g = num . natAbs . gcd den ) : ↑ g ∣ num
+source
+theorem Rat . normalize . dvd_den { num : Int } { den g : Nat } ( e : g = num . natAbs . gcd den ) : g ∣ den
+source
+theorem Rat . normalize . den_nz { num : Int } { den g : Nat } ( den_nz : den ≠ 0 ) ( e : g = num . natAbs . gcd den ) : den / g ≠ 0
+source
+theorem Rat . normalize . reduced { num : Int } { den g : Nat } ( den_nz : den ≠ 0 ) ( e : g = num . natAbs . gcd den ) : ( num / ↑ g ). natAbs . Coprime ( den / g )
+source
+@[inline]
+def Rat . normalize ( num : Int ) ( den : Nat := 1 ) ( den_nz : den ≠ 0 := by decide) : Rat
+Construct a normalized Rat from a numerator and nonzero denominator.
+This is a "smart constructor" that divides the numerator and denominator by
+the gcd to ensure that the resulting rational number is normalized.
+Equations Rat.normalize num den den_nz = Rat.maybeNormalize num den ( num . natAbs . gcd den ) ⋯ ⋯ ⋯ ⋯
+Instances For
+source
+def mkRat ( num : Int ) ( den : Nat ) : Rat
+Construct a rational number from a numerator and denominator.
+This is a "smart constructor" that divides the numerator and denominator by
+the gcd to ensure that the resulting rational number is normalized, and returns
+zero if den is zero.
+Equations mkRat num den = if den_nz : den = 0 then { num := 0 , den_nz := instInhabitedRat._proof_1 , reduced := instInhabitedRat._proof_2 }
+else Rat.normalize num den den_nz
+Instances For
+source
+def Rat . ofInt ( num : Int ) : Rat
+Embedding of Int in the rational numbers.
+Equations Rat.ofInt num = { num := num , den_nz := instInhabitedRat._proof_1 , reduced := ⋯ }
+Instances For
+source
+@[instance_reducible]
+instance Rat . instNatCast : NatCast Rat
+Equations Rat.instNatCast = { natCast := fun ( n : Nat ) => Rat.ofInt ↑ n }
+source
+@[instance_reducible]
+instance Rat . instIntCast : IntCast Rat
+Equations Rat.instIntCast = { intCast := Rat.ofInt }
+source
+@[instance_reducible]
+instance Rat . instOfNat { n : Nat } : OfNat Rat n
+Equations Rat.instOfNat = { ofNat := ↑ n }
+source
+@[inline]
+def Rat . isInt ( a : Rat ) : Bool
+Is this rational number integral?
+Equations a . isInt = ( a . den == 1 )
+Instances For
+source
+def Rat . divInt : Int → Int → Rat
+Form the quotient n / d where n d : Int .
+Equations Rat.divInt x✝ ( Int.ofNat d ) = inline ( mkRat x✝ d )
+Rat.divInt x✝ ( Int.negSucc d ) = Rat.normalize ( - x✝ ) d . succ ⋯
+Instances For
+source
+def Rat . «term_/ . _» : Lean.TrailingParserDescr
+Form the quotient n / d where n d : Int .
+Equations Rat.«term_/._» = Lean.ParserDescr.trailingNode `Rat.«term_/._» 70 70
+( Lean.ParserDescr.binary `andthen ( Lean.ParserDescr.symbol " /. " ) ( Lean.ParserDescr.cat `term 71 ) )
+Instances For
+source
+@[irreducible]
+def Rat . ofScientific ( m : Nat ) ( s : Bool ) ( e : Nat ) : Rat
+Implements "scientific notation" 123.4e-5 for rational numbers. (This definition is
+@[irreducible] because you don't want to unfold it. Use Rat.ofScientific_def ,
+Rat.ofScientific_true_def , or Rat.ofScientific_false_def instead.)
+Equations Rat.ofScientific m s e = if s = true then Rat.normalize (↑ m ) ( 10 ^ e ) ⋯ else ↑( m * 10 ^ e )
+Instances For
+source
+@[instance_reducible]
+instance Rat . instOfScientific : OfScientific Rat
+Equations Rat.instOfScientific = { ofScientific := fun ( m : Nat ) ( s : Bool ) ( e : Nat ) => Rat.ofScientific ( OfNat.ofNat m ) s ( OfNat.ofNat e ) }
+source
+def Rat . blt ( a b : Rat ) : Bool
+Rational number strictly less than relation, as a Bool .
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+@[instance_reducible]
+instance Rat . instLT : LT Rat
+Equations Rat.instLT = { lt := fun ( x1 x2 : Rat ) => x1 . blt x2 = true }
+source
+@[instance_reducible]
+instance Rat . instDecidableLt ( a b : Rat ) : Decidable ( a < b )
+Equations a . instDecidableLt b = instDecidableEqBool ( a . blt b ) true
+source
+@[instance_reducible]
+instance Rat . instLE : LE Rat
+Equations Rat.instLE = { le := fun ( a b : Rat ) => b . blt a = false }
+source
+@[instance_reducible]
+instance Rat . instDecidableLe ( a b : Rat ) : Decidable ( a ≤ b )
+Equations a . instDecidableLe b = instDecidableEqBool ( b . blt a ) false
+source
+@[instance_reducible]
+instance Rat . instMin : Min Rat
+Equations Rat.instMin = minOfLe
+source
+@[instance_reducible]
+instance Rat . instMax : Max Rat
+Equations Rat.instMax = maxOfLe
+source
+@[irreducible]
+def Rat . mul ( a b : Rat ) : Rat
+Multiplication of rational numbers. (This definition is @[irreducible] because you don't
+want to unfold it. Use Rat.mul_def instead.)
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+@[instance_reducible]
+instance Rat . instMul : Mul Rat
+Equations Rat.instMul = { mul := Rat.mul }
+source
+@[irreducible]
+def Rat . inv ( a : Rat ) : Rat
+The inverse of a rational number. Note: inv 0 = 0 . (This definition is @[irreducible]
+because you don't want to unfold it. Use Rat.inv_def instead.)
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+@[instance_reducible]
+instance Rat . instInv : Inv Rat
+Equations Rat.instInv = { inv := Rat.inv }
+source
+def Rat . pow ( q : Rat ) ( n : Nat ) : Rat
+Equations q . pow n = { num := q . num ^ n , den := q . den ^ n , den_nz := ⋯ , reduced := ⋯ }
+Instances For
+source
+@[instance_reducible]
+instance Rat . instPowNat : Pow Rat Nat
+Equations Rat.instPowNat = { pow := Rat.pow }
+source
+def Rat . zpow ( q : Rat ) ( i : Int ) : Rat
+Equations q . zpow ( Int.ofNat n ) = q ^ n
+q . zpow ( Int.negSucc n ) = ( q ^ ( n + 1 )) ⁻¹
+Instances For
+source
+@[instance_reducible]
+instance Rat . instPowInt : Pow Rat Int
+Equations Rat.instPowInt = { pow := Rat.zpow }
+source
+def Rat . div : Rat → Rat → Rat
+Division of rational numbers. Note: div a 0 = 0 .
+Equations x1✝ . div x2✝ = x1✝ * x2✝ . inv
+Instances For
+source
+@[instance_reducible]
+instance Rat . instDiv : Div Rat
+Division of rational numbers. Note: div a 0 = 0 . Written with a separate function Rat.div
+as a wrapper so that the definition is not unfolded at .instance transparency.
+Equations Rat.instDiv = { div := Rat.div }
+source
+theorem Rat . add . aux ( a b : Rat ) { g ad bd : Nat } ( hg : g = a . den . gcd b . den ) ( had : ad = a . den / g ) ( hbd : bd = b . den / g ) : have den := ad * b . den ;
+have num := a . num * ↑ bd + b . num * ↑ ad ;
+num . natAbs . gcd g = num . natAbs . gcd den
+source
+@[irreducible]
+def Rat . add ( a b : Rat ) : Rat
+Addition of rational numbers. (This definition is @[irreducible] because you don't want to
+unfold it. Use Rat.add_def instead.)
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+@[instance_reducible]
+instance Rat . instAdd : Add Rat
+Equations Rat.instAdd = { add := Rat.add }
+source
+@[implicit_reducible]
+def Rat . neg ( a : Rat ) : Rat
+Negation of rational numbers.
+Equations a . neg = { num := - a . num , den := a . den , den_nz := ⋯ , reduced := ⋯ }
+Instances For
+source
+@[instance_reducible]
+instance Rat . instNeg : Neg Rat
+Equations Rat.instNeg = { neg := Rat.neg }
+source
+theorem Rat . sub . aux ( a b : Rat ) { g ad bd : Nat } ( hg : g = a . den . gcd b . den ) ( had : ad = a . den / g ) ( hbd : bd = b . den / g ) : have den := ad * b . den ;
+have num := a . num * ↑ bd - b . num * ↑ ad ;
+num . natAbs . gcd g = num . natAbs . gcd den
+source
+@[irreducible]
+def Rat . sub ( a b : Rat ) : Rat
+Subtraction of rational numbers. (This definition is @[irreducible] because you don't want to
+unfold it. Use Rat.sub_def instead.)
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+@[instance_reducible]
+instance Rat . instSub : Sub Rat
+Equations Rat.instSub = { sub := Rat.sub }
+source
+def Rat . floor ( a : Rat ) : Int
+The floor of a rational number a is the largest integer less than or equal to a .
+Equations a . floor = if a . den = 1 then a . num else a . num / ↑ a . den
+Instances For
+source
+def Rat . ceil ( a : Rat ) : Int
+The ceiling of a rational number a is the smallest integer greater than or equal to a .
+Equations a . ceil = if a . den = 1 then a . num else a . num / ↑ a . den + 1
+Instances For
+source
+def Rat . abs ( a : Rat ) : Rat
+The absolute value of a rational number a is a if a ≥ 0 and -a if a ≤ 0 .
+Equations a . abs = if 0 ≤ a then a else - a
+Instances For

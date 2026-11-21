@@ -1,0 +1,1355 @@
+The Lean Language Reference
+The Lean Language Reference
+Table of Contents
+1. Introduction
+2. Elaboration and Compilation
+3. Interacting with Lean
+4. The Type System
+5. Source Files and Modules
+6. Namespaces and Sections
+7. Definitions
+8. Axioms
+9. Attributes
+10. Type Classes
+11. Coercions
+12. Run-Time Code
+13. Terms
+14. Tactic Proofs
+15. The Simplifier
+16. The grind tactic
+17. The vcgen tactic
+18. The mvcgen tactic
+19. Functors, Monads and do -Notation
+20. Basic Propositions
+21. Basic Types
+22. IO
+23. Iterators
+24. Notations and Macros
+25. Build Tools and Distribution
+26. Linters and Code Quality
+27. External Kernels
+Validating a Lean Proof
+Error Explanations
+Release Notes
+Supported Platforms
+Index
+21. Basic Types
+21.1. Natural Numbers
+21.2. Integers
+21.3. Finite Natural Numbers
+21.4. Fixed-Precision Integers
+21.5. Bitvectors
+21.6. Floating-Point Numbers
+21.7. Characters
+21.8. Strings
+21.9. The Unit Type
+21.10. The Empty Type
+21.11. Booleans
+21.12. Optional Values
+21.13. Tuples
+21.14. Sum Types
+21.15. Linked Lists
+21.16. Arrays
+21.17. Byte Arrays
+21.18. Ranges
+21.19. Maps and Sets
+21.20. Subtypes
+21.21. Lazy Computations
+21.6. Floating-Point Numbers
+Float
+Float32
+1. Logical Model
+1.1. Model Details
+Float.Model
+Float32.Model
+Float.Model.pack
+Float32.Model.pack
+Float.Model.unpack
+Float32.Model.unpack
+UnpackedFloat
+1.2. Model Operations
+Float.Model.UnpackedFloat.add
+Float.Model.UnpackedFloat.sub
+Float.Model.UnpackedFloat.mul
+Float.Model.UnpackedFloat.div
+Float.Model.UnpackedFloat.sqrt
+Float.Model.UnpackedFloat.neg
+Float.Model.UnpackedFloat.abs
+Float.Model.UnpackedFloat.isNaN
+Float.Model.UnpackedFloat.isInf
+Float.Model.UnpackedFloat.isFinite
+compare
+Float.Model.UnpackedFloat.beq
+Float.Model.UnpackedFloat.lt
+Float.Model.UnpackedFloat.le
+Float.Model.UnpackedFloat.ofNat
+Float.Model.UnpackedFloat.ofInt
+ofScientific
+Float.Model.UnpackedFloat.toInt8
+ofInt8
+Float.Model.UnpackedFloat.toInt16
+ofInt16
+Float.Model.UnpackedFloat.toInt32
+ofInt32
+Float.Model.UnpackedFloat.toInt64
+ofInt64
+Float.Model.UnpackedFloat.toISize
+ofISize
+Float.Model.UnpackedFloat.toUInt8
+ofUInt8
+Float.Model.UnpackedFloat.toUInt16
+ofUInt16
+Float.Model.UnpackedFloat.toUInt32
+ofUInt32
+Float.Model.UnpackedFloat.toUInt64
+ofUInt64
+Float.Model.UnpackedFloat.toUSize
+ofUSize
+2. Syntax
+3. API Reference
+3.1. Properties
+Float.isInf
+Float32.isInf
+Float.isNaN
+Float32.isNaN
+Float.isFinite
+Float32.isFinite
+3.2. Conversions
+Float.toBits
+Float32.toBits
+Float.ofBits
+Float32.ofBits
+toFloat32
+toFloat
+Float.toString
+Float32.toString
+Float.toUInt8
+Float.toInt8
+Float32.toUInt8
+Float32.toInt8
+Float.toUInt16
+Float.toInt16
+Float32.toUInt16
+Float32.toInt16
+Float.toUInt32
+Float32.toUInt32
+Float.toInt32
+Float32.toInt32
+Float.toUInt64
+Float.toInt64
+Float32.toUInt64
+Float32.toInt64
+Float.toUSize
+Float32.toUSize
+Float.toISize
+Float32.toISize
+Float.ofInt
+Float32.ofInt
+Float.ofNat
+Float32.ofNat
+Float.frExp
+Float32.frExp
+3.3. Comparisons
+Float.beq
+Float32.beq
+3.3.1. Inequalities
+Float.le
+Float32.le
+Float.lt
+Float32.lt
+Float.decLe
+Float32.decLe
+Float.decLt
+Float32.decLt
+3.4. Arithmetic
+Float.add
+Float32.add
+Float.sub
+Float32.sub
+Float.mul
+Float32.mul
+Float.div
+Float32.div
+Float.pow
+Float32.pow
+Float.exp
+Float32.exp
+Float.exp2
+Float32.exp2
+3.4.1. Roots
+Float.sqrt
+Float32.sqrt
+Float.cbrt
+Float32.cbrt
+3.5. Logarithms
+Float.log
+Float32.log
+Float.log10
+Float32.log10
+Float.log2
+Float32.log2
+3.6. Scaling
+Float.scaleB
+Float32.scaleB
+3.7. Rounding
+Float.round
+Float32.round
+Float.floor
+Float32.floor
+Float.ceil
+Float32.ceil
+3.8. Trigonometry
+3.8.1. Sine
+Float.sin
+Float32.sin
+Float.sinh
+Float32.sinh
+Float.asin
+Float32.asin
+Float.asinh
+Float32.asinh
+3.8.2. Cosine
+Float.cos
+Float32.cos
+Float.cosh
+Float32.cosh
+Float.acos
+Float32.acos
+Float.acosh
+Float32.acosh
+3.8.3. Tangent
+Float.tan
+Float32.tan
+Float.tanh
+Float32.tanh
+Float.atan
+Float32.atan
+Float.atanh
+Float32.atanh
+Float.atan2
+Float32.atan2
+3.9. Negation and Absolute Value
+Float.abs
+Float32.abs
+Float.neg
+Float32.neg
+Source Code
+Report Issues
+← 21.5. Bitvectors 21.7. Characters → 21.6. Floating-Point Numbers 🔗
+Floating-point numbers are a an approximation of the real numbers that are efficiently implemented in computer hardware.
+Computations that use floating-point numbers are very efficient; however, the nature of the way that they approximate the real numbers is complex, with many corner cases.
+The IEEE 754 standard, which defines the floating-point format that is used on modern computers, allows hardware designers and programming language implementations to make certain choices, and real systems differ in these small details.
+Any given combination of hardware, operating system, C compiler, library versions, and even compilation flags can result in different behavior.
+For example, there are many distinct bit representations of NaN , the indicator that a result is undefined, and some platforms differ with respect to which NaN is returned from adding two NaN s.
+To enable reasoning about floating-point numbers, Lean exposes a logical model of Float that is used in proofs.
+In particular, Float and Float32 are implemented as wrappers around the logical model.
+In compiled code, this logical model is replaced by efficient native code.
+Differences between platforms are resolved by choosing specific representations (for example, all NaN values are replaced by a single canonical NaN when any operation requests a bit representation) and by modeling only the subset of floating-point operations that are implemented identically on all supported platforms.
+Other operations, such as trigonometric functions, are represented as opaque functions in Lean's logic.
+The logical model is extensively empirically tested against the floating-point operations on all supported platforms.
+As long as FFI code does not modify the floating-point environment, Lean's runtime floating-point primitives match the model's specification.
+🔗 structure Float : Type
+Float : Type
+64-bit floating-point numbers.
+Float corresponds to the IEEE 754 binary64 format ( double in C or f64 in Rust).
+Floating-point numbers are a finite representation of a subset of the real numbers, extended with
+extra “sentinel” values that represent undefined and infinite results as well as separate positive
+and negative zeroes. Arithmetic on floating-point numbers approximates the corresponding operations
+on the real numbers by rounding the results to numbers that are representable, propagating error and
+infinite values.
+Floating-point numbers include subnormal numbers .
+Their special values are:
+NaN , which denotes a class of “not a number” values that result from operations such as
+dividing zero by zero, and
+Inf and - Inf , which represent positive and infinities that result from dividing non-zero
+values by zero.
+Like other low-level types, Float is special-cased by the Lean compiler to correspond to the C
+double type. From the point of view of Lean's logic, Float is equivalent to Float.Model (via
+the functions Float.toModel and Float.ofModel ), which is itself a subtype of UInt64 . Some of
+the operations on Float are defined in terms of their Float.Model counterparts, while others
+are opaque to Lean's kernel.
+Constructor
+Float.ofModel
+Constructs a Float from a Float.Model .
+Fields
+toModel : Float.Model
+Converts a Float into a Float.Model .
+🔗 structure Float32 : Type
+Float32 : Type
+32-bit floating-point numbers.
+Float32 corresponds to the IEEE 754 binary32 format ( float in C or f32 in Rust).
+Floating-point numbers are a finite representation of a subset of the real numbers, extended with
+extra “sentinel” values that represent undefined and infinite results as well as separate positive
+and negative zeroes. Arithmetic on floating-point numbers approximates the corresponding operations
+on the real numbers by rounding the results to numbers that are representable, propagating error and
+infinite values.
+Floating-point numbers include subnormal numbers .
+Their special values are:
+NaN , which denotes a class of “not a number” values that result from operations such as
+dividing zero by zero, and
+Inf and - Inf , which represent positive and infinities that result from dividing non-zero
+values by zero.
+Like other low-level types, Float32 is special-cased by the Lean compiler to correspond to the C
+float type. From the point of view of Lean's logic, Float32 is equivalent to Float32.Model
+(via the functions Float32.toModel and Float32.ofModel ), which is itself a subtype of UInt32 .
+Some of the operations on Float32 are defined in terms of their Float32.Model counterparts,
+while others are opaque to Lean's kernel.
+Constructor
+Float32.ofModel
+Constructs a Float32 from a Float32.Model .
+Fields
+toModel : Float32.Model
+Converts a Float32 into a Float32.Model .
+21.6.1. Logical Model 🔗
+Lean provides two floating-point types: Float represents 64-bit floating-point values, while Float32 represents 32-bit floating-point values.
+The precision of Float does not vary based on the platform that Lean is running on.
+21.6.1.1. Model Details 🔗
+The logical models of Float and Float32 consist of unsigned integers with validity predicates.
+Each defined operation first interprets the integer into a Float.Model.UnpackedFloat , which is a higher-level model that is not specific to a bit width.
+Then, the defined operation is implemented in terms of UnpackedFloat , and the result is re-packed.
+These definitions constitute a logical specification designed for reasoning.
+Although they can be executed, they will run significantly slower than native code.
+Not all operations are defined; some are instead opaque functions whose behavior cannot be reasoned about in Lean's logic.
+This model is not intended to serve as the basis for a more extensive floating-point library.
+It exists only to support the reasoning tools available in Lean and is not suitable for larger-scale development.
+Do not use this model as the basis of a more extensive floating-point library.
+Instead, implement a suitable model, prove the equivalence of the its operations to this model, and then transfer lemmas using the equivalence.
+🔗 structure Float.Model : Type
+Float.Model : Type
+The logical model for the Float type.
+This is defined as the type of UInt64 with the additional restriction that bit patterns encoding
+a NaN must be exactly a chosen canonical NaN .
+Most functions on Float.Model work by unpacking the Float.Model into the inductive type
+UnpackedFloat , performing the operation there, and then repacking the result into a Float.Model .
+It is not a goal of this development to serve as the basis for a general-purpose floating-point
+library or to have any direct lemmas written about it at all. Rather, users interested in a library
+about floating-point numbers should develop such a library completely separately, and users
+interested in proving properties of their programs involving Float should prove that the
+operations defined here are equivalent to the operations defined in the separate library and then
+transfer lemmas from the library to the Float and Float32 types.
+Constructor
+Float.Model.mk
+Fields
+toBits : UInt64
+The underlying bit pattern of the Float.Model .
+valid : Float.Model.Format.binary64 . Valid self . toBits . toBitVec
+The underlying bit pattern is valid according to the IEEE binary64 format.
+🔗 structure Float32.Model : Type
+Float32.Model : Type
+The logical model for the Float32 type.
+This is defined as the type of UInt32 with the additional restriction that bit patterns encoding
+a NaN must be exactly a chosen canonical NaN .
+Most functions on Float32.Model work by unpacking the Float32.Model into the inductive type
+UnpackedFloat , performing the operation there, and then repacking the result into a
+Float32.Model .
+It is not a goal of this development to serve as the basis for a general-purpose floating-point
+library or to have any direct lemmas written about it at all. Rather, users interested in a library
+about floating-point numbers should develop such a library completely separately, and users
+interested in proving properties of their programs involving Float32 should prove that the
+operations defined here are equivalent to the operations defined in the separate library and then
+transfer lemmas from the library to the Float and Float32 types.
+Constructor
+Float32.Model.mk
+Fields
+toBits : UInt32
+The underlying bit pattern of the Float32.Model .
+valid : Float.Model.Format.binary32 . Valid self . toBits . toBitVec
+The underlying bit pattern is valid according to the IEEE binary32 format.
+🔗 def Float.Model.pack ( f : Float.Model.UnpackedFloat ) : Float.Model
+Float.Model.pack
+( f : Float.Model.UnpackedFloat ) :
+Float.Model
+Pack an UnpackedFloat into the corresponding Float.Model .
+This operation only gives a meaningful result if the float is
+already correctly rounded for the Format.binary64 format.
+🔗 def Float32.Model.pack ( f : Float.Model.UnpackedFloat ) : Float32.Model
+Float32.Model.pack
+( f : Float.Model.UnpackedFloat ) :
+Float32.Model
+Pack an UnpackedFloat into the corresponding Float32.Model .
+This operation only gives a meaningful result if the float is
+already correctly rounded for the Format.binary32 format.
+🔗 def Float.Model.unpack ( f : Float.Model ) : Float.Model.UnpackedFloat
+Float.Model.unpack ( f : Float.Model ) :
+Float.Model.UnpackedFloat
+Unpack a Float.Model into the corresponding UnpackedFloat .
+🔗 def Float32.Model.unpack ( f : Float32.Model ) : Float.Model.UnpackedFloat
+Float32.Model.unpack ( f : Float32.Model ) :
+Float.Model.UnpackedFloat
+Unpack a Float32.Model into the corresponding UnpackedFloat .
+🔗 inductive type Float.Model.UnpackedFloat : Type
+Float.Model.UnpackedFloat : Type
+An inductive type representing a floating-point number with constructors for signed infinity,
+not-a-number without payload, signed zero, and finite floats with a sign, positive natural
+mantissa and integral exponent.
+Finite floats do not have a unique representation in this format: multiplying the
+mantissa by two and decreasing the exponent by one yields a finite float that represents the
+same rational number.
+For a given Format , we say that an unpacked float is in canonical form if the exponent
+is equal to the targetExponent according to that format. Some operations on UnpackedFloat ,
+such as compare , assume that the input(s) are all in canonical form for the same format.
+Note that an unpacked float in canonical form for a given format may not actually be
+representable in that format as the exponent is too large to fit. In this case, the pack
+function will overflow the float to infinity.
+This type exists solely for the purpose of supporting Float.Model and Float32.Model . It is not
+a goal of this development to serve as the basis for a general-purpose floating-point library or
+to have any direct lemmas written about it at all. Rather, users interested in a library about
+floating-point numbers should develop such a library completely separately, and users interested in
+proving properties of their programs involving Float should prove that the operations defined
+here are equivalent to the operations defined in the separate library and then transfer lemmas from
+the library to the Float and Float32 types.
+Constructors
+Float.Model.UnpackedFloat.infinity
+( sign : Float.Model.UnpackedFloat.Sign ) :
+Float.Model.UnpackedFloat
+Signed infinity.
+Float.Model.UnpackedFloat.notANumber :
+Float.Model.UnpackedFloat
+Not a number. There is no payload attached to a NaN in this format.
+Float.Model.UnpackedFloat.zero
+( sign : Float.Model.UnpackedFloat.Sign ) :
+Float.Model.UnpackedFloat
+Signed zero.
+Float.Model.UnpackedFloat.finite
+( sign : Float.Model.UnpackedFloat.Sign ) ( mantissa : Nat )
+( exponent : Int ) ( mantissa_pos : 0 < mantissa ) :
+Float.Model.UnpackedFloat
+Finite floats consisting of a sign bit, a positive natural mantissa and an exponent.
+21.6.1.2. Model Operations 🔗
+The following operations are specified for floating-point values.
+Other operators are represented by opaque functions and do not reduce in the kernel.
+🔗 def Float.Model.UnpackedFloat.add ( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat → Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.add
+( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat
+Computes the sum of two floating point numbers and rounds the result according to
+the given specification.
+🔗 def Float.Model.UnpackedFloat.sub ( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat → Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.sub
+( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat
+Computes the difference of two floating point numbers and rounds the result according to
+the given specification.
+🔗 def Float.Model.UnpackedFloat.mul ( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat → Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.mul
+( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat
+Computes the product of two floating-point numbers and rounds the result according to
+the given specification.
+🔗 def Float.Model.UnpackedFloat.div ( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat → Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.div
+( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat
+Computes the quotient of two floating point numbers and rounds the result according to
+the given specification.
+🔗 def Float.Model.UnpackedFloat.sqrt ( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat → Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.sqrt
+( spec : Float.Model.Format ) :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat
+Computes the square root of a floating-point number and rounds the result according to the given
+specification.
+🔗 def Float.Model.UnpackedFloat.neg :
+Float.Model.UnpackedFloat → Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.neg :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat
+Negates the given float.
+🔗 def Float.Model.UnpackedFloat.abs :
+Float.Model.UnpackedFloat → Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.abs :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat
+Returns the given float with positive sign.
+🔗 def Float.Model.UnpackedFloat.isNaN : Float.Model.UnpackedFloat → Bool
+Float.Model.UnpackedFloat.isNaN :
+Float.Model.UnpackedFloat → Bool
+Returns true if the float is NaN .
+🔗 def Float.Model.UnpackedFloat.isInf : Float.Model.UnpackedFloat → Bool
+Float.Model.UnpackedFloat.isInf :
+Float.Model.UnpackedFloat → Bool
+Returns true if the float is positive or negative infinity.
+🔗 def Float.Model.UnpackedFloat.isFinite : Float.Model.UnpackedFloat → Bool
+Float.Model.UnpackedFloat.isFinite :
+Float.Model.UnpackedFloat → Bool
+Returns true if the float represents a real number, i.e., it is neither infinite nor NaN .
+🔗 def Float.Model.UnpackedFloat.compare :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat → Option Ordering
+Float.Model.UnpackedFloat.compare :
+Float.Model.UnpackedFloat →
+Float.Model.UnpackedFloat →
+Option Ordering
+Computes the ordering between the two floats as specificed by IEEE. Returns an
+Option Ordering to account for the fact that NaN is incomparable with everything.
+Also, positive and negative zero are equal.
+Important: this operation only works correctly if the two inputs are in
+canonical form for a common format (see the docstring for UnpackedFloat for details.)
+🔗 def Float.Model.UnpackedFloat.beq ( a b : Float.Model.UnpackedFloat ) : Bool
+Float.Model.UnpackedFloat.beq
+( a b : Float.Model.UnpackedFloat ) : Bool
+Determines whether a is equal to b according to IEEE rules.
+This is not a reflexive relation.
+🔗 def Float.Model.UnpackedFloat.lt ( a b : Float.Model.UnpackedFloat ) : Bool
+Float.Model.UnpackedFloat.lt
+( a b : Float.Model.UnpackedFloat ) : Bool
+Determines whether a is less than b according to IEEE rules.
+This is not a total ordering.
+🔗 def Float.Model.UnpackedFloat.le ( a b : Float.Model.UnpackedFloat ) : Bool
+Float.Model.UnpackedFloat.le
+( a b : Float.Model.UnpackedFloat ) : Bool
+Determines whether a is less than or equal to b according to IEEE rules.
+This is not a total ordering, and ≤ is not reflexive.
+🔗 def Float.Model.UnpackedFloat.ofNat ( spec : Float.Model.Format ) ( n : Nat ) :
+Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofNat
+( spec : Float.Model.Format ) ( n : Nat ) :
+Float.Model.UnpackedFloat
+Converts a Nat to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.ofInt ( spec : Float.Model.Format ) ( n : Int ) :
+Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofInt
+( spec : Float.Model.Format ) ( n : Int ) :
+Float.Model.UnpackedFloat
+Converts an Int to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.ofScientific ( spec : Float.Model.Format )
+( m : Nat ) ( e : Int ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofScientific
+( spec : Float.Model.Format ) ( m : Nat )
+( e : Int ) : Float.Model.UnpackedFloat
+Computes m * 10 ^ e .
+🔗 def Float.Model.UnpackedFloat.toInt8 ( f : Float.Model.UnpackedFloat ) : Int8
+Float.Model.UnpackedFloat.toInt8
+( f : Float.Model.UnpackedFloat ) : Int8
+Converts an UnpackedFloat to an Int8 , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofInt8 ( spec : Float.Model.Format )
+( n : Int8 ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofInt8
+( spec : Float.Model.Format ) ( n : Int8 ) :
+Float.Model.UnpackedFloat
+Converts an Int8 to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.toInt16 ( f : Float.Model.UnpackedFloat ) :
+Int16
+Float.Model.UnpackedFloat.toInt16
+( f : Float.Model.UnpackedFloat ) : Int16
+Converts an UnpackedFloat to an Int16 , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofInt16 ( spec : Float.Model.Format )
+( n : Int16 ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofInt16
+( spec : Float.Model.Format )
+( n : Int16 ) : Float.Model.UnpackedFloat
+Converts an Int16 to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.toInt32 ( f : Float.Model.UnpackedFloat ) :
+Int32
+Float.Model.UnpackedFloat.toInt32
+( f : Float.Model.UnpackedFloat ) : Int32
+Converts an UnpackedFloat to an Int32 , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofInt32 ( spec : Float.Model.Format )
+( n : Int32 ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofInt32
+( spec : Float.Model.Format )
+( n : Int32 ) : Float.Model.UnpackedFloat
+Converts an Int32 to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.toInt64 ( f : Float.Model.UnpackedFloat ) :
+Int64
+Float.Model.UnpackedFloat.toInt64
+( f : Float.Model.UnpackedFloat ) : Int64
+Converts an UnpackedFloat to an Int64 , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofInt64 ( spec : Float.Model.Format )
+( n : Int64 ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofInt64
+( spec : Float.Model.Format )
+( n : Int64 ) : Float.Model.UnpackedFloat
+Converts an Int64 to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.toISize ( f : Float.Model.UnpackedFloat ) :
+ISize
+Float.Model.UnpackedFloat.toISize
+( f : Float.Model.UnpackedFloat ) : ISize
+Converts an UnpackedFloat to an ISize , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofISize ( spec : Float.Model.Format )
+( n : ISize ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofISize
+( spec : Float.Model.Format )
+( n : ISize ) : Float.Model.UnpackedFloat
+Converts an ISize to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.toUInt8 ( f : Float.Model.UnpackedFloat ) :
+UInt8
+Float.Model.UnpackedFloat.toUInt8
+( f : Float.Model.UnpackedFloat ) : UInt8
+Converts an UnpackedFloat to a UInt8 , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofUInt8 ( spec : Float.Model.Format )
+( n : UInt8 ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofUInt8
+( spec : Float.Model.Format )
+( n : UInt8 ) : Float.Model.UnpackedFloat
+Converts a UInt8 to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.toUInt16 ( f : Float.Model.UnpackedFloat ) :
+UInt16
+Float.Model.UnpackedFloat.toUInt16
+( f : Float.Model.UnpackedFloat ) : UInt16
+Converts an UnpackedFloat to a UInt16 , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofUInt16 ( spec : Float.Model.Format )
+( n : UInt16 ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofUInt16
+( spec : Float.Model.Format )
+( n : UInt16 ) : Float.Model.UnpackedFloat
+Converts a UInt16 to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.toUInt32 ( f : Float.Model.UnpackedFloat ) :
+UInt32
+Float.Model.UnpackedFloat.toUInt32
+( f : Float.Model.UnpackedFloat ) : UInt32
+Converts an UnpackedFloat to a UInt32 , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofUInt32 ( spec : Float.Model.Format )
+( n : UInt32 ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofUInt32
+( spec : Float.Model.Format )
+( n : UInt32 ) : Float.Model.UnpackedFloat
+Converts a UInt32 to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.toUInt64 ( f : Float.Model.UnpackedFloat ) :
+UInt64
+Float.Model.UnpackedFloat.toUInt64
+( f : Float.Model.UnpackedFloat ) : UInt64
+Converts an UnpackedFloat to a UInt64 , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofUInt64 ( spec : Float.Model.Format )
+( n : UInt64 ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofUInt64
+( spec : Float.Model.Format )
+( n : UInt64 ) : Float.Model.UnpackedFloat
+Converts a UInt64 to an UnpackedFloat , returning positive zero on zero.
+🔗 def Float.Model.UnpackedFloat.toUSize ( f : Float.Model.UnpackedFloat ) :
+USize
+Float.Model.UnpackedFloat.toUSize
+( f : Float.Model.UnpackedFloat ) : USize
+Converts an UnpackedFloat to a USize , truncating after the decimal point, sending NaN to
+0 and clamping out-of-range values and infinities.
+🔗 def Float.Model.UnpackedFloat.ofUSize ( spec : Float.Model.Format )
+( n : USize ) : Float.Model.UnpackedFloat
+Float.Model.UnpackedFloat.ofUSize
+( spec : Float.Model.Format )
+( n : USize ) : Float.Model.UnpackedFloat
+Converts a USize to an UnpackedFloat , returning positive zero on zero.
+Kernel Reasoning The Lean kernel can compare expressions of type Float for syntactic equality, so 0.0 is definitionally equal to itself.
+example : ( 0.0 : Float ) = ( 0.0 : Float ) := by ⊢ 0.0 = 0.0 rfl All goals completed! 🐙
+Additionally, terms that require reduction to become syntactically equal can be checked by the kernel when they use only operations that are modeled in Lean's logic:
+example : ( 0.0 : Float ) = ( 0.0 + 0.0 : Float ) := by ⊢ 0.0 = 0.0 + 0.0 rfl All goals completed! 🐙
+The kernel cannot reduce terms that use operations that are not directly modeled, such as trigonometric functions:
+example : ( 0.0 : Float ) . sin = ( 0.0 : Float ) := by ⊢ Float.sin 0.0 = 0.0 Tactic ` rfl ` failed: The left-hand side
+Float.sin 0.0
+is not definitionally equal to the right-hand side
+0.0
+⊢ Float.sin 0.0 = 0.0 rfl ⊢ Float.sin 0.0 = 0.0
+Tactic ` rfl ` failed: The left-hand side
+Float.sin 0.0
+is not definitionally equal to the right-hand side
+0.0
+⊢ Float.sin 0.0 = 0.0
+However, the native_decide tactic can invoke the underlying platform's floating-point primitives that are used by Lean for run-time programs:
+theorem Float.sin_zero_eq_zero :
+( ( 0.0 : Float ) . sin == ( 0.0 : Float ) ) = true := by ⊢ ( sin 0.0 == 0.0 ) = true
+native_decide All goals completed! 🐙
+This tactic executes a decision procedure as compiled native code.
+This requires trusting the Lean compiler, interpreter and the low-level implementations of built-in operators in addition to the kernel.
+To make this dependency precisely clear, the tactic creates the axiom Float.sin_zero_eq_zero._native.native_decide.ax_1 :
+' Float.sin_zero_eq_zero ' depends on axioms: [ propext ,
+Classical.choice ,
+Quot.sound ,
+Float.sin_zero_eq_zero._native.native_decide.ax_1 ] #print axioms Float.sin_zero_eq_zero
+' Float.sin_zero_eq_zero ' depends on axioms: [ propext ,
+Classical.choice ,
+Quot.sound ,
+Float.sin_zero_eq_zero._native.native_decide.ax_1 ]
+Live ↪
+Floating-Point Equality Is Not Reflexive Floating-point operations may produce NaN values that indicate an undefined result.
+These values are not comparable with each other; in particular, all comparisons involving NaN will return false , including equality.
+false #eval ( ( 0.0 : Float ) / 0.0 ) == ( ( 0.0 : Float ) / 0.0 )
+Live ↪
+Floating-Point Equality Is Not a Congruence Applying a function to two equal floating-point numbers may not result in equal numbers.
+In particular, positive and negative zero are distinct values that are equated by floating-point equality, but division by positive or negative zero yields positive or negative infinite values.
+def neg0 : Float := - 0.0
+def pos0 : Float := 0.0
+( true , false ) #eval ( neg0 == pos0 , 1.0 / neg0 == 1.0 / pos0 )
+( true , false )
+Live ↪
+21.6.2. Syntax 🔗
+Lean does not have dedicated floating-point literals.
+Instead, floating-point literals are resolved via the appropriate instances of the OfScientific and Neg type classes.
+Floating-Point Literals The term
+( - 2.2523 : Float ) is syntactic sugar for
+( Neg.neg ( OfScientific.ofScientific 22523 true 4 ) : Float ) and the term
+( 413.52 : Float32 ) is syntactic sugar for
+( OfScientific.ofScientific 41352 true 2 : Float32 ) Live ↪
+21.6.3. API Reference 🔗
+21.6.3.1. Properties 🔗
+Floating-point numbers fall into one of three categories:
+Finite numbers are ordinary floating-point values.
+Infinities, which may be positive or negative, result from division by zero.
+NaN s, which are not numbers, result from other undefined operations, such as the square root of a negative number.
+🔗 def Float.isInf : Float → Bool
+Float.isInf : Float → Bool
+Checks whether a floating-point number is a positive or negative infinite number, but not a finite
+number or NaN .
+This function has a logical model in terms of Float.Model . It is compiled to the C operator isinf .
+🔗 def Float32.isInf : Float32 → Bool
+Float32.isInf : Float32 → Bool
+Checks whether a floating-point number is a positive or negative infinite number, but not a finite
+number or NaN .
+This function has a logical model in terms of Float32.Model . It is compiled to the C operator isinf .
+🔗 def Float.isNaN : Float → Bool
+Float.isNaN : Float → Bool
+Checks whether a floating point number is a NaN (“not a number”) value.
+NaN values result from operations that might otherwise be errors, such as dividing zero by zero.
+This function returns true if and only if the input is propositionally equal to Float.nan .
+This function has a logical model in terms of Float.Model . It is compiled to the C operator isnan .
+🔗 def Float32.isNaN : Float32 → Bool
+Float32.isNaN : Float32 → Bool
+Checks whether a floating point number is a NaN ("not a number") value.
+NaN values result from operations that might otherwise be errors, such as dividing zero by zero.
+This function returns true if and only if the input is propositionally equal to Float32.nan .
+This function has a logical model in terms of Float32.Model . It is compiled to the C operator isnan .
+🔗 def Float.isFinite : Float → Bool
+Float.isFinite : Float → Bool
+Checks whether a floating-point number is finite, that is, whether it is normal, subnormal, or zero,
+but not infinite or NaN .
+This function has a logical model in terms of Float.Model . It is compiled to the C operator isfinite .
+🔗 def Float32.isFinite : Float32 → Bool
+Float32.isFinite : Float32 → Bool
+Checks whether a floating-point number is finite, that is, whether it is normal, subnormal, or zero,
+but not infinite or NaN .
+This function has a logical model in terms of Float32.Model . It is compiled to the C operator isfinite .
+21.6.3.2. Conversions 🔗
+🔗 def Float.toBits : Float → UInt64
+Float.toBits : Float → UInt64
+Bit-for-bit conversion to UInt64 . Interprets a Float as a UInt64 , ignoring the numeric value
+and treating the Float 's bit pattern as a UInt64 .
+Float s and UInt64 s have the same endianness on all supported platforms. IEEE 754 very precisely
+specifies the bit layout of floats.
+This function is distinct from Float.toUInt64 , which attempts to preserve the numeric value rather
+than reinterpreting the bit pattern.
+🔗 def Float32.toBits : Float32 → UInt32
+Float32.toBits : Float32 → UInt32
+Bit-for-bit conversion to UInt32 . Interprets a Float32 as a UInt32 , ignoring the numeric value
+and treating the Float32 's bit pattern as a UInt32 .
+Float32 s and UInt32 s have the same endianness on all supported platforms. IEEE 754 very
+precisely specifies the bit layout of floats.
+This function is distinct from Float.toUInt32 , which attempts to preserve the numeric value rather
+than reinterpreting the bit pattern.
+🔗 def Float.ofBits : UInt64 → Float
+Float.ofBits : UInt64 → Float
+Bit-for-bit conversion from UInt64 . Interprets a UInt64 as a Float , ignoring the numeric value
+and treating the UInt64 's bit pattern as a Float .
+Float s and UInt64 s have the same endianness on all supported platforms. IEEE 754 very precisely
+specifies the bit layout of floats.
+This function has a logical model in terms of Float.Model .
+🔗 def Float32.ofBits : UInt32 → Float32
+Float32.ofBits : UInt32 → Float32
+Bit-for-bit conversion from UInt32 . Interprets a UInt32 as a Float32 , ignoring the numeric
+value and treating the UInt32 's bit pattern as a Float32 .
+Float32 s and UInt32 s have the same endianness on all supported platforms. IEEE 754 very
+precisely specifies the bit layout of floats.
+This function has a logical model in terms of Float32.Model .
+🔗 opaque Float.toFloat32 : Float → Float32
+Float.toFloat32 : Float → Float32
+Converts a 64-bit floating-point number to a 32-bit floating-point number.
+This may lose precision.
+This function does not reduce in the kernel.
+🔗 opaque Float32.toFloat : Float32 → Float
+Float32.toFloat : Float32 → Float
+Converts a 32-bit floating-point number to a 64-bit floating-point number.
+This function does not reduce in the kernel.
+🔗 opaque Float.toString : Float → String
+Float.toString : Float → String
+Converts a floating-point number to a string.
+This function does not reduce in the kernel.
+🔗 opaque Float32.toString : Float32 → String
+Float32.toString : Float32 → String
+Converts a floating-point number to a string.
+This function does not reduce in the kernel.
+🔗 def Float.toUInt8 : Float → UInt8
+Float.toUInt8 : Float → UInt8
+Converts a floating-point number to an 8-bit unsigned integer.
+If the given Float is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of UInt8 . Returns 0 if the Float is negative or NaN , and returns the
+largest UInt8 value (i.e. UInt8.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float.Model .
+🔗 def Float.toInt8 : Float → Int8
+Float.toInt8 : Float → Int8
+Truncates a floating-point number to the nearest 8-bit signed integer, rounding towards zero.
+If the Float is larger than the maximum value for Int8 (including Inf ), returns the maximum value of
+Int8 (i.e. Int8.maxValue ). If it is smaller than the minimum value for Int8 (including - Inf ),
+returns the minimum value of Int8 (i.e. Int8.minValue ). If it is NaN , returns 0 .
+This function has a logical model in terms of Float.Model .
+🔗 def Float32.toUInt8 : Float32 → UInt8
+Float32.toUInt8 : Float32 → UInt8
+Converts a floating-point number to an 8-bit unsigned integer.
+If the given Float32 is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of UInt8 . Returns 0 if the Float32 is negative or NaN , and returns the
+largest UInt8 value (i.e. UInt8.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float32.Model .
+🔗 def Float32.toInt8 : Float32 → Int8
+Float32.toInt8 : Float32 → Int8
+Truncates a floating-point number to the nearest 8-bit signed integer, rounding towards zero.
+If the Float is larger than the maximum value for Int8 (including Inf ), returns the maximum value of
+Int8 (i.e. Int8.maxValue ). If it is smaller than the minimum value for Int8 (including - Inf ),
+returns the minimum value of Int8 (i.e. Int8.minValue ). If it is NaN , returns 0 .
+This function has a logical model in terms of Float32.Model .
+🔗 def Float.toUInt16 : Float → UInt16
+Float.toUInt16 : Float → UInt16
+Converts a floating-point number to a 16-bit unsigned integer.
+If the given Float is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of UInt16 . Returns 0 if the Float is negative or NaN , and returns the
+largest UInt16 value (i.e. UInt16.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float.Model .
+🔗 def Float.toInt16 : Float → Int16
+Float.toInt16 : Float → Int16
+Truncates a floating-point number to the nearest 16-bit signed integer, rounding towards zero.
+If the Float is larger than the maximum value for Int16 (including Inf ), returns the maximum
+value of Int16 (i.e. Int16.maxValue ). If it is smaller than the minimum value for Int16
+(including - Inf ), returns the minimum value of Int16 (i.e. Int16.minValue ). If it is NaN ,
+returns 0 .
+This function has a logical model in terms of Float.Model .
+🔗 def Float32.toUInt16 : Float32 → UInt16
+Float32.toUInt16 : Float32 → UInt16
+Converts a floating-point number to a 16-bit unsigned integer.
+If the given Float32 is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of UInt16 . Returns 0 if the Float32 is negative or NaN , and returns
+the largest UInt16 value (i.e. UInt16.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float32.Model .
+🔗 def Float32.toInt16 : Float32 → Int16
+Float32.toInt16 : Float32 → Int16
+Truncates a floating-point number to the nearest 16-bit signed integer, rounding towards zero.
+If the Float is larger than the maximum value for Int16 (including Inf ), returns the maximum
+value of Int16 (i.e. Int16.maxValue ). If it is smaller than the minimum value for Int16
+(including - Inf ), returns the minimum value of Int16 (i.e. Int16.minValue ). If it is NaN ,
+returns 0 .
+This function has a logical model in terms of Float32.Model .
+🔗 def Float.toUInt32 : Float → UInt32
+Float.toUInt32 : Float → UInt32
+Converts a floating-point number to a 32-bit unsigned integer.
+If the given Float is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of UInt32 . Returns 0 if the Float is negative or NaN , and returns the
+largest UInt32 value (i.e. UInt32.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float.Model .
+🔗 def Float32.toUInt32 : Float32 → UInt32
+Float32.toUInt32 : Float32 → UInt32
+Converts a floating-point number to a 32-bit unsigned integer.
+If the given Float32 is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of UInt32 . Returns 0 if the Float32 is negative or NaN , and returns
+the largest UInt32 value (i.e. UInt32.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float32.Model .
+🔗 def Float.toInt32 : Float → Int32
+Float.toInt32 : Float → Int32
+Truncates a floating-point number to the nearest 32-bit signed integer, rounding towards zero.
+If the Float is larger than the maximum value for Int32 (including Inf ), returns the maximum
+value of Int32 (i.e. Int32.maxValue ). If it is smaller than the minimum value for Int32
+(including - Inf ), returns the minimum value of Int32 (i.e. Int32.minValue ). If it is NaN ,
+returns 0 .
+This function has a logical model in terms of Float.Model .
+🔗 def Float32.toInt32 : Float32 → Int32
+Float32.toInt32 : Float32 → Int32
+Truncates a floating-point number to the nearest 32-bit signed integer, rounding towards zero.
+If the Float is larger than the maximum value for Int32 (including Inf ), returns the maximum
+value of Int32 (i.e. Int32.maxValue ). If it is smaller than the minimum value for Int32
+(including - Inf ), returns the minimum value of Int32 (i.e. Int32.minValue ). If it is NaN ,
+returns 0 .
+This function has a logical model in terms of Float32.Model .
+🔗 def Float.toUInt64 : Float → UInt64
+Float.toUInt64 : Float → UInt64
+Converts a floating-point number to a 64-bit unsigned integer.
+If the given Float is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of UInt64 . Returns 0 if the Float is negative or NaN , and returns the
+largest UInt64 value (i.e. UInt64.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float.Model .
+🔗 def Float.toInt64 : Float → Int64
+Float.toInt64 : Float → Int64
+Truncates a floating-point number to the nearest 64-bit signed integer, rounding towards zero.
+If the Float is larger than the maximum value for Int64 (including Inf ), returns the maximum
+value of Int64 (i.e. Int64.maxValue ). If it is smaller than the minimum value for Int64
+(including - Inf ), returns the minimum value of Int64 (i.e. Int64.minValue ). If it is NaN ,
+returns 0 .
+This function has a logical model in terms of Float.Model .
+🔗 def Float32.toUInt64 : Float32 → UInt64
+Float32.toUInt64 : Float32 → UInt64
+Converts a floating-point number to a 64-bit unsigned integer.
+If the given Float32 is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of UInt64 . Returns 0 if the Float32 is negative or NaN , and returns
+the largest UInt64 value (i.e. UInt64.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float32.Model .
+🔗 def Float32.toInt64 : Float32 → Int64
+Float32.toInt64 : Float32 → Int64
+Truncates a floating-point number to the nearest 64-bit signed integer, rounding towards zero.
+If the Float is larger than the maximum value for Int64 (including Inf ), returns the maximum
+value of Int64 (i.e. Int64.maxValue ). If it is smaller than the minimum value for Int64
+(including - Inf ), returns the minimum value of Int64 (i.e. Int64.minValue ). If it is NaN ,
+returns 0 .
+This function has a logical model in terms of Float32.Model .
+🔗 def Float.toUSize : Float → USize
+Float.toUSize : Float → USize
+Converts a floating-point number to a word-sized unsigned integer.
+If the given Float is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of USize . Returns 0 if the Float is negative or NaN , and returns the
+largest USize value (i.e. USize.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float.Model .
+🔗 def Float32.toUSize : Float32 → USize
+Float32.toUSize : Float32 → USize
+Converts a floating-point number to a word-sized unsigned integer.
+If the given Float32 is non-negative, truncates the value to a positive integer, rounding down and
+clamping to the range of USize . Returns 0 if the Float32 is negative or NaN , and returns the
+largest USize value (i.e. USize.size - 1 ) if the float is larger than it.
+This function has a logical model in terms of Float32.Model .
+🔗 def Float.toISize : Float → ISize
+Float.toISize : Float → ISize
+Truncates a floating-point number to the nearest word-sized signed integer, rounding towards zero.
+If the Float is larger than the maximum value for ISize (including Inf ), returns the maximum
+value of ISize (i.e. ISize.maxValue ). If it is smaller than the minimum value for ISize
+(including - Inf ), returns the minimum value of ISize (i.e. ISize.minValue ). If it is NaN ,
+returns 0 .
+This function has a logical model in terms of Float.Model .
+🔗 def Float32.toISize : Float32 → ISize
+Float32.toISize : Float32 → ISize
+Truncates a floating-point number to the nearest word-sized signed integer, rounding towards zero.
+If the Float is larger than the maximum value for ISize (including Inf ), returns the maximum
+value of ISize (i.e. ISize.maxValue ). If it is smaller than the minimum value for ISize
+(including - Inf ), returns the minimum value of ISize (i.e. ISize.minValue ). If it is NaN ,
+returns 0 .
+This function has a logical model in terms of Float32.Model .
+🔗 def Float.ofInt : Int → Float
+Float.ofInt : Int → Float
+Converts an integer into the closest-possible 64-bit floating-point number, or positive or negative
+infinite floating-point value if the range of Float is exceeded.
+🔗 def Float32.ofInt : Int → Float32
+Float32.ofInt : Int → Float32
+Converts an integer into the closest-possible 32-bit floating-point number, or positive or negative
+infinite floating-point value if the range of Float32 is exceeded.
+🔗 def Float.ofNat ( n : Nat ) : Float
+Float.ofNat ( n : Nat ) : Float
+Converts a natural number into the closest-possible 64-bit floating-point number, or an infinite
+floating-point value if the range of Float is exceeded.
+🔗 def Float32.ofNat ( n : Nat ) : Float32
+Float32.ofNat ( n : Nat ) : Float32
+Converts a natural number into the closest-possible 32-bit floating-point number, or an infinite
+floating-point value if the range of Float32 is exceeded.
+🔗 opaque Float.frExp : Float → Float × Int
+Float.frExp : Float → Float × Int
+Splits the given float x into a significand/exponent pair ( s , i ) such that x = s * 2 ^ i where
+s ∈ ( - 1 ; - 0.5 ] ∪ [ 0.5 ; 1 ) . Returns an undefined value if x is not finite.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+frexp .
+🔗 opaque Float32.frExp : Float32 → Float32 × Int
+Float32.frExp : Float32 → Float32 × Int
+Splits the given float x into a significand/exponent pair ( s , i ) such that x = s * 2 ^ i where
+s ∈ ( - 1 ; - 0.5 ] ∪ [ 0.5 ; 1 ) . Returns an undefined value if x is not finite.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+frexp .
+21.6.3.3. Comparisons 🔗
+🔗 def Float.beq ( a b : Float ) : Bool
+Float.beq ( a b : Float ) : Bool
+Checks whether two floating-point numbers are equal according to IEEE 754.
+Floating-point equality does not correspond with propositional equality. In particular, it is not
+reflexive since NaN != NaN , and it is not a congruence because 0.0 == - 0.0 , but
+1.0 / 0.0 != 1.0 / - 0.0 .
+This function does not reduce in the kernel. It is compiled to the C equality operator.
+🔗 def Float32.beq ( a b : Float32 ) : Bool
+Float32.beq ( a b : Float32 ) : Bool
+Checks whether two floating-point numbers are equal according to IEEE 754.
+Floating-point equality does not correspond with propositional equality. In particular, it is not
+reflexive since NaN != NaN , and it is not a congruence because 0.0 == - 0.0 , but
+1.0 / 0.0 != 1.0 / - 0.0 .
+This function does not reduce in the kernel. It is compiled to the C equality operator.
+21.6.3.3.1. Inequalities 🔗
+The decision procedures for inequalities are opaque constants in the logic.
+They can only be used via native evaluation, e.g. via the native_decide tactic.
+🔗 def Float.le : Float → Float → Bool
+Float.le : Float → Float → Bool
+Non-strict inequality of floating-point numbers. Typically used via the ≤ operator.
+🔗 def Float32.le : Float32 → Float32 → Bool
+Float32.le : Float32 → Float32 → Bool
+Non-strict inequality of floating-point numbers. Typically used via the ≤ operator.
+🔗 def Float.lt : Float → Float → Bool
+Float.lt : Float → Float → Bool
+Strict inequality of floating-point numbers. Typically used via the < operator.
+🔗 def Float32.lt : Float32 → Float32 → Bool
+Float32.lt : Float32 → Float32 → Bool
+Strict inequality of floating-point numbers. Typically used via the < operator.
+🔗 def Float.decLe ( a b : Float ) : Decidable ( a ≤ b )
+Float.decLe ( a b : Float ) :
+Decidable ( a ≤ b )
+Compares two floating point numbers for non-strict inequality.
+This function does not reduce in the kernel. It is compiled to the C inequality operator.
+🔗 def Float32.decLe ( a b : Float32 ) : Decidable ( a ≤ b )
+Float32.decLe ( a b : Float32 ) :
+Decidable ( a ≤ b )
+Compares two floating point numbers for non-strict inequality.
+This function does not reduce in the kernel. It is compiled to the C inequality operator.
+🔗 def Float.decLt ( a b : Float ) : Decidable ( a < b )
+Float.decLt ( a b : Float ) :
+Decidable ( a < b )
+Compares two floating point numbers for strict inequality.
+This function does not reduce in the kernel. It is compiled to the C inequality operator.
+🔗 def Float32.decLt ( a b : Float32 ) : Decidable ( a < b )
+Float32.decLt ( a b : Float32 ) :
+Decidable ( a < b )
+Compares two floating point numbers for strict inequality.
+This function does not reduce in the kernel. It is compiled to the C inequality operator.
+21.6.3.4. Arithmetic 🔗
+Arithmetic operations on floating-point values are typically invoked via the Add Float , Sub Float , Mul Float , Div Float , and HomogeneousPow Float instances, along with the corresponding Float32 instances.
+🔗 def Float.add : Float → Float → Float
+Float.add : Float → Float → Float
+Adds two 64-bit floating-point numbers according to IEEE 754. Typically used via the + operator.
+This function has a logical model in terms of Float.Model . It is compiled to the C addition operator.
+🔗 def Float32.add : Float32 → Float32 → Float32
+Float32.add : Float32 → Float32 → Float32
+Adds two 32-bit floating-point numbers according to IEEE 754. Typically used via the + operator.
+This function has a logical model in terms of Float32.Model . It is compiled to the C addition operator.
+🔗 def Float.sub : Float → Float → Float
+Float.sub : Float → Float → Float
+Subtracts 64-bit floating-point numbers according to IEEE 754. Typically used via the - operator.
+This function has a logical model in terms of Float.Model . It is compiled to the C subtraction operator.
+🔗 def Float32.sub : Float32 → Float32 → Float32
+Float32.sub : Float32 → Float32 → Float32
+Subtracts 32-bit floating-point numbers according to IEEE 754. Typically used via the - operator.
+This function has a logical model in terms of Float32.Model . It is compiled to the C subtraction operator.
+🔗 def Float.mul : Float → Float → Float
+Float.mul : Float → Float → Float
+Multiplies 64-bit floating-point numbers according to IEEE 754. Typically used via the * operator.
+This function has a logical model in terms of Float.Model . It is compiled to the C multiplication operator.
+🔗 def Float32.mul : Float32 → Float32 → Float32
+Float32.mul : Float32 → Float32 → Float32
+Multiplies 32-bit floating-point numbers according to IEEE 754. Typically used via the * operator.
+This function has a logical model in terms of Float32.Model . It is compiled to the C multiplication operator.
+🔗 def Float.div : Float → Float → Float
+Float.div : Float → Float → Float
+Divides 64-bit floating-point numbers according to IEEE 754. Typically used via the / operator.
+In Lean, division by zero typically yields zero. For Float , it instead yields either Inf ,
+- Inf , or NaN .
+This function has a logical model in terms of Float.Model . It is compiled to the C division operator.
+🔗 def Float32.div : Float32 → Float32 → Float32
+Float32.div : Float32 → Float32 → Float32
+Divides 32-bit floating-point numbers according to IEEE 754. Typically used via the / operator.
+In Lean, division by zero typically yields zero. For Float32 , it instead yields either Inf ,
+- Inf , or NaN .
+This function has a logical model in terms of Float32.Model . It is compiled to the C division operator.
+🔗 opaque Float.pow : Float → Float → Float
+Float.pow : Float → Float → Float
+Raises one floating-point number to the power of another. Typically used via the ^ operator.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+pow .
+🔗 opaque Float32.pow : Float32 → Float32 → Float32
+Float32.pow : Float32 → Float32 → Float32
+Raises one floating-point number to the power of another. Typically used via the ^ operator.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+powf .
+🔗 opaque Float.exp ( x : Float ) : Float
+Float.exp ( x : Float ) : Float
+Computes the exponential e ^ x of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+exp .
+🔗 opaque Float32.exp : Float32 → Float32
+Float32.exp : Float32 → Float32
+Computes the exponential e ^ x of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+expf .
+🔗 opaque Float.exp2 ( x : Float ) : Float
+Float.exp2 ( x : Float ) : Float
+Computes the base-2 exponential 2 ^ x of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+exp2 .
+🔗 opaque Float32.exp2 : Float32 → Float32
+Float32.exp2 : Float32 → Float32
+Computes the base-2 exponential 2 ^ x of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+exp2f .
+21.6.3.4.1. Roots 🔗
+Computing the square root of a negative number yields NaN .
+🔗 def Float.sqrt : Float → Float
+Float.sqrt : Float → Float
+Computes the square root of a floating-point number.
+This function has a logical model in terms of Float.Model . It is implemented in compiled code by the
+C function sqrt .
+🔗 def Float32.sqrt : Float32 → Float32
+Float32.sqrt : Float32 → Float32
+Computes the square root of a floating-point number.
+This function has a logical model in terms of Float32.Model . It is implemented in compiled code by
+the C function sqrtf .
+🔗 opaque Float.cbrt : Float → Float
+Float.cbrt : Float → Float
+Computes the cube root of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+cbrt .
+🔗 opaque Float32.cbrt : Float32 → Float32
+Float32.cbrt : Float32 → Float32
+Computes the cube root of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+cbrtf .
+21.6.3.5. Logarithms 🔗
+🔗 opaque Float.log ( x : Float ) : Float
+Float.log ( x : Float ) : Float
+Computes the natural logarithm ln x of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+log .
+🔗 opaque Float32.log : Float32 → Float32
+Float32.log : Float32 → Float32
+Computes the natural logarithm ln x of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+logf .
+🔗 opaque Float.log10 : Float → Float
+Float.log10 : Float → Float
+Computes the base-10 logarithm of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+log10 .
+🔗 opaque Float32.log10 : Float32 → Float32
+Float32.log10 : Float32 → Float32
+Computes the base-10 logarithm of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+log10f .
+🔗 opaque Float.log2 : Float → Float
+Float.log2 : Float → Float
+Computes the base-2 logarithm of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+log2 .
+🔗 opaque Float32.log2 : Float32 → Float32
+Float32.log2 : Float32 → Float32
+Computes the base-2 logarithm of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+log2f .
+21.6.3.6. Scaling 🔗
+🔗 opaque Float.scaleB ( x : Float ) ( i : Int ) : Float
+Float.scaleB ( x : Float ) ( i : Int ) : Float
+Efficiently computes x * 2 ^ i .
+This function does not reduce in the kernel.
+🔗 opaque Float32.scaleB ( x : Float32 ) ( i : Int ) : Float32
+Float32.scaleB ( x : Float32 ) ( i : Int ) :
+Float32
+Efficiently computes x * 2 ^ i .
+This function does not reduce in the kernel.
+21.6.3.7. Rounding 🔗
+🔗 opaque Float.round : Float → Float
+Float.round : Float → Float
+Rounds to the nearest integer, rounding away from zero at half-way points.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+round .
+🔗 opaque Float32.round : Float32 → Float32
+Float32.round : Float32 → Float32
+Rounds to the nearest integer, rounding away from zero at half-way points.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+roundf .
+🔗 opaque Float.floor : Float → Float
+Float.floor : Float → Float
+Computes the floor of a floating-point number, which is the largest integer that's no larger
+than the given number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+floor .
+Examples:
+Float.floor 1.5 = 1
+Float.floor ( - 1.5 ) = ( - 2 )
+🔗 opaque Float32.floor : Float32 → Float32
+Float32.floor : Float32 → Float32
+Computes the floor of a floating-point number, which is the largest integer that's no larger
+than the given number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+floorf .
+Examples:
+Float32.floor 1.5 = 1
+Float32.floor ( - 1.5 ) = ( - 2 )
+🔗 opaque Float.ceil : Float → Float
+Float.ceil : Float → Float
+Computes the ceiling of a floating-point number, which is the smallest integer that's no smaller
+than the given number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+ceil .
+Examples:
+Float.ceil 1.5 = 2
+Float.ceil ( - 1.5 ) = ( - 1 )
+🔗 opaque Float32.ceil : Float32 → Float32
+Float32.ceil : Float32 → Float32
+Computes the ceiling of a floating-point number, which is the smallest integer that's no smaller
+than the given number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+ceilf .
+Examples:
+Float32.ceil 1.5 = 2
+Float32.ceil ( - 1.5 ) = ( - 1 )
+21.6.3.8. Trigonometry 🔗
+21.6.3.8.1. Sine 🔗
+🔗 opaque Float.sin : Float → Float
+Float.sin : Float → Float
+Computes the sine of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+sin .
+🔗 opaque Float32.sin : Float32 → Float32
+Float32.sin : Float32 → Float32
+Computes the sine of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+sinf .
+🔗 opaque Float.sinh : Float → Float
+Float.sinh : Float → Float
+Computes the hyperbolic sine of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+sinh .
+🔗 opaque Float32.sinh : Float32 → Float32
+Float32.sinh : Float32 → Float32
+Computes the hyperbolic sine of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+sinhf .
+🔗 opaque Float.asin : Float → Float
+Float.asin : Float → Float
+Computes the arc sine (inverse sine) of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+asin .
+🔗 opaque Float32.asin : Float32 → Float32
+Float32.asin : Float32 → Float32
+Computes the arc sine (inverse sine) of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+asinf .
+🔗 opaque Float.asinh : Float → Float
+Float.asinh : Float → Float
+Computes the hyperbolic arc sine (inverse sine) of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+asinh .
+🔗 opaque Float32.asinh : Float32 → Float32
+Float32.asinh : Float32 → Float32
+Computes the hyperbolic arc sine (inverse sine) of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+asinhf .
+21.6.3.8.2. Cosine 🔗
+🔗 opaque Float.cos : Float → Float
+Float.cos : Float → Float
+Computes the cosine of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+cos .
+🔗 opaque Float32.cos : Float32 → Float32
+Float32.cos : Float32 → Float32
+Computes the cosine of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+cosf .
+🔗 opaque Float.cosh : Float → Float
+Float.cosh : Float → Float
+Computes the hyperbolic cosine of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+cosh .
+🔗 opaque Float32.cosh : Float32 → Float32
+Float32.cosh : Float32 → Float32
+Computes the hyperbolic cosine of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+coshf .
+🔗 opaque Float.acos : Float → Float
+Float.acos : Float → Float
+Computes the arc cosine (inverse cosine) of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+acos .
+🔗 opaque Float32.acos : Float32 → Float32
+Float32.acos : Float32 → Float32
+Computes the arc cosine (inverse cosine) of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+acosf .
+🔗 opaque Float.acosh : Float → Float
+Float.acosh : Float → Float
+Computes the hyperbolic arc cosine (inverse cosine) of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+acosh .
+🔗 opaque Float32.acosh : Float32 → Float32
+Float32.acosh : Float32 → Float32
+Computes the hyperbolic arc cosine (inverse cosine) of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+acoshf .
+21.6.3.8.3. Tangent 🔗
+🔗 opaque Float.tan : Float → Float
+Float.tan : Float → Float
+Computes the tangent of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+tan .
+🔗 opaque Float32.tan : Float32 → Float32
+Float32.tan : Float32 → Float32
+Computes the tangent of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+tanf .
+🔗 opaque Float.tanh : Float → Float
+Float.tanh : Float → Float
+Computes the hyperbolic tangent of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+tanh .
+🔗 opaque Float32.tanh : Float32 → Float32
+Float32.tanh : Float32 → Float32
+Computes the hyperbolic tangent of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+tanhf .
+🔗 opaque Float.atan : Float → Float
+Float.atan : Float → Float
+Computes the arc tangent (inverse tangent) of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+atan .
+🔗 opaque Float32.atan : Float32 → Float32
+Float32.atan : Float32 → Float32
+Computes the arc tangent (inverse tangent) of a floating-point number in radians.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+atanf .
+🔗 opaque Float.atanh : Float → Float
+Float.atanh : Float → Float
+Computes the hyperbolic arc tangent (inverse tangent) of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+atanh .
+🔗 opaque Float32.atanh : Float32 → Float32
+Float32.atanh : Float32 → Float32
+Computes the hyperbolic arc tangent (inverse tangent) of a floating-point number.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+atanhf .
+🔗 opaque Float.atan2 ( y x : Float ) : Float
+Float.atan2 ( y x : Float ) : Float
+Computes the arc tangent (inverse tangent) of y / x in radians, in the range - π – π . The signs
+of the arguments determine the quadrant of the result.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+atan2 .
+🔗 opaque Float32.atan2 : Float32 → Float32 → Float32
+Float32.atan2 :
+Float32 → Float32 → Float32
+Computes the arc tangent (inverse tangent) of y / x in radians, in the range - π – π . The signs
+of the arguments determine the quadrant of the result.
+This function does not reduce in the kernel. It is implemented in compiled code by the C function
+atan2f .
+21.6.3.9. Negation and Absolute Value 🔗
+🔗 def Float.abs : Float → Float
+Float.abs : Float → Float
+Computes the absolute value of a floating-point number.
+This function has a logical model in terms of Float.Model . It is implemented in compiled code by the
+C function fabs .
+🔗 def Float32.abs : Float32 → Float32
+Float32.abs : Float32 → Float32
+Computes the absolute value of a floating-point number.
+This function has a logical model in terms of Float32.Model . It is implemented in compiled code by
+the C function fabsf .
+🔗 def Float.neg : Float → Float
+Float.neg : Float → Float
+Negates 64-bit floating-point numbers according to IEEE 754. Typically used via the - prefix
+operator.
+This function has a logical model in terms of Float.Model . It is compiled to the C negation operator.
+🔗 def Float32.neg : Float32 → Float32
+Float32.neg : Float32 → Float32
+Negates 32-bit floating-point numbers according to IEEE 754. Typically used via the - prefix
+operator.
+This function has a logical model in terms of Float32.Model . It is compiled to the C negation operator.
+← 21.5. Bitvectors 21.7. Characters →
