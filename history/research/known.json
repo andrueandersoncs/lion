@@ -278,7 +278,7 @@
       "predicted": "list",
       "found": "error"
     },
-    "note": "R7RS-small 4.1.4: (lambda args args) takes any number of arguments as a list; Lion's lambda takes only a list of parameters, so [\"lambda\", \"args\", \"args\"] is not well-formed. Library functions already take any number after the ones they need, as array/make and func/partial do, so a rest parameter would follow the arity rule. Waits for the user; recommended: build a rest parameter for lambda."
+    "note": "R7RS-small 4.1.4: (lambda args args) takes any number of arguments as a list; Lion's lambda takes only a list of parameters, so [\"lambda\", \"args\", \"args\"] is not well-formed. Library functions already take any number after the ones they need, as array/make and func/partial do, so a rest parameter would follow the arity rule. On 2026-11-21 the user chose to fix it (build a rest parameter for lambda); it waits for the change that does."
   },
   {
     "assumption": "rules-hold",
@@ -288,7 +288,7 @@
       "predicted": "true",
       "found": "error"
     },
-    "note": "R7RS-small 4.2.1: (and) is #t; Lion refuses [\"and\"] as not well-formed, as a goal. Waits for the user; recommended: fix, so that [\"and\"] is true and [\"or\"] is false, the empty conjunction and disjunction, in plain code and as goals."
+    "note": "R7RS-small 4.2.1: (and) is #t; Lion refuses [\"and\"] as not well-formed, as a goal. On 2026-11-21 the user chose to fix it (fix, so that [\"and\"] is true and [\"or\"] is false, the empty conjunction and disjunction, in plain code and as goals); it waits for the change that does."
   },
   {
     "assumption": "rules-hold",
@@ -298,77 +298,7 @@
       "predicted": "false",
       "found": "error"
     },
-    "note": "R7RS-small 4.2.1: (or) is #f; Lion refuses [\"or\"] as not well-formed. Waits for the user; recommended: fix it with and-no-arguments."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-4.2.1-and-gives-last-value",
-      "predicted": "last-value",
-      "found": "error"
-    },
-    "note": "R7RS-small 4.2.1: and gives the value of its last expression, as (and 1 2) is 2; Lion's and takes only booleans and goals, the rule names-by-scope states for cond, whose cond-zero-condition and like cases are already excepted. Waits for the user; recommended: except it, with or-gives-first-true-value and not-of-non-boolean, in a decision that a condition is a boolean in and, or, not, and boolean/not as it is in cond."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-4.2.1-or-gives-first-true-value",
-      "predicted": "first-true-value",
-      "found": "error"
-    },
-    "note": "R7RS-small 4.2.1: or gives the first value that is not #f, as (or #f 3) is 3; Lion's or takes only booleans and goals. Waits for the user; recommended: except it with and-gives-last-value, since conditions are booleans."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-6.3-not-of-non-boolean",
-      "predicted": "false",
-      "found": "error"
-    },
-    "note": "R7RS-small 6.3: (not 3) is #f, since every value but #f is true; boolean/not, like the not form, takes only a boolean. Waits for the user; recommended: except it with and-gives-last-value, since conditions are booleans."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-4.2.1-cond-clause-sequence",
-      "predicted": "last-value",
-      "found": "error"
-    },
-    "note": "R7RS-small 4.2.1: a cond clause's body is one or more expressions, and the clause gives the last one's value; Lion's case is a condition and one result. Waits for the user; recommended: except it, since a result written with begin does the same and one result keeps every case a pair, as the analysis and the editor read it."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-4.2.5-force-reentrant",
-      "predicted": "first-value",
-      "found": "error"
-    },
-    "note": "R7RS-small 4.2.5: the report's example forces a promise inside its own force and gives 6; Lion fails, as Racket's force does with a reentrant promise, and the delay-and-force record says Lion's delay is Racket's. Waits for the user; recommended: except it, naming Racket as the precedent."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-4.2.7-raise-handler-gets-raised-object",
-      "predicted": "raised-object",
-      "found": "record"
-    },
-    "note": "R7RS-small 4.2.7: guard gives its handler the raised object itself, as Racket's with-handlers does; func/catch gives a record {failure, message, value}, so one handler reads every failure the same way, as catchable-failures chose. Waits for the user; recommended: except it by that decision."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-5.5-record-modifier-mutates",
-      "predicted": "changed",
-      "found": "unchanged"
-    },
-    "note": "R7RS-small 5.5: a record's modifier changes the record; Lion's records are JSON values, and object/set gives a new record, as Racket's immutable hash-set does. Waits for the user; recommended: except it, since values are immutable data that facts and answers can hold."
+    "note": "R7RS-small 4.2.1: (or) is #f; Lion refuses [\"or\"] as not well-formed. On 2026-11-21 the user chose to fix it (fix it with and-no-arguments); it waits for the change that does."
   },
   {
     "assumption": "rules-hold",
@@ -378,7 +308,7 @@
       "predicted": "zero",
       "found": "error"
     },
-    "note": "R7RS-small 6.2.6: (+) is 0; number/add takes one or more, while the README says the six combining functions work as +, *, min, max, string-append, and append do in Scheme, and Scheme's take zero or more for all but min and max. Waits for the user; recommended: fix, so that number/add, number/multiply, array/concat, and string/concat take zero or more and give 0, 1, [], and \"\" for none."
+    "note": "R7RS-small 6.2.6: (+) is 0; number/add takes one or more, while the README says the six combining functions work as +, *, min, max, string-append, and append do in Scheme, and Scheme's take zero or more for all but min and max. On 2026-11-21 the user chose to fix it (fix, so that number/add, number/multiply, array/concat, and string/concat take zero or more and give 0, 1, [], and \"\" for none); it waits for the change that does."
   },
   {
     "assumption": "rules-hold",
@@ -388,7 +318,7 @@
       "predicted": "one",
       "found": "error"
     },
-    "note": "R7RS-small 6.2.6: (*) is 1; number/multiply takes one or more. Waits for the user; recommended: fix it with add-no-arguments."
+    "note": "R7RS-small 6.2.6: (*) is 1; number/multiply takes one or more. On 2026-11-21 the user chose to fix it (fix it with add-no-arguments); it waits for the change that does."
   },
   {
     "assumption": "rules-hold",
@@ -398,7 +328,7 @@
       "predicted": "empty-list",
       "found": "error"
     },
-    "note": "R7RS-small 6.4: (append) is the empty list; array/concat takes one or more. Waits for the user; recommended: fix it with add-no-arguments."
+    "note": "R7RS-small 6.4: (append) is the empty list; array/concat takes one or more. On 2026-11-21 the user chose to fix it (fix it with add-no-arguments); it waits for the change that does."
   },
   {
     "assumption": "rules-hold",
@@ -408,7 +338,7 @@
       "predicted": "empty-string",
       "found": "error"
     },
-    "note": "R7RS-small 6.7: (string-append) is the empty string; string/concat takes one or more. Waits for the user; recommended: fix it with add-no-arguments."
+    "note": "R7RS-small 6.7: (string-append) is the empty string; string/concat takes one or more. On 2026-11-21 the user chose to fix it (fix it with add-no-arguments); it waits for the change that does."
   },
   {
     "assumption": "rules-hold",
@@ -418,7 +348,7 @@
       "predicted": "error",
       "found": "null"
     },
-    "note": "R7RS-small 6.4: taking the car of the empty list is an error, which Racket signals; array/head of [] gives null, which cannot be told from the head of [null]. Waits for the user; recommended: fix, so that array/head and array/tail of [] fail as car and cdr do."
+    "note": "R7RS-small 6.4: taking the car of the empty list is an error, which Racket signals; array/head of [] gives null, which cannot be told from the head of [null]. On 2026-11-21 the user chose to fix it (fix, so that array/head and array/tail of [] fail as car and cdr do); it waits for the change that does."
   },
   {
     "assumption": "rules-hold",
@@ -428,17 +358,7 @@
       "predicted": "error",
       "found": "empty-list"
     },
-    "note": "R7RS-small 6.4: taking the cdr of the empty list is an error; array/tail of [] gives []. Waits for the user; recommended: fix it with car-of-empty-list."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-6.7-string-length-counts-characters",
-      "predicted": "one",
-      "found": "two"
-    },
-    "note": "R7RS-small 6.7: a string is a sequence of characters, so (string-length \"𝄞\") is 1; string/length counts UTF-16 code units, as JavaScript does, and so do string/slice, string/indexOf, and string/split. Waits for the user; recommended: except it under stdlib-agrees-with-javascript for now, and decide code points for every string function together, since changing one alone would make positions disagree."
+    "note": "R7RS-small 6.4: taking the cdr of the empty list is an error; array/tail of [] gives []. On 2026-11-21 the user chose to fix it (fix it with car-of-empty-list); it waits for the change that does."
   },
   {
     "assumption": "rules-hold",
@@ -448,26 +368,6 @@
       "predicted": "spread",
       "found": "error"
     },
-    "note": "R7RS-small 6.10: (apply + (list 3 4)) is 7; func/apply takes a this-object and passes the arguments after it as they are, as JavaScript's call does, so it spreads no list, unlike Scheme's apply and JavaScript's own Function.prototype.apply. Waits for the user; recommended: fix, so that func/apply spreads its last argument, a list, as both do."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-6.10-map-several-lists",
-      "predicted": "elementwise",
-      "found": "error"
-    },
-    "note": "R7RS-small 6.10: map takes several lists, as (map + '(1 2 3) '(10 20 30)) is (11 22 33); array/map takes one list and the function, data first. Waits for the user; recommended: except it, and serve the need with a library function that zips lists, which leaves array/map's arguments as they are."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-6.10-continuation-resumed-twice",
-      "predicted": "resumes",
-      "found": "error"
-    },
-    "note": "Scheme's continuations, and Racket's shift and reset, can be resumed more than once; Lion's resume once, as the delimited-continuations record says, since the delimited part runs in a fiber of its own. Waits for the user; recommended: except it by that decision."
+    "note": "R7RS-small 6.10: (apply + (list 3 4)) is 7; func/apply takes a this-object and passes the arguments after it as they are, as JavaScript's call does, so it spreads no list, unlike Scheme's apply and JavaScript's own Function.prototype.apply. On 2026-11-21 the user chose to fix it (fix, so that func/apply spreads its last argument, a list, as both do); it waits for the change that does."
   }
 ]

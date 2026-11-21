@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 213 questions have been decided, 95 records explain them, and of what the records assert, 634 hold when Lion is run, 6 are broken, 366 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 220 questions have been decided, 96 records explain them, and of what the records assert, 644 hold when Lion is run, 7 are broken, 374 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -185,7 +185,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`engine-mechanics-docs`](#engine-mechanics-docs) | `engine-md` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
 | 2026-11-19 | [`record-pages-and-their-commit`](#record-pages-and-their-commit) | `pages-from-the-record-alone` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
 | 2026-11-19 | [`reworded-doc-sentence`](#reworded-doc-sentence) | `claim-left-out` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
-| 2026-11-19 | [`condition-truth`](#condition-truth) | `true-or-false` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
+| 2026-11-19 | [`condition-truth`](#condition-truth) | `true-or-false` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope), [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-19 | [`define-scope`](#define-scope) | `body` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
 | 2026-11-19 | [`form-name-bindings`](#form-name-bindings) | `shadow-in-scope` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
 | 2026-11-19 | [`aggregated-relation-candidates`](#aggregated-relation-candidates) | `merge-from-rules` | [A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back](#one-relation-model) |
@@ -219,6 +219,13 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`improvement-order`](#improvement-order) | `constraints-capability-cost-rate` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
 | 2026-11-21 | [`scheme-fidelity`](#scheme-fidelity) | `departures-decided-and-probed` | [Lion's departures from Scheme and Racket are the exceptions a decision names, and any other difference from Scheme is a finding](#scheme-departures-listed) |
 | 2026-11-21 | [`speed-constraint`](#speed-constraint) | `growth-hard-constant-soft` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
+| 2026-11-21 | [`catch-handler-argument`](#catch-handler-argument) | `failure-record` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`cond-case-shape`](#cond-case-shape) | `one-result` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`continuation-shots`](#continuation-shots) | `one-shot` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`map-arguments`](#map-arguments) | `one-list` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`record-mutability`](#record-mutability) | `immutable` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`reentrant-force`](#reentrant-force) | `fails` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`string-positions`](#string-positions) | `utf16-code-units` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 
 <a id="program-representation"></a>
 
@@ -4112,7 +4119,47 @@ Now: `claim-left-out`.
 
 Now: `true-or-false`.
 
-- 2026-11-19 `condition-truth`: `true-or-false` over `javascript-truthiness`, `scheme-truth`: "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it." (`names-by-scope.json`)
+- 2026-11-19 `condition-truth`: `true-or-false` over `scheme-truth`: "A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter" (`names-by-scope.json`, `r7rs-departures-decided.json`)
+
+<a id="r7rs-departures-decided"></a>
+
+### Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has
+
+Recorded 2026-11-21 in `history/notes/r7rs-departures-decided.json`.
+
+**Context.** The probes `r7rs-<section>-<what>` run 36 cases that R7RS-small settles, and in 20 of them Lion gave something else than Scheme. The rule `scheme-racket-semantics` names a departure as an exception in a decision, so each difference was a finding in `known.json` until it was decided. On 2026-11-21 the user chose, for each, the recommendation it was listed with: ten are fixed, so that Lion gives what Scheme gives, in the changes that follow this one, and the ten this record names are departures.
+
+**Decision.** Ten cases stay as they are, as departures from Scheme. A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter, so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f. A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair. Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed. `func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way, where Scheme's `guard` gives the raised object. A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does, where an R7RS record's modifier changes it. A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together. `array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several. A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again.
+
+**Consequences.** The ten cases leave `known.json`: the rule `scheme-racket-semantics` excepts them, and what this record asserts of each is what its probe gives. The other ten wait in `known.json` until the change that fixes each. Lion's list of departures from Scheme grows from one to eleven.
+
+**Alternatives considered.**
+
+- Give what Scheme gives in all twenty cases. Six of the ten would undo a rule Lion keeps on purpose: that conditions are booleans, that values are immutable data facts can hold, that a catch handler reads every failure the same way, and that a continuation's fiber goes on once.
+- Except all twenty. In the other ten Lion fails or gives a value Scheme does not for no reason of its own, as `(+)` failing while the README says `number/add` works as `+` does.
+- Count string positions in characters now. Every string function counts code units, so changing `string/length` alone would make its positions disagree with `string/slice`, `string/indexOf`, and `string/split`; that is a decision for all of them at once.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `condition-truth`: `true-or-false`. "A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter"
+- Holds when Lion is run: `r7rs-4.2.1-and-gives-last-value` is `error`. "so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f"
+- Holds when Lion is run: `r7rs-4.2.1-or-gives-first-true-value` is `error`. "so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f"
+- Holds when Lion is run: `r7rs-6.3-not-of-non-boolean` is `error`. "so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f"
+- Holds when Lion is run: `r7rs-4.2.1-cond-clause-sequence` is `error`. "A `cond` case is a condition and one result"
+- Holds when Lion is run: `r7rs-4.2.5-force-reentrant` is `error`. "Forcing a promise while it is being forced fails"
+- Holds when Lion is run: `r7rs-4.2.7-raise-handler-gets-raised-object` is `record`. "`func/catch` gives its handler a record of the failure"
+- Holds when Lion is run: `r7rs-5.5-record-modifier-mutates` is `unchanged`. "`object/set` gives a new one"
+- Holds when Lion is run: `r7rs-6.7-string-length-counts-characters` is `two`. "A string's positions and length count UTF-16 code units"
+- Holds when Lion is run: `r7rs-6.10-map-several-lists` is `error`. "`array/map` takes one list and the function"
+- Holds when Lion is run: `r7rs-6.10-continuation-resumed-twice` is `error`. "A continuation resumes once"
+- Stated, not checked by running Lion: decided `cond-case-shape`: `one-result`. "A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair."
+- Stated, not checked by running Lion: decided `reentrant-force`: `fails`. "Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed."
+- Stated, not checked by running Lion: decided `catch-handler-argument`: `failure-record`. "`func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way"
+- Stated, not checked by running Lion: decided `record-mutability`: `immutable`. "A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does"
+- Stated, not checked by running Lion: decided `string-positions`: `utf16-code-units`. "A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together."
+- Stated, not checked by running Lion: decided `map-arguments`: `one-list`. "`array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several."
+- Stated, not checked by running Lion: decided `continuation-shots`: `one-shot`. "A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again."
+- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "Ten cases stay as they are, as departures from Scheme."
 
 <a id="define-scope"></a>
 
@@ -4861,3 +4908,59 @@ Recorded 2026-11-21 in `history/notes/scheme-departures-listed.json`.
 Now: `growth-hard-constant-soft`.
 
 - 2026-11-21 `speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`: "A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change." (`improvement-judged-by-capability.json`)
+
+<a id="catch-handler-argument"></a>
+
+## catch-handler-argument
+
+Now: `failure-record`.
+
+- 2026-11-21 `catch-handler-argument`: `failure-record` over `raised-object`: "`func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way" (`r7rs-departures-decided.json`)
+
+<a id="cond-case-shape"></a>
+
+## cond-case-shape
+
+Now: `one-result`.
+
+- 2026-11-21 `cond-case-shape`: `one-result` over `sequence`: "A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair." (`r7rs-departures-decided.json`)
+
+<a id="continuation-shots"></a>
+
+## continuation-shots
+
+Now: `one-shot`.
+
+- 2026-11-21 `continuation-shots`: `one-shot` over `multi-shot`: "A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again." (`r7rs-departures-decided.json`)
+
+<a id="map-arguments"></a>
+
+## map-arguments
+
+Now: `one-list`.
+
+- 2026-11-21 `map-arguments`: `one-list` over `several-lists`: "`array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several." (`r7rs-departures-decided.json`)
+
+<a id="record-mutability"></a>
+
+## record-mutability
+
+Now: `immutable`.
+
+- 2026-11-21 `record-mutability`: `immutable` over `mutable-records`: "A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does" (`r7rs-departures-decided.json`)
+
+<a id="reentrant-force"></a>
+
+## reentrant-force
+
+Now: `fails`.
+
+- 2026-11-21 `reentrant-force`: `fails` over `first-value`: "Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed." (`r7rs-departures-decided.json`)
+
+<a id="string-positions"></a>
+
+## string-positions
+
+Now: `utf16-code-units`.
+
+- 2026-11-21 `string-positions`: `utf16-code-units` over `characters`: "A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together." (`r7rs-departures-decided.json`)

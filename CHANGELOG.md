@@ -11,6 +11,17 @@
 - `packages/metrics/corpus/` holds Lion's public capability corpus: tasks of general computation, logic programming, and formal proofs, each a JSON record {id, pillar, statement, inputs, check, tags, origin} whose check is a Lion lambda that judges what a program gives, with a reference program for each task Lion can do (`capability-corpus` added)
 - `LION_HELD_OUT` names a folder outside the repository with the corpus's layout, whose tasks are graded beside the public ones; a folder inside the repository is refused (`held-out-corpus` added)
 
+### Changed
+
+- so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f (`r7rs-4.2.1-and-gives-last-value` is `error`; `r7rs-4.2.1-or-gives-first-true-value` is `error`; `r7rs-6.3-not-of-non-boolean` is `error`)
+- A `cond` case is a condition and one result (`r7rs-4.2.1-cond-clause-sequence` is `error`)
+- Forcing a promise while it is being forced fails (`r7rs-4.2.5-force-reentrant` is `error`)
+- `func/catch` gives its handler a record of the failure (`r7rs-4.2.7-raise-handler-gets-raised-object` is `record`)
+- `object/set` gives a new one (`r7rs-5.5-record-modifier-mutates` is `unchanged`)
+- A continuation resumes once (`r7rs-6.10-continuation-resumed-twice` is `error`)
+- `array/map` takes one list and the function (`r7rs-6.10-map-several-lists` is `error`)
+- A string's positions and length count UTF-16 code units (`r7rs-6.7-string-length-counts-characters` is `two`)
+
 ### Decided
 
 - Capability is measured two ways: by a corpus of tasks that agents solve by writing Lion (`capability-yardstick`: `agent-corpus-and-external-suites` over `reference-programs-only`, `external-suites-only`)
@@ -23,6 +34,13 @@
 - Versions of Lion are compared in a fixed order, never by a weighted sum (`improvement-order`: `constraints-capability-cost-rate` over `weighted-sum`)
 - Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why. (`scheme-fidelity`: `departures-decided-and-probed` over `where-unclear`, `separate-departures-list`, `racket-first`)
 - A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change. (`speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`)
+- `func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way (`catch-handler-argument`: `failure-record` over `raised-object`)
+- A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair. (`cond-case-shape`: `one-result` over `sequence`)
+- A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again. (`continuation-shots`: `one-shot` over `multi-shot`)
+- `array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several. (`map-arguments`: `one-list` over `several-lists`)
+- A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does (`record-mutability`: `immutable` over `mutable-records`)
+- Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed. (`reentrant-force`: `fails` over `first-value`)
+- A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together. (`string-positions`: `utf16-code-units` over `characters`)
 
 ### Rules
 
@@ -193,7 +211,7 @@ A string is read by scope: it is a name where a scope declares it and data other
 - How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`. (`engine-mechanics-docs`: `engine-md` over `readme-guarantees`)
 - The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (`record-pages-and-their-commit`: `pages-from-the-record-alone` over `second-pages-commit`, `pages-built-in-ci`)
 - A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing. (`reworded-doc-sentence`: `claim-left-out` over `check-fails`)
-- A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (`condition-truth`: `true-or-false` over `javascript-truthiness`, `scheme-truth`)
+- A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter (`condition-truth`: `true-or-false` over `scheme-truth`)
 - A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (`define-scope`: `body` over `global`)
 - A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (`form-name-bindings`: `shadow-in-scope` over `refused`)
 - A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name. (`unbound-string-semantics`: `settled-by-scope` over `keep-string-fallback`, `ref-form`, `call-form`, was `keep-string-fallback`)
@@ -2292,5 +2310,5 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - The auto-quoting of lists was removed. (rule `non-call-arrays-are-lists` withdrawn)
 - A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (rule `special-forms-plain-names`)
 - A record pattern in `match` fits any record that has the pattern's keys with values that fit (rule `record-patterns-by-keys`)
-- R7RS-small 4.2.7: the handler of guard is given the object that was raised, so (guard (e (#t e)) (raise 'boom)) is boom (rule `scheme-racket-semantics`)
+- Ten cases stay as they are, as departures from Scheme. (rule `scheme-racket-semantics`)
 - All code is valid JSON. All JSON is valid code. (rule `all-json-is-code` withdrawn)
