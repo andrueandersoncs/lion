@@ -3,7 +3,7 @@ import { stdlib } from "@lionlang/core/modules";
 import type { Fetch } from "@typesafe-ai/sdk";
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
-import { makeTypeSafeBindings } from "./index.ts";
+import { makeTypeSafeBindings } from "../index.ts";
 
 const response = (body: unknown) =>
   new Response(JSON.stringify(body), {

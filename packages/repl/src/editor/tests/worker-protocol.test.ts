@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { handleWorkerRequest } from "./worker-protocol";
+import { handleWorkerRequest } from "../worker-protocol";
 
 describe("editor worker protocol", () => {
   it("returns serializable revisioned analysis", async () => {

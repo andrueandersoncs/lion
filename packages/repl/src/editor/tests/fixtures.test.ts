@@ -1,6 +1,6 @@
 import { analyze, flattenAnalysis } from "@lionlang/core/analysis/analyze";
 import { describe, expect, it } from "vitest";
-import { createSyntheticProgram } from "./fixtures";
+import { createSyntheticProgram } from "../fixtures";
 
 describe("performance fixtures", () => {
   it.each([

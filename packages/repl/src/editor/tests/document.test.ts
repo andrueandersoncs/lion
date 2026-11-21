@@ -3,7 +3,7 @@ import {
   CanonicalDocument,
   compileEditIntent,
   StaleEditError,
-} from "./document";
+} from "../document";
 
 describe("CanonicalDocument", () => {
   it("keeps source and graph changes in one chronological history", () => {

@@ -1,0 +1,40 @@
+{
+  "claims": [
+    {
+      "quote": "The five tests that sat beside their code, packages/typesafe-ai/src/index.test.ts and the editor's document, fixtures, parse, and worker-protocol tests, are in tests folders",
+      "says": {
+        "behavior": "test-file-location",
+        "is": "tests-folders",
+        "area": "process",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "The two committed screen recordings, .artifacts/proof/repl-server-output-dock.webm and packages/repl/artifacts/thicker-black-background-dots.webm, are removed from git",
+      "says": {
+        "behavior": "proof-recordings-in-git",
+        "is": "none",
+        "area": "process",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "no proof recording is in the repository",
+      "says": {
+        "behavior": "completion-proof-location",
+        "is": "outside-git",
+        "area": "process",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "packages/core/src/modules/tests/index.test.ts checks with @effect/vitest properties that namespaceEntries names each entry of any record by its namespace, in order, and keeps its value, and that the stdlib is every function of every module named by its module",
+      "says": {
+        "behavior": "core-test-framework",
+        "is": "effect-vitest",
+        "area": "process",
+        "fixes": true
+      }
+    }
+  ]
+}

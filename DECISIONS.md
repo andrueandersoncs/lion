@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 228 questions have been decided, 102 records explain them, and of what the records assert, 673 hold when Lion is run, 3 are broken, 382 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 228 questions have been decided, 102 records explain them, and of what the records assert, 674 hold when Lion is run, 2 are broken, 382 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -779,7 +779,7 @@ Recorded 2026-11-11 in `history/notes/property-based-tests.json`.
 - Stated, not checked by running Lion: `property-default-runs` is 100. "A property is checked against many generated inputs, 100 by default"
 - Holds when Lion is run: rule `property-based-tests` holds. "New behavior gets property-based tests, not tests with fixed example inputs"
 - Stated, not checked by running Lion: rule `example-based-tests` is withdrawn. "Example-based unit tests with fixed inputs, as AGENTS.md showed before"
-- Broken: Lion does otherwise: rule `effect-vitest-properties` holds. "A property uses `it.prop` or `it.effect.prop` from `@effect/vitest` with Schemas or generators from `effect/Arbitrary`"
+- Holds when Lion is run: rule `effect-vitest-properties` holds. "A property uses `it.prop` or `it.effect.prop` from `@effect/vitest` with Schemas or generators from `effect/Arbitrary`"
 - Stated, not checked by running Lion: rule `test-against-independent-model` holds. "checks behavior against something independent of the code under test: a simpler model, a round trip such as save, load, and save again, or an equivalence such as two ways of computing the same answer"
 - Stated, not checked by running Lion: rule `shared-generators` holds. "A domain's generators live in a module next to its tests"
 - Stated, not checked by running Lion: rule `properties-can-fail` holds. "each property must be shown to fail when the code it covers is broken"

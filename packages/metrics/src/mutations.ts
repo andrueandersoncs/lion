@@ -906,6 +906,14 @@ const WEIGHTS: readonly Mutation[] = [
 ];
 
 export const MUTATIONS: readonly Mutation[] = [
+  {
+    name: "a module's entries are named only when they are functions",
+    file: core("modules/index.ts"),
+    find: "    const [key, value] = entry;",
+    replace:
+      '    const [key, value] = entry;\n    if (typeof value !== "function") {\n      continue;\n    }',
+    tests: ["src/modules/tests/index.test.ts"],
+  },
   ...WEIGHTS,
   ...SCALING,
   research(

@@ -7,8 +7,8 @@ import {
   analysisEnvironment,
   makeEvaluationEnvironment,
   usesTypeSafeBindings,
-} from "./environment";
-import { analyzeSource } from "./parse";
+} from "../environment";
+import { analyzeSource } from "../parse";
 
 const pick = <A>(items: readonly A[]) =>
   Arbitrary.map(

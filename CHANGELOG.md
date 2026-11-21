@@ -45,6 +45,10 @@
 ### Fixed
 
 - `bun run loop scores` reads the capability as the JSON object `bun run capability --json` printed, whatever bun prints around it, so the first observation after merging the corpus no longer stops at the capability (`loop-capability-with-bun-lines` is `read`)
+- no proof recording is in the repository (`completion-proof-location` is `outside-git`)
+- packages/core/src/modules/tests/index.test.ts checks with @effect/vitest properties that namespaceEntries names each entry of any record by its namespace, in order, and keeps its value, and that the stdlib is every function of every module named by its module (`core-test-framework` is `effect-vitest`)
+- The two committed screen recordings, .artifacts/proof/repl-server-output-dock.webm and packages/repl/artifacts/thicker-black-background-dots.webm, are removed from git (`proof-recordings-in-git` is `none`)
+- The five tests that sat beside their code, packages/typesafe-ai/src/index.test.ts and the editor's document, fixtures, parse, and worker-protocol tests, are in tests folders (`test-file-location` is `tests-folders`)
 
 ### Decided
 
