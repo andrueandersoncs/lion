@@ -15,7 +15,7 @@ Part of Lion's developer guidelines, which start in [AGENTS.md](../AGENTS.md).
   - `verbatimModuleSyntax: true`
 
 ## Biome Formatting/Linting
-- **Indentation**: Tabs (not spaces)
+- **Indentation**: two spaces, as the Ultracite preset sets them
 - **Quote style**: Double quotes (`"`)
 - **Import organization**: Automatic (enabled)
 - **Files to format**: `src/**/*`, `.vscode/**/*`, `index.html`, `vite.config.js`

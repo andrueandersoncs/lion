@@ -269,5 +269,25 @@
       "does": "from-formed-version"
     },
     "note": "4c8df1b made a belief that explains no problem be judged from the version it was formed in, and in the same commit added a comment in packages/metrics/src/tests/reasoning-skill.test.ts that still said such a belief is judged in the present. Fixed in the working tree: the comment now says what the model beside it does. It clears once the commit that fixes it is read into the notes."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "tests-in-tests-folders",
+      "case": "test-file-location",
+      "predicted": "tests-folders",
+      "found": "some-outside"
+    },
+    "note": "Found by the improvement loop's experiment probe-rules (2026-11-21): packages/typesafe-ai/src/index.test.ts and four tests in packages/repl/src/editor/ (fixtures, document, parse, worker-protocol) sit beside their code, not in a tests folder. Settle by moving them, or by restating the rule with those packages as exceptions; the user decides."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "proof-not-in-git",
+      "case": "proof-recordings-in-git",
+      "predicted": "none",
+      "found": "some"
+    },
+    "note": "Found by the improvement loop's experiment probe-rules (2026-11-21): two screen recordings are committed, .artifacts/proof/repl-server-output-dock.webm and packages/repl/artifacts/thicker-black-background-dots.webm, though AGENTS.md says proof is not committed into git. Settle by removing them from git, which the user decides."
   }
 ]

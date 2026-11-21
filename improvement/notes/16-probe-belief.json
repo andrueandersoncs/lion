@@ -1,0 +1,17 @@
+{
+  "beliefs": [
+    {
+      "id": "probe-1",
+      "tries": "probe-rules",
+      "statement": "With six rules no probe checked given a prediction a probe answers, the record holds and no probe checks six fewer rules; the two the probes find broken are listed for the user, and nothing else fails or changes an instrument",
+      "predicts": [
+        { "question": { "rules no probe checks": "record" }, "value": 101 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 }
+      ]
+    }
+  ]
+}

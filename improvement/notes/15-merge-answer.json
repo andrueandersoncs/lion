@@ -1,0 +1,6 @@
+{
+  "observations": [
+    { "id": "u12", "source": "user", "quote": "Yes, merge it",
+      "question": { "merge phase 1B": "this branch" }, "value": "yes" }
+  ]
+}

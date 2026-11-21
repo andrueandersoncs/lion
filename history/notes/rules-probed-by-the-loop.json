@@ -1,0 +1,66 @@
+{
+  "claims": [
+    {
+      "quote": "Every package's test script runs `vitest run`",
+      "says": {
+        "rule": "tests-use-vitest-effect",
+        "holds": true,
+        "statement": "Tests run on Vitest with @effect/vitest: every package's test script runs vitest",
+        "area": "tests",
+        "predicts": [{ "behavior": "package-test-runner", "is": "vitest" }]
+      }
+    },
+    {
+      "quote": "Every test file is in a `tests` folder beside the code it tests",
+      "says": {
+        "rule": "tests-in-tests-folders",
+        "holds": true,
+        "statement": "Tests live in a tests folder beside the code they test",
+        "area": "tests",
+        "predicts": [
+          { "behavior": "test-file-location", "is": "tests-folders" }
+        ]
+      }
+    },
+    {
+      "quote": "No screen recording or other proof of completion is committed: no file of the repository outside `out/` is a video or an animated image",
+      "says": {
+        "rule": "proof-not-in-git",
+        "holds": true,
+        "statement": "Completion proof is not committed into git.",
+        "area": "process",
+        "predicts": [{ "behavior": "proof-recordings-in-git", "is": "none" }]
+      }
+    },
+    {
+      "quote": "The site's asset stamps are current, as `bun run --cwd packages/site-runtime stamp --check` says",
+      "says": {
+        "rule": "stamp-site-assets-after-docs-edit",
+        "holds": true,
+        "statement": "After editing only files in docs/, update the site's asset hash with the stamp command.",
+        "area": "site",
+        "predicts": [{ "behavior": "site-asset-stamps", "is": "current" }]
+      }
+    },
+    {
+      "quote": "The root's `test`, `build`, and `typecheck` scripts run Turbo",
+      "says": {
+        "rule": "commands-from-root-with-turbo",
+        "holds": true,
+        "statement": "Commands run from the root directory using Turbo.",
+        "area": "build",
+        "predicts": [{ "behavior": "root-scripts-use-turbo", "is": "turbo" }]
+      }
+    },
+    {
+      "quote": "Biome formats the code with Ultracite's preset: two spaces for indentation, double quotes, and imports organized automatically",
+      "says": {
+        "rule": "biome-formatting",
+        "holds": true,
+        "statement": "Biome formats the code with Ultracite's preset: two spaces for indentation, double quotes, imports organized automatically.",
+        "area": "build",
+        "predicts": [{ "behavior": "format-indentation", "is": "spaces" }]
+      }
+    }
+  ]
+}

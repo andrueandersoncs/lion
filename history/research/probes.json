@@ -1,5 +1,201 @@
 [
   {
+    "case": "package-test-runner",
+    "area": "tests",
+    "program": [
+      "begin",
+      [
+        "define",
+        "manifest?",
+        [
+          "lambda",
+          ["file"],
+          [
+            "and",
+            ["string/endsWith", "file", "/package.json"],
+            [
+              "number/lessThan",
+              ["array/length", ["string/split", "file", "/"]],
+              4
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "commands",
+        [
+          "array/map",
+          ["repo/files", "packages"],
+          [
+            "lambda",
+            ["file"],
+            [
+              "cond",
+              [
+                ["manifest?", "file"],
+                [
+                  "object/get",
+                  ["object/get", ["repo/json", "file"], "scripts", {}],
+                  "test",
+                  ""
+                ]
+              ],
+              ["else", ""]
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "array/every?",
+            "commands",
+            [
+              "lambda",
+              ["script"],
+              [
+                "or",
+                ["string/equals?", "script", ""],
+                ["string/includes", "script", "vitest run"]
+              ]
+            ]
+          ],
+          ["quote", "vitest"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "test-file-location",
+    "area": "tests",
+    "program": [
+      "cond",
+      [
+        [
+          "array/every?",
+          ["repo/files", "packages"],
+          [
+            "lambda",
+            ["file"],
+            [
+              "or",
+              [
+                "boolean/not",
+                [
+                  "or",
+                  ["string/endsWith", "file", ".test.ts"],
+                  ["string/endsWith", "file", ".test.tsx"]
+                ]
+              ],
+              ["string/includes", "file", "/tests/"]
+            ]
+          ]
+        ],
+        ["quote", "tests-folders"]
+      ],
+      ["else", ["quote", "some-outside"]]
+    ]
+  },
+  {
+    "case": "proof-recordings-in-git",
+    "area": "process",
+    "program": [
+      "cond",
+      [
+        [
+          "array/some?",
+          ["repo/files", "."],
+          [
+            "lambda",
+            ["file"],
+            [
+              "and",
+              ["boolean/not", ["string/startsWith", "file", "out/"]],
+              [
+                "or",
+                ["string/endsWith", "file", ".mp4"],
+                ["string/endsWith", "file", ".mov"],
+                ["string/endsWith", "file", ".webm"],
+                ["string/endsWith", "file", ".gif"]
+              ]
+            ]
+          ]
+        ],
+        ["quote", "some"]
+      ],
+      ["else", ["quote", "none"]]
+    ]
+  },
+  {
+    "case": "site-asset-stamps",
+    "area": "site",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          ["object/get", ["repo/run", "stamp-check"], "exit"],
+          0
+        ],
+        ["quote", "current"]
+      ],
+      ["else", ["quote", "stale"]]
+    ]
+  },
+  {
+    "case": "root-scripts-use-turbo",
+    "area": "build",
+    "program": [
+      "begin",
+      [
+        "define",
+        "root",
+        ["object/get", ["repo/json", "package.json"], "scripts"]
+      ],
+      [
+        "cond",
+        [
+          [
+            "array/every?",
+            ["quote", ["test", "build", "typecheck"]],
+            [
+              "lambda",
+              ["name"],
+              [
+                "string/startsWith",
+                ["object/get", "root", "name", ""],
+                "turbo "
+              ]
+            ]
+          ],
+          ["quote", "turbo"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "format-indentation",
+    "area": "build",
+    "program": [
+      "begin",
+      [
+        "define",
+        "text",
+        ["repo/read", "packages/core/src/evaluation/evaluate.ts"]
+      ],
+      [
+        "cond",
+        [["string/includes", "text", "\n\t"], ["quote", "tabs"]],
+        [["string/includes", "text", "\n  "], ["quote", "spaces"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
     "case": "array-first-element-function",
     "area": "evaluation",
     "program": [

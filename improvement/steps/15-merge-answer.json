@@ -1,0 +1,32 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "observed",
+   [
+    "quote",
+    "u12"
+   ],
+   [
+    "quote",
+    "user"
+   ],
+   [
+    "quote",
+    "Yes, merge it"
+   ],
+   [
+    "quote",
+    {
+     "merge phase 1B": "this branch"
+    }
+   ],
+   [
+    "quote",
+    "yes"
+   ]
+  ]
+ ],
+ "recorded"
+]

@@ -19,3 +19,6 @@ Later message, answering the dollar cap per experiment, whether the commit hook 
 "1. $25
 2. Yes
 3. Up to you, you decide"
+
+Later message, asked whether to merge phase 1B's branch into this one:
+"Yes, merge it"
