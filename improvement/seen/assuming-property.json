@@ -1,0 +1,7 @@
+{
+ "hashes": {
+  ".": "ecf17b772e0767b80b7c68d9f64d6d2029c551f4"
+ },
+ "kind": "ran",
+ "what": "bun run loop scores \"--skip\" \"bench,replay,check,capability\" \"--fail-fast\" \"--repeat\" \"6\" \"--mutations\" \"a rule that asks assuming is followed through a change as other rules are\""
+}

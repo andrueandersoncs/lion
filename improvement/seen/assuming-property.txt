@@ -1,0 +1,23 @@
+$ bun run loop scores "--skip" "bench,replay,check,capability" "--fail-fast" "--repeat" "6" "--mutations" "a rule that asks assuming is followed through a change as other rules are"
+$ bun run --cwd packages/metrics loop scores --skip "bench,replay,check,capability" --fail-fast --repeat "6" --mutations "a rule that asks assuming is followed through a change as other rules are"
+$ bun run loop.ts scores --skip "bench,replay,check,capability" --fail-fast --repeat "6" --mutations "a rule that asks assuming is followed through a change as other rules are"
+ran measure: bun run measure, exit 0, 1 s
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 0
+ran scale: bun run scale, exit 0, 41 s
+workloads faster than linear, scale: 0
+ran record: bun run history check, exit 0, 65 s
+record check, history: holds
+rules no probe checks, record: 101
+ran tests: bun run test, exit 0, 144 s
+failing test tasks, all packages: 0
+ran mutations-0: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 8 s
+ran mutations-1: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s
+ran mutations-2: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s
+ran mutations-3: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s
+ran mutations-4: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s
+ran mutations-5: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s
+mutation runs caught of 6, a rule that asks assuming is followed through a change as other rules are: 6
+[exit status 0]

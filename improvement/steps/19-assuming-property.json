@@ -1,0 +1,546 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran"
+   ],
+   [
+    "quote",
+    "bun run loop scores \"--skip\" \"bench,replay,check,capability\" \"--fail-fast\" \"--repeat\" \"6\" \"--mutations\" \"a rule that asks assuming is followed through a change as other rules are\""
+   ]
+  ],
+  [
+   "about",
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "."
+   ],
+   [
+    "quote",
+    "ecf17b772e0767b80b7c68d9f64d6d2029c551f4"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-3"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran measure: bun run measure, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "measure",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-4"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "grid exceptions, core: 3"
+   ],
+   [
+    "quote",
+    {
+     "grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "tries",
+   [
+    "quote",
+    "assuming-property-4"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-5"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "undocumented grid exceptions, core: 0"
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-6"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "instruments",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-7"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "instrument lines removed, since the base: 0"
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-8"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran scale: bun run scale, exit 0, 41 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "scale",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    41
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-9"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "workloads faster than linear, scale: 0"
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-10"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran record: bun run history check, exit 0, 65 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "record",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    65
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-11"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "record check, history: holds"
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-12"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "rules no probe checks, record: 101"
+   ],
+   [
+    "quote",
+    {
+     "rules no probe checks": "record"
+    }
+   ],
+   [
+    "quote",
+    101
+   ]
+  ],
+  [
+   "tries",
+   [
+    "quote",
+    "assuming-property-12"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-13"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran tests: bun run test, exit 0, 144 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "tests",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    144
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-14"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "failing test tasks, all packages: 0"
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-15"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran mutations-0: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 8 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "mutations-0",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    8
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-16"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran mutations-1: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "mutations-1",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    7
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-17"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran mutations-2: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "mutations-2",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    7
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-18"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran mutations-3: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "mutations-3",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    7
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-19"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran mutations-4: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "mutations-4",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    7
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-20"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "ran mutations-5: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "mutations-5",
+     "observation": "assuming-property"
+    }
+   ],
+   [
+    "quote",
+    7
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "assuming-property-21"
+   ],
+   [
+    "quote",
+    "assuming-property"
+   ],
+   [
+    "quote",
+    "mutation runs caught of 6, a rule that asks assuming is followed through a change as other rules are: 6"
+   ],
+   [
+    "quote",
+    {
+     "mutation runs caught": "a rule that asks assuming is followed through a change as other rules are",
+     "of": "6"
+    }
+   ],
+   [
+    "quote",
+    6
+   ]
+  ]
+ ],
+ "recorded"
+]

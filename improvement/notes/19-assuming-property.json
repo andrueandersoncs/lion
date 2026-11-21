@@ -1,0 +1,189 @@
+{
+  "observations": [
+    {
+      "id": "assuming-property-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "assuming-property"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "assuming-property",
+      "value": 1
+    },
+    {
+      "id": "assuming-property-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "assuming-property",
+      "tries": "assuming-property",
+      "value": 3
+    },
+    {
+      "id": "assuming-property-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "assuming-property",
+      "value": 0
+    },
+    {
+      "id": "assuming-property-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "assuming-property"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "assuming-property",
+      "value": 0
+    },
+    {
+      "id": "assuming-property-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "assuming-property",
+      "value": 0
+    },
+    {
+      "id": "assuming-property-8",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "assuming-property"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 41 s",
+      "source": "assuming-property",
+      "value": 41
+    },
+    {
+      "id": "assuming-property-9",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "assuming-property",
+      "value": 0
+    },
+    {
+      "id": "assuming-property-10",
+      "question": {
+        "seconds of check": "record",
+        "observation": "assuming-property"
+      },
+      "quote": "ran record: bun run history check, exit 0, 65 s",
+      "source": "assuming-property",
+      "value": 65
+    },
+    {
+      "id": "assuming-property-11",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "assuming-property",
+      "value": "holds"
+    },
+    {
+      "id": "assuming-property-12",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 101",
+      "source": "assuming-property",
+      "tries": "assuming-property",
+      "value": 101
+    },
+    {
+      "id": "assuming-property-13",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "assuming-property"
+      },
+      "quote": "ran tests: bun run test, exit 0, 144 s",
+      "source": "assuming-property",
+      "value": 144
+    },
+    {
+      "id": "assuming-property-14",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "assuming-property",
+      "value": 0
+    },
+    {
+      "id": "assuming-property-15",
+      "question": {
+        "seconds of check": "mutations-0",
+        "observation": "assuming-property"
+      },
+      "quote": "ran mutations-0: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 8 s",
+      "source": "assuming-property",
+      "value": 8
+    },
+    {
+      "id": "assuming-property-16",
+      "question": {
+        "seconds of check": "mutations-1",
+        "observation": "assuming-property"
+      },
+      "quote": "ran mutations-1: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s",
+      "source": "assuming-property",
+      "value": 7
+    },
+    {
+      "id": "assuming-property-17",
+      "question": {
+        "seconds of check": "mutations-2",
+        "observation": "assuming-property"
+      },
+      "quote": "ran mutations-2: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s",
+      "source": "assuming-property",
+      "value": 7
+    },
+    {
+      "id": "assuming-property-18",
+      "question": {
+        "seconds of check": "mutations-3",
+        "observation": "assuming-property"
+      },
+      "quote": "ran mutations-3: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s",
+      "source": "assuming-property",
+      "value": 7
+    },
+    {
+      "id": "assuming-property-19",
+      "question": {
+        "seconds of check": "mutations-4",
+        "observation": "assuming-property"
+      },
+      "quote": "ran mutations-4: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s",
+      "source": "assuming-property",
+      "value": 7
+    },
+    {
+      "id": "assuming-property-20",
+      "question": {
+        "seconds of check": "mutations-5",
+        "observation": "assuming-property"
+      },
+      "quote": "ran mutations-5: bun run mutate a rule that asks assuming is followed through a change as other rules are, exit 0, 7 s",
+      "source": "assuming-property",
+      "value": 7
+    },
+    {
+      "id": "assuming-property-21",
+      "question": {
+        "mutation runs caught": "a rule that asks assuming is followed through a change as other rules are",
+        "of": "6"
+      },
+      "quote": "mutation runs caught of 6, a rule that asks assuming is followed through a change as other rules are: 6",
+      "source": "assuming-property",
+      "value": 6
+    }
+  ]
+}

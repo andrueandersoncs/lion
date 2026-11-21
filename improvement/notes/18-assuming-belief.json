@@ -1,0 +1,17 @@
+{
+  "beliefs": [
+    {
+      "id": "assuming-1",
+      "tries": "assuming-property",
+      "statement": "With at least one later change to the facts in every run, the property that a rule asking assuming follows those changes catches the mutation that follows such a rule as other rules are in every run, and nothing else fails or changes an instrument",
+      "predicts": [
+        { "question": { "mutation runs caught": "a rule that asks assuming is followed through a change as other rules are", "of": "6" }, "value": 6 },
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 }
+      ]
+    }
+  ]
+}

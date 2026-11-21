@@ -514,7 +514,9 @@ describe("assuming", () => {
         ["retract", ["edge", "?x", "?y"], ["node", "?y"]],
       ]),
       goal: element(GOALS),
-      later: Arbitrary.array(factChange, { maxLength: 3 }),
+      // At least one later change, so every run checks that what the rule
+      // derived follows the facts.
+      later: Arbitrary.array(factChange, { minLength: 1, maxLength: 3 }),
     },
     ({ given, asked, change, goal, later }) =>
       Effect.gen(function* () {
