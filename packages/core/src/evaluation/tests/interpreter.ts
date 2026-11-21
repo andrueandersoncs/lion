@@ -38,6 +38,7 @@ import { isBegin } from "@/evaluation/special-forms/begin";
 import { notTruth } from "@/evaluation/special-forms/cond";
 import { Delayed } from "@/evaluation/special-forms/delay";
 import {
+  argumentList,
   suspendArguments,
   suspend as suspendIn,
 } from "@/evaluation/special-forms/lambda";
@@ -174,10 +175,23 @@ const makeLambda = (
   contract?: {
     readonly checks: readonly unknown[];
     readonly written: readonly unknown[];
-  }
+  },
+  rest = false
 ) => {
   const fn: (...args: unknown[]) => EvaluateResult = registerLambda(
     Effect.fn(function* (...given: unknown[]) {
+      if (rest) {
+        // One name is bound to the list of every argument.
+        const frame = makeEnvironment(
+          { [parameters[0] as string]: argumentList(given) },
+          environment,
+          true
+        );
+        predeclare(frame.bindings, definedIn(body, frame));
+        return yield* evaluate(body).pipe(
+          Effect.provideService(LionEnvironmentService, frame)
+        );
+      }
       if (given.length !== parameters.length) {
         return yield* wrongCount(
           JSON.stringify(
@@ -211,6 +225,7 @@ const makeLambda = (
       parameters,
       body,
       environment,
+      ...(rest ? { written: parameters[0] as string } : {}),
       ...(contract === undefined ? {} : { written: contract.written }),
     }
   );
@@ -489,6 +504,15 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
     lambda: ([_, parameters, body]: Form) =>
       Effect.gen(function* () {
         const environment = yield* scope;
+        if (typeof parameters === "string") {
+          return makeLambda(
+            [parameters],
+            body as LionExpressionType,
+            environment,
+            undefined,
+            true
+          );
+        }
         const written = parameters as readonly unknown[];
         const schemas = parameterSchemas(written);
         const names = parameterNames(written);

@@ -129,6 +129,44 @@ const SCHEME_CASE_MUTATIONS: readonly Mutation[] = [
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
+    name: "a lambda with one name for its parameters gets its first argument",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "    bindings.set(parameters[0] as string, argumentList(args));",
+    replace: "    bindings.set(parameters[0] as string, args[0]);",
+    tests: ["src/evaluation/tests/rest-parameter.test.ts"],
+  },
+  {
+    name: "a lambda with one name for its parameters takes one argument",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "  if (!rest && args.length !== parameters.length) {",
+    replace: "  if (args.length !== parameters.length) {",
+    tests: ["src/evaluation/tests/rest-parameter.test.ts"],
+  },
+  {
+    name: "a list of arguments that holds a logic variable does not wait",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: '  args.some((arg) => arg instanceof LogicValue)\n    ? new DeferredCall(makeList, "array/make", [...args])\n    : [...args];',
+    replace: "  [...args];",
+    tests: ["src/evaluation/tests/rest-parameter.test.ts"],
+  },
+  {
+    name: "a lambda that waits is made again with a list of parameters",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: '        typeof info.written === "string"\n      ),',
+    replace: "        false\n      ),",
+    tests: [
+      "src/evaluation/tests/rest-parameter.test.ts",
+      "src/evaluation/tests/compiled.test.ts",
+    ],
+  },
+  {
+    name: "the solver binds one name for the parameters to the first argument",
+    file: core("logic/symbolic.ts"),
+    find: "    ? [[parameters, one(listSym(args))]]",
+    replace: "    ? [[parameters, one(args[0] ?? fromValue(null))]]",
+    tests: ["src/evaluation/tests/rest-parameter.test.ts"],
+  },
+  {
     name: "the research skill's first item of an empty list fails",
     file: "skills/lion-research/assets/words.json",
     find: '          [["number/equals?", ["array/length", "items"], 0], null],\n',
@@ -4186,8 +4224,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a lambda ignores arguments past its parameters",
     file: core("evaluation/special-forms/lambda.ts"),
-    find: "  if (args.length !== parameters.length) {",
-    replace: "  if (args.length < parameters.length) {",
+    find: "  if (!rest && args.length !== parameters.length) {",
+    replace: "  if (!rest && args.length < parameters.length) {",
     tests: ["src/evaluation/tests/special-forms/lambda.test.ts"],
   },
   {

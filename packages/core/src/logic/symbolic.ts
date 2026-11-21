@@ -638,6 +638,19 @@ const contracted = (parameters: unknown) =>
   Array.isArray(parameters) &&
   parameters.some((parameter) => typeof parameter !== "string");
 
+/**
+ * What a lambda's parameters stand for, given the arguments of a call: each
+ * name its argument, or one name, written in place of the list, the list of
+ * every argument.
+ */
+const bound = (parameters: unknown, args: readonly Sym[]): [string, Cases][] =>
+  typeof parameters === "string"
+    ? [[parameters, one(listSym(args))]]
+    : (parameters as readonly string[]).map((name, at) => [
+        name,
+        one(args[at] ?? fromValue(null)),
+      ]);
+
 /** Runs a lambda's body on symbolic values. */
 const inline = (
   info: LambdaInfo,
@@ -648,11 +661,11 @@ const inline = (
   if (depth > MOST_DEPTH) {
     return refused("a function that calls itself");
   }
-  if (info.written !== undefined) {
+  if (Array.isArray(info.written)) {
     return refused("a lambda with a contract");
   }
   const scope = new Map<string, Cases>(
-    info.parameters.map((name, at) => [name, one(args[at] ?? fromValue(null))])
+    bound(info.written ?? info.parameters, args)
   );
   return expression(info.body, scope, info.environment, context, depth + 1);
 };
@@ -715,7 +728,7 @@ const recordOf = (code: Record<string, unknown>, where: Where): Result =>
 
 /** A lambda called where it is written: its body, its parameters bound. */
 const lambdaCall = (
-  [, parameters, body]: [string, string[], unknown],
+  [, parameters, body]: [string, string[] | string, unknown],
   rest: readonly unknown[],
   where: Where
 ): Result =>
@@ -726,13 +739,7 @@ const lambdaCall = (
           expressionAt(body, {
             ...where,
             depth: where.depth + 1,
-            scope: new Map([
-              ...where.scope,
-              ...parameters.map((p, at): [string, Cases] => [
-                p,
-                one(syms[at] as Sym),
-              ]),
-            ]),
+            scope: new Map([...where.scope, ...bound(parameters, syms)]),
           }),
           (cases) => under(when, cases)
         )
@@ -773,15 +780,7 @@ const closureOf = (
     expressionAt(body, {
       ...where,
       depth,
-      scope: new Map([
-        ...where.scope,
-        ...(parameters as readonly string[]).map(
-          (name, at): [string, Cases] => [
-            name,
-            one(args[at] ?? fromValue(null)),
-          ]
-        ),
-      ]),
+      scope: new Map([...where.scope, ...bound(parameters, args)]),
     }),
   kind: "closure",
 });
@@ -800,7 +799,7 @@ const expressionAt = (code: unknown, where: Where): Result => {
   if (Array.isArray(head) && head[0] === "lambda") {
     return contracted(head[1])
       ? refused("a lambda with a contract")
-      : lambdaCall(head as [string, string[], unknown], rest, where);
+      : lambdaCall(head as [string, string[] | string, unknown], rest, where);
   }
   const special =
     typeof head === "string" && !isName(head, where.scope, where.environment);

@@ -383,6 +383,15 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
   },
   {
+    name: "lambda that takes its arguments as a list",
+    form: [
+      ["lambda", "args", ["array/reduce", "args", 0, "number/add"]],
+      X,
+      1,
+      X,
+    ],
+  },
+  {
     name: "lists zipped",
     form: ["array/zip", ["array/make", X, 1], ["array/make", 2]],
   },

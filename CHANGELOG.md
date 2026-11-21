@@ -31,6 +31,7 @@
 - A string's positions and length count UTF-16 code units (`r7rs-6.7-string-length-counts-characters` is `two`)
 - `and` of no goals holds and `or` of no goals does not (`r7rs-4.2.1-and-no-arguments` is `true`, was `error`; `r7rs-4.2.1-or-no-arguments` is `false`, was `error`)
 - none gives what combining nothing gives: 0, 1, "", and [] (`r7rs-6.2.6-add-no-arguments` is `zero`, was `error`; `r7rs-6.2.6-multiply-no-arguments` is `one`, was `error`; `r7rs-6.4-append-no-arguments` is `empty-list`, was `error`; `r7rs-6.7-string-append-no-arguments` is `empty-string`, was `error`)
+- A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`r7rs-4.1.4-lambda-rest-parameter` is `list`, was `error`)
 
 ### Decided
 
@@ -55,6 +56,7 @@
 - `and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`. (`empty-and-or`: `true-and-false` over `not-well-formed`)
 - `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`empty-list-head`: `fails` over `null`)
 - `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list (`func-apply-arguments`: `spread-last-list` over `pass-as-given`)
+- A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`lambda-rest-parameter`: `one-name-for-all` over `dotted-list`, `fixed-only`)
 
 ### Rules
 
@@ -1176,7 +1178,7 @@ Schemas say what a value must be, and one rule says what fits: whatever checks a
 - Pay for it in the same change: find the rule that makes special cases redundant, and delete them. (rule `pay-for-what-you-add`)
 - Leave Lion simpler than you found it, in its code and in its semantics, without removing a feature. (rule `reduce-complexity`)
 - Each core commit since states its numbers, including the ones that grew (rule `report-what-measured`)
-- an expression gives in a rule head, a filter, a `find`, or a reloaded snapshot what it gives in plain code (rule `same-as-plain-code`)
+- Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place. (rule `same-as-plain-code`)
 - A generator can carry its own model (rule `generators-carry-models`)
 - Patterns. A logic variable in a schema is its value once it is bound, and until then takes the value it meets. `schema/fits?`, the arguments of a relation call, both sides of `=`, and the element of `in` bind the variables of a record, a list, or a schema built by the `schema` functions: `["inbox", ["schema/open", {"type": "order", "id": "?id"}]]`, `["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]`. `?_` fits any value and binds nothing. The goals of a rule give the same answers in any order. (rule `goal-order-independent`)
 - An unbound string of the form `module/name` is an `UnboundNameError` when it can only have been meant as a name (rule `misspelled-names-are-errors`)

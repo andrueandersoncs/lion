@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 223 questions have been decided, 98 records explain them, and of what the records assert, 659 hold when Lion is run, 7 are broken, 377 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 224 questions have been decided, 99 records explain them, and of what the records assert, 666 hold when Lion is run, 2 are broken, 379 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -229,6 +229,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`empty-and-or`](#empty-and-or) | `true-and-false` | [Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments](#scheme-identities-and-zip) |
 | 2026-11-21 | [`empty-list-head`](#empty-list-head) | `fails` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
 | 2026-11-21 | [`func-apply-arguments`](#func-apply-arguments) | `spread-last-list` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
+| 2026-11-21 | [`lambda-rest-parameter`](#lambda-rest-parameter) | `one-name-for-all` | [A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme](#lambda-rest-parameter) |
 
 <a id="program-representation"></a>
 
@@ -1138,7 +1139,7 @@ Recorded 2026-04-04 in `history/notes/lexical-closures.json`.
 - Holds when Lion is run: `name-lookup-local-miss` is `parent-environment`. "A name is looked up from the innermost environment outward"
 - Holds when Lion is run: `lambda-body-global-environment` is `accessible`. "Each environment holds its own bindings and points to the environment around it, and the outermost is the global environment"
 - Replaced by a later word: `define-inside-lambda` is `global`. "`define` binds in the global environment, also inside a lambda"
-- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "A `define` inside a lambda's body does not make a local name, as it would in Scheme"
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "A `define` inside a lambda's body does not make a local name, as it would in Scheme"
 - Holds when Lion is run: `lambda-free-variable` is `enclosing-scope`. "the innermost body sees all three parameters"
 - Holds when Lion is run: `lambda-global-defined-after-creation` is `visible`. "A lambda sees a global defined after it was made"
 
@@ -1285,7 +1286,7 @@ Recorded 2026-11-19 in `history/notes/names-by-scope.json`.
 - Holds when Lion is run: `setLocalBinding` exists. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Holds when Lion is run: rule `lexical-closures` holds. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Stated, not checked by running Lion: rule `cond-truthiness` is withdrawn. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
-- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
 - Stated, not checked by running Lion: decided `define-scope`: `body`. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Holds when Lion is run: `host-callback-define` is `local`. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Holds when Lion is run: `UndefinedYetError` exists. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
@@ -2024,7 +2025,7 @@ Recorded 2026-11-12 in `history/notes/scheme-where-unclear.json`.
 
 **What it asserts, checked.**
 
-- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "Where a base form's behavior is unclear, Lion follows Scheme and Racket"
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "Where a base form's behavior is unclear, Lion follows Scheme and Racket"
 - Holds when Lion is run: `combining-functions-several-arguments` is `combine-left-to-right`. "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do."
 - Holds when Lion is run: `string-join-before-last` is `before-last-string`. "`string/join` takes a string to put before the last item, as `#:before-last` does in Racket."
 - Holds when Lion is run: `string/join` exists. "`string/join` takes a string to put before the last item"
@@ -4194,7 +4195,7 @@ Recorded 2026-11-21 in `history/notes/r7rs-departures-decided.json`.
 - Stated, not checked by running Lion: decided `string-positions`: `utf16-code-units`. "A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together."
 - Stated, not checked by running Lion: decided `map-arguments`: `one-list`. "`array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several."
 - Stated, not checked by running Lion: decided `continuation-shots`: `one-shot`. "A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again."
-- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "Ten cases stay as they are, as departures from Scheme."
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "Ten cases stay as they are, as departures from Scheme."
 
 <a id="define-scope"></a>
 
@@ -4932,7 +4933,7 @@ Recorded 2026-11-21 in `history/notes/scheme-departures-listed.json`.
 **What it asserts, checked.**
 
 - Stated, not checked by running Lion: decided `scheme-fidelity`: `departures-decided-and-probed`. "Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why."
-- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself."
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself."
 - Holds when Lion is run: `unbound-string` is `itself`. "An unbound string is the first: it evaluates to itself"
 - Stated, not checked by running Lion: rule `scheme-departures-are-decided` holds. "a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check`"
 
@@ -5052,3 +5053,35 @@ Recorded 2026-11-21 in `history/notes/empty-list-head-and-apply.json`.
 Now: `spread-last-list`.
 
 - 2026-11-21 `func-apply-arguments`: `spread-last-list` over `pass-as-given`: "`func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list" (`empty-list-head-and-apply.json`)
+
+<a id="lambda-rest-parameter"></a>
+
+## lambda-rest-parameter
+
+Now: `one-name-for-all`.
+
+- 2026-11-21 `lambda-rest-parameter`: `one-name-for-all` over `dotted-list`, `fixed-only`: "A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them." (`lambda-rest-parameter.json`)
+
+<a id="lambda-rest-parameter"></a>
+
+### A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme
+
+Recorded 2026-11-21 in `history/notes/lambda-rest-parameter.json`.
+
+**Context.** The probe of R7RS-small 4.1.4 found that `["lambda", "args", "args"]` was refused as not well-formed, where Scheme's `(lambda args args)` takes any number of arguments and binds `args` to the list of them. Library functions already take any number after the ones they need, as `array/make` and `func/partial` do, but a Lion function could not. On 2026-11-21 the user chose to build it.
+
+**Decision.** A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place. The solver's step works it out by its body as it does any lambda, with the name standing for the list of the arguments it is given. A snapshot writes it as its form. `func/callback` gives it every argument the host passes, and `func/apply` the items of its list.
+
+**Consequences.** The case leaves `known.json`, and with it the last of the twenty differences from Scheme the R7RS-small probes found: ten are departures a decision names, and ten give what Scheme gives, so of the 36 cases probed, 26 give what Scheme gives and 10 differ, each as a decision names. A lambda with a list of parameters still takes exactly one argument for each. A lambda that takes some named arguments and then the rest, Scheme's `(lambda (a b . rest) body)`, is not built; its body can take the first items of its list.
+
+**Alternatives considered.**
+
+- A dotted list of parameters, such as ["a", ".", "rest"]. A string "." among the parameters would be a name everywhere else, and JSON has no pairs to make a dotted list of; one name in place of the list is the one form Scheme's own syntax maps to without a new marker.
+- Leave lambdas to a fixed number of arguments. A function of any number of arguments is ordinary in Scheme, and Lion's own library has them, so a program could not write one of its own.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `lambda-rest-parameter`: `one-name-for-all`. "A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them."
+- Holds when Lion is run: `r7rs-4.1.4-lambda-rest-parameter` is `list`. "A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them."
+- Holds when Lion is run: rule `same-as-plain-code` holds. "Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place."
+- Stated, not checked by running Lion: `r7rs-cases-differing` is 10. "of the 36 cases probed, 26 give what Scheme gives and 10 differ, each as a decision names"

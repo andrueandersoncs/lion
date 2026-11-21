@@ -269,15 +269,5 @@
       "does": "from-formed-version"
     },
     "note": "4c8df1b made a belief that explains no problem be judged from the version it was formed in, and in the same commit added a comment in packages/metrics/src/tests/reasoning-skill.test.ts that still said such a belief is judged in the present. Fixed in the working tree: the comment now says what the model beside it does. It clears once the commit that fixes it is read into the notes."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-4.1.4-lambda-rest-parameter",
-      "predicted": "list",
-      "found": "error"
-    },
-    "note": "R7RS-small 4.1.4: (lambda args args) takes any number of arguments as a list; Lion's lambda takes only a list of parameters, so [\"lambda\", \"args\", \"args\"] is not well-formed. Library functions already take any number after the ones they need, as array/make and func/partial do, so a rest parameter would follow the arity rule. On 2026-11-21 the user chose to fix it (build a rest parameter for lambda); it waits for the change that does."
   }
 ]

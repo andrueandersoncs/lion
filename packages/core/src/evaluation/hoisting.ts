@@ -22,19 +22,27 @@ const isFormHead = (
   scope: Scope | undefined
 ) => form[0] === name && !declares(scope, name);
 
+/** Whether a lambda form's parameters are well formed: a list, or one name. */
+const parametersOf = (written: unknown) =>
+  typeof written === "string" ||
+  (Array.isArray(written) &&
+    written.every(
+      (parameter) =>
+        typeof parameter === "string" ||
+        (Array.isArray(parameter) &&
+          parameter.length === 2 &&
+          typeof parameter[0] === "string")
+    ));
+
 /** The parameters and body of a lambda form, when an array is one. */
 const lambdaParts = (form: readonly unknown[], scope: Scope | undefined) =>
   isFormHead(form, "lambda", scope) &&
   form.length === 3 &&
-  Array.isArray(form[1]) &&
-  form[1].every(
-    (parameter) =>
-      typeof parameter === "string" ||
-      (Array.isArray(parameter) &&
-        parameter.length === 2 &&
-        typeof parameter[0] === "string")
-  )
-    ? { body: form[2], parameters: parameterNames(form[1]) }
+  parametersOf(form[1])
+    ? {
+        body: form[2],
+        parameters: parameterNames(form[1] as readonly unknown[] | string),
+      }
     : undefined;
 
 const BODIES = new WeakMap<object, readonly string[]>();

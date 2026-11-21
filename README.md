@@ -391,7 +391,9 @@ Calls nest as deep as memory allows. A call in tail position keeps nothing of th
   ["count", 100000, 0]]
 ```
 
-A call gives a lambda one argument for each parameter, as it gives every function as many as it takes, and any other number fails in the same form of message: `[["lambda", ["a"], "a"], 1, 2]` fails with `["lambda",["a"],"a"] takes 1 argument but got 2.`, and a lambda a `define` bound is named by it, as `"next" takes 1 argument but got 2.` Host code that passes more arguments than a function can name, as `Array.prototype.map` does, calls it through `func/callback`, which gives it as many as it takes.
+Written with one name in place of its list of parameters, a lambda takes any number of arguments and binds the name to the list of them, as `(lambda args body)` does in Scheme: `[["lambda", "args", ["array/length", "args"]], 1, 2, 3]` is `3`, and `["func/apply", f, null, list]` hands such a lambda the items of `list`. Where an argument waits for a logic variable, the list waits with it, as one written with `array/make` does.
+
+A call gives a lambda with a list of parameters one argument for each, as it gives every function as many as it takes, and any other number fails in the same form of message: `[["lambda", ["a"], "a"], 1, 2]` fails with `["lambda",["a"],"a"] takes 1 argument but got 2.`, and a lambda a `define` bound is named by it, as `"next" takes 1 argument but got 2.` Host code that passes more arguments than a function can name, as `Array.prototype.map` does, calls it through `func/callback`, which gives it as many as it takes.
 
 ### `cond`
 
