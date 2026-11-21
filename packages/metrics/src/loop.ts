@@ -46,6 +46,10 @@ export const QUESTIONS = {
     label: "failing test tasks, all packages",
     question: { "failing test tasks": "all packages" },
   },
+  flaky: {
+    label: "flaky checks, telemetry",
+    question: { "flaky checks": "telemetry" },
+  },
   grid: {
     label: "grid exceptions, core",
     question: { "grid exceptions": "core" },
@@ -375,6 +379,7 @@ const SCORED = new Set<string>([
     QUESTIONS.picked,
     QUESTIONS.benchTotal,
     QUESTIONS.surprising,
+    QUESTIONS.flaky,
   ].map((q) => q.label),
 ]);
 

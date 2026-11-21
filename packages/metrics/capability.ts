@@ -7,6 +7,8 @@
 //   bun run capability --json               the scores and every verdict, as JSON
 //   bun run capability --agents             by programs agents write, one per task
 //     [--model sonnet] [--budget 25] [--task-budget 0.5] [--jobs 4] [--tasks a,b]
+//   bun run capability --graded <run folder>   an agents' run that finished,
+//                                              graded again at no cost
 //
 // With --agents, a headless `claude -p` session works each task in a folder
 // of its own outside the repository, but a gap's, with the task's statement, Lion's
@@ -20,7 +22,7 @@
 // layout, tasks/ and solutions/; its tasks are graded too, by its own
 // solutions or by the ones --solutions names. A task with no program counts
 // as not passed, and so does each gap: a task Lion cannot express yet.
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { Effect } from "effect";
 import {
   type Corpus,
@@ -40,7 +42,7 @@ import {
   causesOf,
   firstTryRan,
 } from "./src/corpus-agents.ts";
-import { type AgentsOptions, runAgents } from "./src/corpus-run.ts";
+import { type AgentsOptions, readRun, runAgents } from "./src/corpus-run.ts";
 import { type Lion, load } from "./src/lion.ts";
 import { CORE, REPOSITORY } from "./src/sources.ts";
 
@@ -50,16 +52,23 @@ const option = (name: string) => {
 };
 const asJson = process.argv.includes("--json");
 const solutionsFolder = option("--solutions");
-const agents: AgentsOptions | undefined = process.argv.includes("--agents")
-  ? {
-      budget: Number(option("--budget") ?? 25),
-      jobs: Number(option("--jobs") ?? 4),
-      maxTurns: 40,
-      model: option("--model") ?? "sonnet",
-      taskBudget: Number(option("--task-budget") ?? 0.5),
-      timeoutSeconds: 900,
-    }
-  : undefined;
+// A folder named on the command line is read from the repository's root,
+// where `bun run capability` is run.
+const graded = (() => {
+  const folder = option("--graded");
+  return folder === undefined ? undefined : resolve(REPOSITORY, folder);
+})();
+const agents: AgentsOptions | undefined =
+  process.argv.includes("--agents") || graded !== undefined
+    ? {
+        budget: Number(option("--budget") ?? 25),
+        jobs: Number(option("--jobs") ?? 4),
+        maxTurns: 40,
+        model: option("--model") ?? "sonnet",
+        taskBudget: Number(option("--task-budget") ?? 0.5),
+        timeoutSeconds: 900,
+      }
+    : undefined;
 const only = option("--tasks")?.split(",");
 
 /** What graded a suite's tasks, in words. */
@@ -87,7 +96,10 @@ interface Suite {
 const worked = (lion: Lion, tasks: readonly Task[], out: string) =>
   Effect.gen(function* () {
     const options = agents as AgentsOptions;
-    const run = yield* Effect.promise(() => runAgents(tasks, out, options));
+    const run =
+      graded === undefined
+        ? yield* Effect.promise(() => runAgents(tasks, out, options))
+        : readRun(graded);
     const causes = yield* causesOf(lion, run.worked).pipe(Effect.orDie);
     const summary: AgentsSummary & { readonly folder: string } = {
       causes,
@@ -153,6 +165,55 @@ const printed = (suite: Suite) => {
   return lines.join("\n");
 };
 
+/** The corpus, or only the tasks `--tasks` names. */
+const chosenOf = (corpus: Corpus): Corpus =>
+  only === undefined
+    ? corpus
+    : {
+        ...corpus,
+        tasks: corpus.tasks.filter((task) => only.includes(task.id)),
+      };
+
+/**
+ * A suite graded by the programs agents wrote. A gap is a task Lion cannot
+ * express yet, so no agent works it. A run of some of the tasks answers
+ * another question than a run of all of them, so its suite says how many
+ * it chose.
+ */
+const agentsSuite = (
+  lion: Lion,
+  name: string,
+  folder: string,
+  chosen: Corpus,
+  options: AgentsOptions
+) =>
+  Effect.gen(function* () {
+    const out =
+      name === "public"
+        ? join(REPOSITORY, "out", "capability", "agents")
+        : join(folder, "runs");
+    const run = yield* worked(
+      lion,
+      chosen.tasks.filter((task) => !chosen.gaps.has(task.id)),
+      out
+    );
+    const graded = yield* gradeCorpus(
+      lion,
+      chosen,
+      loadSolutions(run.solutions)
+    );
+    const subset =
+      only === undefined ? "" : ` (${chosen.tasks.length} chosen tasks)`;
+    return {
+      agents: run.summary,
+      corpus: chosen,
+      graded,
+      name: `${name} by ${options.model} agents${subset}`,
+      scores: tally(graded),
+      source: `the programs ${options.model} agents wrote`,
+    } satisfies Suite;
+  });
+
 const main = Effect.gen(function* () {
   const lion = yield* load(join(REPOSITORY, CORE));
   const held = heldOutFolder(process.env);
@@ -189,37 +250,9 @@ const main = Effect.gen(function* () {
       process.exitCode = 1;
       return;
     }
-    const chosen: Corpus =
-      only === undefined
-        ? corpus
-        : {
-            ...corpus,
-            tasks: corpus.tasks.filter((task) => only.includes(task.id)),
-          };
+    const chosen = chosenOf(corpus);
     if (agents !== undefined) {
-      const out =
-        name === "public"
-          ? join(REPOSITORY, "out", "capability", "agents")
-          : join(folder, "runs");
-      // A gap is a task Lion cannot express yet, so no agent works it.
-      const run = yield* worked(
-        lion,
-        chosen.tasks.filter((task) => !chosen.gaps.has(task.id)),
-        out
-      );
-      const graded = yield* gradeCorpus(
-        lion,
-        chosen,
-        loadSolutions(run.solutions)
-      );
-      suites.push({
-        agents: run.summary,
-        corpus: chosen,
-        graded,
-        name: `${name} by ${agents.model} agents`,
-        scores: tally(graded),
-        source: `the programs ${agents.model} agents wrote`,
-      });
+      suites.push(yield* agentsSuite(lion, name, folder, chosen, agents));
       continue;
     }
     const solutions =

@@ -1,0 +1,36 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run capability --graded <run folder>`: an agents' run that finished, graded again at no cost",
+      "says": {
+        "feature": "capability-graded",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "A run of some of the tasks answers another question than a run of all of them, so its suite says how many it chose.",
+      "says": {
+        "behavior": "capability-agents-subset-suite",
+        "is": "named-by-its-count",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "How often did the loop's predictions come true, for scores, for requirements, and for other questions?",
+      "says": {
+        "feature": "loop-calibration",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "What is the loop's rate: capability tasks gained, per hour of checks and per dollar agents spent?",
+      "says": {
+        "feature": "loop-rate",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

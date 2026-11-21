@@ -41,6 +41,10 @@
 
   [
     "fact",
+    ["says", ",[\"?", "list-pattern-as-call"],
+    ["says", "Unsafe goal", "unsafe-goal"],
+    ["says", "is not a function, so it cannot be called", "not-a-function"],
+    ["says", "computes a new value in", "rule-head-computes"],
     ["says", "Nothing is bound to", "unbound-name"],
     ["says", "arguments but got", "arity"],
     ["says", "argument but got", "arity"],

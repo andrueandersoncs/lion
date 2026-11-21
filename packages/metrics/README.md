@@ -246,7 +246,9 @@ picking unsound, listed mutations: 0
 instrument lines removed, since the base: 0
 ```
 
-It took six minutes, most of them in the tests, the record's check, the soundness check, and scale. The tools run cheapest first, and each prints how long it took, which `observe` records as well, so the record can say how many predictions the loop resolves per hour of checks. `--fail-fast` stops at the first requirement that is not met. `--skip` leaves tools out, `--mutations "a|b"` runs listed mutations by name, `--repeat n` runs them n times and counts the runs that caught each, and `--full` runs every listed mutation. `guidelines/improving.md` says how an experiment uses them.
+It took six minutes, most of them in the tests, the record's check, the soundness check, and scale. The tools run cheapest first, and each prints how long it took, which `observe` records as well, so the record can say how many predictions the loop resolves per hour of checks. `--fail-fast` stops at the first requirement that is not met. `--skip` leaves tools out, `--mutations "a|b"` runs listed mutations by name, `--repeat n` runs them n times and counts the runs that caught each, and `--full` runs every listed mutation. `--agents` also has agents write a program for each corpus task, which costs money, at most `--budget` US dollars. `guidelines/improving.md` says how an experiment uses them.
+
+The commit hook's `bun run affected --run` logs each check it runs to `out/telemetry.jsonl`: the check, the git tree of the staged files, its seconds, and whether it passed. A check that passed and failed on the same tree is flaky, since the files did not decide its outcome. `bun run loop flaky` lists them, and the scoreboard counts them as `flaky checks, telemetry`.
 
 ## Behavior: `bun run compare`
 
@@ -292,6 +294,8 @@ A gap is a task Lion cannot express yet. It stays in the corpus and counts as no
 - `--solutions <folder>` grades the programs in a folder, `<id>.json` each, in place of the reference programs, as an agent's attempts would be graded. A task with no program there is not passed, and a file that is not JSON is a program that fails.
 - `LION_HELD_OUT=<folder>` adds the held-out corpus: a folder with the corpus's layout outside the repository, where no agent that is scored can read it. Its tasks are graded by its own `solutions/`, or by `--solutions`. A folder inside the repository is refused.
 - `--json` prints each pillar's score, the gaps, and every task's verdict.
+- `--agents` has a headless `claude -p` session write the program for each task that is no gap, in a folder of its own outside the repository, with the task's statement, the core README as `LION.md`, `./lion`, and `./try`, which runs `solution.json` as the grader does and logs each try where the agent does not work. It stops starting tasks before what it spent could pass `--budget` (25 US dollars unless given; `--task-budget` is a session's most, 0.5), and prints what it cost, how many tasks' first tries ran, and how many failed tries each cause explains, by the rules in [`src/agent-errors.json`](src/agent-errors.json). Transcripts, programs, and tries stay in `out/capability/agents/<time>/`, and a held-out task's in its folder's `runs/`. `--model` names the model, `--jobs` how many work at once, and `--tasks a,b` works only those, as a suite named for how many it chose.
+- `--graded <run folder>` grades a finished agents' run again from its folder, with the cause rules as they are now, at no cost.
 
 The properties in `src/tests/capability.test.ts` make the reference programs a ratchet: each must pass its check, so a change to Lion that breaks one fails the tests. They also check that no task's check passes a generated value other than what its reference program gives, the grader against a plain model of passing, and the loader against the folders it was given.
 

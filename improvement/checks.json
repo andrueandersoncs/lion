@@ -1,111 +1,264 @@
 {
   "Which evidence is out of date, because a file it depends on changed?": [
     "query",
-    ["and", ["stale", "?source", "?path"], ["source", "?source", "?_", "?what"]]
+    [
+      "and",
+      [
+        "stale",
+        "?source",
+        "?path"
+      ],
+      [
+        "source",
+        "?source",
+        "?_",
+        "?what"
+      ]
+    ]
   ],
   "What did the work change?": [
     "query",
-    ["changed", "?question", "?before", "?after"]
+    [
+      "changed",
+      "?question",
+      "?before",
+      "?after"
+    ]
   ],
   "Which beliefs does the evidence contradict?": [
     "query",
-    ["violated", "?belief", "?witness"]
+    [
+      "violated",
+      "?belief",
+      "?witness"
+    ]
   ],
-  "Which beliefs hold?": ["find", "?belief", ["holds", "?belief"]],
+  "Which beliefs hold?": [
+    "find",
+    "?belief",
+    [
+      "holds",
+      "?belief"
+    ]
+  ],
   "What would tell the remaining explanations apart?": [
     "query",
-    ["decisive", "?problem", "?question", "?predictions"]
+    [
+      "decisive",
+      "?problem",
+      "?question",
+      "?predictions"
+    ]
   ],
   "Which explanations are left for each problem?": [
     "query",
-    ["remaining", "?problem", "?explanations"]
+    [
+      "remaining",
+      "?problem",
+      "?explanations"
+    ]
   ],
   "Which problems are settled, and by which explanation?": [
     "query",
-    ["settled", "?problem", "?explanation"]
+    [
+      "settled",
+      "?problem",
+      "?explanation"
+    ]
   ],
   "Which problems have no explanation left?": [
     "find",
     "?problem",
-    ["unexplained", "?problem"]
+    [
+      "unexplained",
+      "?problem"
+    ]
   ],
   "Which predictions of standing beliefs has nothing checked?": [
     "query",
-    ["untested", "?belief", "?question", "?predicts"]
+    [
+      "untested",
+      "?belief",
+      "?question",
+      "?predicts"
+    ]
   ],
   "Where does current evidence disagree?": [
     "query",
-    ["disputed", "?question", "?values"]
+    [
+      "disputed",
+      "?question",
+      "?values"
+    ]
   ],
   "What I was told or recalled that what I saw overrules": [
     "query",
     [
       "and",
-      ["overruled", "?observation", "?by"],
-      ["observed", "?observation", "?_", "?_", "?question", "?said"],
-      ["observed", "?by", "?_", "?_", "?_", "?seen"]
+      [
+        "overruled",
+        "?observation",
+        "?by"
+      ],
+      [
+        "observed",
+        "?observation",
+        "?_",
+        "?_",
+        "?question",
+        "?said"
+      ],
+      [
+        "observed",
+        "?by",
+        "?_",
+        "?_",
+        "?_",
+        "?seen"
+      ]
     ]
   ],
   "What rests only on what I was told or recalled?": [
     "query",
-    ["hearsay", "?question", "?value"]
+    [
+      "hearsay",
+      "?question",
+      "?value"
+    ]
   ],
   "What does the task still need?": [
     "find",
     "?question",
-    ["open", "?question"]
+    [
+      "open",
+      "?question"
+    ]
   ],
   "What must the user decide, that they have not?": [
     "query",
-    ["undecided", "?question", "?of"]
+    [
+      "undecided",
+      "?question",
+      "?of"
+    ]
   ],
   "What did I settle that was the user's to decide?": [
     "query",
-    ["presumed", "?question", "?value", "?observation"]
+    [
+      "presumed",
+      "?question",
+      "?value",
+      "?observation"
+    ]
   ],
   "What is each score on the files as they are now?": [
     "query",
-    ["score_in", "now", "?score", "?best", "?worst"]
+    [
+      "score_in",
+      "now",
+      "?score",
+      "?best",
+      "?worst"
+    ]
   ],
   "Which scores have no run that counts on the files as they are now?": [
     "find",
     "?score",
     [
       "and",
-      ["scored", "?score", "?_"],
-      ["not", ["score_in", "now", "?score", "?_", "?_"]]
+      [
+        "scored",
+        "?score",
+        "?_"
+      ],
+      [
+        "not",
+        [
+          "score_in",
+          "now",
+          "?score",
+          "?_",
+          "?_"
+        ]
+      ]
     ]
   ],
   "What is the best each score is sure to give, and in which version?": [
     "query",
     [
       "and",
-      ["best", "?score", "?best"],
-      ["score_in", "?version", "?score", "?_", "?best"],
-      ["not", ["=", "?version", "now"]]
+      [
+        "best",
+        "?score",
+        "?best"
+      ],
+      [
+        "score_in",
+        "?version",
+        "?score",
+        "?_",
+        "?best"
+      ],
+      [
+        "not",
+        [
+          "=",
+          "?version",
+          "now"
+        ]
+      ]
     ]
   ],
   "Which scores are worse now than their best?": [
     "query",
-    ["regressed", "?score", "?now", "?best"]
+    [
+      "regressed",
+      "?score",
+      "?now",
+      "?best"
+    ]
   ],
   "Which versions improved a score, from what to what?": [
     "query",
-    ["improved", "?score", "?version", "?before", "?after"]
+    [
+      "improved",
+      "?score",
+      "?version",
+      "?before",
+      "?after"
+    ]
   ],
   "Which versions' scores do not count, because a requirement is not met?": [
     "query",
-    ["unmet", "?version", "?score", "?question", "?needed"]
+    [
+      "unmet",
+      "?version",
+      "?score",
+      "?question",
+      "?needed"
+    ]
   ],
   "Where should the next experiment go?": [
     "query",
     [
       "and",
-      ["live", "?direction"],
-      ["progress", "?direction", "?tried", "?paid_off", "?misses"]
+      [
+        "live",
+        "?direction"
+      ],
+      [
+        "progress",
+        "?direction",
+        "?tried",
+        "?paid_off",
+        "?misses"
+      ]
     ],
     {
-      "order": ["-paid_off", "tried"]
+      "order": [
+        "-paid_off",
+        "tried"
+      ]
     }
   ],
   "Which directions are set aside, and why?": [
@@ -118,8 +271,17 @@
       "or",
       [
         "and",
-        ["exhausted", "?direction"],
-        ["progress", "?direction", "?_", "?_", "?misses"],
+        [
+          "exhausted",
+          "?direction"
+        ],
+        [
+          "progress",
+          "?direction",
+          "?_",
+          "?_",
+          "?misses"
+        ],
         [
           "=",
           "?why",
@@ -130,7 +292,11 @@
       ],
       [
         "and",
-        ["blocked", "?direction", "?question"],
+        [
+          "blocked",
+          "?direction",
+          "?question"
+        ],
         [
           "=",
           "?why",
@@ -141,7 +307,13 @@
       ],
       [
         "and",
-        ["ruled_out", "?direction", "?question", "?needed", "?found"],
+        [
+          "ruled_out",
+          "?direction",
+          "?question",
+          "?needed",
+          "?found"
+        ],
         [
           "=",
           "?why",
@@ -164,27 +336,83 @@
     },
     [
       "and",
-      ["targets", "?direction", "?version", "?problem", "?_"],
+      [
+        "targets",
+        "?direction",
+        "?version",
+        "?problem",
+        "?_"
+      ],
       [
         "or",
         [
           "and",
-          ["fixed", "?direction", "?version", "?problem", "?_"],
-          ["=", "?came", ["quote", "fixed"]]
+          [
+            "fixed",
+            "?direction",
+            "?version",
+            "?problem",
+            "?_"
+          ],
+          [
+            "=",
+            "?came",
+            [
+              "quote",
+              "fixed"
+            ]
+          ]
         ],
         [
           "and",
-          ["unfixed", "?direction", "?version", "?problem", "?_", "?_"],
-          ["=", "?came", ["quote", "not fixed"]]
+          [
+            "unfixed",
+            "?direction",
+            "?version",
+            "?problem",
+            "?_",
+            "?_"
+          ],
+          [
+            "=",
+            "?came",
+            [
+              "quote",
+              "not fixed"
+            ]
+          ]
         ],
         [
           "and",
-          ["not", ["fixed", "?direction", "?version", "?problem", "?_"]],
           [
             "not",
-            ["unfixed", "?direction", "?version", "?problem", "?_", "?_"]
+            [
+              "fixed",
+              "?direction",
+              "?version",
+              "?problem",
+              "?_"
+            ]
           ],
-          ["=", "?came", ["quote", "not checked"]]
+          [
+            "not",
+            [
+              "unfixed",
+              "?direction",
+              "?version",
+              "?problem",
+              "?_",
+              "?_"
+            ]
+          ],
+          [
+            "=",
+            "?came",
+            [
+              "quote",
+              "not checked"
+            ]
+          ]
         ]
       ]
     ]
@@ -194,11 +422,30 @@
     "?problem",
     [
       "and",
-      ["occurs", "?problem", "now"],
-      ["addresses", "?_", "?problem"],
+      [
+        "occurs",
+        "?problem",
+        "now"
+      ],
+      [
+        "addresses",
+        "?_",
+        "?problem"
+      ],
       [
         "not",
-        ["and", ["addresses", "?direction", "?problem"], ["live", "?direction"]]
+        [
+          "and",
+          [
+            "addresses",
+            "?direction",
+            "?problem"
+          ],
+          [
+            "live",
+            "?direction"
+          ]
+        ]
       ]
     ]
   ],
@@ -206,8 +453,18 @@
     "query",
     [
       "and",
-      ["carried", "?direction", "?score"],
-      ["progress", "?direction", "?tried", "?paid_off", "?misses"]
+      [
+        "carried",
+        "?direction",
+        "?score"
+      ],
+      [
+        "progress",
+        "?direction",
+        "?tried",
+        "?paid_off",
+        "?misses"
+      ]
     ]
   ],
   "How many predictions has the loop resolved per hour of checks?": [
@@ -331,6 +588,445 @@
                 ]
               ],
               10
+            ]
+          ],
+          [
+            "else",
+            null
+          ]
+        ]
+      }
+    ]
+  ],
+  "How often did the loop's predictions come true, for scores, for requirements, and for other questions?": [
+    "begin",
+    [
+      "define",
+      "kindOf",
+      [
+        "lambda",
+        [
+          "q"
+        ],
+        [
+          "cond",
+          [
+            [
+              "scored",
+              "q",
+              "?_"
+            ],
+            "score"
+          ],
+          [
+            [
+              "requires",
+              "?_",
+              "q",
+              "?_"
+            ],
+            "requirement"
+          ],
+          [
+            "else",
+            "other"
+          ]
+        ]
+      ]
+    ],
+    [
+      "define",
+      "borne",
+      [
+        "aggregate/unique",
+        [
+          "find",
+          [
+            "array/make",
+            "?b",
+            "?q"
+          ],
+          [
+            "borne_out",
+            "?b",
+            "?q",
+            "?_",
+            "?_"
+          ]
+        ]
+      ]
+    ],
+    [
+      "define",
+      "wrong",
+      [
+        "aggregate/unique",
+        [
+          "find",
+          [
+            "array/make",
+            "?b",
+            "?q"
+          ],
+          [
+            "contradicted",
+            "?b",
+            "?q",
+            "?_",
+            "?_",
+            "?_"
+          ]
+        ]
+      ]
+    ],
+    [
+      "define",
+      "ofKind",
+      [
+        "lambda",
+        [
+          "pairs",
+          "k"
+        ],
+        [
+          "array/length",
+          [
+            "array/flat-map",
+            "pairs",
+            [
+              "lambda",
+              [
+                "p"
+              ],
+              [
+                "cond",
+                [
+                  [
+                    "=",
+                    [
+                      "kindOf",
+                      [
+                        "array/head",
+                        [
+                          "array/tail",
+                          "p"
+                        ]
+                      ]
+                    ],
+                    "k"
+                  ],
+                  [
+                    "array/make",
+                    "p"
+                  ]
+                ],
+                [
+                  "else",
+                  [
+                    "array/make"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    [
+      "array/map",
+      [
+        "quote",
+        [
+          "score",
+          "requirement",
+          "other"
+        ]
+      ],
+      [
+        "lambda",
+        [
+          "k"
+        ],
+        {
+          "kind": "k",
+          "borne out": [
+            "ofKind",
+            "borne",
+            "k"
+          ],
+          "contradicted": [
+            "ofKind",
+            "wrong",
+            "k"
+          ]
+        }
+      ]
+    ]
+  ],
+  "What is the loop's rate: capability tasks gained, per hour of checks and per dollar agents spent?": [
+    "begin",
+    [
+      "define",
+      "second",
+      [
+        "lambda",
+        [
+          "row"
+        ],
+        [
+          "array/head",
+          [
+            "array/tail",
+            "row"
+          ]
+        ]
+      ]
+    ],
+    [
+      "define",
+      "third",
+      [
+        "lambda",
+        [
+          "row"
+        ],
+        [
+          "array/head",
+          [
+            "array/tail",
+            [
+              "array/tail",
+              "row"
+            ]
+          ]
+        ]
+      ]
+    ],
+    [
+      "define",
+      "sumOf",
+      [
+        "lambda",
+        [
+          "rows",
+          "part"
+        ],
+        [
+          "aggregate/sum",
+          [
+            "array/map",
+            [
+              "aggregate/unique",
+              "rows"
+            ],
+            "part"
+          ]
+        ]
+      ]
+    ],
+    [
+      "define",
+      "gained",
+      [
+        "sumOf",
+        [
+          "find",
+          [
+            "array/make",
+            "?s",
+            "?v",
+            [
+              "number/subtract",
+              "?after",
+              "?before"
+            ]
+          ],
+          [
+            "improved",
+            {
+              "capability passed": "?s",
+              "pillar": "all"
+            },
+            "?v",
+            "?before",
+            "?after"
+          ]
+        ],
+        "third"
+      ]
+    ],
+    [
+      "define",
+      "lost",
+      [
+        "sumOf",
+        [
+          "find",
+          [
+            "array/make",
+            "?s",
+            [
+              "number/subtract",
+              "?best",
+              "?now"
+            ]
+          ],
+          [
+            "regressed",
+            {
+              "capability passed": "?s",
+              "pillar": "all"
+            },
+            "?now",
+            "?best"
+          ]
+        ],
+        "second"
+      ]
+    ],
+    [
+      "define",
+      "seconds",
+      [
+        "sumOf",
+        [
+          "find",
+          [
+            "array/make",
+            "?o",
+            "?v"
+          ],
+          [
+            "observed",
+            "?o",
+            "?_",
+            "?_",
+            [
+              "schema/open",
+              {
+                "seconds of check": "?t"
+              }
+            ],
+            "?v"
+          ]
+        ],
+        "second"
+      ]
+    ],
+    [
+      "define",
+      "dollars",
+      [
+        "sumOf",
+        [
+          "find",
+          [
+            "array/make",
+            "?o",
+            "?v"
+          ],
+          [
+            "observed",
+            "?o",
+            "?_",
+            "?_",
+            {
+              "agents' cost usd": "?s"
+            },
+            "?v"
+          ]
+        ],
+        "second"
+      ]
+    ],
+    [
+      "define",
+      "net",
+      [
+        "number/subtract",
+        "gained",
+        "lost"
+      ]
+    ],
+    [
+      "array/make",
+      {
+        "tasks gained": "gained",
+        "tasks lost": "lost",
+        "hours of checks": [
+          "number/divide",
+          [
+            "number/round",
+            [
+              "number/multiply",
+              [
+                "number/divide",
+                "seconds",
+                3600
+              ],
+              10
+            ]
+          ],
+          10
+        ],
+        "dollars": "dollars",
+        "per hour": [
+          "cond",
+          [
+            [
+              "number/greaterThan",
+              "seconds",
+              0
+            ],
+            [
+              "number/divide",
+              [
+                "number/round",
+                [
+                  "number/multiply",
+                  [
+                    "number/divide",
+                    [
+                      "number/multiply",
+                      "net",
+                      3600
+                    ],
+                    "seconds"
+                  ],
+                  100
+                ]
+              ],
+              100
+            ]
+          ],
+          [
+            "else",
+            null
+          ]
+        ],
+        "per dollar": [
+          "cond",
+          [
+            [
+              "number/greaterThan",
+              "dollars",
+              0
+            ],
+            [
+              "number/divide",
+              [
+                "number/round",
+                [
+                  "number/multiply",
+                  [
+                    "number/divide",
+                    "net",
+                    "dollars"
+                  ],
+                  100
+                ]
+              ],
+              100
             ]
           ],
           [

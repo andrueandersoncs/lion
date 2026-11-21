@@ -1,0 +1,322 @@
+{
+  "observations": [
+    {
+      "id": "agents-baseline-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "agents-baseline"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "agents-baseline",
+      "value": 1
+    },
+    {
+      "id": "agents-baseline-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "agents-baseline",
+      "value": 3
+    },
+    {
+      "id": "agents-baseline-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "agents-baseline",
+      "value": 0
+    },
+    {
+      "id": "agents-baseline-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "agents-baseline"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "agents-baseline",
+      "value": 0
+    },
+    {
+      "id": "agents-baseline-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "agents-baseline",
+      "value": 0
+    },
+    {
+      "id": "agents-baseline-8",
+      "question": {
+        "seconds of check": "pairs",
+        "observation": "agents-baseline"
+      },
+      "quote": "ran pairs: bun run pairs, exit 0, 18 s",
+      "source": "agents-baseline",
+      "value": 18
+    },
+    {
+      "id": "agents-baseline-9",
+      "question": {
+        "surprising pairs": "grid"
+      },
+      "quote": "surprising pairs, grid: 0",
+      "source": "agents-baseline",
+      "value": 0
+    },
+    {
+      "id": "agents-baseline-10",
+      "question": {
+        "seconds of check": "capability",
+        "observation": "agents-baseline"
+      },
+      "quote": "ran capability: bun run capability --json, exit 0, 1 s",
+      "source": "agents-baseline",
+      "value": 1
+    },
+    {
+      "id": "agents-baseline-11",
+      "question": {
+        "capability passed": "public",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, public, computation: 24",
+      "source": "agents-baseline",
+      "value": 24
+    },
+    {
+      "id": "agents-baseline-12",
+      "question": {
+        "capability passed": "public",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, public, logic: 14",
+      "source": "agents-baseline",
+      "value": 14
+    },
+    {
+      "id": "agents-baseline-13",
+      "question": {
+        "capability passed": "public",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, public, proofs: 10",
+      "source": "agents-baseline",
+      "value": 10
+    },
+    {
+      "id": "agents-baseline-14",
+      "question": {
+        "capability passed": "public",
+        "pillar": "all"
+      },
+      "quote": "capability passed, public, all: 48",
+      "source": "agents-baseline",
+      "value": 48
+    },
+    {
+      "id": "agents-baseline-15",
+      "question": {
+        "code lines per passed task": "core"
+      },
+      "quote": "code lines per passed task, core: 468.5",
+      "source": "agents-baseline",
+      "value": 468.5
+    },
+    {
+      "id": "agents-baseline-16",
+      "question": {
+        "messages per passed task": "core"
+      },
+      "quote": "messages per passed task, core: 5.2",
+      "source": "agents-baseline",
+      "value": 5.2
+    },
+    {
+      "id": "agents-baseline-17",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "agents-baseline"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 44 s",
+      "source": "agents-baseline",
+      "value": 44
+    },
+    {
+      "id": "agents-baseline-18",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "agents-baseline",
+      "value": 0
+    },
+    {
+      "id": "agents-baseline-19",
+      "question": {
+        "seconds of check": "record",
+        "observation": "agents-baseline"
+      },
+      "quote": "ran record: bun run history check, exit 0, 70 s",
+      "source": "agents-baseline",
+      "value": 70
+    },
+    {
+      "id": "agents-baseline-20",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "agents-baseline",
+      "value": "holds"
+    },
+    {
+      "id": "agents-baseline-21",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 96",
+      "source": "agents-baseline",
+      "value": 96
+    },
+    {
+      "id": "agents-baseline-22",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "agents-baseline"
+      },
+      "quote": "ran tests: bun run test, exit 0, 135 s",
+      "source": "agents-baseline",
+      "value": 135
+    },
+    {
+      "id": "agents-baseline-23",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "agents-baseline",
+      "value": 0
+    },
+    {
+      "id": "agents-baseline-24",
+      "question": {
+        "seconds of check": "agents",
+        "observation": "agents-baseline"
+      },
+      "quote": "ran agents: bun run capability --agents --json --budget 25, exit 0, 1488 s",
+      "source": "agents-baseline",
+      "value": 1488
+    },
+    {
+      "id": "agents-baseline-25",
+      "question": {
+        "capability passed": "public by sonnet agents",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, public by sonnet agents, computation: 24",
+      "source": "agents-baseline",
+      "value": 24
+    },
+    {
+      "id": "agents-baseline-26",
+      "question": {
+        "capability passed": "public by sonnet agents",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, public by sonnet agents, logic: 13",
+      "source": "agents-baseline",
+      "value": 13
+    },
+    {
+      "id": "agents-baseline-27",
+      "question": {
+        "capability passed": "public by sonnet agents",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, public by sonnet agents, proofs: 9",
+      "source": "agents-baseline",
+      "value": 9
+    },
+    {
+      "id": "agents-baseline-28",
+      "question": {
+        "capability passed": "public by sonnet agents",
+        "pillar": "all"
+      },
+      "quote": "capability passed, public by sonnet agents, all: 46",
+      "source": "agents-baseline",
+      "value": 46
+    },
+    {
+      "id": "agents-baseline-29",
+      "question": {
+        "agents' cost usd": "public by sonnet agents"
+      },
+      "quote": "agents' cost usd, public by sonnet agents: 10.28",
+      "source": "agents-baseline",
+      "value": 10.28
+    },
+    {
+      "id": "agents-baseline-30",
+      "question": {
+        "agents' first tries that ran": "public by sonnet agents"
+      },
+      "quote": "agents' first tries that ran, public by sonnet agents: 39",
+      "source": "agents-baseline",
+      "value": 39
+    },
+    {
+      "id": "agents-baseline-31",
+      "question": {
+        "agents' failed tries": "public by sonnet agents",
+        "cause": "other"
+      },
+      "quote": "agents' failed tries, other, public by sonnet agents: 12",
+      "source": "agents-baseline",
+      "value": 12
+    },
+    {
+      "id": "agents-baseline-32",
+      "question": {
+        "agents' failed tries": "public by sonnet agents",
+        "cause": "not-json"
+      },
+      "quote": "agents' failed tries, not-json, public by sonnet agents: 2",
+      "source": "agents-baseline",
+      "value": 2
+    },
+    {
+      "id": "agents-baseline-33",
+      "question": {
+        "agents' failed tries": "public by sonnet agents",
+        "cause": "unbound-name"
+      },
+      "quote": "agents' failed tries, unbound-name, public by sonnet agents: 2",
+      "source": "agents-baseline",
+      "value": 2
+    },
+    {
+      "id": "agents-baseline-34",
+      "question": {
+        "agents' failed tries": "public by sonnet agents",
+        "cause": "argument-type"
+      },
+      "quote": "agents' failed tries, argument-type, public by sonnet agents: 1",
+      "source": "agents-baseline",
+      "value": 1
+    },
+    {
+      "id": "agents-baseline-35",
+      "question": {
+        "agents' failed tries": "public by sonnet agents",
+        "cause": "not-a-call"
+      },
+      "quote": "agents' failed tries, not-a-call, public by sonnet agents: 1",
+      "source": "agents-baseline",
+      "value": 1
+    }
+  ]
+}

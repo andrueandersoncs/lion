@@ -1,0 +1,37 @@
+$ bun run loop scores "--agents" "--budget" "25" "--skip" "bench,replay,check" "--fail-fast"
+$ bun run --cwd packages/metrics loop scores --agents --budget "25" --skip "bench,replay,check" --fail-fast
+$ bun run loop.ts scores --agents --budget "25" --skip "bench,replay,check" --fail-fast
+ran measure: bun run measure, exit 0, 1 s
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 0
+ran pairs: bun run pairs, exit 0, 18 s
+surprising pairs, grid: 0
+ran capability: bun run capability --json, exit 0, 1 s
+capability passed, public, computation: 24
+capability passed, public, logic: 14
+capability passed, public, proofs: 10
+capability passed, public, all: 48
+code lines per passed task, core: 468.5
+messages per passed task, core: 5.2
+ran scale: bun run scale, exit 0, 44 s
+workloads faster than linear, scale: 0
+ran record: bun run history check, exit 0, 70 s
+record check, history: holds
+rules no probe checks, record: 96
+ran tests: bun run test, exit 0, 135 s
+failing test tasks, all packages: 0
+ran agents: bun run capability --agents --json --budget 25, exit 0, 1488 s
+capability passed, public by sonnet agents, computation: 24
+capability passed, public by sonnet agents, logic: 13
+capability passed, public by sonnet agents, proofs: 9
+capability passed, public by sonnet agents, all: 46
+agents' cost usd, public by sonnet agents: 10.28
+agents' first tries that ran, public by sonnet agents: 39
+agents' failed tries, other, public by sonnet agents: 12
+agents' failed tries, not-json, public by sonnet agents: 2
+agents' failed tries, unbound-name, public by sonnet agents: 2
+agents' failed tries, argument-type, public by sonnet agents: 1
+agents' failed tries, not-a-call, public by sonnet agents: 1
+[exit status 0]

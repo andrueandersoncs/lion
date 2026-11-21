@@ -1,0 +1,7 @@
+{
+ "hashes": {
+  ".": "5b56db40f3a3048b50ba7a02579fe49ad8c558fa"
+ },
+ "kind": "ran",
+ "what": "bun run loop scores \"--agents\" \"--budget\" \"25\" \"--skip\" \"bench,replay,check\" \"--fail-fast\""
+}

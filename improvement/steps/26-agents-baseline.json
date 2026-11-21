@@ -1,0 +1,883 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "ran"
+   ],
+   [
+    "quote",
+    "bun run loop scores \"--agents\" \"--budget\" \"25\" \"--skip\" \"bench,replay,check\" \"--fail-fast\""
+   ]
+  ],
+  [
+   "about",
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "."
+   ],
+   [
+    "quote",
+    "5b56db40f3a3048b50ba7a02579fe49ad8c558fa"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-3"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "ran measure: bun run measure, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "measure",
+     "observation": "agents-baseline"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-4"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "grid exceptions, core: 3"
+   ],
+   [
+    "quote",
+    {
+     "grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-5"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "undocumented grid exceptions, core: 0"
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-6"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "instruments",
+     "observation": "agents-baseline"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-7"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "instrument lines removed, since the base: 0"
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-8"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "ran pairs: bun run pairs, exit 0, 18 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "pairs",
+     "observation": "agents-baseline"
+    }
+   ],
+   [
+    "quote",
+    18
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-9"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "surprising pairs, grid: 0"
+   ],
+   [
+    "quote",
+    {
+     "surprising pairs": "grid"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-10"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "ran capability: bun run capability --json, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "capability",
+     "observation": "agents-baseline"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-11"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, computation: 24"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    24
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-12"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, logic: 14"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    14
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-13"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, proofs: 10"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    10
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-14"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, all: 48"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    48
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-15"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "code lines per passed task, core: 468.5"
+   ],
+   [
+    "quote",
+    {
+     "code lines per passed task": "core"
+    }
+   ],
+   [
+    "quote",
+    468.5
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-16"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "messages per passed task, core: 5.2"
+   ],
+   [
+    "quote",
+    {
+     "messages per passed task": "core"
+    }
+   ],
+   [
+    "quote",
+    5.2
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-17"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "ran scale: bun run scale, exit 0, 44 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "scale",
+     "observation": "agents-baseline"
+    }
+   ],
+   [
+    "quote",
+    44
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-18"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "workloads faster than linear, scale: 0"
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-19"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "ran record: bun run history check, exit 0, 70 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "record",
+     "observation": "agents-baseline"
+    }
+   ],
+   [
+    "quote",
+    70
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-20"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "record check, history: holds"
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-21"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "rules no probe checks, record: 96"
+   ],
+   [
+    "quote",
+    {
+     "rules no probe checks": "record"
+    }
+   ],
+   [
+    "quote",
+    96
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-22"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "ran tests: bun run test, exit 0, 135 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "tests",
+     "observation": "agents-baseline"
+    }
+   ],
+   [
+    "quote",
+    135
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-23"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "failing test tasks, all packages: 0"
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-24"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "ran agents: bun run capability --agents --json --budget 25, exit 0, 1488 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "agents",
+     "observation": "agents-baseline"
+    }
+   ],
+   [
+    "quote",
+    1488
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-25"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public by sonnet agents, computation: 24"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    24
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-26"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public by sonnet agents, logic: 13"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    13
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-27"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public by sonnet agents, proofs: 9"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    9
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-28"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public by sonnet agents, all: 46"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    46
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-29"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "agents' cost usd, public by sonnet agents: 10.28"
+   ],
+   [
+    "quote",
+    {
+     "agents' cost usd": "public by sonnet agents"
+    }
+   ],
+   [
+    "quote",
+    10.28
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-30"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "agents' first tries that ran, public by sonnet agents: 39"
+   ],
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents"
+    }
+   ],
+   [
+    "quote",
+    39
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-31"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "agents' failed tries, other, public by sonnet agents: 12"
+   ],
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents",
+     "cause": "other"
+    }
+   ],
+   [
+    "quote",
+    12
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-32"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "agents' failed tries, not-json, public by sonnet agents: 2"
+   ],
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents",
+     "cause": "not-json"
+    }
+   ],
+   [
+    "quote",
+    2
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-33"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "agents' failed tries, unbound-name, public by sonnet agents: 2"
+   ],
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents",
+     "cause": "unbound-name"
+    }
+   ],
+   [
+    "quote",
+    2
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-34"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "agents' failed tries, argument-type, public by sonnet agents: 1"
+   ],
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents",
+     "cause": "argument-type"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "agents-baseline-35"
+   ],
+   [
+    "quote",
+    "agents-baseline"
+   ],
+   [
+    "quote",
+    "agents' failed tries, not-a-call, public by sonnet agents: 1"
+   ],
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents",
+     "cause": "not-a-call"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ]
+ ],
+ "recorded"
+]

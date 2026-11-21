@@ -313,6 +313,7 @@ describe("the loop's scoreboard", () => {
             QUESTIONS.picked,
             QUESTIONS.benchTotal,
             QUESTIONS.surprising,
+            QUESTIONS.flaky,
           ].some((q) => q.question === o.question);
         expect(o.tries).toBe(tries && score ? "d" : undefined);
       }

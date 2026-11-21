@@ -1,0 +1,284 @@
+{
+  "scores": [
+    {
+      "question": {
+        "capability passed": "public by sonnet agents",
+        "pillar": "computation"
+      },
+      "better": "higher",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "capability passed": "public by sonnet agents",
+        "pillar": "logic"
+      },
+      "better": "higher",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "capability passed": "public by sonnet agents",
+        "pillar": "proofs"
+      },
+      "better": "higher",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "capability passed": "public by sonnet agents",
+        "pillar": "all"
+      },
+      "better": "higher",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "agents' first tries that ran": "public by sonnet agents"
+      },
+      "better": "higher",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "surprising pairs": "grid"
+      },
+      "better": "lower",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ],
+  "beliefs": [
+    {
+      "id": "agents-baseline-1",
+      "statement": "Sonnet agents given only Lion's README, the CLI, and ./try pass fewer tasks than the reference programs, most in computation and fewest in proofs, and fewer than two thirds of their first tries run; the pair grid has no surprise",
+      "predicts": [
+        {
+          "question": {
+            "capability passed": "public by sonnet agents",
+            "pillar": "computation"
+          },
+          "value": 20
+        },
+        {
+          "question": {
+            "capability passed": "public by sonnet agents",
+            "pillar": "logic"
+          },
+          "value": 11
+        },
+        {
+          "question": {
+            "capability passed": "public by sonnet agents",
+            "pillar": "proofs"
+          },
+          "value": 5
+        },
+        {
+          "question": {
+            "capability passed": "public by sonnet agents",
+            "pillar": "all"
+          },
+          "value": 36
+        },
+        {
+          "question": {
+            "agents' first tries that ran": "public by sonnet agents"
+          },
+          "value": 30
+        },
+        {
+          "question": {
+            "surprising pairs": "grid"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}

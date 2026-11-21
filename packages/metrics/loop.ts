@@ -10,12 +10,14 @@
 //   bun run loop observe <label> --tries <direction>
 //                                     the same, as an experiment of a direction
 //   bun run loop status               what the record says now
+//   bun run loop flaky                the checks the commit hook ran that
+//                                     passed and failed on the same files
 //
 // Options of scores and observe:
 //   --base <ref>        what instrument lines removed counts from (HEAD)
 //   --skip a,b          tools to leave out: measure, capability, record,
 //                       scale, tests, bench, replay, check, instruments,
-//                       pairs, agents
+//                       pairs, telemetry, agents
 //   --mutations a|b     run these listed mutations, by name, split by |
 //   --repeat n          run them n times, and count the runs that caught each
 //   --full              run every listed mutation, for mutations missed
@@ -64,6 +66,7 @@ import {
 } from "./src/loop.ts";
 import { readArguments } from "./src/report.ts";
 import { REPOSITORY } from "./src/sources.ts";
+import { flakyOf, readLogged } from "./src/telemetry.ts";
 
 const RECORD = join(REPOSITORY, "improvement");
 const SKILL = join(REPOSITORY, "skills/lion-reasoning/scripts");
@@ -275,6 +278,11 @@ const scores = () => {
     ],
     ["instruments", true, instrumentsTool],
     [
+      "telemetry",
+      true,
+      always(() => print(QUESTIONS.flaky, flakyOf(readLogged()).length)),
+    ],
+    [
       "pairs",
       scripts().pairs !== undefined,
       always(() =>
@@ -447,7 +455,16 @@ if (command === "scores") {
   observe(label);
 } else if (command === "status") {
   status();
+} else if (command === "flaky") {
+  const flaky = flakyOf(readLogged());
+  console.log(
+    flaky.length === 0
+      ? "No check the commit hook ran both passed and failed on the same files."
+      : `These passed and failed on the same files:\n${flaky.map((check) => `  ${check}`).join("\n")}`
+  );
 } else {
-  console.error("Usage: bun run loop scores | observe <label> | status");
+  console.error(
+    "Usage: bun run loop scores | observe <label> | status | flaky"
+  );
   process.exitCode = 1;
 }

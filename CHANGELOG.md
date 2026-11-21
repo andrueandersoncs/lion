@@ -32,6 +32,9 @@
 - --agents            also have agents write a program for each corpus (`loop-agents` added)
 - surprising pairs, grid (`loop-pairs` added)
 - `bun run loop status` builds the record's model again from its steps before it asks (`loop-status-replays` added)
+- `bun run capability --graded <run folder>`: an agents' run that finished, graded again at no cost (`capability-graded` added)
+- How often did the loop's predictions come true, for scores, for requirements, and for other questions? (`loop-calibration` added)
+- What is the loop's rate: capability tasks gained, per hour of checks and per dollar agents spent? (`loop-rate` added)
 
 ### Changed
 
@@ -54,6 +57,7 @@
 - A pair's cell that is an exception where neither of its rows has one in that place is a surprise (`grid-pair-surprises` is `none`)
 - the inner row's own variables and the relations it declares are renamed apart from the outer row's words (`grid-pairs-hygiene` is `renamed-apart`)
 - `paid_off` then names the problem's question, and a direction's misses, its patience, and its place in "Where should the next experiment go?" count both kinds of payoff (`reasoning-fix-pays-off` is `paid-off`)
+- A run of some of the tasks answers another question than a run of all of them, so its suite says how many it chose. (`capability-agents-subset-suite` is `named-by-its-count`)
 
 ### Fixed
 

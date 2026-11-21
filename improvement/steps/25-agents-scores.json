@@ -1,0 +1,804 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    "higher"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    "higher"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    "higher"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    "higher"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents"
+    }
+   ],
+   [
+    "quote",
+    "higher"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "surprising pairs": "grid"
+    }
+   ],
+   [
+    "quote",
+    "lower"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "surprising pairs": "grid"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "surprising pairs": "grid"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "surprising pairs": "grid"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "surprising pairs": "grid"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "surprising pairs": "grid"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "belief",
+   [
+    "quote",
+    "agents-baseline-1"
+   ],
+   [
+    "quote",
+    "Sonnet agents given only Lion's README, the CLI, and ./try pass fewer tasks than the reference programs, most in computation and fewest in proofs, and fewer than two thirds of their first tries run; the pair grid has no surprise"
+   ]
+  ],
+  [
+   "since",
+   [
+    "quote",
+    "agents-baseline-1"
+   ],
+   25
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "agents-baseline-1"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    20
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "agents-baseline-1"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    11
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "agents-baseline-1"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    5
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "agents-baseline-1"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    36
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "agents-baseline-1"
+   ],
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents"
+    }
+   ],
+   [
+    "quote",
+    30
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "agents-baseline-1"
+   ],
+   [
+    "quote",
+    {
+     "surprising pairs": "grid"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ]
+ ],
+ "recorded"
+]

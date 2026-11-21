@@ -17,6 +17,7 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -159,6 +160,35 @@ const work = async (
     attempts: attemptsOf(readFileSync(attempts, "utf8")),
     spent: spentOf(output),
     task: task.id,
+  };
+};
+
+/**
+ * A run that already finished, read again from its folder: the tries each
+ * task logged and what its session spent, so it can be graded again, under
+ * rules that changed since, without paying for it twice.
+ */
+export const readRun = (run: string): AgentsRun => {
+  const tasks = readdirSync(join(run, "transcripts"))
+    .filter((file) => file.endsWith(".json"))
+    .map((file) => file.slice(0, -".json".length))
+    .sort();
+  return {
+    folder: run,
+    notRun: [],
+    solutions: join(run, "solutions"),
+    worked: tasks.map((task) => {
+      const attempts = join(run, "attempts", `${task}.jsonl`);
+      return {
+        attempts: existsSync(attempts)
+          ? attemptsOf(readFileSync(attempts, "utf8"))
+          : [],
+        spent: spentOf(
+          readFileSync(join(run, "transcripts", `${task}.json`), "utf8")
+        ),
+        task,
+      };
+    }),
   };
 };
 
