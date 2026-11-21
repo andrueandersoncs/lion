@@ -1,0 +1,31 @@
+$ bun run loop scores
+$ bun run --cwd packages/metrics loop scores
+$ bun run loop.ts scores
+ran measure: bun run measure, exit 0, 1 s
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 0
+ran replay: bun run affected --replay 30, exit 0, 1 s
+tests' time picked, last 30 commits: 99
+ran bench: bun run bench, exit 0, 4 s
+bench total ms, every benchmark: 1082.4
+ran capability: bun run capability --json, exit 0, 1 s
+141 | 
+142 | /** Each suite's passed tasks by pillar, and in all, from `bun run capability --json`. */
+143 | export const readCapability = (
+144 |   json: string
+145 | ): Record<string, Record<string, number>> => {
+146 |   const suites = JSON.parse(json) as Record<
+                            ^
+SyntaxError: JSON Parse error: Unable to parse JSON string
+      at readCapability (/Users/andrueanderson/Workspace/lion/.claude/worktrees/silly-wing-7052d9/packages/metrics/src/loop.ts:146:23)
+      at capabilityTool (/Users/andrueanderson/Workspace/lion/.claude/worktrees/silly-wing-7052d9/packages/metrics/loop.ts:138:18)
+      at <anonymous> (/Users/andrueanderson/Workspace/lion/.claude/worktrees/silly-wing-7052d9/packages/metrics/loop.ts:226:5)
+      at scores (/Users/andrueanderson/Workspace/lion/.claude/worktrees/silly-wing-7052d9/packages/metrics/loop.ts:282:38)
+      at /Users/andrueanderson/Workspace/lion/.claude/worktrees/silly-wing-7052d9/packages/metrics/loop.ts:382:3
+
+Bun v1.4.3 (macOS arm64)
+error: script "loop" exited with code 1
+error: script "loop" exited with code 1
+[exit status 1]

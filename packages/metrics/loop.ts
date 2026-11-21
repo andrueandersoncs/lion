@@ -135,7 +135,7 @@ const measureTool = (): Measure => {
 
 const capabilityTool = (measured: Measure | undefined) => {
   const { text } = run("capability", ["bun", "run", "capability", "--json"]);
-  const suites = readCapability(text.slice(text.indexOf("{")));
+  const suites = readCapability(text);
   for (const [suite, passed] of Object.entries(suites)) {
     for (const pillar of [...PILLARS, "all"]) {
       print(capabilityQuestion(suite, pillar), passed[pillar]);

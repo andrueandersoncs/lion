@@ -219,21 +219,21 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`improvement-order`](#improvement-order) | `constraints-capability-cost-rate` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
 | 2026-11-21 | [`scheme-fidelity`](#scheme-fidelity) | `departures-decided-and-probed` | [Lion's departures from Scheme and Racket are the exceptions a decision names, and any other difference from Scheme is a finding](#scheme-departures-listed) |
 | 2026-11-21 | [`speed-constraint`](#speed-constraint) | `growth-hard-constant-soft` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
-| 2026-11-21 | [`improvement-judge`](#improvement-judge) | `published-cli` | [Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion](#improvement-record) |
-| 2026-11-21 | [`improvement-record`](#improvement-record) | `lion-reasoning-folder` | [Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion](#improvement-record) |
-| 2026-11-21 | [`commit-hook-tests`](#commit-hook-tests) | `picked-on-agent-branches` | [A commit on an agent's branch runs the tests the change can reach, and every other commit runs them all](#hook-runs-picked-tests) |
-| 2026-11-21 | [`loop-meta-score`](#loop-meta-score) | `predictions-resolved-per-hour` | [The improvement loop measures itself by the predictions it resolves per hour of checks, and its scoreboard runs the cheapest tools first](#loop-information-rate) |
 | 2026-11-21 | [`catch-handler-argument`](#catch-handler-argument) | `failure-record` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`cond-case-shape`](#cond-case-shape) | `one-result` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`continuation-shots`](#continuation-shots) | `one-shot` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
-| 2026-11-21 | [`empty-and-or`](#empty-and-or) | `true-and-false` | [Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments](#scheme-identities-and-zip) |
-| 2026-11-21 | [`empty-list-head`](#empty-list-head) | `fails` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
-| 2026-11-21 | [`func-apply-arguments`](#func-apply-arguments) | `spread-last-list` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
-| 2026-11-21 | [`lambda-rest-parameter`](#lambda-rest-parameter) | `one-name-for-all` | [A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme](#lambda-rest-parameter) |
 | 2026-11-21 | [`map-arguments`](#map-arguments) | `one-list` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`record-mutability`](#record-mutability) | `immutable` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`reentrant-force`](#reentrant-force) | `fails` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`string-positions`](#string-positions) | `utf16-code-units` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`empty-and-or`](#empty-and-or) | `true-and-false` | [Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments](#scheme-identities-and-zip) |
+| 2026-11-21 | [`improvement-judge`](#improvement-judge) | `published-cli` | [Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion](#improvement-record) |
+| 2026-11-21 | [`improvement-record`](#improvement-record) | `lion-reasoning-folder` | [Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion](#improvement-record) |
+| 2026-11-21 | [`commit-hook-tests`](#commit-hook-tests) | `picked-on-agent-branches` | [A commit on an agent's branch runs the tests the change can reach, and every other commit runs them all](#hook-runs-picked-tests) |
+| 2026-11-21 | [`loop-meta-score`](#loop-meta-score) | `predictions-resolved-per-hour` | [The improvement loop measures itself by the predictions it resolves per hour of checks, and its scoreboard runs the cheapest tools first](#loop-information-rate) |
+| 2026-11-21 | [`empty-list-head`](#empty-list-head) | `fails` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
+| 2026-11-21 | [`func-apply-arguments`](#func-apply-arguments) | `spread-last-list` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
+| 2026-11-21 | [`lambda-rest-parameter`](#lambda-rest-parameter) | `one-name-for-all` | [A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme](#lambda-rest-parameter) |
 
 <a id="program-representation"></a>
 
@@ -4949,6 +4949,70 @@ Now: `growth-hard-constant-soft`.
 
 - 2026-11-21 `speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`: "A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change." (`improvement-judged-by-capability.json`)
 
+<a id="catch-handler-argument"></a>
+
+## catch-handler-argument
+
+Now: `failure-record`.
+
+- 2026-11-21 `catch-handler-argument`: `failure-record` over `raised-object`: "`func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way" (`r7rs-departures-decided.json`)
+
+<a id="cond-case-shape"></a>
+
+## cond-case-shape
+
+Now: `one-result`.
+
+- 2026-11-21 `cond-case-shape`: `one-result` over `sequence`: "A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair." (`r7rs-departures-decided.json`)
+
+<a id="continuation-shots"></a>
+
+## continuation-shots
+
+Now: `one-shot`.
+
+- 2026-11-21 `continuation-shots`: `one-shot` over `multi-shot`: "A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again." (`r7rs-departures-decided.json`)
+
+<a id="map-arguments"></a>
+
+## map-arguments
+
+Now: `one-list`.
+
+- 2026-11-21 `map-arguments`: `one-list` over `several-lists`: "`array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several." (`r7rs-departures-decided.json`)
+
+<a id="record-mutability"></a>
+
+## record-mutability
+
+Now: `immutable`.
+
+- 2026-11-21 `record-mutability`: `immutable` over `mutable-records`: "A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does" (`r7rs-departures-decided.json`)
+
+<a id="reentrant-force"></a>
+
+## reentrant-force
+
+Now: `fails`.
+
+- 2026-11-21 `reentrant-force`: `fails` over `first-value`: "Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed." (`r7rs-departures-decided.json`)
+
+<a id="string-positions"></a>
+
+## string-positions
+
+Now: `utf16-code-units`.
+
+- 2026-11-21 `string-positions`: `utf16-code-units` over `characters`: "A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together." (`r7rs-departures-decided.json`)
+
+<a id="empty-and-or"></a>
+
+## empty-and-or
+
+Now: `true-and-false`.
+
+- 2026-11-21 `empty-and-or`: `true-and-false` over `not-well-formed`: "`and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`." (`scheme-identities-and-zip.json`)
+
 <a id="improvement-judge"></a>
 
 ## improvement-judge
@@ -5053,38 +5117,6 @@ Recorded 2026-11-21 in `history/notes/loop-information-rate.json`.
 - Stated, not checked by running Lion: decided `loop-meta-score`: `predictions-resolved-per-hour`. "The improvement loop measures itself by the predictions it resolves per hour of checks"
 - Stated, not checked by running Lion: `loop-fail-fast` exists. "The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met"
 
-<a id="catch-handler-argument"></a>
-
-## catch-handler-argument
-
-Now: `failure-record`.
-
-- 2026-11-21 `catch-handler-argument`: `failure-record` over `raised-object`: "`func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way" (`r7rs-departures-decided.json`)
-
-<a id="cond-case-shape"></a>
-
-## cond-case-shape
-
-Now: `one-result`.
-
-- 2026-11-21 `cond-case-shape`: `one-result` over `sequence`: "A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair." (`r7rs-departures-decided.json`)
-
-<a id="continuation-shots"></a>
-
-## continuation-shots
-
-Now: `one-shot`.
-
-- 2026-11-21 `continuation-shots`: `one-shot` over `multi-shot`: "A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again." (`r7rs-departures-decided.json`)
-
-<a id="empty-and-or"></a>
-
-## empty-and-or
-
-Now: `true-and-false`.
-
-- 2026-11-21 `empty-and-or`: `true-and-false` over `not-well-formed`: "`and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`." (`scheme-identities-and-zip.json`)
-
 <a id="empty-list-head"></a>
 
 ## empty-list-head
@@ -5161,35 +5193,3 @@ Recorded 2026-11-21 in `history/notes/lambda-rest-parameter.json`.
 - Holds when Lion is run: `r7rs-4.1.4-lambda-rest-parameter` is `list`. "A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them."
 - Holds when Lion is run: rule `same-as-plain-code` holds. "Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place."
 - Stated, not checked by running Lion: `r7rs-cases-differing` is 10. "of the 36 cases probed, 26 give what Scheme gives and 10 differ, each as a decision names"
-
-<a id="map-arguments"></a>
-
-## map-arguments
-
-Now: `one-list`.
-
-- 2026-11-21 `map-arguments`: `one-list` over `several-lists`: "`array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several." (`r7rs-departures-decided.json`)
-
-<a id="record-mutability"></a>
-
-## record-mutability
-
-Now: `immutable`.
-
-- 2026-11-21 `record-mutability`: `immutable` over `mutable-records`: "A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does" (`r7rs-departures-decided.json`)
-
-<a id="reentrant-force"></a>
-
-## reentrant-force
-
-Now: `fails`.
-
-- 2026-11-21 `reentrant-force`: `fails` over `first-value`: "Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed." (`r7rs-departures-decided.json`)
-
-<a id="string-positions"></a>
-
-## string-positions
-
-Now: `utf16-code-units`.
-
-- 2026-11-21 `string-positions`: `utf16-code-units` over `characters`: "A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together." (`r7rs-departures-decided.json`)

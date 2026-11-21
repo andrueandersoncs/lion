@@ -1,0 +1,292 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "ran"
+   ],
+   [
+    "quote",
+    "bun run loop scores"
+   ]
+  ],
+  [
+   "about",
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "."
+   ],
+   [
+    "quote",
+    "91c0817f30d1453543fdd42d3b9b0f3e982ad312"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-3"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "ran measure: bun run measure, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "measure",
+     "observation": "merged"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-4"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "grid exceptions, core: 3"
+   ],
+   [
+    "quote",
+    {
+     "grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-5"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "undocumented grid exceptions, core: 0"
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-6"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "instruments",
+     "observation": "merged"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-7"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "instrument lines removed, since the base: 0"
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-8"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "ran replay: bun run affected --replay 30, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "replay",
+     "observation": "merged"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-9"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "tests' time picked, last 30 commits: 99"
+   ],
+   [
+    "quote",
+    {
+     "tests' time picked": "last 30 commits"
+    }
+   ],
+   [
+    "quote",
+    99
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-10"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "ran bench: bun run bench, exit 0, 4 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "bench",
+     "observation": "merged"
+    }
+   ],
+   [
+    "quote",
+    4
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-11"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "bench total ms, every benchmark: 1082.4"
+   ],
+   [
+    "quote",
+    {
+     "bench total ms": "every benchmark"
+    }
+   ],
+   [
+    "quote",
+    1082.4
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-12"
+   ],
+   [
+    "quote",
+    "merged"
+   ],
+   [
+    "quote",
+    "ran capability: bun run capability --json, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "capability",
+     "observation": "merged"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ]
+ ],
+ "recorded"
+]

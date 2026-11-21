@@ -17,30 +17,34 @@
 - `bun run affected --replay 30` says what picking would have run for each of the last 30 commits, beside everything (`affected-replay` added)
 - `bun run mutate --affected` checks only the mutations the changes since HEAD can reach: those in a changed file, and those whose tests a changed file reaches (`mutate-affected` added)
 - `bun run affected --map` runs every package's tests once with a setup file that records the source files whose functions each test file ran, the files it read, and whether it ran git (`reach-map` added)
-- Experiments on Lion are recorded in `improvement/` (`improvement-record` added)
-- `bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word (`loop-command` added)
-- The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met (`loop-fail-fast` added)
-- `array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list. (`array/zip` added)
 - `bun run capability` grades the corpus and prints how many of each pillar's tasks are passed, and `--solutions` grades a folder of programs in place of the reference programs (`capability` added)
 - `packages/metrics/corpus/` holds Lion's public capability corpus: tasks of general computation, logic programming, and formal proofs, each a JSON record {id, pillar, statement, inputs, check, tags, origin} whose check is a Lion lambda that judges what a program gives, with a reference program for each task Lion can do (`capability-corpus` added)
 - `LION_HELD_OUT` names a folder outside the repository with the corpus's layout, whose tasks are graded beside the public ones; a folder inside the repository is refused (`held-out-corpus` added)
+- `array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list. (`array/zip` added)
+- Experiments on Lion are recorded in `improvement/` (`improvement-record` added)
+- `bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word (`loop-command` added)
+- The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met (`loop-fail-fast` added)
 - give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI (`words/first` added)
 
 ### Changed
 
-- The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/` (`reasoning-task-folder-in-versions` is `left-out`)
-- the commit hook builds the workspace and runs `bun run affected --run`: the test files and checks the change since HEAD can reach (`pre-commit-hook-agent-branch` is `picked-tests`)
-- A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`r7rs-4.1.4-lambda-rest-parameter` is `list`, was `error`)
 - so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f (`r7rs-4.2.1-and-gives-last-value` is `error`; `r7rs-4.2.1-or-gives-first-true-value` is `error`; `r7rs-6.3-not-of-non-boolean` is `error`)
-- `and` of no goals holds and `or` of no goals does not (`r7rs-4.2.1-and-no-arguments` is `true`, was `error`; `r7rs-4.2.1-or-no-arguments` is `false`, was `error`)
 - A `cond` case is a condition and one result (`r7rs-4.2.1-cond-clause-sequence` is `error`)
 - Forcing a promise while it is being forced fails (`r7rs-4.2.5-force-reentrant` is `error`)
 - `func/catch` gives its handler a record of the failure (`r7rs-4.2.7-raise-handler-gets-raised-object` is `record`)
 - `object/set` gives a new one (`r7rs-5.5-record-modifier-mutates` is `unchanged`)
 - A continuation resumes once (`r7rs-6.10-continuation-resumed-twice` is `error`)
 - `array/map` takes one list and the function (`r7rs-6.10-map-several-lists` is `error`)
-- none gives what combining nothing gives: 0, 1, "", and [] (`r7rs-6.2.6-add-no-arguments` is `zero`, was `error`; `r7rs-6.2.6-multiply-no-arguments` is `one`, was `error`; `r7rs-6.4-append-no-arguments` is `empty-list`, was `error`; `r7rs-6.7-string-append-no-arguments` is `empty-string`, was `error`)
 - A string's positions and length count UTF-16 code units (`r7rs-6.7-string-length-counts-characters` is `two`)
+- `and` of no goals holds and `or` of no goals does not (`r7rs-4.2.1-and-no-arguments` is `true`, was `error`; `r7rs-4.2.1-or-no-arguments` is `false`, was `error`)
+- none gives what combining nothing gives: 0, 1, "", and [] (`r7rs-6.2.6-add-no-arguments` is `zero`, was `error`; `r7rs-6.2.6-multiply-no-arguments` is `one`, was `error`; `r7rs-6.4-append-no-arguments` is `empty-list`, was `error`; `r7rs-6.7-string-append-no-arguments` is `empty-string`, was `error`)
+- The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/` (`reasoning-task-folder-in-versions` is `left-out`)
+- the commit hook builds the workspace and runs `bun run affected --run`: the test files and checks the change since HEAD can reach (`pre-commit-hook-agent-branch` is `picked-tests`)
+- A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`r7rs-4.1.4-lambda-rest-parameter` is `list`, was `error`)
+
+### Fixed
+
+- `bun run loop scores` reads the capability as the JSON object `bun run capability --json` printed, whatever bun prints around it, so the first observation after merging the corpus no longer stops at the capability (`loop-capability-with-bun-lines` is `read`)
 
 ### Decided
 
@@ -54,22 +58,22 @@
 - Versions of Lion are compared in a fixed order, never by a weighted sum (`improvement-order`: `constraints-capability-cost-rate` over `weighted-sum`)
 - Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why. (`scheme-fidelity`: `departures-decided-and-probed` over `where-unclear`, `separate-departures-list`, `racket-first`)
 - A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change. (`speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`)
-- The record is judged by the published Lion CLI that `LION_CLI` names (`improvement-judge`: `published-cli` over `working-tree`)
-- Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository. (`improvement-record`: `lion-reasoning-folder` over `project-record`, `research-model`)
-- On a branch whose name starts with `claude/`, the branch of an agent's worktree, the commit hook builds the workspace and runs `bun run affected --run` (`commit-hook-tests`: `picked-on-agent-branches` over `every-test-every-commit`, `picked-on-every-branch`)
-- The improvement loop measures itself by the predictions it resolves per hour of checks (`loop-meta-score`: `predictions-resolved-per-hour` over `capability-per-hour-only`, `observations-per-hour`)
 - `func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way (`catch-handler-argument`: `failure-record` over `raised-object`)
-- `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []. (`combining-function-arity`: `zero-or-more` over `one-or-more`, was `one-or-more`)
 - A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair. (`cond-case-shape`: `one-result` over `sequence`)
 - A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again. (`continuation-shots`: `one-shot` over `multi-shot`)
-- `and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`. (`empty-and-or`: `true-and-false` over `not-well-formed`)
-- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`empty-list-head`: `fails` over `null`)
-- `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list (`func-apply-arguments`: `spread-last-list` over `pass-as-given`)
-- A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`lambda-rest-parameter`: `one-name-for-all` over `dotted-list`, `fixed-only`)
 - `array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several. (`map-arguments`: `one-list` over `several-lists`)
 - A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does (`record-mutability`: `immutable` over `mutable-records`)
 - Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed. (`reentrant-force`: `fails` over `first-value`)
 - A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together. (`string-positions`: `utf16-code-units` over `characters`)
+- `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []. (`combining-function-arity`: `zero-or-more` over `one-or-more`, was `one-or-more`)
+- `and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`. (`empty-and-or`: `true-and-false` over `not-well-formed`)
+- The record is judged by the published Lion CLI that `LION_CLI` names (`improvement-judge`: `published-cli` over `working-tree`)
+- Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository. (`improvement-record`: `lion-reasoning-folder` over `project-record`, `research-model`)
+- On a branch whose name starts with `claude/`, the branch of an agent's worktree, the commit hook builds the workspace and runs `bun run affected --run` (`commit-hook-tests`: `picked-on-agent-branches` over `every-test-every-commit`, `picked-on-every-branch`)
+- The improvement loop measures itself by the predictions it resolves per hour of checks (`loop-meta-score`: `predictions-resolved-per-hour` over `capability-per-hour-only`, `observations-per-hour`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`empty-list-head`: `fails` over `null`)
+- `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list (`func-apply-arguments`: `spread-last-list` over `pass-as-given`)
+- A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`lambda-rest-parameter`: `one-name-for-all` over `dotted-list`, `fixed-only`)
 
 ### Rules
 
@@ -79,9 +83,9 @@
 - A person merges, releases, and approves every decision that overturns a documented rule. (rule `people-merge-and-release`)
 - `bun run affected --check` treats each listed mutation as a change to its file, and lists every test the mutation names that picking would skip (rule `picked-checks-catch-what-full-catches`)
 - a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check` (rule `scheme-departures-are-decided`)
-- so no figure in the record is typed in (rule `loop-figures-observed`)
 - A task Lion cannot express yet is a gap: it stays in the corpus and counts as not passed, `gaps.json` says what Lion lacks, and it has no reference program (rule `capability-gaps-recorded`)
 - Every public task that has a reference program passes its check, and a property in `packages/metrics` fails when one stops passing, so capability cannot drop without a test failing (rule `capability-references-pass`)
+- so no figure in the record is typed in (rule `loop-figures-observed`)
 
 ## 2026-11-20 — @lionlang/core 0.15.0, @lionlang/cli 0.14.0
 
@@ -2341,5 +2345,5 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - The auto-quoting of lists was removed. (rule `non-call-arrays-are-lists` withdrawn)
 - A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (rule `special-forms-plain-names`)
 - A record pattern in `match` fits any record that has the pattern's keys with values that fit (rule `record-patterns-by-keys`)
-- R7RS-small 4.2.7: the handler of guard is given the object that was raised, so (guard (e (#t e)) (raise 'boom)) is boom (rule `scheme-racket-semantics`)
+- Ten cases stay as they are, as departures from Scheme. (rule `scheme-racket-semantics`)
 - All code is valid JSON. All JSON is valid code. (rule `all-json-is-code` withdrawn)

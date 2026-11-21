@@ -141,7 +141,7 @@ describe("the loop's scoreboard", () => {
   );
 
   it.prop(
-    "reads each suite's passed tasks by pillar and in all",
+    "reads each suite's passed tasks by pillar and in all, whatever bun prints around the JSON",
     {
       passed: Arbitrary.array(between(0, 40), { maxLength: 3, minLength: 3 }),
     },
@@ -159,7 +159,8 @@ describe("the loop's scoreboard", () => {
         },
       });
       const [computation, logic, proofs] = passed as [number, number, number];
-      expect(readCapability(json)).toEqual({
+      const printed = `$ bun run capability --json\n${json}\n$ bun run --cwd packages/metrics capability --json\n`;
+      expect(readCapability(printed)).toEqual({
         public: {
           all: computation + logic + proofs,
           computation,

@@ -139,10 +139,18 @@ export const readMeasure = (text: string) => ({
     .length,
 });
 
-/** Each suite's passed tasks by pillar, and in all, from `bun run capability --json`. */
+/**
+ * Each suite's passed tasks by pillar, and in all, from what `bun run
+ * capability --json` printed: the JSON object between the first `{` and the
+ * last `}`, whatever bun prints around it.
+ */
 export const readCapability = (
-  json: string
+  printed: string
 ): Record<string, Record<string, number>> => {
+  const json = printed.slice(
+    printed.indexOf("{"),
+    printed.lastIndexOf("}") + 1
+  );
   const suites = JSON.parse(json) as Record<
     string,
     { scores: { passed: number; pillar: string; total: number }[] }

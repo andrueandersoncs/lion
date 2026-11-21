@@ -1,0 +1,13 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run loop scores` reads the capability as the JSON object `bun run capability --json` printed, whatever bun prints around it, so the first observation after merging the corpus no longer stops at the capability",
+      "says": {
+        "behavior": "loop-capability-with-bun-lines",
+        "is": "read",
+        "area": "metrics",
+        "fixes": true
+      }
+    }
+  ]
+}
