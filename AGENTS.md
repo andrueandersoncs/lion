@@ -118,7 +118,7 @@ turbo typecheck --filter=@lionlang/core
 2. **During development**: Use `turbo dev --filter=@lionlang/repl` for REPL development
 3. **Before committing**:
    - Run `bun run check`
-   - Run `bun run test`
+   - Run `bun run test`. On a `claude/` branch the commit hook runs only the tests the change can reach (decision `commit-hook-tests`), so run every test, and `bun run affected --check`, before asking for a merge
    - Run `bun run build`
    - For a change to `@lionlang/core`, run `bun run measure --against main`, `bun run bench --against main`, and `bun run scale --against main`, and `bun run mutate --in <the files you changed>` when you added behavior
    - Run [the documentation procedure](guidelines/documentation.md#after-every-change-the-documentation-procedure): `bun run compare main --docs`, the search for sentences the change made untrue, an example for each new feature, and `bun run --cwd packages/site-runtime docs`

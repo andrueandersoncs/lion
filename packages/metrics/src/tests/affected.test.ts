@@ -201,7 +201,9 @@ describe("the reach map", () => {
   it.prop(
     "keeps a path inside the repository, from a path or a file URL, and leaves out the rest",
     {
-      at: path,
+      // Capitalized, so no path can climb back into the root through a
+      // folder of its own name: the root's folders are lowercase.
+      at: Arbitrary.map(path, (p) => `F${p}`),
       root: path,
       url: boolean,
       where: element(["", "node_modules/", "out/", "../"]),
@@ -210,7 +212,7 @@ describe("the reach map", () => {
       const absolute = `/${root}/${where}${at}`;
       const location = url ? `file://${absolute}?v=1` : absolute;
       expect(repositoryPath(`/${root}`, location)).toBe(
-        where === "" && !at.startsWith("out/") ? at : undefined
+        where === "" ? at : undefined
       );
     }
   );

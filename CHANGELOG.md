@@ -13,10 +13,12 @@
 - `bun run affected --map` runs every package's tests once with a setup file that records the source files whose functions each test file ran, the files it read, and whether it ran git (`reach-map` added)
 - Experiments on Lion are recorded in `improvement/` (`improvement-record` added)
 - `bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word (`loop-command` added)
+- The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met (`loop-fail-fast` added)
 
 ### Changed
 
 - The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/` (`reasoning-task-folder-in-versions` is `left-out`)
+- the commit hook builds the workspace and runs `bun run affected --run`: the test files and checks the change since HEAD can reach (`pre-commit-hook-agent-branch` is `picked-tests`)
 
 ### Decided
 
@@ -32,6 +34,8 @@
 - A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change. (`speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`)
 - The record is judged by the published Lion CLI that `LION_CLI` names (`improvement-judge`: `published-cli` over `working-tree`)
 - Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository. (`improvement-record`: `lion-reasoning-folder` over `project-record`, `research-model`)
+- On a branch whose name starts with `claude/`, the branch of an agent's worktree, the commit hook builds the workspace and runs `bun run affected --run` (`commit-hook-tests`: `picked-on-agent-branches` over `every-test-every-commit`, `picked-on-every-branch`)
+- The improvement loop measures itself by the predictions it resolves per hour of checks (`loop-meta-score`: `predictions-resolved-per-hour` over `capability-per-hour-only`, `observations-per-hour`)
 
 ### Rules
 
@@ -2275,7 +2279,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - Use conventional commit format when possible (rule `conventional-commits`)
 - 1. **Before coding**: Run `npm install` and `npm run prepare` (rule `dev-commands-npm`)
 - it("should perform operation", () => { (rule `example-based-tests`)
-- Every commit runs the tests and the formatter, and CI checks every pull request and push to `main` (rule `quality-gates`)
+- Every other commit, a commit where there is no reach map, and a commit made with `LION_FULL_TESTS=1` runs every test with `bun run test`, as before. (rule `quality-gates`)
 - **Framework**: Vitest with @effect/vitest (rule `tests-use-vitest-effect`)
 - Update this AGENTS.md if development practices change (rule `update-agents-md`)
 - Validate all inputs using Effect Schemas (rule `validate-inputs-with-schemas`)

@@ -24000,5 +24000,26 @@
       ],
       ["else", ["quote", "other"]]
     ]
+  },
+  {
+    "case": "pre-commit-hook-agent-branch",
+    "area": "build",
+    "program": [
+      "begin",
+      ["define", "hook", ["repo/read", ".husky/pre-commit"]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["string/includes", "hook", "claude/*)"],
+            ["string/includes", "hook", "bun run affected --run"]
+          ],
+          ["quote", "picked-tests"]
+        ],
+        [["string/includes", "hook", "bun run test"], ["quote", "every-test"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

@@ -205,8 +205,18 @@ const now = async ({ ask, byTest, checked, map }: Context) => {
   console.log(
     `${change.files.length} files changed since ${ref}. They reach ${tests.length} of ${map.tests.length} test files and checks, ${Math.round(seconds(tests))} of ${Math.round(seconds(map.tests))} s, and ${(picked.mutations.now ?? []).length} of ${checked.length} mutations.`
   );
+  const packages = new Set(map.tests.map((t) => t.package));
+  /** What a changed file no test reached picks. */
+  const reachOf = (file: string) => {
+    if ([...packages].some((p) => file.startsWith(`${p}/`))) {
+      return "its package's tests run";
+    }
+    return file.includes("/") || file.endsWith(".md")
+      ? "only the tests that run git reach it"
+      : "every test runs";
+  };
   for (const file of picked.unmapped.now ?? []) {
-    console.log(`  no test reached ${file}, so its package's tests run`);
+    console.log(`  no test reached ${file}, so ${reachOf(file)}`);
   }
   for (const test of tests) {
     console.log(`  ${test.test}`);

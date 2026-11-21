@@ -18,7 +18,7 @@ improvement/
 bun run loop status
 ```
 
-prints every standing question that has an answer: the best each score is sure to give, the versions whose scores do not count because a requirement failed, where the next experiment should go, what each experiment was expected to fix and whether it did, and which directions wait for the user.
+prints every standing question that has an answer: the best each score is sure to give, the versions whose scores do not count because a requirement failed, where the next experiment should go, what each experiment was expected to fix and whether it did, which directions wait for the user, and how many predictions the loop has resolved per hour of checks, from the time each tool of each observation took (decision `loop-meta-score`).
 
 The record is judged by the published Lion CLI that `LION_CLI` names, `bunx @lionlang/cli@0.14.0` unless it is set, never by the Lion the loop is changing. A change to Lion therefore cannot change how its own experiments are judged.
 

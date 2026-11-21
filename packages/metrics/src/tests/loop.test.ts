@@ -218,13 +218,14 @@ describe("the loop's scoreboard", () => {
         value,
       }));
       const text = [
-        "ran measure: bun run measure, exit 0, 4 s",
+        `ran measure: bun run measure, exit 0, ${values.length} s`,
         ...printed.map(({ measured, value }) => line(measured, value)),
       ].join("\n");
       const observations = observationsOf(text, "v1", tries ? "d" : undefined);
-      expect(observations.map((o) => [o.question, o.value])).toEqual(
-        printed.map(({ measured, value }) => [measured.question, value])
-      );
+      expect(observations.map((o) => [o.question, o.value])).toEqual([
+        [{ observation: "v1", "seconds of check": "measure" }, values.length],
+        ...printed.map(({ measured, value }) => [measured.question, value]),
+      ]);
       for (const o of observations) {
         expect(text.includes(o.quote)).toBe(true);
         const score =

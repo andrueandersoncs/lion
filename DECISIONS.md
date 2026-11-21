@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 215 questions have been decided, 96 records explain them, and of what the records assert, 641 hold when Lion is run, 2 are broken, 369 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 217 questions have been decided, 98 records explain them, and of what the records assert, 643 hold when Lion is run, 2 are broken, 372 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -221,6 +221,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`speed-constraint`](#speed-constraint) | `growth-hard-constant-soft` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
 | 2026-11-21 | [`improvement-judge`](#improvement-judge) | `published-cli` | [Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion](#improvement-record) |
 | 2026-11-21 | [`improvement-record`](#improvement-record) | `lion-reasoning-folder` | [Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion](#improvement-record) |
+| 2026-11-21 | [`commit-hook-tests`](#commit-hook-tests) | `picked-on-agent-branches` | [A commit on an agent's branch runs the tests the change can reach, and every other commit runs them all](#hook-runs-picked-tests) |
+| 2026-11-21 | [`loop-meta-score`](#loop-meta-score) | `predictions-resolved-per-hour` | [The improvement loop measures itself by the predictions it resolves per hour of checks, and its scoreboard runs the cheapest tools first](#loop-information-rate) |
 
 <a id="program-representation"></a>
 
@@ -4906,3 +4908,64 @@ Recorded 2026-11-21 in `history/notes/improvement-record.json`.
 Now: `lion-reasoning-folder`.
 
 - 2026-11-21 `improvement-record`: `lion-reasoning-folder` over `project-record`, `research-model`: "Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository." (`improvement-record.json`)
+
+<a id="commit-hook-tests"></a>
+
+## commit-hook-tests
+
+Now: `picked-on-agent-branches`.
+
+- 2026-11-21 `commit-hook-tests`: `picked-on-agent-branches` over `every-test-every-commit`, `picked-on-every-branch`: "On a branch whose name starts with `claude/`, the branch of an agent's worktree, the commit hook builds the workspace and runs `bun run affected --run`" (`hook-runs-picked-tests.json`)
+
+<a id="hook-runs-picked-tests"></a>
+
+### A commit on an agent's branch runs the tests the change can reach, and every other commit runs them all
+
+Recorded 2026-11-21 in `history/notes/hook-runs-picked-tests.json`.
+
+**Context.** Every commit ran every package's tests, about two minutes on 2026-11-21, and an experiment of the improvement loop is a commit, so each one paid for tests its change could not reach. `bun run affected` picks the test files and checks a change can reach from a map of what each test reached, and its check found picking sound for all 599 listed mutations: the tests it picks catch each one. The user decided that picked checks are not weaker on that condition, as long as the full suite runs before a merge, and then, asked whether the commit hook may run only the picked tests on loop branches, answered "Yes".
+
+**Decision.** On a branch whose name starts with `claude/`, the branch of an agent's worktree, the commit hook builds the workspace and runs `bun run affected --run`: the test files and checks the change since HEAD can reach. Every other commit, a commit where there is no reach map, and a commit made with `LION_FULL_TESTS=1` runs every test with `bun run test`, as before. The full suite runs before a merge, and CI runs it on every pull request and every push to `main`.
+
+**Consequences.** A commit on an agent's branch that changes only the docs, the research, or the record runs a few tests instead of all of them; one that changes `@lionlang/core` still runs nearly all, since the evaluator runs under every package's tests. A commit whose picked tests fail is still refused. The map is of the commit it was made at, so a file no test reached runs every test of its package, or, at the root, every test, and `bun run affected --check` says whether picking is still sound before a merge. Every worktree runs the hook of the main checkout, since `core.hooksPath` names the main checkout's `.husky/_`, so the change reaches an agent's commits once the main checkout holds it; until then they run every test.
+
+**Alternatives considered.**
+
+- Run every test on every commit. It runs, for each experiment, the tests its change cannot reach, and the improvement loop's rate is its experiments per hour.
+- Run the picked tests on every branch, the user's own included. The user's answer was about the loop's branches, and a person's branch has no record whose check would notice a test the picking skipped.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `commit-hook-tests`: `picked-on-agent-branches`. "On a branch whose name starts with `claude/`, the branch of an agent's worktree, the commit hook builds the workspace and runs `bun run affected --run`"
+- Holds when Lion is run: rule `quality-gates` holds. "Every other commit, a commit where there is no reach map, and a commit made with `LION_FULL_TESTS=1` runs every test with `bun run test`, as before."
+- Holds when Lion is run: `pre-commit-hook-agent-branch` is `picked-tests`. "the commit hook builds the workspace and runs `bun run affected --run`: the test files and checks the change since HEAD can reach"
+
+<a id="loop-meta-score"></a>
+
+## loop-meta-score
+
+Now: `predictions-resolved-per-hour`.
+
+- 2026-11-21 `loop-meta-score`: `predictions-resolved-per-hour` over `capability-per-hour-only`, `observations-per-hour`: "The improvement loop measures itself by the predictions it resolves per hour of checks" (`loop-information-rate.json`)
+
+<a id="loop-information-rate"></a>
+
+### The improvement loop measures itself by the predictions it resolves per hour of checks, and its scoreboard runs the cheapest tools first
+
+Recorded 2026-11-21 in `history/notes/loop-information-rate.json`.
+
+**Context.** The plan measures the rate of improvement as capability gained per hour, which says nothing until capability moves, and moves rarely. The user shared Charlie O'Neill's point that information gained per unit of time is the name of the game, the lesson of the people who ran the most small, statistically trustworthy experiments, and left it to this session whether the loop should be measured that way. The record already says which predictions the evidence bore out and which it contradicted, and the scoreboard printed how long each tool took.
+
+**Decision.** The improvement loop measures itself by the predictions it resolves per hour of checks: the predictions of its beliefs that the evidence bore out or contradicted, over the seconds every tool of every observation took, as the record's own observations of the scoreboard's lines give them. A contradicted prediction counts as much as one borne out. The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met, since a version that breaks a constraint has no score for the rest to change.
+
+**Consequences.** The first figure, after one experiment, is 4 predictions in 1,331 seconds of checks, 10.8 an hour: most of the time went to an observation that predicted nothing and to beliefs that were recorded where no run could judge them. Choosing the next experiment and the order of checks by this rate comes after the rate has enough experiments behind it to mean something.
+
+**Alternatives considered.**
+
+- Measure the loop only by capability gained per hour. Capability moves rarely, so the measure says nothing about most hours of work, and the plan's R stays for the longer view.
+- Count every observation as information. A check whose outcome was certain teaches nothing; a prediction the evidence could have contradicted does.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `loop-meta-score`: `predictions-resolved-per-hour`. "The improvement loop measures itself by the predictions it resolves per hour of checks"
+- Stated, not checked by running Lion: `loop-fail-fast` exists. "The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met"

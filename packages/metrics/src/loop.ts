@@ -27,6 +27,8 @@ const VERDICT = /^(CAUGHT|MISSED|STALE)\s+(.+)$/;
 const CAPABILITY_LABEL = /^capability passed, ([^,]+), (.+)$/;
 const NUMBER = /^-?\d+(?:\.\d+)?$/;
 const RUNS_LABEL = /^mutation runs caught of (\d+), (.+)$/;
+/** The line the scoreboard prints for each tool it ran. */
+const RAN = /^ran ([a-z0-9-]+): .*, exit \S+, (\d+) s$/;
 
 /** Every question the scoreboard can answer, by the name the tools use. */
 export const QUESTIONS = {
@@ -292,7 +294,22 @@ export const observationsOf = (
   source: string,
   tries?: string
 ): Observation[] =>
-  text.split("\n").flatMap((row, at) => {
+  text.split("\n").flatMap((row, at): Observation[] => {
+    const ran = RAN.exec(row);
+    if (ran !== null) {
+      return [
+        {
+          id: `${source}-${at}`,
+          question: {
+            "seconds of check": ran[1] as string,
+            observation: source,
+          },
+          quote: row,
+          source,
+          value: Number(ran[2]),
+        },
+      ];
+    }
     const split = row.lastIndexOf(": ");
     if (split === -1) {
       return [];

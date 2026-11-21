@@ -1,0 +1,59 @@
+{
+  "title": "A commit on an agent's branch runs the tests the change can reach, and every other commit runs them all",
+  "context": "Every commit ran every package's tests, about two minutes on 2026-11-21, and an experiment of the improvement loop is a commit, so each one paid for tests its change could not reach. `bun run affected` picks the test files and checks a change can reach from a map of what each test reached, and its check found picking sound for all 599 listed mutations: the tests it picks catch each one. The user decided that picked checks are not weaker on that condition, as long as the full suite runs before a merge, and then, asked whether the commit hook may run only the picked tests on loop branches, answered \"Yes\".",
+  "decision": "On a branch whose name starts with `claude/`, the branch of an agent's worktree, the commit hook builds the workspace and runs `bun run affected --run`: the test files and checks the change since HEAD can reach. Every other commit, a commit where there is no reach map, and a commit made with `LION_FULL_TESTS=1` runs every test with `bun run test`, as before. The full suite runs before a merge, and CI runs it on every pull request and every push to `main`.",
+  "consequences": "A commit on an agent's branch that changes only the docs, the research, or the record runs a few tests instead of all of them; one that changes `@lionlang/core` still runs nearly all, since the evaluator runs under every package's tests. A commit whose picked tests fail is still refused. The map is of the commit it was made at, so a file no test reached runs every test of its package, or, at the root, every test, and `bun run affected --check` says whether picking is still sound before a merge. Every worktree runs the hook of the main checkout, since `core.hooksPath` names the main checkout's `.husky/_`, so the change reaches an agent's commits once the main checkout holds it; until then they run every test.",
+  "alternatives": [
+    {
+      "option": "Run every test on every commit",
+      "rejected": "It runs, for each experiment, the tests its change cannot reach, and the improvement loop's rate is its experiments per hour."
+    },
+    {
+      "option": "Run the picked tests on every branch, the user's own included",
+      "rejected": "The user's answer was about the loop's branches, and a person's branch has no record whose check would notice a test the picking skipped."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "On a branch whose name starts with `claude/`, the branch of an agent's worktree, the commit hook builds the workspace and runs `bun run affected --run`",
+      "says": {
+        "decision": "commit-hook-tests",
+        "chose": "picked-on-agent-branches",
+        "over": ["every-test-every-commit", "picked-on-every-branch"],
+        "area": "build",
+        "because": "picking is sound for every listed mutation, the full suite runs before a merge, and the loop's rate is its experiments per hour"
+      }
+    },
+    {
+      "quote": "Every other commit, a commit where there is no reach map, and a commit made with `LION_FULL_TESTS=1` runs every test with `bun run test`, as before.",
+      "says": {
+        "rule": "quality-gates",
+        "holds": true,
+        "statement": "A commit on an agent's branch runs the tests the change can reach, every other commit runs every test, and CI checks formatting, types, tests, and the build on every pull request and push to main.",
+        "area": "build",
+        "predicts": [
+          {
+            "behavior": "pre-commit-hook",
+            "is": "runs-tests"
+          },
+          {
+            "behavior": "pre-commit-hook-agent-branch",
+            "is": "picked-tests"
+          },
+          {
+            "behavior": "commit-with-failing-tests",
+            "is": "refused"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "the commit hook builds the workspace and runs `bun run affected --run`: the test files and checks the change since HEAD can reach",
+      "says": {
+        "behavior": "pre-commit-hook-agent-branch",
+        "is": "picked-tests",
+        "area": "build"
+      }
+    }
+  ]
+}

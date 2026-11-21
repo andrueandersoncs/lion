@@ -1,0 +1,8 @@
+{
+  "observations": [
+    { "id": "u10", "source": "user", "quote": "1. $25",
+      "question": { "dollar cap": "per experiment" }, "value": 25 },
+    { "id": "u11", "source": "user", "quote": "2. Yes",
+      "question": { "run picked tests in the commit hook": "quality gates" }, "value": "yes" }
+  ]
+}

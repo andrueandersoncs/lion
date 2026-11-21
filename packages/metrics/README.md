@@ -227,7 +227,7 @@ picking unsound, listed mutations: 0
 instrument lines removed, since the base: 0
 ```
 
-It took six minutes, most of them in the tests, the record's check, the soundness check, and scale. `--skip` leaves tools out, `--mutations "a|b"` runs listed mutations by name, `--repeat n` runs them n times and counts the runs that caught each, and `--full` runs every listed mutation. `guidelines/improving.md` says how an experiment uses them.
+It took six minutes, most of them in the tests, the record's check, the soundness check, and scale. The tools run cheapest first, and each prints how long it took, which `observe` records as well, so the record can say how many predictions the loop resolves per hour of checks. `--fail-fast` stops at the first requirement that is not met. `--skip` leaves tools out, `--mutations "a|b"` runs listed mutations by name, `--repeat n` runs them n times and counts the runs that caught each, and `--full` runs every listed mutation. `guidelines/improving.md` says how an experiment uses them.
 
 ## Behavior: `bun run compare`
 

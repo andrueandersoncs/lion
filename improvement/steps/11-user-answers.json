@@ -1,0 +1,57 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "observed",
+   [
+    "quote",
+    "u10"
+   ],
+   [
+    "quote",
+    "user"
+   ],
+   [
+    "quote",
+    "1. $25"
+   ],
+   [
+    "quote",
+    {
+     "dollar cap": "per experiment"
+    }
+   ],
+   [
+    "quote",
+    25
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "u11"
+   ],
+   [
+    "quote",
+    "user"
+   ],
+   [
+    "quote",
+    "2. Yes"
+   ],
+   [
+    "quote",
+    {
+     "run picked tests in the commit hook": "quality gates"
+    }
+   ],
+   [
+    "quote",
+    "yes"
+   ]
+  ]
+ ],
+ "recorded"
+]

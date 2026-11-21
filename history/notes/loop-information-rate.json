@@ -1,0 +1,36 @@
+{
+  "title": "The improvement loop measures itself by the predictions it resolves per hour of checks, and its scoreboard runs the cheapest tools first",
+  "context": "The plan measures the rate of improvement as capability gained per hour, which says nothing until capability moves, and moves rarely. The user shared Charlie O'Neill's point that information gained per unit of time is the name of the game, the lesson of the people who ran the most small, statistically trustworthy experiments, and left it to this session whether the loop should be measured that way. The record already says which predictions the evidence bore out and which it contradicted, and the scoreboard printed how long each tool took.",
+  "decision": "The improvement loop measures itself by the predictions it resolves per hour of checks: the predictions of its beliefs that the evidence bore out or contradicted, over the seconds every tool of every observation took, as the record's own observations of the scoreboard's lines give them. A contradicted prediction counts as much as one borne out. The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met, since a version that breaks a constraint has no score for the rest to change.",
+  "consequences": "The first figure, after one experiment, is 4 predictions in 1,331 seconds of checks, 10.8 an hour: most of the time went to an observation that predicted nothing and to beliefs that were recorded where no run could judge them. Choosing the next experiment and the order of checks by this rate comes after the rate has enough experiments behind it to mean something.",
+  "alternatives": [
+    {
+      "option": "Measure the loop only by capability gained per hour",
+      "rejected": "Capability moves rarely, so the measure says nothing about most hours of work, and the plan's R stays for the longer view."
+    },
+    {
+      "option": "Count every observation as information",
+      "rejected": "A check whose outcome was certain teaches nothing; a prediction the evidence could have contradicted does."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "The improvement loop measures itself by the predictions it resolves per hour of checks",
+      "says": {
+        "decision": "loop-meta-score",
+        "chose": "predictions-resolved-per-hour",
+        "over": ["capability-per-hour-only", "observations-per-hour"],
+        "area": "metrics",
+        "because": "a prediction the evidence could have contradicted is information, and capability moves too rarely to steer by"
+      }
+    },
+    {
+      "quote": "The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met",
+      "says": {
+        "feature": "loop-fail-fast",
+        "kind": "option",
+        "present": true
+      }
+    }
+  ]
+}

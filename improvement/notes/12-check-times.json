@@ -1,0 +1,334 @@
+{
+  "observations": [
+    {
+      "id": "t-base-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "base"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "base",
+      "value": 1
+    },
+    {
+      "id": "t-base-6",
+      "question": {
+        "seconds of check": "record",
+        "observation": "base"
+      },
+      "quote": "ran record: bun run history check, exit 0, 61 s",
+      "source": "base",
+      "value": 61
+    },
+    {
+      "id": "t-base-9",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "base"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 42 s",
+      "source": "base",
+      "value": 42
+    },
+    {
+      "id": "t-base-11",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "base"
+      },
+      "quote": "ran tests: bun run test, exit 0, 150 s",
+      "source": "base",
+      "value": 150
+    },
+    {
+      "id": "t-base-13",
+      "question": {
+        "seconds of check": "bench",
+        "observation": "base"
+      },
+      "quote": "ran bench: bun run bench, exit 0, 3 s",
+      "source": "base",
+      "value": 3
+    },
+    {
+      "id": "t-base-15",
+      "question": {
+        "seconds of check": "replay",
+        "observation": "base"
+      },
+      "quote": "ran replay: bun run affected --replay 30, exit 0, 1 s",
+      "source": "base",
+      "value": 1
+    },
+    {
+      "id": "t-base-17",
+      "question": {
+        "seconds of check": "check",
+        "observation": "base"
+      },
+      "quote": "ran check: bun run affected --check, exit 0, 71 s",
+      "source": "base",
+      "value": 71
+    },
+    {
+      "id": "t-base-19",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "base"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "base",
+      "value": 0
+    },
+    {
+      "id": "t-base-21",
+      "question": {
+        "seconds of check": "mutations",
+        "observation": "base"
+      },
+      "quote": "ran mutations: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are a relation goal reads a relation's rows before they are derived, exit 1, 30 s",
+      "source": "base",
+      "value": 30
+    },
+    {
+      "id": "t-flaky-before-3",
+      "question": {
+        "seconds of check": "mutations-0",
+        "observation": "flaky-before"
+      },
+      "quote": "ran mutations-0: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 0, 32 s",
+      "source": "flaky-before",
+      "value": 32
+    },
+    {
+      "id": "t-flaky-before-4",
+      "question": {
+        "seconds of check": "mutations-1",
+        "observation": "flaky-before"
+      },
+      "quote": "ran mutations-1: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 0, 45 s",
+      "source": "flaky-before",
+      "value": 45
+    },
+    {
+      "id": "t-flaky-before-5",
+      "question": {
+        "seconds of check": "mutations-2",
+        "observation": "flaky-before"
+      },
+      "quote": "ran mutations-2: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 0, 40 s",
+      "source": "flaky-before",
+      "value": 40
+    },
+    {
+      "id": "t-flaky-before-6",
+      "question": {
+        "seconds of check": "mutations-3",
+        "observation": "flaky-before"
+      },
+      "quote": "ran mutations-3: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 0, 37 s",
+      "source": "flaky-before",
+      "value": 37
+    },
+    {
+      "id": "t-flaky-before-7",
+      "question": {
+        "seconds of check": "mutations-4",
+        "observation": "flaky-before"
+      },
+      "quote": "ran mutations-4: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 1, 36 s",
+      "source": "flaky-before",
+      "value": 36
+    },
+    {
+      "id": "t-flaky-before-8",
+      "question": {
+        "seconds of check": "mutations-5",
+        "observation": "flaky-before"
+      },
+      "quote": "ran mutations-5: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 1, 39 s",
+      "source": "flaky-before",
+      "value": 39
+    },
+    {
+      "id": "t-chain-after-3",
+      "question": {
+        "seconds of check": "record",
+        "observation": "chain-after"
+      },
+      "quote": "ran record: bun run history check, exit 0, 61 s",
+      "source": "chain-after",
+      "value": 61
+    },
+    {
+      "id": "t-chain-after-6",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "chain-after"
+      },
+      "quote": "ran tests: bun run test, exit 0, 156 s",
+      "source": "chain-after",
+      "value": 156
+    },
+    {
+      "id": "t-chain-after-8",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "chain-after"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "chain-after",
+      "value": 0
+    },
+    {
+      "id": "t-chain-after-10",
+      "question": {
+        "seconds of check": "mutations-0",
+        "observation": "chain-after"
+      },
+      "quote": "ran mutations-0: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 28 s",
+      "source": "chain-after",
+      "value": 28
+    },
+    {
+      "id": "t-chain-after-11",
+      "question": {
+        "seconds of check": "mutations-1",
+        "observation": "chain-after"
+      },
+      "quote": "ran mutations-1: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 34 s",
+      "source": "chain-after",
+      "value": 34
+    },
+    {
+      "id": "t-chain-after-12",
+      "question": {
+        "seconds of check": "mutations-2",
+        "observation": "chain-after"
+      },
+      "quote": "ran mutations-2: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 26 s",
+      "source": "chain-after",
+      "value": 26
+    },
+    {
+      "id": "t-chain-after-13",
+      "question": {
+        "seconds of check": "mutations-3",
+        "observation": "chain-after"
+      },
+      "quote": "ran mutations-3: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 31 s",
+      "source": "chain-after",
+      "value": 31
+    },
+    {
+      "id": "t-chain-after-14",
+      "question": {
+        "seconds of check": "mutations-4",
+        "observation": "chain-after"
+      },
+      "quote": "ran mutations-4: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 23 s",
+      "source": "chain-after",
+      "value": 23
+    },
+    {
+      "id": "t-chain-after-15",
+      "question": {
+        "seconds of check": "mutations-5",
+        "observation": "chain-after"
+      },
+      "quote": "ran mutations-5: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 30 s",
+      "source": "chain-after",
+      "value": 30
+    },
+    {
+      "id": "t-chain-experiment-3",
+      "question": {
+        "seconds of check": "record",
+        "observation": "chain-experiment"
+      },
+      "quote": "ran record: bun run history check, exit 0, 57 s",
+      "source": "chain-experiment",
+      "value": 57
+    },
+    {
+      "id": "t-chain-experiment-6",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "chain-experiment"
+      },
+      "quote": "ran tests: bun run test, exit 0, 117 s",
+      "source": "chain-experiment",
+      "value": 117
+    },
+    {
+      "id": "t-chain-experiment-8",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "chain-experiment"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "chain-experiment",
+      "value": 0
+    },
+    {
+      "id": "t-chain-experiment-10",
+      "question": {
+        "seconds of check": "mutations-0",
+        "observation": "chain-experiment"
+      },
+      "quote": "ran mutations-0: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 32 s",
+      "source": "chain-experiment",
+      "value": 32
+    },
+    {
+      "id": "t-chain-experiment-11",
+      "question": {
+        "seconds of check": "mutations-1",
+        "observation": "chain-experiment"
+      },
+      "quote": "ran mutations-1: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 31 s",
+      "source": "chain-experiment",
+      "value": 31
+    },
+    {
+      "id": "t-chain-experiment-12",
+      "question": {
+        "seconds of check": "mutations-2",
+        "observation": "chain-experiment"
+      },
+      "quote": "ran mutations-2: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 32 s",
+      "source": "chain-experiment",
+      "value": 32
+    },
+    {
+      "id": "t-chain-experiment-13",
+      "question": {
+        "seconds of check": "mutations-3",
+        "observation": "chain-experiment"
+      },
+      "quote": "ran mutations-3: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 29 s",
+      "source": "chain-experiment",
+      "value": 29
+    },
+    {
+      "id": "t-chain-experiment-14",
+      "question": {
+        "seconds of check": "mutations-4",
+        "observation": "chain-experiment"
+      },
+      "quote": "ran mutations-4: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 27 s",
+      "source": "chain-experiment",
+      "value": 27
+    },
+    {
+      "id": "t-chain-experiment-15",
+      "question": {
+        "seconds of check": "mutations-5",
+        "observation": "chain-experiment"
+      },
+      "quote": "ran mutations-5: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 29 s",
+      "source": "chain-experiment",
+      "value": 29
+    }
+  ]
+}

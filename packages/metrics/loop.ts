@@ -18,6 +18,11 @@
 //   --mutations a|b     run these listed mutations, by name, split by |
 //   --repeat n          run them n times, and count the runs that caught each
 //   --full              run every listed mutation, for mutations missed
+//   --fail-fast         stop at the first requirement that is not met
+//
+// The tools run cheapest first. Each prints how long it took, which the
+// record keeps too, so it can say how many predictions the loop resolves per
+// hour of checking.
 //
 // The record is judged by the published Lion CLI that LION_CLI names, never
 // by the Lion the loop is changing, so the judge stays fixed.
@@ -96,8 +101,9 @@ const run = (tool: string, words: readonly string[]) => {
   });
   const text = `${ran.stdout ?? ""}${ran.stderr ?? ""}`;
   writeFileSync(join(RAW, `${tool}.txt`), text);
+  const took = (Date.now() - started) / 1000;
   console.log(
-    `ran ${tool}: ${words.join(" ")}, exit ${ran.status}, ${Math.round((Date.now() - started) / 1000)} s`
+    `ran ${tool}: ${words.join(" ")}, exit ${ran.status}, ${Math.round(took)} s`
   );
   return { status: ran.status, text };
 };
@@ -148,19 +154,25 @@ const capabilityTool = (measured: Measure | undefined) => {
 const recordTool = () => {
   const { status, text } = run("record", ["bun", "run", "history", "check"]);
   const record = readRecord(text);
-  print(QUESTIONS.record, status === 0 && record.holds ? "holds" : "fails");
+  const holds = status === 0 && record.holds;
+  print(QUESTIONS.record, holds ? "holds" : "fails");
   print(QUESTIONS.untested, record.untested);
+  return holds;
 };
 
 const testsTool = () => {
   const { status, text } = run("tests", ["bun", "run", "test"]);
-  print(QUESTIONS.failingTasks, readTurbo(text) ?? (status === 0 ? 0 : 1));
+  const failing = readTurbo(text) ?? (status === 0 ? 0 : 1);
+  print(QUESTIONS.failingTasks, failing);
+  return failing === 0;
 };
 
 const instrumentsTool = () => {
   const base = args.option("base") ?? "HEAD";
   const words = ["git", "diff", "--numstat", base, "--", ...INSTRUMENTS];
-  print(QUESTIONS.instruments, readRemoved(run("instruments", words).text));
+  const removed = readRemoved(run("instruments", words).text);
+  print(QUESTIONS.instruments, removed);
+  return removed === 0;
 };
 
 /** Runs some listed mutations once, or `--repeat` times, counting the runs that caught each. */
@@ -194,67 +206,90 @@ const fullTool = () => {
   print(QUESTIONS.missed, missed.length);
 };
 
-/** Runs every measuring tool and prints one line per question. */
+const scaleTool = () => {
+  const faster = readScale(run("scale", ["bun", "run", "scale"]).text);
+  print(QUESTIONS.workloads, faster);
+  return faster === 0;
+};
+
+/**
+ * Runs every measuring tool, cheapest first, and prints one line per
+ * question. Each tool that answers a requirement says whether it is met;
+ * with --fail-fast the run stops at the first that is not, since a version
+ * that breaks a constraint has no score for the rest to change.
+ */
 const scores = () => {
   const wanted = (tool: string) => !skipped.has(tool);
   const mapped = existsSync(join(REPOSITORY, "out/reach/map.json"));
-  const measured = wanted("measure") ? measureTool() : undefined;
-  if (wanted("capability") && scripts().capability !== undefined) {
-    capabilityTool(measured);
-  }
-  const steps: [string, boolean, () => void][] = [
-    ["record", true, recordTool],
+  let measured: Measure | undefined;
+  const always = (step: () => void) => () => {
+    step();
+    return true;
+  };
+  const steps: [string, boolean, () => boolean][] = [
     [
-      "scale",
+      "measure",
       true,
-      () =>
-        print(
-          QUESTIONS.workloads,
-          readScale(run("scale", ["bun", "run", "scale"]).text)
-        ),
+      () => {
+        measured = measureTool();
+        return measured.undocumented === 0;
+      },
     ],
-    ["tests", true, testsTool],
-    [
-      "bench",
-      true,
-      () =>
-        print(
-          QUESTIONS.benchTotal,
-          readBench(run("bench", ["bun", "run", "bench"]).text)
-        ),
-    ],
+    ["instruments", true, instrumentsTool],
     [
       "replay",
       mapped,
-      () =>
+      always(() =>
         print(
           QUESTIONS.picked,
           readReplay(
             run("replay", ["bun", "run", "affected", "--replay", "30"]).text
           )
-        ),
+        )
+      ),
     ],
+    [
+      "bench",
+      true,
+      always(() =>
+        print(
+          QUESTIONS.benchTotal,
+          readBench(run("bench", ["bun", "run", "bench"]).text)
+        )
+      ),
+    ],
+    [
+      "capability",
+      scripts().capability !== undefined,
+      always(() => capabilityTool(measured)),
+    ],
+    ["scale", true, scaleTool],
+    ["record", true, recordTool],
     [
       "check",
       mapped,
-      () =>
+      always(() =>
         print(
           QUESTIONS.unsound,
           readCheck(run("check", ["bun", "run", "affected", "--check"]).text)
-        ),
+        )
+      ),
     ],
-    ["instruments", true, instrumentsTool],
+    ["tests", true, testsTool],
   ];
+  let stopped = false;
   for (const [tool, possible, step] of steps) {
-    if (possible && wanted(tool)) {
-      step();
+    if (possible && wanted(tool) && !step() && args.flag("fail-fast")) {
+      console.log(`stopped after ${tool}: a requirement is not met`);
+      stopped = true;
+      break;
     }
   }
   const names = args.option("mutations")?.split("|") ?? [];
-  if (names.length > 0) {
+  if (!stopped && names.length > 0) {
     mutationsTool(names);
   }
-  if (args.flag("full")) {
+  if (!stopped && args.flag("full")) {
     fullTool();
   }
 };
@@ -297,15 +332,17 @@ const observe = (label: string | undefined) => {
     process.exitCode = 1;
     return;
   }
-  const forwarded = process.argv
-    .slice(2)
-    .filter(
-      (word, at, all) =>
-        word !== "observe" &&
-        word !== label &&
-        all[at - 1] !== "--tries" &&
-        word !== "--tries"
-    );
+  const forwarded = [
+    ...process.argv
+      .slice(2)
+      .filter(
+        (word, at, all) =>
+          word !== "observe" &&
+          word !== label &&
+          all[at - 1] !== "--tries" &&
+          word !== "--tries"
+      ),
+  ];
   const seen = skill(
     "see.mjs",
     label,

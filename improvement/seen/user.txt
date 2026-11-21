@@ -14,3 +14,8 @@ Later message: "I think I'm solving the number gap already in [Clef language ins
 Later message, on starting phase 1A here and 1B in a parallel session: "Yes, both"
 
 Later message: "the child session [Phase 1B: capability corpus and R7RS probes] is working, coordinate with it and continue"
+
+Later message, answering the dollar cap per experiment, whether the commit hook may run only the picked tests on loop branches with the full suite still before merge, and whether to make information per hour the loop's meta-score:
+"1. $25
+2. Yes
+3. Up to you, you decide"

@@ -1,4 +1,22 @@
-bun run test
+# The tests. A commit on an agent's branch (claude/*) runs the tests and
+# checks the change can reach, picked by `bun run affected` from the reach
+# map, after building what they read; every other commit, one with no reach
+# map, and one made with LION_FULL_TESTS=1 runs every test. The full suite
+# runs before a merge, and CI runs it on every pull request and push to main.
+branch=$(git rev-parse --abbrev-ref HEAD)
+case "$branch" in
+  claude/*)
+    if [ -z "$LION_FULL_TESTS" ] && [ -f out/reach/map.json ]; then
+      bunx turbo build || exit 1
+      bun run affected --run || exit 1
+    else
+      bun run test || exit 1
+    fi
+    ;;
+  *)
+    bun run test || exit 1
+    ;;
+esac
 
 # ultracite
 #!/bin/sh
