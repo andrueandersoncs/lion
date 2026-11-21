@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+### Breaking
+
+- `["func/apply", f, null, 1, ["array/make", 2, 3]]` calls `f` with 1, 2, and 3 (`r7rs-6.10-apply-spreads-last-argument` is `spread`, was `error`)
+- an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].` (`r7rs-6.4-car-of-empty-list` is `error`, was `null`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`r7rs-6.4-cdr-of-empty-list` is `error`, was `empty-list`)
+
 ### Added
 
 - `bun run history check` counts the rules in force that no probe of Lion checks, beside what the model holds, and `["untested", "?rule"]` lists them (`untested-rules` added)
@@ -11,6 +17,7 @@
 - `packages/metrics/corpus/` holds Lion's public capability corpus: tasks of general computation, logic programming, and formal proofs, each a JSON record {id, pillar, statement, inputs, check, tags, origin} whose check is a Lion lambda that judges what a program gives, with a reference program for each task Lion can do (`capability-corpus` added)
 - `LION_HELD_OUT` names a folder outside the repository with the corpus's layout, whose tasks are graded beside the public ones; a folder inside the repository is refused (`held-out-corpus` added)
 - `array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list. (`array/zip` added)
+- give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI (`words/first` added)
 
 ### Changed
 
@@ -46,6 +53,8 @@
 - A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together. (`string-positions`: `utf16-code-units` over `characters`)
 - `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []. (`combining-function-arity`: `zero-or-more` over `one-or-more`, was `one-or-more`)
 - `and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`. (`empty-and-or`: `true-and-false` over `not-well-formed`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`empty-list-head`: `fails` over `null`)
+- `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list (`func-apply-arguments`: `spread-last-list` over `pass-as-given`)
 
 ### Rules
 
@@ -1844,6 +1853,8 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 
 - Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError` (`division-by-zero` is `error`)
 - Every function of the standard library takes a set number of arguments, and a call with any other number fails (`library-function-missing-arguments` is `error`, was `null`)
+- an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].` (`array-head-empty-list` is `error`, was `null`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`array-tail-empty-list` is `error`, was `empty-list`)
 - Every function of the standard library takes a set number of arguments, and a call with any other number fails: `"number/subtract" takes 2 arguments but got 3.` (`library-function-extra-arguments` is `error`, was `ignored`)
 
 ### Added
@@ -2105,7 +2116,6 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - expect(Effect.runSync(list.tail(Schema.Number)([12, 34, 56]))).toEqual(Option.some([34, 56])); (`array-tail-result` is `option`)
 - head: <T>(s: Schema.Schema<T>) => (`list-function-element-schema-argument` is `required`)
 - Tooling and tests for the repository: Effect's language service, the compiler settings, relative imports, and tests for the list module. (`relative-import-extension` is `ts`)
-- Effect.map(Option.getOrThrow) (`array-head-empty-list` is `error`; `array-tail-empty-list` is `error`)
 - expect(Effect.runSync(list.head([12, 34, 56]))).toEqual(12); (`array-head-result` is `element`, was `option`)
 - expect(Effect.runSync(list.tail([12, 34, 56]))).toEqual([34, 56]); (`array-tail-result` is `list`, was `option`)
 - export type EvaluateResult = Effect.Effect<unknown, EvaluateError, LionEnvironment>; (`evaluate-result-type` is `unknown`)
@@ -2282,7 +2292,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - An array is always a special form or a call, never a list that evaluates to itself (rule `arrays-are-never-data`)
 - // Automatic currying (rule `automatic-currying`)
 - The evaluator is written with Effect, and evaluating a program gives an Effect (rule `evaluate-with-effect`)
-- It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (rule `values-are-json`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`, in plain code, in a call that waits, and in the solver's step (rule `values-are-json`)
 - Library functions are named `module/name`, with modules named for the kind of value they work on, such as `number/add` (rule `library-names-module-slash-name`)
 - breaks every form case out into its own testable unit (rule `unit-per-form`)
 - moved tests into dedicated folders (rule `tests-in-tests-folders`)

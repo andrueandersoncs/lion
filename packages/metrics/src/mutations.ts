@@ -114,6 +114,42 @@ const SCHEME_CASE_MUTATIONS: readonly Mutation[] = [
     replace: "{ length: Math.max(...lists.map((list) => list.length)) },",
     tests: ["src/modules/tests/array.test.ts"],
   },
+  {
+    name: "array/head of an empty list gives null",
+    file: core("modules/array.ts"),
+    find: "  head: over([Filled], (list) => list[0]),",
+    replace: "  head: over([List], (list) => list[0] ?? null),",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "array/tail of an empty list gives an empty list",
+    file: core("modules/array.ts"),
+    find: "  tail: over([Filled], (list): unknown[] => list.slice(1)),",
+    replace: "  tail: over([List], (list): unknown[] => list.slice(1)),",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "the research skill's first item of an empty list fails",
+    file: "skills/lion-research/assets/words.json",
+    find: '          [["number/equals?", ["array/length", "items"], 0], null],\n',
+    replace: "",
+    package: "metrics",
+    tests: ["src/tests/research-skill.test.ts"],
+  },
+  {
+    name: "func/apply passes its last argument as it is",
+    file: core("modules/func.ts"),
+    find: "        ...args.slice(0, -1),\n        ...last,\n",
+    replace: "        ...args.slice(0, -1),\n        last,\n",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "func/apply takes a last argument that is not a list",
+    file: core("modules/func.ts"),
+    find: "    if (!Array.isArray(last)) {",
+    replace: "    if (false) {",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
 ];
 
 /** Breaks in grading the capability corpus, and in its tasks. */

@@ -24103,6 +24103,15 @@
     "program": ["value/function?", "array/zip"]
   },
   {
+    "feature": "words/first",
+    "kind": "function",
+    "program": [
+      "object/has?",
+      ["repo/json", "skills/lion-research/assets/words.json"],
+      "words/first"
+    ]
+  },
+  {
     "case": "capability-reference-failures",
     "area": "metrics",
     "program": [

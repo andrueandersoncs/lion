@@ -13,12 +13,12 @@
     "title": [
       "lambda",
       ["c"],
-      ["array/head", ["find", "?t", ["candidate", "c", "?t"]]]
+      ["words/first", ["find", "?t", ["candidate", "c", "?t"]]]
     ],
     "verdictOf": [
       "lambda",
       ["c"],
-      ["array/head", ["find", "?v", ["verdict", "c", "?v"]]]
+      ["words/first", ["find", "?v", ["verdict", "c", "?v"]]]
     ],
     "withVerdict": [
       "lambda",
@@ -39,13 +39,13 @@
     "quoteOf": [
       "lambda",
       ["id"],
-      ["array/head", ["find", "?q", ["claim", "id", "?_", "?q", "?_"]]]
+      ["words/first", ["find", "?q", ["claim", "id", "?_", "?q", "?_"]]]
     ],
     "count": [
       "lambda",
       ["what"],
       [
-        "array/head",
+        "words/first",
         [
           "find",
           "?n",
@@ -62,7 +62,7 @@
     "cases": [
       "lambda",
       ["what"],
-      ["array/head", ["find", "?n", ["tried", "what", "?n"]]]
+      ["words/first", ["find", "?n", ["tried", "what", "?n"]]]
     ],
     "definers": [
       "lambda",
@@ -328,9 +328,9 @@
                 ["pair"],
                 [
                   "string/concat",
-                  ["number/toString", ["array/head", "pair"]],
+                  ["number/toString", ["words/first", "pair"]],
                   ". ",
-                  ["title", ["array/head", ["array/tail", "pair"]]]
+                  ["title", ["words/first", ["array/tail", "pair"]]]
                 ]
               ]
             ]
@@ -458,11 +458,11 @@
                     ["pair"],
                     [
                       "string/concat",
-                      ["number/toString", ["array/head", "pair"]],
+                      ["number/toString", ["words/first", "pair"]],
                       ". ",
-                      ["title", ["array/head", ["array/tail", "pair"]]],
+                      ["title", ["words/first", ["array/tail", "pair"]]],
                       ". ",
-                      ["case", ["array/head", ["array/tail", "pair"]]]
+                      ["case", ["words/first", ["array/tail", "pair"]]]
                     ]
                   ]
                 ],
@@ -768,7 +768,7 @@
                   [
                     "string/concat",
                     "Confirmed: ",
-                    ["array/head", ["find", "?s", ["assumption", "a", "?s"]]],
+                    ["words/first", ["find", "?s", ["assumption", "a", "?s"]]],
                     "."
                   ]
                 ]

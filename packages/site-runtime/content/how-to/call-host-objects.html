@@ -43,7 +43,7 @@ await Effect.runPromise(run(
   ["define", "addTax", ["func/partial", "number/multiply", 1.25]],
   ["array/map", ["array/make", 10, 20], "addTax"]]
 </lion-example>
-<p><code>func/bind</code> fixes <code>this</code> and leading arguments, and <code>func/apply</code> calls a function with a given <code>this</code> and arguments.</p>
+<p><code>func/bind</code> fixes <code>this</code> and leading arguments, and <code>func/apply</code> calls a function with a given <code>this</code>, the arguments given, and the items of its last argument, a list, as JavaScript's <code>Function.prototype.apply</code> does.</p>
 
 <h2>Related</h2>
 <ul>

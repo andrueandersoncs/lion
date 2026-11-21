@@ -13,7 +13,7 @@
     "title": [
       "lambda",
       ["c"],
-      ["array/head", ["find", "?t", ["candidate", "c", "?t"]]]
+      ["words/first", ["find", "?t", ["candidate", "c", "?t"]]]
     ],
     "withVerdict": [
       "lambda",
@@ -34,13 +34,13 @@
     "quoteOf": [
       "lambda",
       ["id"],
-      ["array/head", ["find", "?q", ["claim", "id", "?_", "?q", "?_"]]]
+      ["words/first", ["find", "?q", ["claim", "id", "?_", "?q", "?_"]]]
     ],
     "paper": [
       "lambda",
       ["field"],
       [
-        "array/head",
+        "words/first",
         [
           "find",
           "?v",
@@ -466,11 +466,11 @@
                       ["pair"],
                       [
                         "string/concat",
-                        ["number/toString", ["array/head", "pair"]],
+                        ["number/toString", ["words/first", "pair"]],
                         ". ",
-                        ["title", ["array/head", ["array/tail", "pair"]]],
+                        ["title", ["words/first", ["array/tail", "pair"]]],
                         ". ",
-                        ["case", ["array/head", ["array/tail", "pair"]]]
+                        ["case", ["words/first", ["array/tail", "pair"]]]
                       ]
                     ]
                   ],
@@ -980,7 +980,7 @@
                   [
                     "words/listed",
                     [
-                      "array/head",
+                      "words/first",
                       [
                         "find",
                         "?p",

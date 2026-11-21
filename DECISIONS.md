@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 221 questions have been decided, 97 records explain them, and of what the records assert, 653 hold when Lion is run, 7 are broken, 375 are stated but not checked by running Lion, and 29 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 223 questions have been decided, 98 records explain them, and of what the records assert, 659 hold when Lion is run, 7 are broken, 377 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -227,6 +227,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`reentrant-force`](#reentrant-force) | `fails` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`string-positions`](#string-positions) | `utf16-code-units` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`empty-and-or`](#empty-and-or) | `true-and-false` | [Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments](#scheme-identities-and-zip) |
+| 2026-11-21 | [`empty-list-head`](#empty-list-head) | `fails` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
+| 2026-11-21 | [`func-apply-arguments`](#func-apply-arguments) | `spread-last-list` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
 
 <a id="program-representation"></a>
 
@@ -548,7 +550,7 @@ Recorded 2026-11-11 in `history/notes/values-are-json.json`.
 **What it asserts, checked.**
 
 - Stated, not checked by running Lion: decided `javascript-json-disagreement`: `follow-json`. "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up."
-- Holds when Lion is run: `array-head-empty-list` is `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
+- Replaced by a later word: `array-head-empty-list` is `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
 - Holds when Lion is run: `value-object-list` is `false`. "`value/object?` is true for records and not for lists."
 - Holds when Lion is run: `query-answer-non-json` is `error`. "Query answers and the rows rules derive must be JSON data"
 - Holds when Lion is run: `derived-row-non-json` is `error`. "Query answers and the rows rules derive must be JSON data"
@@ -5005,3 +5007,48 @@ Now: `utf16-code-units`.
 Now: `true-and-false`.
 
 - 2026-11-21 `empty-and-or`: `true-and-false` over `not-well-formed`: "`and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`." (`scheme-identities-and-zip.json`)
+
+<a id="empty-list-head"></a>
+
+## empty-list-head
+
+Now: `fails`.
+
+- 2026-11-21 `empty-list-head`: `fails` over `null`: "`array/head` and `array/tail` take a list with an item in it, and an empty list fails" (`empty-list-head-and-apply.json`)
+
+<a id="empty-list-head-and-apply"></a>
+
+### array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do
+
+Recorded 2026-11-21 in `history/notes/empty-list-head-and-apply.json`.
+
+**Context.** The probes of the cases R7RS-small settles found that `array/head` of an empty list gave null and `array/tail` gave [], where taking the car or the cdr of the empty list is an error in Scheme and Racket signals it, and that `func/apply` passed its arguments as they were given, as JavaScript's `call` does, where Scheme's `apply`, and JavaScript's own `Function.prototype.apply`, spread the last argument, a list. On 2026-11-21 the user chose to fix both. A null for the head of an empty list cannot be told from the head of a list that starts with null, and `object/get` already fails for a key a record does not have, unless it is given a value for that.
+
+**Decision.** `array/head` and `array/tail` take a list with an item in it, and an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`, in plain code, in a call that waits, and in the solver's step, which runs them on the lists a schema stands for. `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list: `["func/apply", f, null, 1, ["array/make", 2, 3]]` calls `f` with 1, 2, and 3.
+
+**Consequences.** Both are breaking changes. A program that took the head or the tail of an empty list now fails where it got null or []; one that asks for the length first, or uses `array/slice`, is unchanged. A program that passed `func/apply` its arguments one by one now writes them as a list. The page writer of the project record, `history/outputs.json`, took the head of lists that can be empty in three places, a find of the next draft release among them; its helper `one` now gives null for an empty list, and those places use it. The research skill taught `["array/head", ["find", ...]]` for a figure the model may lack, which its pages write as `nothing`; the user chose on 2026-11-21 to keep `array/head` failing and give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI. Its SKILL.md, its eval's reference page, and the pages of seven research runs use it. No other program in the repository did either. The three cases leave `known.json`.
+
+**Alternatives considered.**
+
+- Keep null and [] for an empty list. A null head cannot be told from a list's first item that is null, and Lion already fails rather than give null for a key a record does not have.
+- Keep func/apply as JavaScript's call, and add an apply of Scheme's beside it. Two functions would differ only in whether the last argument is spread, and the one named apply would be the one that does not, unlike Scheme's apply and JavaScript's apply alike.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `empty-list-head`: `fails`. "`array/head` and `array/tail` take a list with an item in it, and an empty list fails"
+- Stated, not checked by running Lion: decided `func-apply-arguments`: `spread-last-list`. "`func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list"
+- Holds when Lion is run: rule `values-are-json` holds. "`array/head` and `array/tail` take a list with an item in it, and an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`, in plain code, in a call that waits, and in the solver's step"
+- Holds when Lion is run: `array-head-empty-list` is `error`. "an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`"
+- Holds when Lion is run: `r7rs-6.4-car-of-empty-list` is `error`. "an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`"
+- Holds when Lion is run: `r7rs-6.4-cdr-of-empty-list` is `error`. "`array/head` and `array/tail` take a list with an item in it, and an empty list fails"
+- Holds when Lion is run: `array-tail-empty-list` is `error`. "`array/head` and `array/tail` take a list with an item in it, and an empty list fails"
+- Holds when Lion is run: `r7rs-6.10-apply-spreads-last-argument` is `spread`. "`["func/apply", f, null, 1, ["array/make", 2, 3]]` calls `f` with 1, 2, and 3"
+- Holds when Lion is run: `words/first` exists. "give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI"
+
+<a id="func-apply-arguments"></a>
+
+## func-apply-arguments
+
+Now: `spread-last-list`.
+
+- 2026-11-21 `func-apply-arguments`: `spread-last-list` over `pass-as-given`: "`func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list" (`empty-list-head-and-apply.json`)

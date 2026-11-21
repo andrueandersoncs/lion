@@ -56,7 +56,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "boolean/xor": [2, 2],
   "console/log": [1, 1],
   "console/log-json": [1, 1],
-  "func/apply": [2, ANY],
+  "func/apply": [3, ANY],
   "func/bind": [2, ANY],
   "func/callback": [1, 1],
   "func/catch": [2, 2],

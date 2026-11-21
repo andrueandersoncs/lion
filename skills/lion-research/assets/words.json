@@ -11,6 +11,22 @@
       ["else", ["object/json-stringify", "value"]]
     ]
   ],
+  "words/first": [
+    "lambda",
+    ["items"],
+    [
+      "cond",
+      [
+        ["value/array?", "items"],
+        [
+          "cond",
+          [["number/equals?", ["array/length", "items"], 0], null],
+          ["else", ["array/head", "items"]]
+        ]
+      ],
+      ["else", null]
+    ]
+  ],
   "words/listed": [
     "lambda",
     ["items"],

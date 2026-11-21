@@ -1,4 +1,4 @@
-import { Array as Arr, Effect, Option, Schema } from "effect";
+import { Array as Arr, Effect, Schema } from "effect";
 import { atLeast, logicError } from "@/errors/evaluation";
 import { call } from "@/evaluation/special-forms/function";
 import { listMaker, show } from "@/logic/terms";
@@ -7,6 +7,11 @@ import { combining, over, overEffect, slicing } from "@/modules/lib/shared";
 const MAX_RANGE = 1_000_000;
 
 const List = Schema.Array(Schema.Any);
+
+/** A list with an item in it, as Scheme's car and cdr take. */
+const Filled = List.check(
+  Schema.isMinLength(1, { expected: "a value that is not empty" })
+);
 
 /**
  * Whether the function gives `stop` for some item, asked item by item and
@@ -41,11 +46,15 @@ export const module = {
 
   make: listMaker((...args: unknown[]) => Effect.succeed(args)),
 
-  /** The first item, or null for an empty list. */
-  head: over([List], (list) => Option.getOrNull(Arr.head(list))),
+  /**
+   * The first item of a list that has one, as Scheme's car gives it. An
+   * empty list has no first item, so it fails, as `object/get` fails for a
+   * key a record does not have: a null would read as the head of [null].
+   */
+  head: over([Filled], (list) => list[0]),
 
-  /** Every item after the first; an empty list has none. */
-  tail: over([List], (list): unknown[] => list.slice(1)),
+  /** Every item after the first, of a list that has one, as Scheme's cdr gives them. */
+  tail: over([Filled], (list): unknown[] => list.slice(1)),
 
   /** The items from `start` up to `end`, as `string/slice` cuts text. */
   slice: slicing(List),

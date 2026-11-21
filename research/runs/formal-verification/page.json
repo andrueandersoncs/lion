@@ -18,7 +18,7 @@
     "title": [
       "lambda",
       ["c"],
-      ["array/head", ["find", "?t", ["candidate", "c", "?t"]]]
+      ["words/first", ["find", "?t", ["candidate", "c", "?t"]]]
     ],
     "ours": [
       "lambda",
@@ -271,7 +271,7 @@
       "lambda",
       ["f"],
       [
-        "array/head",
+        "words/first",
         [
           "find",
           "?c",
@@ -352,7 +352,7 @@
         [
           "string/concat",
           "First to add: ",
-          ["label", ["array/head", ["find", "?c", ["fv_rank", "?c", 1]]]],
+          ["label", ["words/first", ["find", "?c", ["fv_rank", "?c", 1]]]],
           ". ",
           [
             "words/count",
@@ -481,11 +481,11 @@
                   ["pair"],
                   [
                     "string/concat",
-                    ["number/toString", ["array/head", "pair"]],
+                    ["number/toString", ["words/first", "pair"]],
                     ". ",
-                    ["label", ["array/head", ["array/tail", "pair"]]],
+                    ["label", ["words/first", ["array/tail", "pair"]]],
                     ". ",
-                    ["case", ["array/head", ["array/tail", "pair"]]]
+                    ["case", ["words/first", ["array/tail", "pair"]]]
                   ]
                 ]
               ],
@@ -638,7 +638,7 @@
                   [
                     "words/number",
                     [
-                      "array/head",
+                      "words/first",
                       [
                         "find",
                         "?n",

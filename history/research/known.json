@@ -279,35 +279,5 @@
       "found": "error"
     },
     "note": "R7RS-small 4.1.4: (lambda args args) takes any number of arguments as a list; Lion's lambda takes only a list of parameters, so [\"lambda\", \"args\", \"args\"] is not well-formed. Library functions already take any number after the ones they need, as array/make and func/partial do, so a rest parameter would follow the arity rule. On 2026-11-21 the user chose to fix it (build a rest parameter for lambda); it waits for the change that does."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-6.4-car-of-empty-list",
-      "predicted": "error",
-      "found": "null"
-    },
-    "note": "R7RS-small 6.4: taking the car of the empty list is an error, which Racket signals; array/head of [] gives null, which cannot be told from the head of [null]. On 2026-11-21 the user chose to fix it (fix, so that array/head and array/tail of [] fail as car and cdr do); it waits for the change that does."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-6.4-cdr-of-empty-list",
-      "predicted": "error",
-      "found": "empty-list"
-    },
-    "note": "R7RS-small 6.4: taking the cdr of the empty list is an error; array/tail of [] gives []. On 2026-11-21 the user chose to fix it (fix it with car-of-empty-list); it waits for the change that does."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "r7rs-6.10-apply-spreads-last-argument",
-      "predicted": "spread",
-      "found": "error"
-    },
-    "note": "R7RS-small 6.10: (apply + (list 3 4)) is 7; func/apply takes a this-object and passes the arguments after it as they are, as JavaScript's call does, so it spreads no list, unlike Scheme's apply and JavaScript's own Function.prototype.apply. On 2026-11-21 the user chose to fix it (fix, so that func/apply spreads its last argument, a list, as both do); it waits for the change that does."
   }
 ]

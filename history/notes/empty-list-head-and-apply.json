@@ -1,0 +1,111 @@
+{
+  "title": "array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do",
+  "context": "The probes of the cases R7RS-small settles found that `array/head` of an empty list gave null and `array/tail` gave [], where taking the car or the cdr of the empty list is an error in Scheme and Racket signals it, and that `func/apply` passed its arguments as they were given, as JavaScript's `call` does, where Scheme's `apply`, and JavaScript's own `Function.prototype.apply`, spread the last argument, a list. On 2026-11-21 the user chose to fix both. A null for the head of an empty list cannot be told from the head of a list that starts with null, and `object/get` already fails for a key a record does not have, unless it is given a value for that.",
+  "decision": "`array/head` and `array/tail` take a list with an item in it, and an empty list fails with `\"array/head\" takes a list that is not empty as argument 1 but got [].`, in plain code, in a call that waits, and in the solver's step, which runs them on the lists a schema stands for. `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list: `[\"func/apply\", f, null, 1, [\"array/make\", 2, 3]]` calls `f` with 1, 2, and 3.",
+  "consequences": "Both are breaking changes. A program that took the head or the tail of an empty list now fails where it got null or []; one that asks for the length first, or uses `array/slice`, is unchanged. A program that passed `func/apply` its arguments one by one now writes them as a list. The page writer of the project record, `history/outputs.json`, took the head of lists that can be empty in three places, a find of the next draft release among them; its helper `one` now gives null for an empty list, and those places use it. The research skill taught `[\"array/head\", [\"find\", ...]]` for a figure the model may lack, which its pages write as `nothing`; the user chose on 2026-11-21 to keep `array/head` failing and give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI. Its SKILL.md, its eval's reference page, and the pages of seven research runs use it. No other program in the repository did either. The three cases leave `known.json`.",
+  "alternatives": [
+    {
+      "option": "Keep null and [] for an empty list",
+      "rejected": "A null head cannot be told from a list's first item that is null, and Lion already fails rather than give null for a key a record does not have."
+    },
+    {
+      "option": "Keep func/apply as JavaScript's call, and add an apply of Scheme's beside it",
+      "rejected": "Two functions would differ only in whether the last argument is spread, and the one named apply would be the one that does not, unlike Scheme's apply and JavaScript's apply alike."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`array/head` and `array/tail` take a list with an item in it, and an empty list fails",
+      "says": {
+        "decision": "empty-list-head",
+        "chose": "fails",
+        "over": ["null"],
+        "area": "library",
+        "because": "a null head cannot be told from a list's first item that is null, and object/get already fails for a key a record does not have"
+      }
+    },
+    {
+      "quote": "`func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list",
+      "says": {
+        "decision": "func-apply-arguments",
+        "chose": "spread-last-list",
+        "over": ["pass-as-given"],
+        "area": "library",
+        "because": "Scheme's apply and JavaScript's Function.prototype.apply both spread their last argument"
+      }
+    },
+    {
+      "quote": "`array/head` and `array/tail` take a list with an item in it, and an empty list fails with `\"array/head\" takes a list that is not empty as argument 1 but got [].`, in plain code, in a call that waits, and in the solver's step",
+      "says": {
+        "rule": "values-are-json",
+        "holds": true,
+        "statement": "Lion's values are JSON, so the standard library never gives undefined, NaN, or Infinity; where there is nothing to give, as the first item of an empty list, a function fails",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "array-head-empty-list",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "an empty list fails with `\"array/head\" takes a list that is not empty as argument 1 but got [].`",
+      "says": {
+        "behavior": "array-head-empty-list",
+        "is": "error",
+        "area": "library",
+        "breaking": true,
+        "was": "null"
+      }
+    },
+    {
+      "quote": "an empty list fails with `\"array/head\" takes a list that is not empty as argument 1 but got [].`",
+      "says": {
+        "behavior": "r7rs-6.4-car-of-empty-list",
+        "is": "error",
+        "area": "library",
+        "breaking": true,
+        "was": "null"
+      }
+    },
+    {
+      "quote": "`array/head` and `array/tail` take a list with an item in it, and an empty list fails",
+      "says": {
+        "behavior": "r7rs-6.4-cdr-of-empty-list",
+        "is": "error",
+        "area": "library",
+        "breaking": true,
+        "was": "empty-list"
+      }
+    },
+    {
+      "quote": "`array/head` and `array/tail` take a list with an item in it, and an empty list fails",
+      "says": {
+        "behavior": "array-tail-empty-list",
+        "is": "error",
+        "area": "library",
+        "breaking": true,
+        "was": "empty-list"
+      }
+    },
+    {
+      "quote": "`[\"func/apply\", f, null, 1, [\"array/make\", 2, 3]]` calls `f` with 1, 2, and 3",
+      "says": {
+        "behavior": "r7rs-6.10-apply-spreads-last-argument",
+        "is": "spread",
+        "area": "library",
+        "breaking": true,
+        "was": "error"
+      }
+    },
+    {
+      "quote": "give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI",
+      "says": {
+        "feature": "words/first",
+        "kind": "function",
+        "present": true
+      }
+    }
+  ]
+}
