@@ -1,0 +1,59 @@
+{
+  "title": "Lion's departures from Scheme and Racket are the exceptions a decision names, and any other difference from Scheme is a finding",
+  "context": "AGENTS.md says Lion's semantics are approximately those of Scheme and Racket, plus the logic layer, and the decision `scheme-where-unclear` says Lion follows them where a base form is unclear. Nothing said how far \"approximately\" goes, so a difference that was decided could not be told from one that was an accident. The project record showed the gap: its reading of the rule predicts that an unbound string is an error, as an unbound variable is in Scheme, while in Lion an unbound string evaluates to itself, as the decision `unbound-string-semantics` chose. Both findings waited in `known.json` with the note \"Settle with a decision that lists Lion's departures from Scheme as exceptions.\"",
+  "decision": "Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why. An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself. The cases Scheme settles become probes of behaviors the rule predicts, drawn from R7RS-small, so a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check`.",
+  "consequences": "The two findings on unbound strings leave `known.json`. The list of departures is the rule's exceptions in the record, checked against the probes like every other rule's, so no second list stands beside it. Until the R7RS-small cases are written, the rule is checked only on the cases earlier commits predicted, such as `and` stopping at the first false argument and `number/add` summing more than two numbers.",
+  "alternatives": [
+    {
+      "option": "Follow Scheme only where a form is unclear, as before",
+      "rejected": "A departure that no decision names could not be told from an accident, and nothing checked the cases Scheme settles."
+    },
+    {
+      "option": "Keep a separate list of departures beside the grid's `KNOWN`",
+      "rejected": "The record already holds a rule's exceptions and checks every rule against what Lion does, so a second list would say the same thing in two places."
+    },
+    {
+      "option": "Follow Racket first where Scheme and Racket differ",
+      "rejected": "Lion already follows Racket where a decision names it, as its contracts, `match`, and records do, and a suite that preferred Racket everywhere would make Scheme's simpler answer the exception."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why.",
+      "says": {
+        "decision": "scheme-fidelity",
+        "chose": "departures-decided-and-probed",
+        "over": ["where-unclear", "separate-departures-list", "racket-first"],
+        "area": "evaluation",
+        "because": "a difference from Scheme that no decision names cannot be told from an accident"
+      }
+    },
+    {
+      "quote": "An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself.",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "except": ["unbound-string"]
+      }
+    },
+    {
+      "quote": "An unbound string is the first: it evaluates to itself",
+      "says": {
+        "behavior": "unbound-string",
+        "is": "itself",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check`",
+      "says": {
+        "rule": "scheme-departures-are-decided",
+        "holds": true,
+        "statement": "Every case where Lion's behavior differs from Scheme's is an exception a decision names; a probe that differs from Scheme in any other case is a finding",
+        "area": "process"
+      }
+    }
+  ]
+}

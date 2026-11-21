@@ -23662,5 +23662,271 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "case": "core-imports-host-modules",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      [
+        "define",
+        "host-calls",
+        [
+          "quote",
+          [
+            "require(",
+            "import(",
+            "fetch(",
+            "process.",
+            "Bun.",
+            "Deno.",
+            "XMLHttpRequest",
+            "WebSocket"
+          ]
+        ]
+      ],
+      [
+        "define",
+        "host-modules",
+        [
+          "quote",
+          [
+            "fs",
+            "path",
+            "os",
+            "net",
+            "http",
+            "https",
+            "http2",
+            "child_process",
+            "worker_threads",
+            "cluster",
+            "dgram",
+            "dns",
+            "tls",
+            "readline",
+            "stream",
+            "process",
+            "vm"
+          ]
+        ]
+      ],
+      [
+        "define",
+        "host-module?",
+        [
+          "lambda",
+          ["spec"],
+          [
+            "or",
+            ["string/startsWith", "spec", "node:"],
+            [
+              "array/includes?",
+              "host-modules",
+              ["array/head", ["string/split", "spec", "/"]]
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "specs",
+        [
+          "lambda",
+          ["text"],
+          [
+            "array/map",
+            ["array/slice", ["string/split", "text", "from \""], 1],
+            [
+              "lambda",
+              ["piece"],
+              ["string/slice", "piece", 0, ["string/indexOf", "piece", "\""]]
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "core-source?",
+        [
+          "lambda",
+          ["file"],
+          [
+            "and",
+            ["string/endsWith", "file", ".ts"],
+            ["boolean/not", ["string/includes", "file", "/tests/"]]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "in-memory?",
+        [
+          "lambda",
+          ["file"],
+          [
+            "begin",
+            ["define", "text", ["repo/read", "file"]],
+            [
+              "and",
+              [
+                "array/every?",
+                "host-calls",
+                [
+                  "lambda",
+                  ["call"],
+                  ["boolean/not", ["string/includes", "text", "call"]]
+                ]
+              ],
+              [
+                "array/every?",
+                ["specs", "text"],
+                ["lambda", ["spec"], ["boolean/not", ["host-module?", "spec"]]]
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "array/every?",
+            ["repo/files", "packages/core/src"],
+            [
+              "lambda",
+              ["file"],
+              [
+                "or",
+                ["boolean/not", ["core-source?", "file"]],
+                ["in-memory?", "file"]
+              ]
+            ]
+          ],
+          ["quote", "none"]
+        ],
+        ["else", ["quote", "some"]]
+      ]
+    ]
+  },
+  {
+    "case": "scripts-call-npm",
+    "area": "build",
+    "program": [
+      "begin",
+      [
+        "define",
+        "npm?",
+        [
+          "lambda",
+          ["text"],
+          [
+            "or",
+            ["string/includes", "text", "npm "],
+            ["string/includes", "text", "npx "]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "manifest?",
+        [
+          "lambda",
+          ["file"],
+          [
+            "and",
+            ["string/endsWith", "file", "/package.json"],
+            [
+              "number/lessThan",
+              ["array/length", ["string/split", "file", "/"]],
+              4
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "scripts-of",
+        [
+          "lambda",
+          ["file"],
+          [
+            "object/values",
+            ["object/get", ["repo/json", "file"], "scripts", {}]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "or",
+            [
+              "array/some?",
+              [
+                "array/concat",
+                ["array/make", "package.json"],
+                ["repo/files", "packages"]
+              ],
+              [
+                "lambda",
+                ["file"],
+                [
+                  "and",
+                  [
+                    "or",
+                    ["string/equals?", "file", "package.json"],
+                    ["manifest?", "file"]
+                  ],
+                  ["array/some?", ["scripts-of", "file"], "npm?"]
+                ]
+              ]
+            ],
+            ["npm?", ["repo/read", ".husky/pre-commit"]],
+            ["npm?", ["repo/read", ".github/workflows/ci.yml"]]
+          ],
+          ["quote", "some"]
+        ],
+        ["else", ["quote", "none"]]
+      ]
+    ]
+  },
+  {
+    "case": "lisp-text-string",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          ["eval", "(number/add 1 2)"],
+          ["quote", "(number/add 1 2)"]
+        ],
+        ["quote", "itself"]
+      ],
+      ["else", ["quote", "read-as-code"]]
+    ]
+  },
+  {
+    "case": "grid-undocumented-exceptions",
+    "area": "metrics",
+    "program": [
+      "begin",
+      ["define", "measured", ["repo/run", "measure"]],
+      ["define", "printed", ["object/get", "measured", "output"]],
+      [
+        "cond",
+        [
+          [
+            "boolean/not",
+            ["schema/fits?", ["object/get", "measured", "exit"], 0]
+          ],
+          ["quote", "measure-failed"]
+        ],
+        [["string/includes", "printed", "NOT DOCUMENTED"], ["quote", "some"]],
+        [["string/includes", "printed", "grid: exceptions"], ["quote", "none"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

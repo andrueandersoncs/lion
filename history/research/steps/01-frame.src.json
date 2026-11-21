@@ -346,6 +346,20 @@
       ]
     ]
   ],
+  ["relation", "untested", ["rule"]],
+  [
+    "rule",
+    ["untested", "?r"],
+    ["in_force", "?r"],
+    [
+      "not",
+      [
+        "and",
+        ["predicted", "?r", "?case", "?_", "?_"],
+        ["firsthand", { "behavior": "?case" }, "?_", "Lion at HEAD"]
+      ]
+    ]
+  ],
   ["relation", "excepted", ["rule", "case"]],
   [
     "rule",

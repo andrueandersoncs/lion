@@ -1,0 +1,116 @@
+{
+  "title": "A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability",
+  "context": "`packages/metrics` counts what a change costs: code lines, paths through functions, special forms, library functions, messages, the grid's exceptions, speed, and growth. Nothing counts what a change buys. Between 0.6.0 on 2026-11-12 and 0.15.0 on 2026-11-20, core went from 6,035 code lines to 22,392 and from 95 messages to 250, while the guidelines ask for those numbers to go down, and nothing could say whether the solver, the proofs, and the other features were worth it. A loop in which agents propose, build, and judge changes to Lion needs a measure of what Lion can do, and needs its limits settled before it optimizes anything.",
+  "decision": "Versions of Lion are compared in a fixed order, never by a weighted sum: first the constraints, since a version that breaks one has no score; then capability; then cost per capability; then the rate at which capability grows. Capability is measured two ways: by a corpus of tasks that agents solve by writing Lion, with a held-out part kept outside the repository that only the grader reads, and by external suites: R7RS-small conformance, logic-programming benchmarks, and verification benchmarks. Complexity is judged per capability: what a programmer must know, the grid's exceptions, the vocabulary, and the messages, and the code lines per passed task may not rise, while the code may grow when capability grows. A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change. Each experiment declares a dollar cap, and a direction that runs over it is set aside.",
+  "consequences": "The measures are built in the order of `research/runs/self-improvement/plan.md`. Until the corpus exists, complexity per capability cannot be computed, so `bun run measure` reports totals as before. The record now counts the rules in force that no probe checks, the first figure of the ledger of constraints: `bun run history check` prints it with what the model holds.",
+  "alternatives": [
+    {
+      "option": "An absolute ratchet: code lines and paths may never grow",
+      "rejected": "A capability as large as the solver cannot pay for itself in removed lines, so the ratchet would refuse the features Lion is for."
+    },
+    {
+      "option": "Constrain only the semantic numbers",
+      "rejected": "Code that grows with no capability to show for it would go unseen."
+    },
+    {
+      "option": "Reference programs only, with no agent",
+      "rejected": "They show what Lion can express, not how well an agent writes it, and agents write most Lion programs."
+    },
+    {
+      "option": "External suites only",
+      "rejected": "They test what other languages do, not the tasks Lion is for, such as proofs about its own rules."
+    },
+    {
+      "option": "Held-out tasks committed, with agents told not to read them",
+      "rejected": "An agent improving Lion in the repository can read any file in it."
+    },
+    {
+      "option": "Refuse any benchmark slower than its best",
+      "rejected": "Times move by a few percent between runs, so a hard limit would refuse changes on noise."
+    },
+    {
+      "option": "A daily cap, or no cap and a report",
+      "rejected": "A daily cap queues cheap experiments behind expensive ones, and a report comes after the money is spent."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Versions of Lion are compared in a fixed order, never by a weighted sum",
+      "says": {
+        "decision": "improvement-order",
+        "chose": "constraints-capability-cost-rate",
+        "over": ["weighted-sum"],
+        "area": "metrics",
+        "because": "a weighted sum lets a large gain buy a broken constraint"
+      }
+    },
+    {
+      "quote": "a version that breaks one has no score",
+      "says": {
+        "rule": "constraints-before-scores",
+        "holds": true,
+        "statement": "A version of Lion that breaks a constraint has no score, however much it improves",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "Capability is measured two ways: by a corpus of tasks that agents solve by writing Lion",
+      "says": {
+        "decision": "capability-yardstick",
+        "chose": "agent-corpus-and-external-suites",
+        "over": ["reference-programs-only", "external-suites-only"],
+        "area": "metrics",
+        "because": "a corpus measures how well agents write Lion for the tasks it is for, and suites measure it against other languages"
+      }
+    },
+    {
+      "quote": "with a held-out part kept outside the repository that only the grader reads",
+      "says": {
+        "decision": "held-out-tasks",
+        "chose": "outside-repository",
+        "over": ["in-repository-isolated", "no-held-out"],
+        "area": "metrics",
+        "because": "an agent improving Lion in the repository can read any file in it"
+      }
+    },
+    {
+      "quote": "Complexity is judged per capability",
+      "says": {
+        "decision": "complexity-measure",
+        "chose": "per-capability",
+        "over": ["absolute-ratchet", "semantic-only"],
+        "area": "metrics",
+        "because": "a capability as large as the solver cannot pay for itself in removed lines"
+      }
+    },
+    {
+      "quote": "what a programmer must know, the grid's exceptions, the vocabulary, and the messages, and the code lines per passed task may not rise",
+      "says": {
+        "rule": "cost-per-capability-never-rises",
+        "holds": true,
+        "statement": "What a programmer must know and the code lines, each per passed capability task, may not rise from one version to the next",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change.",
+      "says": {
+        "decision": "speed-constraint",
+        "chose": "growth-hard-constant-soft",
+        "over": ["both-hard", "report-only"],
+        "area": "metrics",
+        "because": "growth past the facts is a step that reads everything again, while constant factors move by a few percent between runs"
+      }
+    },
+    {
+      "quote": "Each experiment declares a dollar cap, and a direction that runs over it is set aside.",
+      "says": {
+        "decision": "experiment-budget",
+        "chose": "per-experiment-cap",
+        "over": ["daily-cap", "no-cap"],
+        "area": "metrics",
+        "because": "a cap per experiment stops an expensive direction without holding up cheap ones"
+      }
+    }
+  ]
+}

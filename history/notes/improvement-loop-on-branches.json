@@ -1,0 +1,83 @@
+{
+  "title": "Agents improve Lion on branches, run the checks a change can reach, and never change what scores them",
+  "context": "On 2026-11-20 one item of work took about an hour, most of it spent in checks: the commit hook runs every package's tests, `bun run history check` takes about a minute, and a full `bun run mutate` takes most of an hour. A loop in which agents propose, build, and judge changes to Lion turns only as fast as its checks, and the obvious way to speed it up, running fewer checks, is also the obvious way to weaken it. An optimizer also finds the cheapest way to raise a score, and the cheapest way is often to change the instrument: a grader, a list of known exceptions, or a mutation.",
+  "decision": "Agents in the loop build, measure, record, and commit on branches. A person merges, releases, and approves every decision that overturns a documented rule. During an experiment the loop runs only the checks a change can reach, picked by a Lion model of which tests, mutations, probes, and documented examples each file reaches; the picking counts as no weaker only while every listed mutation that the full suite catches is caught by the checks picked for it, and the full suite runs before anything is merged. An experiment never changes the instruments that score it: the metrics package, the corpus and its graders, the grid's `KNOWN`, `known.json` and `accepted.json`, the mutations, and the probes. Changing one is an experiment of its own, with a decision, and starts a new score.",
+  "consequences": "Nothing an agent does in the loop reaches `main` until a person merges it, so a mistake costs a branch. The impact model and the property that checks its picking come before the loop runs (phase 1A of `research/runs/self-improvement/plan.md`). Skill eval's requirement that the eval's own lines are unchanged becomes one case of the rule for every instrument.",
+  "alternatives": [
+    {
+      "option": "Let agents merge into `main` when every check passes",
+      "rejected": "The checks cover what the project knew to check, and a person sees what an agent missed before it becomes the base of every later change."
+    },
+    {
+      "option": "Let agents merge, release, and reverse decisions, and review afterwards",
+      "rejected": "A release is public and a reversed decision changes what Lion promises, and neither can be taken back quietly."
+    },
+    {
+      "option": "Use the picked checks only as advice, and run the full suite on every commit",
+      "rejected": "The hour the full suite takes is what holds the loop back, and the mutation property already shows the picked checks catch what the full suite catches."
+    },
+    {
+      "option": "Let an experiment tune its grader with its change",
+      "rejected": "A score from an instrument the change tuned says how well the change fits the instrument, not how good Lion became."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Agents in the loop build, measure, record, and commit on branches.",
+      "says": {
+        "decision": "improvement-autonomy",
+        "chose": "branches-only",
+        "over": ["merge-when-checks-pass", "fully-autonomous"],
+        "area": "process",
+        "because": "a person sees what an agent missed before it becomes the base of every later change"
+      }
+    },
+    {
+      "quote": "A person merges, releases, and approves every decision that overturns a documented rule.",
+      "says": {
+        "rule": "people-merge-and-release",
+        "holds": true,
+        "statement": "Agents in the improvement loop never merge, release, or reverse a decision; a person does",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "the picking counts as no weaker only while every listed mutation that the full suite catches is caught by the checks picked for it, and the full suite runs before anything is merged",
+      "says": {
+        "decision": "check-selection",
+        "chose": "picked-checks-full-before-merge",
+        "over": ["advisory-only", "full-every-commit"],
+        "area": "metrics",
+        "because": "the mutation property shows the picked checks catch what the full suite catches"
+      }
+    },
+    {
+      "quote": "every listed mutation that the full suite catches is caught by the checks picked for it",
+      "says": {
+        "rule": "picked-checks-catch-what-full-catches",
+        "holds": true,
+        "statement": "For every listed mutation, the checks picked for its change catch it whenever the full suite does",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "An experiment never changes the instruments that score it",
+      "says": {
+        "decision": "improvement-instruments",
+        "chose": "frozen-during-experiment",
+        "over": ["tuned-with-the-change"],
+        "area": "metrics",
+        "because": "a score from an instrument the change tuned says how well the change fits the instrument"
+      }
+    },
+    {
+      "quote": "An experiment never changes the instruments that score it: the metrics package, the corpus and its graders, the grid's `KNOWN`, `known.json` and `accepted.json`, the mutations, and the probes.",
+      "says": {
+        "rule": "experiments-leave-instruments-alone",
+        "holds": true,
+        "statement": "An experiment's change leaves alone every instrument that scores it; changing one is an experiment of its own, with a decision",
+        "area": "metrics"
+      }
+    }
+  ]
+}

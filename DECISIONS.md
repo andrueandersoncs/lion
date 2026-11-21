@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 203 questions have been decided, 92 records explain them, and of what the records assert, 632 hold when Lion is run, 5 are broken, 351 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 213 questions have been decided, 95 records explain them, and of what the records assert, 638 hold when Lion is run, 2 are broken, 366 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -209,6 +209,16 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-20 | [`set-in-rule-bodies`](#set-in-rule-bodies) | `refused-for-outside-bindings` | [set! fails where the engine chooses the order, for a binding made outside](#set-where-the-engine-orders) |
 | 2026-11-20 | [`match-fallback`](#match-fallback) | `optional` | [A match may leave out its fallback, and a case no value can reach is found without running](#match-cases-checked) |
 | 2026-11-20 | [`begin-waits-as-a-whole`](#begin-waits-as-a-whole) | `whole-form-but-the-program` | [A begin waits as a whole for an expression before its last](#begin-waits-as-a-whole) |
+| 2026-11-21 | [`capability-yardstick`](#capability-yardstick) | `agent-corpus-and-external-suites` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
+| 2026-11-21 | [`check-selection`](#check-selection) | `picked-checks-full-before-merge` | [Agents improve Lion on branches, run the checks a change can reach, and never change what scores them](#improvement-loop-on-branches) |
+| 2026-11-21 | [`complexity-measure`](#complexity-measure) | `per-capability` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
+| 2026-11-21 | [`experiment-budget`](#experiment-budget) | `per-experiment-cap` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
+| 2026-11-21 | [`held-out-tasks`](#held-out-tasks) | `outside-repository` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
+| 2026-11-21 | [`improvement-autonomy`](#improvement-autonomy) | `branches-only` | [Agents improve Lion on branches, run the checks a change can reach, and never change what scores them](#improvement-loop-on-branches) |
+| 2026-11-21 | [`improvement-instruments`](#improvement-instruments) | `frozen-during-experiment` | [Agents improve Lion on branches, run the checks a change can reach, and never change what scores them](#improvement-loop-on-branches) |
+| 2026-11-21 | [`improvement-order`](#improvement-order) | `constraints-capability-cost-rate` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
+| 2026-11-21 | [`scheme-fidelity`](#scheme-fidelity) | `departures-decided-and-probed` | [Lion's departures from Scheme and Racket are the exceptions a decision names, and any other difference from Scheme is a finding](#scheme-departures-listed) |
+| 2026-11-21 | [`speed-constraint`](#speed-constraint) | `growth-hard-constant-soft` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
 
 <a id="program-representation"></a>
 
@@ -1118,7 +1128,7 @@ Recorded 2026-04-04 in `history/notes/lexical-closures.json`.
 - Holds when Lion is run: `name-lookup-local-miss` is `parent-environment`. "A name is looked up from the innermost environment outward"
 - Holds when Lion is run: `lambda-body-global-environment` is `accessible`. "Each environment holds its own bindings and points to the environment around it, and the outermost is the global environment"
 - Replaced by a later word: `define-inside-lambda` is `global`. "`define` binds in the global environment, also inside a lambda"
-- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "A `define` inside a lambda's body does not make a local name, as it would in Scheme"
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "A `define` inside a lambda's body does not make a local name, as it would in Scheme"
 - Holds when Lion is run: `lambda-free-variable` is `enclosing-scope`. "the innermost body sees all three parameters"
 - Holds when Lion is run: `lambda-global-defined-after-creation` is `visible`. "A lambda sees a global defined after it was made"
 
@@ -1265,7 +1275,7 @@ Recorded 2026-11-19 in `history/notes/names-by-scope.json`.
 - Holds when Lion is run: `setLocalBinding` exists. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Holds when Lion is run: rule `lexical-closures` holds. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Stated, not checked by running Lion: rule `cond-truthiness` is withdrawn. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
-- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
 - Stated, not checked by running Lion: decided `define-scope`: `body`. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Holds when Lion is run: `host-callback-define` is `local`. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Holds when Lion is run: `UndefinedYetError` exists. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
@@ -2004,7 +2014,7 @@ Recorded 2026-11-12 in `history/notes/scheme-where-unclear.json`.
 
 **What it asserts, checked.**
 
-- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "Where a base form's behavior is unclear, Lion follows Scheme and Racket"
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "Where a base form's behavior is unclear, Lion follows Scheme and Racket"
 - Holds when Lion is run: `combining-functions-several-arguments` is `combine-left-to-right`. "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do."
 - Holds when Lion is run: `string-join-before-last` is `before-last-string`. "`string/join` takes a string to put before the last item, as `#:before-last` does in Racket."
 - Holds when Lion is run: `string/join` exists. "`string/join` takes a string to put before the last item"
@@ -3121,7 +3131,7 @@ Recorded 2026-11-16 in `history/notes/probes-observe-the-repository.json`.
 - Holds when Lion is run: `probe-runs-declared-command` is `exit-and-output`. "runs a command that `history/research/commands.json` declares and gives its exit code and what it wrote"
 - Holds when Lion is run: `probe-path-outside-repository` is `error`. "A path that leads out of the repository, a path that names no file, and a command the file does not declare each fail"
 - Holds when Lion is run: `probe-runs-undeclared-command` is `error`. "A path that leads out of the repository, a path that names no file, and a command the file does not declare each fail"
-- Stated, not checked by running Lion: rule `in-memory-evaluation` holds. "the functions belong to the host of the probes, not to the library"
+- Holds when Lion is run: rule `in-memory-evaluation` holds. "the functions belong to the host of the probes, not to the library"
 - Holds when Lion is run: `probe-lists-repository-files` is `paths`. "`["repo/files", path]` gives the paths of the files under a folder of the repository"
 
 <a id="probe-questions"></a>
@@ -4685,3 +4695,169 @@ Recorded 2026-11-20 in `history/notes/begin-waits-as-a-whole.json`.
 
 - Stated, not checked by running Lion: decided `begin-waits-as-a-whole`: `whole-form-but-the-program`. "A `begin` waits for an expression before its last as `cond` waits for a condition"
 - Holds when Lion is run: `program-begin-after-a-definition-that-waits` is `runs-on`. "A program's own `begin`, and a `begin` among its forms, runs its forms one at a time instead, as Scheme splices a top-level `begin` into the program"
+
+<a id="capability-yardstick"></a>
+
+## capability-yardstick
+
+Now: `agent-corpus-and-external-suites`.
+
+- 2026-11-21 `capability-yardstick`: `agent-corpus-and-external-suites` over `reference-programs-only`, `external-suites-only`: "Capability is measured two ways: by a corpus of tasks that agents solve by writing Lion" (`improvement-judged-by-capability.json`)
+
+<a id="improvement-judged-by-capability"></a>
+
+### A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability
+
+Recorded 2026-11-21 in `history/notes/improvement-judged-by-capability.json`.
+
+**Context.** `packages/metrics` counts what a change costs: code lines, paths through functions, special forms, library functions, messages, the grid's exceptions, speed, and growth. Nothing counts what a change buys. Between 0.6.0 on 2026-11-12 and 0.15.0 on 2026-11-20, core went from 6,035 code lines to 22,392 and from 95 messages to 250, while the guidelines ask for those numbers to go down, and nothing could say whether the solver, the proofs, and the other features were worth it. A loop in which agents propose, build, and judge changes to Lion needs a measure of what Lion can do, and needs its limits settled before it optimizes anything.
+
+**Decision.** Versions of Lion are compared in a fixed order, never by a weighted sum: first the constraints, since a version that breaks one has no score; then capability; then cost per capability; then the rate at which capability grows. Capability is measured two ways: by a corpus of tasks that agents solve by writing Lion, with a held-out part kept outside the repository that only the grader reads, and by external suites: R7RS-small conformance, logic-programming benchmarks, and verification benchmarks. Complexity is judged per capability: what a programmer must know, the grid's exceptions, the vocabulary, and the messages, and the code lines per passed task may not rise, while the code may grow when capability grows. A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change. Each experiment declares a dollar cap, and a direction that runs over it is set aside.
+
+**Consequences.** The measures are built in the order of `research/runs/self-improvement/plan.md`. Until the corpus exists, complexity per capability cannot be computed, so `bun run measure` reports totals as before. The record now counts the rules in force that no probe checks, the first figure of the ledger of constraints: `bun run history check` prints it with what the model holds.
+
+**Alternatives considered.**
+
+- An absolute ratchet: code lines and paths may never grow. A capability as large as the solver cannot pay for itself in removed lines, so the ratchet would refuse the features Lion is for.
+- Constrain only the semantic numbers. Code that grows with no capability to show for it would go unseen.
+- Reference programs only, with no agent. They show what Lion can express, not how well an agent writes it, and agents write most Lion programs.
+- External suites only. They test what other languages do, not the tasks Lion is for, such as proofs about its own rules.
+- Held-out tasks committed, with agents told not to read them. An agent improving Lion in the repository can read any file in it.
+- Refuse any benchmark slower than its best. Times move by a few percent between runs, so a hard limit would refuse changes on noise.
+- A daily cap, or no cap and a report. A daily cap queues cheap experiments behind expensive ones, and a report comes after the money is spent.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `improvement-order`: `constraints-capability-cost-rate`. "Versions of Lion are compared in a fixed order, never by a weighted sum"
+- Stated, not checked by running Lion: rule `constraints-before-scores` holds. "a version that breaks one has no score"
+- Stated, not checked by running Lion: decided `capability-yardstick`: `agent-corpus-and-external-suites`. "Capability is measured two ways: by a corpus of tasks that agents solve by writing Lion"
+- Stated, not checked by running Lion: decided `held-out-tasks`: `outside-repository`. "with a held-out part kept outside the repository that only the grader reads"
+- Stated, not checked by running Lion: decided `complexity-measure`: `per-capability`. "Complexity is judged per capability"
+- Stated, not checked by running Lion: rule `cost-per-capability-never-rises` holds. "what a programmer must know, the grid's exceptions, the vocabulary, and the messages, and the code lines per passed task may not rise"
+- Stated, not checked by running Lion: decided `speed-constraint`: `growth-hard-constant-soft`. "A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change."
+- Stated, not checked by running Lion: decided `experiment-budget`: `per-experiment-cap`. "Each experiment declares a dollar cap, and a direction that runs over it is set aside."
+
+<a id="check-selection"></a>
+
+## check-selection
+
+Now: `picked-checks-full-before-merge`.
+
+- 2026-11-21 `check-selection`: `picked-checks-full-before-merge` over `advisory-only`, `full-every-commit`: "the picking counts as no weaker only while every listed mutation that the full suite catches is caught by the checks picked for it, and the full suite runs before anything is merged" (`improvement-loop-on-branches.json`)
+
+<a id="improvement-loop-on-branches"></a>
+
+### Agents improve Lion on branches, run the checks a change can reach, and never change what scores them
+
+Recorded 2026-11-21 in `history/notes/improvement-loop-on-branches.json`.
+
+**Context.** On 2026-11-20 one item of work took about an hour, most of it spent in checks: the commit hook runs every package's tests, `bun run history check` takes about a minute, and a full `bun run mutate` takes most of an hour. A loop in which agents propose, build, and judge changes to Lion turns only as fast as its checks, and the obvious way to speed it up, running fewer checks, is also the obvious way to weaken it. An optimizer also finds the cheapest way to raise a score, and the cheapest way is often to change the instrument: a grader, a list of known exceptions, or a mutation.
+
+**Decision.** Agents in the loop build, measure, record, and commit on branches. A person merges, releases, and approves every decision that overturns a documented rule. During an experiment the loop runs only the checks a change can reach, picked by a Lion model of which tests, mutations, probes, and documented examples each file reaches; the picking counts as no weaker only while every listed mutation that the full suite catches is caught by the checks picked for it, and the full suite runs before anything is merged. An experiment never changes the instruments that score it: the metrics package, the corpus and its graders, the grid's `KNOWN`, `known.json` and `accepted.json`, the mutations, and the probes. Changing one is an experiment of its own, with a decision, and starts a new score.
+
+**Consequences.** Nothing an agent does in the loop reaches `main` until a person merges it, so a mistake costs a branch. The impact model and the property that checks its picking come before the loop runs (phase 1A of `research/runs/self-improvement/plan.md`). Skill eval's requirement that the eval's own lines are unchanged becomes one case of the rule for every instrument.
+
+**Alternatives considered.**
+
+- Let agents merge into `main` when every check passes. The checks cover what the project knew to check, and a person sees what an agent missed before it becomes the base of every later change.
+- Let agents merge, release, and reverse decisions, and review afterwards. A release is public and a reversed decision changes what Lion promises, and neither can be taken back quietly.
+- Use the picked checks only as advice, and run the full suite on every commit. The hour the full suite takes is what holds the loop back, and the mutation property already shows the picked checks catch what the full suite catches.
+- Let an experiment tune its grader with its change. A score from an instrument the change tuned says how well the change fits the instrument, not how good Lion became.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `improvement-autonomy`: `branches-only`. "Agents in the loop build, measure, record, and commit on branches."
+- Stated, not checked by running Lion: rule `people-merge-and-release` holds. "A person merges, releases, and approves every decision that overturns a documented rule."
+- Stated, not checked by running Lion: decided `check-selection`: `picked-checks-full-before-merge`. "the picking counts as no weaker only while every listed mutation that the full suite catches is caught by the checks picked for it, and the full suite runs before anything is merged"
+- Stated, not checked by running Lion: rule `picked-checks-catch-what-full-catches` holds. "every listed mutation that the full suite catches is caught by the checks picked for it"
+- Stated, not checked by running Lion: decided `improvement-instruments`: `frozen-during-experiment`. "An experiment never changes the instruments that score it"
+- Stated, not checked by running Lion: rule `experiments-leave-instruments-alone` holds. "An experiment never changes the instruments that score it: the metrics package, the corpus and its graders, the grid's `KNOWN`, `known.json` and `accepted.json`, the mutations, and the probes."
+
+<a id="complexity-measure"></a>
+
+## complexity-measure
+
+Now: `per-capability`.
+
+- 2026-11-21 `complexity-measure`: `per-capability` over `absolute-ratchet`, `semantic-only`: "Complexity is judged per capability" (`improvement-judged-by-capability.json`)
+
+<a id="experiment-budget"></a>
+
+## experiment-budget
+
+Now: `per-experiment-cap`.
+
+- 2026-11-21 `experiment-budget`: `per-experiment-cap` over `daily-cap`, `no-cap`: "Each experiment declares a dollar cap, and a direction that runs over it is set aside." (`improvement-judged-by-capability.json`)
+
+<a id="held-out-tasks"></a>
+
+## held-out-tasks
+
+Now: `outside-repository`.
+
+- 2026-11-21 `held-out-tasks`: `outside-repository` over `in-repository-isolated`, `no-held-out`: "with a held-out part kept outside the repository that only the grader reads" (`improvement-judged-by-capability.json`)
+
+<a id="improvement-autonomy"></a>
+
+## improvement-autonomy
+
+Now: `branches-only`.
+
+- 2026-11-21 `improvement-autonomy`: `branches-only` over `merge-when-checks-pass`, `fully-autonomous`: "Agents in the loop build, measure, record, and commit on branches." (`improvement-loop-on-branches.json`)
+
+<a id="improvement-instruments"></a>
+
+## improvement-instruments
+
+Now: `frozen-during-experiment`.
+
+- 2026-11-21 `improvement-instruments`: `frozen-during-experiment` over `tuned-with-the-change`: "An experiment never changes the instruments that score it" (`improvement-loop-on-branches.json`)
+
+<a id="improvement-order"></a>
+
+## improvement-order
+
+Now: `constraints-capability-cost-rate`.
+
+- 2026-11-21 `improvement-order`: `constraints-capability-cost-rate` over `weighted-sum`: "Versions of Lion are compared in a fixed order, never by a weighted sum" (`improvement-judged-by-capability.json`)
+
+<a id="scheme-fidelity"></a>
+
+## scheme-fidelity
+
+Now: `departures-decided-and-probed`.
+
+- 2026-11-21 `scheme-fidelity`: `departures-decided-and-probed` over `where-unclear`, `separate-departures-list`, `racket-first`: "Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why." (`scheme-departures-listed.json`)
+
+<a id="scheme-departures-listed"></a>
+
+### Lion's departures from Scheme and Racket are the exceptions a decision names, and any other difference from Scheme is a finding
+
+Recorded 2026-11-21 in `history/notes/scheme-departures-listed.json`.
+
+**Context.** AGENTS.md says Lion's semantics are approximately those of Scheme and Racket, plus the logic layer, and the decision `scheme-where-unclear` says Lion follows them where a base form is unclear. Nothing said how far "approximately" goes, so a difference that was decided could not be told from one that was an accident. The project record showed the gap: its reading of the rule predicts that an unbound string is an error, as an unbound variable is in Scheme, while in Lion an unbound string evaluates to itself, as the decision `unbound-string-semantics` chose. Both findings waited in `known.json` with the note "Settle with a decision that lists Lion's departures from Scheme as exceptions."
+
+**Decision.** Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why. An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself. The cases Scheme settles become probes of behaviors the rule predicts, drawn from R7RS-small, so a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check`.
+
+**Consequences.** The two findings on unbound strings leave `known.json`. The list of departures is the rule's exceptions in the record, checked against the probes like every other rule's, so no second list stands beside it. Until the R7RS-small cases are written, the rule is checked only on the cases earlier commits predicted, such as `and` stopping at the first false argument and `number/add` summing more than two numbers.
+
+**Alternatives considered.**
+
+- Follow Scheme only where a form is unclear, as before. A departure that no decision names could not be told from an accident, and nothing checked the cases Scheme settles.
+- Keep a separate list of departures beside the grid's `KNOWN`. The record already holds a rule's exceptions and checks every rule against what Lion does, so a second list would say the same thing in two places.
+- Follow Racket first where Scheme and Racket differ. Lion already follows Racket where a decision names it, as its contracts, `match`, and records do, and a suite that preferred Racket everywhere would make Scheme's simpler answer the exception.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `scheme-fidelity`: `departures-decided-and-probed`. "Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why."
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself."
+- Holds when Lion is run: `unbound-string` is `itself`. "An unbound string is the first: it evaluates to itself"
+- Stated, not checked by running Lion: rule `scheme-departures-are-decided` holds. "a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check`"
+
+<a id="speed-constraint"></a>
+
+## speed-constraint
+
+Now: `growth-hard-constant-soft`.
+
+- 2026-11-21 `speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`: "A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change." (`improvement-judged-by-capability.json`)

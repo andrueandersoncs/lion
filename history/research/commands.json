@@ -38,5 +38,9 @@
   "key-clash": {
     "cwd": "packages/history",
     "command": ["bun", "commands/key-clash.mjs"]
+  },
+  "measure": {
+    "cwd": "packages/metrics",
+    "command": ["bun", "run", "measure.ts"]
   }
 }

@@ -53,6 +53,14 @@ A violated assumption is a finding. Every finding is in one of two lists until i
 
 `bun run history check` fails on a finding in neither list, and on a listed finding the model no longer finds, so neither list goes stale. The record's tests run it, so the pre-commit hook and CI do too. Commits the model has nothing from are counted but do not fail: they wait for a reader.
 
+A rule is checked by running Lion only where a probe runs a case it predicts; until then nothing that Lion does can break it, and a finding against it can come only from what the repository says. `untested` lists the rules in force that no probe checks, and `bun run history check` counts them with what the model holds, as in `✓ The model holds: 4823 claims, … 107 rules in force that no probe checks`. A rule leaves the list when it gains a prediction a probe answers:
+
+```bash
+bun run history ask '["find", "?rule", ["and", ["untested", "?rule"], ["string/startsWith", "?rule", "use-"]]]'
+```
+
+gives `["use-bun-test-runner"]`. `use-bun-not-npm` left the list when `history/notes/constraints-checked-by-probes.json` restated it with the prediction that no script, hook, or CI step runs `npm` or `npx`, and the probe `scripts-call-npm` answered it.
+
 ## Settling a finding
 
 A finding is settled by what the project says next, not by editing the model:
@@ -152,7 +160,7 @@ A path is relative to the repository. A path that leads out of it, a path `repo/
 }
 ```
 
-It gives `"runs-tests"`, so the assertion holds. `commands.json` lists every command a probe may run, each as the words of one command line, which no shell reads, and the folder it runs in. A command that needs more than a line is a script in `packages/history/commands/` that the line runs, such as `host-run.mjs`, which calls `run` as a TypeScript host does and prints what each call gave. Two of the seven:
+It gives `"runs-tests"`, so the assertion holds. `commands.json` lists every command a probe may run, each as the words of one command line, which no shell reads, and the folder it runs in. A command that needs more than a line is a script in `packages/history/commands/` that the line runs, such as `host-run.mjs`, which calls `run` as a TypeScript host does and prints what each call gave. Two of the eleven:
 
 ```json
 {
@@ -167,7 +175,7 @@ It gives `"runs-tests"`, so the assertion holds. `commands.json` lists every com
 }
 ```
 
-`["repo/run", "docs-check"]` gives `{"exit": 0, "output": "docs/docs.html is current.\n"}` while every library function has an example in the docs. A command runs once in a build, however many probes ask for it, and every build runs it, so declare commands that are quick and change nothing in the repository; the seven take about a second together.
+`["repo/run", "docs-check"]` gives `{"exit": 0, "output": "docs/docs.html is current.\n"}` while every library function has an example in the docs. A command runs once in a build, however many probes ask for it, and every build runs it, so declare commands that are quick and change nothing in the repository; the eleven take about two and a half seconds together.
 
 A probe can also run a Lion program the repository holds. The research skill's rules are one, so the probe of who counts as a voice loads them with `["eval", ["repo/json", "skills/lion-research/assets/core.json"]]`, states a few facts as the skill's scripts write them, and asks the relation the decision record names.
 

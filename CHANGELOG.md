@@ -2,6 +2,34 @@
 
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `bun run history check` counts the rules in force that no probe of Lion checks, beside what the model holds, and `["untested", "?rule"]` lists them (`untested-rules` added)
+
+### Decided
+
+- Capability is measured two ways: by a corpus of tasks that agents solve by writing Lion (`capability-yardstick`: `agent-corpus-and-external-suites` over `reference-programs-only`, `external-suites-only`)
+- the picking counts as no weaker only while every listed mutation that the full suite catches is caught by the checks picked for it, and the full suite runs before anything is merged (`check-selection`: `picked-checks-full-before-merge` over `advisory-only`, `full-every-commit`)
+- Complexity is judged per capability (`complexity-measure`: `per-capability` over `absolute-ratchet`, `semantic-only`)
+- Each experiment declares a dollar cap, and a direction that runs over it is set aside. (`experiment-budget`: `per-experiment-cap` over `daily-cap`, `no-cap`)
+- with a held-out part kept outside the repository that only the grader reads (`held-out-tasks`: `outside-repository` over `in-repository-isolated`, `no-held-out`)
+- Agents in the loop build, measure, record, and commit on branches. (`improvement-autonomy`: `branches-only` over `merge-when-checks-pass`, `fully-autonomous`)
+- An experiment never changes the instruments that score it (`improvement-instruments`: `frozen-during-experiment` over `tuned-with-the-change`)
+- Versions of Lion are compared in a fixed order, never by a weighted sum (`improvement-order`: `constraints-capability-cost-rate` over `weighted-sum`)
+- Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why. (`scheme-fidelity`: `departures-decided-and-probed` over `where-unclear`, `separate-departures-list`, `racket-first`)
+- A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change. (`speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`)
+
+### Rules
+
+- a version that breaks one has no score (rule `constraints-before-scores`)
+- what a programmer must know, the grid's exceptions, the vocabulary, and the messages, and the code lines per passed task may not rise (rule `cost-per-capability-never-rises`)
+- An experiment never changes the instruments that score it: the metrics package, the corpus and its graders, the grid's `KNOWN`, `known.json` and `accepted.json`, the mutations, and the probes. (rule `experiments-leave-instruments-alone`)
+- A person merges, releases, and approves every decision that overturns a documented rule. (rule `people-merge-and-release`)
+- every listed mutation that the full suite catches is caught by the checks picked for it (rule `picked-checks-catch-what-full-catches`)
+- a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check` (rule `scheme-departures-are-decided`)
+
 ## 2026-11-20 — @lionlang/core 0.15.0, @lionlang/cli 0.14.0
 
 A string is read by scope: it is a name where a scope declares it and data otherwise, the first element of an array always names what the array does, `define` binds in the body it stands in, and `set!` changes the nearest binding. A variable a schema types stands for every value the schema allows, and Lion's own solver, with exact rationals, decides the goals over it; `why` shows a certificate for each case it split a rule into and the goals that contradict each other, and `["schema/includes?", a, b]` says whether every value `a` allows fits `b`. From Clef and Racket: contracts on parameters, `["n", "value/number?"]`; `delay` and `value/force`; `func/catch` and `func/raise`; delimited continuations with `func/reset` and `func/shift`; a `quantity` module for numbers with units; `watch` for host code that follows a query's answers; and warnings from `lion check` and the graph editor for a match case that can never be reached or a value a contracted match leaves out. Breaking: a `cond` condition must be `true` or `false`; a lambda takes exactly as many arguments as it has parameters; `object/get` fails on a missing key unless given a value; integers up to 2^53 - 1 do exact arithmetic or fail, and program text may not write one that would read as another; a match with no fallback fails on a value no case fits; in a rule, query, or find, `set!` refuses a binding made outside it, and a `begin` waits as a whole for an earlier expression that waits, so every expression runs for each answer.
@@ -1098,8 +1126,8 @@ Schemas say what a value must be, and one rule says what fits: whatever checks a
 - Benchmark times move by a few percent between runs, so `bun run bench` is run twice (rule `bench-twice`)
 - Before you write that a change fixes, breaks, or keeps something, in a changelog or a report, put the program in a file and run `bun run compare`. (rule `compare-before-claiming`)
 - Cover every case of a new feature: each form it adds, each place the form can stand, and each existing feature it meets. (rule `cover-every-case`)
-- change the feature until the cell agrees, or, when the exception is the right design, document it and list it in `KNOWN`. (rule `grid-exceptions-documented`)
-- the functions belong to the host of the probes, not to the library (rule `in-memory-evaluation`)
+- Every exception in the interop grid is listed in `KNOWN`, and the record runs `bun run measure` to see that none is `NOT DOCUMENTED` (rule `grid-exceptions-documented`)
+- Lion evaluates a program entirely in memory: no file of the core imports a module of the host, such as `node:fs`, or calls `fetch`, `require`, or `process` (rule `in-memory-evaluation`)
 - Integrate a new feature deeply, so it works with every existing feature in plain code and in the logic layer. (rule `integrate-deeply`)
 - Before you finish a change to the evaluator or the logic engine, run its properties once with a few thousand runs each, by raising `runs`, and then put the number back. (rule `many-runs-before-finishing`)
 - AGENTS.md asks that every change to core be measured before it is done (rule `measure-every-change`)
@@ -1996,13 +2024,14 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 
 - when the first value is a function it is called with the others (`array-first-element-function` is `function-call`)
 - Otherwise, the expression evaluates each of its elements and returns the resulting array: (`array-first-element-not-function` is `evaluated-elements`)
-- `"x"` is `10` where `x` is bound to `10` and the text `"x"` everywhere else (`bound-string` is `bound-value`; `unbound-string` is `itself`)
+- `"x"` is `10` where `x` is bound to `10` and the text `"x"` everywhere else (`bound-string` is `bound-value`)
 - its elements are evaluated, and when the first value is a function it is called with the others (`call-argument-evaluation` is `before-call`)
 - Numbers, booleans, and `null` are themselves. (`non-string-primitive` is `itself`)
 - Lion has no reader and no syntax of its own: `JSON.parse` reads a program (`program-reader` is `json-parse`)
 - Returns its argument without evaluating it. (`quote-argument` is `not-evaluated`)
 - A record keeps its keys and evaluates each of its values. (`record-expression` is `values-evaluated`; `record-expression-keys` is `preserved`)
 - `run(program, environment)` checks any value against the schema of a Lion expression and then evaluates it. (`run-input-validation` is `lion-expression-schema`)
+- An unbound string is the first: it evaluates to itself (`unbound-string` is `itself`)
 - The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (`empty-array` is `itself`)
 - Evaluates its argument, then evaluates the result. (`eval-argument` is `evaluated-twice`)
 - should return a curried function when called with no arguments (`eval-no-arguments` is `function`; `quote-no-arguments` is `function`)
@@ -2219,7 +2248,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 ### Rules
 
 - // Array-based expressions are evaluated like function calls (rule `array-expressions-are-calls`)
-- A Lion program is a JSON value, evaluated as it is, with no parser of its own (rule `json-programs`)
+- A string that holds a program written in parentheses is a string, since Lion reads programs only as JSON: `["eval", "(number/add 1 2)"]` is `"(number/add 1 2)"` (rule `json-programs`)
 - In Lion a string is a name before it is a string: a bound name evaluates to its value, and an unbound one to itself (rule `strings-are-references`)
 - // The default is applicative-order evaluation: evaluate all arguments first before calling the function (rule `applicative-order`)
 - An array is always a special form or a call, never a list that evaluates to itself (rule `arrays-are-never-data`)
@@ -2247,7 +2276,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - Otherwise, the expression evaluates each of its elements and returns the resulting array: (rule `non-call-arrays-are-lists`)
 - an array with a string as its first element is a function call (rule `string-head-is-call`)
 - if the first element of an array expression evaluates to a function, the array is treated as a function call. (rule `function-head-is-call`; rule `string-head-is-call` withdrawn)
-- NEVER use `npx` or `npm` commands. Use `bun` or `turbo` instead. (rule `use-bun-not-npm`)
+- No script of a package, the commit hook, or CI runs `npm` or `npx` (rule `use-bun-not-npm`)
 - Use `bun test` instead of `jest` or `vitest` (rule `use-bun-test-runner`)
 - The coding agent in `packages/agent` is a Lion program, `agent.json`, run by a small host file (rule `agent-as-lion-program`)
 - A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (rule `lexical-closures`)
@@ -2258,5 +2287,5 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - The auto-quoting of lists was removed. (rule `non-call-arrays-are-lists` withdrawn)
 - A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (rule `special-forms-plain-names`)
 - A record pattern in `match` fits any record that has the pattern's keys with values that fit (rule `record-patterns-by-keys`)
-- A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (rule `scheme-racket-semantics`)
+- An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself. (rule `scheme-racket-semantics`)
 - All code is valid JSON. All JSON is valid code. (rule `all-json-is-code` withdrawn)

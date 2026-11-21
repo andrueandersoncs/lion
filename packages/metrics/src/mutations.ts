@@ -3378,6 +3378,11 @@ export const MUTATIONS: readonly Mutation[] = [
     '    ["predicted", "?r", "?case", "?v", "?c"],\n    ["value/string?", "?r"],'
   ),
   researchStep(
+    "a rule counts as tested when the repository, not a probe, answers a case it predicts",
+    '        ["firsthand", { "behavior": "?case" }, "?_", "Lion at HEAD"]',
+    '        ["firsthand", { "behavior": "?case" }, "?_", "?_"]'
+  ),
+  researchStep(
     "a library function that follows JavaScript breaks the precedent assumption",
     '        ["=", "?follows", "javascript"],',
     '        ["=", "?follows", "json"],'

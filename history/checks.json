@@ -123,6 +123,10 @@
         "?h",
         ["and", ["subject", "?h", "?_"], ["not", ["=", "?h", "working tree"]]]
       ]
+    ],
+    "rules in force that no probe checks": [
+      "aggregate/count",
+      ["find", "?r", ["untested", "?r"]]
     ]
   }
 }

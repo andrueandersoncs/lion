@@ -8,24 +8,6 @@
     "note": "AGENTS.md says the tests use Vitest with @effect/vitest (71efcf1); packages/agent/CLAUDE.md (d7628fc) and packages/examples/CLAUDE.md (ca00e8e) said to use `bun test` instead of jest or vitest. Fixed in the working tree: packages/examples/CLAUDE.md now says Vitest, and AGENTS.md says `bun run test`. It clears once the commit that fixes it is read into the notes."
   },
   {
-    "assumption": "consistent-rules",
-    "witness": {
-      "rules": ["scheme-racket-semantics", "strings-are-references"],
-      "case": "unbound-string"
-    },
-    "note": "An unbound string evaluates to itself (strings-are-references; the string fallback was kept on purpose in e16eb12), where Scheme raises an unbound-variable error. The departure was decided but never named as an exception to 'approximately Scheme and Racket'. The Scheme predictions are this model's reading of 500bac2's rule."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "unbound-string",
-      "predicted": "error",
-      "found": "itself"
-    },
-    "note": "Same departure as the unbound-string conflict: Lion returns the string, Scheme raises an error. Settle with a decision that lists Lion's departures from Scheme as exceptions."
-  },
-  {
     "assumption": "rules-hold",
     "witness": {
       "rule": "automatic-currying",

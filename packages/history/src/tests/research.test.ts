@@ -318,6 +318,13 @@ const model = (w: World) => {
         ((c.says.except as string[] | undefined) ?? []).includes(k)
     );
   const set = (rows: string[]) => [...new Set(rows)].sort();
+  // A rule in force is untested while no probe answers a case it predicts.
+  const untested = [...inForce].filter(
+    (r) =>
+      !predicted.some(
+        (p) => p.r === r && firsthand(`behavior ${p.case}`, HEAD).size > 0
+      )
+  );
   const conflict = predicted.flatMap((a) =>
     predicted
       .filter(
@@ -431,6 +438,7 @@ const model = (w: World) => {
     silent: set(silent),
     undecidedBreaking: set(undecidedBreaking),
     undecidedRemoval: set(undecidedRemoval),
+    untested: set(untested),
   };
 };
 
@@ -515,6 +523,7 @@ const QUESTIONS = {
     ["drift", "?q", "?v", "?w"],
   ],
   inForce: ["find", "?r", ["in_force", "?r"]],
+  untested: ["find", "?r", ["untested", "?r"]],
   predicted: [
     "find",
     text("?r", "?k", "?v"),

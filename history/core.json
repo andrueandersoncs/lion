@@ -682,15 +682,7 @@
     "rule",
     ["rule_tested", "?r"],
     ["in_force", "?r"],
-    ["predicted", "?r", "?case", "?_", "?_"],
-    [
-      "firsthand",
-      {
-        "behavior": "?case"
-      },
-      "?_",
-      "Lion at HEAD"
-    ]
+    ["not", ["untested", "?r"]]
   ],
   [
     "rule",

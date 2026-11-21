@@ -1,0 +1,72 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run history check` counts the rules in force that no probe of Lion checks, beside what the model holds, and `[\"untested\", \"?rule\"]` lists them",
+      "says": {
+        "feature": "untested-rules",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Lion evaluates a program entirely in memory: no file of the core imports a module of the host, such as `node:fs`, or calls `fetch`, `require`, or `process`",
+      "says": {
+        "rule": "in-memory-evaluation",
+        "holds": true,
+        "statement": "A Lion program can be evaluated entirely in memory: no file of the core imports a module of the host or calls into it",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "core-imports-host-modules",
+            "is": "none"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A string that holds a program written in parentheses is a string, since Lion reads programs only as JSON: `[\"eval\", \"(number/add 1 2)\"]` is `\"(number/add 1 2)\"`",
+      "says": {
+        "rule": "json-programs",
+        "holds": true,
+        "statement": "A Lion program is a JSON value, evaluated as it is, with no parser of its own",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "lisp-text-string",
+            "is": "itself"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "No script of a package, the commit hook, or CI runs `npm` or `npx`",
+      "says": {
+        "rule": "use-bun-not-npm",
+        "holds": true,
+        "statement": "Never use npx or npm; use bun or turbo",
+        "area": "build",
+        "predicts": [
+          {
+            "behavior": "scripts-call-npm",
+            "is": "none"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Every exception in the interop grid is listed in `KNOWN`, and the record runs `bun run measure` to see that none is `NOT DOCUMENTED`",
+      "says": {
+        "rule": "grid-exceptions-documented",
+        "holds": true,
+        "statement": "Every exception in the interop grid is documented and listed in KNOWN",
+        "area": "metrics",
+        "predicts": [
+          {
+            "behavior": "grid-undocumented-exceptions",
+            "is": "none"
+          }
+        ]
+      }
+    }
+  ]
+}
