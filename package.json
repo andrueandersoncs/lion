@@ -20,6 +20,7 @@
     "compare": "bun run --cwd packages/metrics compare",
     "affected": "bun run --cwd packages/metrics affected",
     "loop": "bun run --cwd packages/metrics loop",
+    "pairs": "bun run --cwd packages/metrics pairs",
     "history": "bun run --cwd packages/history history"
   },
   "devDependencies": {

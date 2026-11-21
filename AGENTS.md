@@ -71,8 +71,13 @@ bun run fix
 # Prepare development environment (installs the git hooks)
 bun run prepare
 
-# Grade the capability corpus: the tasks of each pillar Lion passes
+# Grade the capability corpus: the tasks of each pillar Lion passes, by the
+# reference programs, or by programs agents write (costs money, at most --budget)
 bun run capability
+bun run capability --agents --budget 25
+
+# The interop grid over pairs of its rows: features that fail together
+bun run pairs
 
 # Measure complexity, speed, growth, and how well the tests catch broken code
 bun run measure --against main

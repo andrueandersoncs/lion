@@ -974,8 +974,9 @@ const trialProgram = (given: Trial) => {
  * version's runs of a score are its range, unless a run of what the score
  * requires there says otherwise; a version improves a score when its worst
  * run beats the best that every version before it was sure to give. A direction's
- * experiment is the first version its run speaks for; it misses when it
- * improves nothing, and a direction is set aside after as many misses in a
+ * experiment is the first version its run speaks for; it pays off when it
+ * improves a score or fixes a problem it targets, and misses otherwise, and a
+ * direction is set aside after as many misses in a
  * row as its patience, when the user has not decided what it needs, or when
  * what it needs is answered otherwise. Its experiments say nothing about a
  * score that none of them ran with an earlier version to beat. A belief that
@@ -1073,11 +1074,51 @@ const trialExpected = (given: Trial) => {
         return [names[n - 1] as string];
       })
     );
+  const formedIn = (since: number) =>
+    since === 0 ? [] : [names[since - 1] as string];
+  const targets = given.expectations.flatMap((expectation) =>
+    expectation.tries === undefined
+      ? []
+      : expectation.predicts.flatMap(([q, predicted]) =>
+          given.problems
+            .filter(
+              (problem) =>
+                problem.question === q && !same(problem.value, predicted)
+            )
+            .flatMap((problem) =>
+              formedIn(expectation.since).map((name) => ({
+                direction: expectation.tries as string,
+                expectation,
+                name,
+                predicted,
+                problem,
+              }))
+            )
+        )
+  );
+  const outcomes = targets.flatMap((target) =>
+    answersIn(target.name)
+      .filter((run) => run.question === target.problem.question)
+      .map((run) => ({ ...target, run }))
+  );
   const paidOf = (id: string) =>
-    experimentsOf(id).flatMap((name) =>
-      improved
-        .filter(([, v]) => v === name)
-        .map(([q]) => [id, name, q] as const)
+    unique(
+      experimentsOf(id).flatMap((name) => [
+        ...improved
+          .filter(([, v]) => v === name)
+          .map(([q]) => [id, name, q] as const),
+        ...outcomes
+          .filter(
+            (outcome) =>
+              outcome.direction === id &&
+              outcome.name === name &&
+              same(outcome.run.value, outcome.predicted)
+          )
+          .map(
+            (outcome) =>
+              [id, name, questionOf(outcome.problem.question)] as const
+          ),
+      ])
     );
   const missesOf = (id: string) => {
     const paid = paidOf(id).map(([, name]) => first(name));
@@ -1111,8 +1152,6 @@ const trialExpected = (given: Trial) => {
     .filter((direction) => missesOf(direction.id).length >= direction.patience)
     .map((direction) => direction.id);
   const now = (q: string) => rangeIn(NOW, q);
-  const formedIn = (since: number) =>
-    since === 0 ? [] : [names[since - 1] as string];
   const judgedIn = (expectation: Trial["expectations"][number]) =>
     expectation.tries === undefined
       ? unique(names.filter((_, at) => at + 1 >= expectation.since))
@@ -1125,31 +1164,6 @@ const trialExpected = (given: Trial) => {
           .map((run) => ({ expectation, name, predicted, q, run }))
       )
     )
-  );
-  const targets = given.expectations.flatMap((expectation) =>
-    expectation.tries === undefined
-      ? []
-      : expectation.predicts.flatMap(([q, predicted]) =>
-          given.problems
-            .filter(
-              (problem) =>
-                problem.question === q && !same(problem.value, predicted)
-            )
-            .flatMap((problem) =>
-              formedIn(expectation.since).map((name) => ({
-                direction: expectation.tries as string,
-                expectation,
-                name,
-                predicted,
-                problem,
-              }))
-            )
-        )
-  );
-  const outcomes = targets.flatMap((target) =>
-    answersIn(target.name)
-      .filter((run) => run.question === target.problem.question)
-      .map((run) => ({ ...target, run }))
   );
   return {
     addresses: unique([

@@ -25,6 +25,8 @@ const REPLAY_MEDIAN = /Median over \d+ commits: (\d+)% of the tests' time/;
 const UNSOUND = /Picking is not sound for (\d+) mutations/;
 const VERDICT = /^(CAUGHT|MISSED|STALE)\s+(.+)$/;
 const CAPABILITY_LABEL = /^capability passed, ([^,]+), (.+)$/;
+const AGENTS_LABEL = /^agents' (cost usd|first tries that ran), (.+)$/;
+const AGENTS_CAUSE = /^agents' failed tries, ([^,]+), (.+)$/;
 const NUMBER = /^-?\d+(?:\.\d+)?$/;
 const RUNS_LABEL = /^mutation runs caught of (\d+), (.+)$/;
 /** The line the scoreboard prints for each tool it ran. */
@@ -68,6 +70,10 @@ export const QUESTIONS = {
     label: "record check, history",
     question: { "record check": "history" },
   },
+  surprising: {
+    label: "surprising pairs, grid",
+    question: { "surprising pairs": "grid" },
+  },
   untested: {
     label: "rules no probe checks, record",
     question: { "rules no probe checks": "record" },
@@ -93,6 +99,27 @@ export const capabilityQuestion = (
 ): Measured => ({
   label: `capability passed, ${suite}, ${pillar}`,
   question: { "capability passed": suite, pillar },
+});
+
+/**
+ * A question of an agents' run of a suite, such as `public by sonnet
+ * agents`: what it cost, or how many tasks' first tries ran.
+ */
+export const agentsQuestion = (
+  suite: string,
+  about: "cost usd" | "first tries that ran"
+): Measured => ({
+  label: `agents' ${about}, ${suite}`,
+  question: { [`agents' ${about}`]: suite },
+});
+
+/** The question of how many of an agents' run's tries failed for one cause. */
+export const agentsCauseQuestion = (
+  suite: string,
+  cause: string
+): Measured => ({
+  label: `agents' failed tries, ${cause}, ${suite}`,
+  question: { "agents' failed tries": suite, cause },
 });
 
 /** The question of whether one listed mutation is caught. */
@@ -164,6 +191,52 @@ export const readCapability = (
       },
     ])
   );
+};
+
+/** What an agents' run of a suite spent, and how its tries went. */
+export interface AgentsRead {
+  readonly causes: readonly {
+    readonly cause: string;
+    readonly tries: number;
+  }[];
+  readonly costUsd: number;
+  readonly firstRan: number;
+}
+
+/** Each agents' run in what `bun run capability --agents --json` printed, by suite. */
+export const readAgents = (printed: string): Record<string, AgentsRead> => {
+  const json = printed.slice(
+    printed.indexOf("{"),
+    printed.lastIndexOf("}") + 1
+  );
+  const suites = JSON.parse(json) as Record<string, { agents?: AgentsRead }>;
+  return Object.fromEntries(
+    Object.entries(suites).flatMap(([suite, { agents }]) =>
+      agents === undefined
+        ? []
+        : [
+            [
+              suite,
+              {
+                causes: agents.causes.map(({ cause, tries }) => ({
+                  cause,
+                  tries,
+                })),
+                costUsd: agents.costUsd,
+                firstRan: agents.firstRan,
+              },
+            ],
+          ]
+    )
+  );
+};
+
+const SURPRISING = /^surprising pairs, grid: (\d+)$/m;
+
+/** How many of the pair grid's cells surprise, from what `bun run pairs` printed. */
+export const readPairs = (printed: string): number | undefined => {
+  const found = SURPRISING.exec(printed);
+  return found === null ? undefined : Number(found[1]);
 };
 
 const GROWS = /\bn\^(\d+(?:\.\d+)?)\b/;
@@ -270,6 +343,17 @@ const known = (label: string): Measured | undefined => {
   if (capability !== null) {
     return capabilityQuestion(capability[1] as string, capability[2] as string);
   }
+  const agents = AGENTS_LABEL.exec(label);
+  if (agents !== null) {
+    return agentsQuestion(
+      agents[2] as string,
+      agents[1] as "cost usd" | "first tries that ran"
+    );
+  }
+  const cause = AGENTS_CAUSE.exec(label);
+  if (cause !== null) {
+    return agentsCauseQuestion(cause[2] as string, cause[1] as string);
+  }
   const runs = RUNS_LABEL.exec(label);
   if (runs !== null) {
     return mutationRunsQuestion(runs[2] as string, Number(runs[1]));
@@ -290,6 +374,7 @@ const SCORED = new Set<string>([
     QUESTIONS.missed,
     QUESTIONS.picked,
     QUESTIONS.benchTotal,
+    QUESTIONS.surprising,
   ].map((q) => q.label),
 ]);
 
@@ -329,7 +414,10 @@ export const observationsOf = (
     }
     const raw = row.slice(split + 2).trim();
     const value: Value = NUMBER.test(raw) ? Number(raw) : raw;
-    const scored = SCORED.has(label) || label.startsWith("capability passed, ");
+    const scored =
+      SCORED.has(label) ||
+      label.startsWith("capability passed, ") ||
+      label.startsWith("agents' first tries that ran, ");
     return [
       {
         id: `${source}-${at}`,

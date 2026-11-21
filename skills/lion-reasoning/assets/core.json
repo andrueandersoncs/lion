@@ -731,6 +731,14 @@
   ],
   [
     "rule",
+    ["paid_off", "?d", "?v", "?q"],
+    ["experiment", "?d", "?v"],
+    ["targets", "?d", "?v", "?p", "?b"],
+    ["aims", "?b", "?p", "?q", "?predicted"],
+    ["answer_in", "?v", "?q", "?predicted", "?_"]
+  ],
+  [
+    "rule",
     ["last_payoff", "?d", ["aggregate/max", "?n"]],
     ["paid_off", "?d", "?v", "?_"],
     ["first", "?v", "?n"]

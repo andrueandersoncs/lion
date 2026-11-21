@@ -93,6 +93,24 @@ When you add a feature, add it to [`src/grid-cases.ts`](src/grid-cases.ts):
 
 Then run `bun run measure --grid`. Every new cell should be `✓`. If one cannot be, the feature has an exception: remove it by changing the feature, or document it and add it to `KNOWN`.
 
+### Pairs of rows: `bun run pairs`
+
+```bash
+bun run pairs
+```
+
+Runs the grid over every pair of its rows: one kind of expression written where another has `?x`, such as a `match` inside a call, in every place. The grid's rule holds of a pair as of a row. A pair's cell that is an exception where neither of its rows has one in that place is a **surprise**, two features that work alone and fail together, and each is a bug to fix or a rule to document. On 2026-11-21 it printed:
+
+```
+Pairs of the grid's rows: 6561, in 118098 cells
+  same as plain code  72371
+  plain code fails    41274
+  exceptions          155
+surprising pairs, grid: 0
+```
+
+Every exception is one a single row already has. The inner row's own variables and the relations it declares are renamed apart first, since a string names what is bound by that name, and a pair whose plain code fails, or gives what is no data, such as a host function's NaN, is left out. `--json` prints every surprise. The properties in `src/tests/pairs.test.ts` run sixty random pairs each time, so a change that makes two features fail together fails the tests. A row you add to the grid is paired with every other.
+
 ## Speed: `bun run bench`
 
 ```bash

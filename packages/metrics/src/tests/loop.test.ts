@@ -1,16 +1,20 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Schema } from "effect";
 import {
+  agentsCauseQuestion,
+  agentsQuestion,
   capabilityQuestion,
   line,
   mutationQuestion,
   mutationRunsQuestion,
   observationsOf,
   QUESTIONS,
+  readAgents,
   readBench,
   readCapability,
   readMeasure,
   readMutate,
+  readPairs,
   readRemoved,
   readScale,
   readTurbo,
@@ -196,12 +200,77 @@ describe("the loop's scoreboard", () => {
   );
 
   it.prop(
+    "reads how many pair cells surprise from what bun run pairs printed, and nothing when it printed no count",
+    {
+      count: between(-1, 120_000),
+      lines: Arbitrary.array(word, { maxLength: 4 }),
+    },
+    ({ count, lines }) => {
+      const printed = [
+        "Pairs of the grid's rows: 6561, in 118098 cells",
+        ...lines,
+        ...(count < 0 ? [] : [`surprising pairs, grid: ${count}`]),
+        ...lines,
+      ].join("\n");
+      expect(readPairs(printed)).toBe(count < 0 ? undefined : count);
+    }
+  );
+
+  it.prop(
+    "reads what each agents' run spent and how its tries went, whatever bun prints around the JSON, and nothing of a suite no agents ran",
+    {
+      runs: Arbitrary.array(
+        Arbitrary.all({
+          causes: Arbitrary.array(
+            Arbitrary.all({ cause: word, tries: between(1, 40) }),
+            { maxLength: 3 }
+          ),
+          cents: between(0, 2500),
+          firstRan: between(0, 55),
+          suite: word,
+        }),
+        { maxLength: 3 }
+      ),
+    },
+    ({ runs }) => {
+      const suites = Object.fromEntries([
+        ["public", { scores: [] }],
+        ...runs.map((run) => [
+          `${run.suite} by sonnet agents`,
+          {
+            agents: {
+              causes: run.causes.map((c) => ({ ...c, tasks: 1 })),
+              costUsd: run.cents / 100,
+              firstRan: run.firstRan,
+              folder: "out",
+            },
+            scores: [],
+          },
+        ]),
+      ]);
+      const printed = `$ bun run capability --agents --json\nt1: first try ran\n${JSON.stringify(suites, null, 2)}\n$ done`;
+      expect(readAgents(printed)).toStrictEqual(
+        Object.fromEntries(
+          runs.map((run) => [
+            `${run.suite} by sonnet agents`,
+            {
+              causes: run.causes.map(({ cause, tries }) => ({ cause, tries })),
+              costUsd: run.cents / 100,
+              firstRan: run.firstRan,
+            },
+          ])
+        )
+      );
+    }
+  );
+
+  it.prop(
     "records every line it printed as an observation that quotes it, and only scores try the direction",
     {
       tries: boolean,
       values: Arbitrary.array(
         Arbitrary.all({
-          at: between(0, Object.keys(QUESTIONS).length + 2),
+          at: between(0, Object.keys(QUESTIONS).length + 5),
           value: Arbitrary.map(between(0, 9999), (n) => n / 10),
         }),
         { maxLength: 6 }
@@ -213,6 +282,9 @@ describe("the loop's scoreboard", () => {
         capabilityQuestion("public", "logic"),
         mutationQuestion("a rule breaks"),
         mutationRunsQuestion("a rule breaks", 6),
+        agentsQuestion("public by sonnet agents", "cost usd"),
+        agentsQuestion("public by sonnet agents", "first tries that ran"),
+        agentsCauseQuestion("public by sonnet agents", "unbound-name"),
       ];
       const printed = values.map(({ at, value }) => ({
         measured: questions[at] as (typeof questions)[number],
@@ -231,6 +303,7 @@ describe("the loop's scoreboard", () => {
         expect(text.includes(o.quote)).toBe(true);
         const score =
           "capability passed" in o.question ||
+          "agents' first tries that ran" in o.question ||
           [
             QUESTIONS.codePerTask,
             QUESTIONS.messagesPerTask,
@@ -239,6 +312,7 @@ describe("the loop's scoreboard", () => {
             QUESTIONS.missed,
             QUESTIONS.picked,
             QUESTIONS.benchTotal,
+            QUESTIONS.surprising,
           ].some((q) => q.question === o.question);
         expect(o.tries).toBe(tries && score ? "d" : undefined);
       }

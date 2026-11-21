@@ -14,11 +14,15 @@
 // Options of scores and observe:
 //   --base <ref>        what instrument lines removed counts from (HEAD)
 //   --skip a,b          tools to leave out: measure, capability, record,
-//                       scale, tests, bench, replay, check, instruments
+//                       scale, tests, bench, replay, check, instruments,
+//                       pairs, agents
 //   --mutations a|b     run these listed mutations, by name, split by |
 //   --repeat n          run them n times, and count the runs that caught each
 //   --full              run every listed mutation, for mutations missed
 //   --fail-fast         stop at the first requirement that is not met
+//   --agents            also have agents write a program for each corpus
+//                       task, and grade them, which costs money: at most
+//                       --budget US dollars, 25 unless given
 //
 // The tools run cheapest first. Each prints how long it took, which the
 // record keeps too, so it can say how many predictions the loop resolves per
@@ -36,6 +40,8 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import {
+  agentsCauseQuestion,
+  agentsQuestion,
   capabilityQuestion,
   line,
   mutationQuestion,
@@ -43,11 +49,13 @@ import {
   observationsOf,
   PILLARS,
   QUESTIONS,
+  readAgents,
   readBench,
   readCapability,
   readCheck,
   readMeasure,
   readMutate,
+  readPairs,
   readRecord,
   readRemoved,
   readReplay,
@@ -83,6 +91,7 @@ export const INSTRUMENTS = [
 
 const args = readArguments(process.argv.slice(2), [
   "base",
+  "budget",
   "mutations",
   "repeat",
   "skip",
@@ -149,6 +158,35 @@ const capabilityTool = (measured: Measure | undefined) => {
     n === undefined ? undefined : Math.round((n / all) * 10) / 10;
   print(QUESTIONS.codePerTask, per(measured.codeLines));
   print(QUESTIONS.messagesPerTask, per(measured.messages));
+};
+
+/**
+ * Agents write a program for each task; what they wrote is graded as a
+ * suite of its own. It costs money, so it runs only when asked for.
+ */
+const agentsTool = (budget: string | undefined) => {
+  const { text } = run("agents", [
+    "bun",
+    "run",
+    "capability",
+    "--agents",
+    "--json",
+    ...(budget === undefined ? [] : ["--budget", budget]),
+  ]);
+  for (const [suite, passed] of Object.entries(readCapability(text))) {
+    if (suite.includes(" agents")) {
+      for (const pillar of [...PILLARS, "all"]) {
+        print(capabilityQuestion(suite, pillar), passed[pillar]);
+      }
+    }
+  }
+  for (const [suite, agents] of Object.entries(readAgents(text))) {
+    print(agentsQuestion(suite, "cost usd"), agents.costUsd.toFixed(2));
+    print(agentsQuestion(suite, "first tries that ran"), agents.firstRan);
+    for (const { cause, tries } of agents.causes) {
+      print(agentsCauseQuestion(suite, cause), tries);
+    }
+  }
 };
 
 const recordTool = () => {
@@ -237,6 +275,16 @@ const scores = () => {
     ],
     ["instruments", true, instrumentsTool],
     [
+      "pairs",
+      scripts().pairs !== undefined,
+      always(() =>
+        print(
+          QUESTIONS.surprising,
+          readPairs(run("pairs", ["bun", "run", "pairs"]).text)
+        )
+      ),
+    ],
+    [
       "replay",
       mapped,
       always(() =>
@@ -276,6 +324,11 @@ const scores = () => {
       ),
     ],
     ["tests", true, testsTool],
+    [
+      "agents",
+      args.flag("agents"),
+      always(() => agentsTool(args.option("budget"))),
+    ],
   ];
   let stopped = false;
   for (const [tool, possible, step] of steps) {
@@ -305,8 +358,18 @@ const skill = (script: string, ...words: string[]) =>
     maxBuffer: 256 * 1024 * 1024,
   });
 
-/** What the record says now: every standing question with an answer, but hearsay. */
+/**
+ * What the record says now: every standing question with an answer, but
+ * hearsay. The model is built again from the steps first, since git does not
+ * keep it and a step, the core among them, may have changed since it was.
+ */
 const status = () => {
+  const replayed = skill("replay.mjs");
+  if (replayed.status !== 0) {
+    console.error(replayed.stderr);
+    process.exitCode = 1;
+    return;
+  }
   const asked = skill("ask.mjs");
   if (asked.status !== 0) {
     console.error(asked.stderr);

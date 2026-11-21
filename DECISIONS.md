@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 228 questions have been decided, 102 records explain them, and of what the records assert, 674 hold when Lion is run, 2 are broken, 382 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 229 questions have been decided, 103 records explain them, and of what the records assert, 674 hold when Lion is run, 2 are broken, 385 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -234,6 +234,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`empty-list-head`](#empty-list-head) | `fails` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
 | 2026-11-21 | [`func-apply-arguments`](#func-apply-arguments) | `spread-last-list` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
 | 2026-11-21 | [`lambda-rest-parameter`](#lambda-rest-parameter) | `one-name-for-all` | [A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme](#lambda-rest-parameter) |
+| 2026-11-21 | [`fixing-pays-off`](#fixing-pays-off) | `fix-or-improve` | [An experiment pays off when it fixes a problem it targets, as when it improves a score](#fixing-pays-off) |
 
 <a id="program-representation"></a>
 
@@ -5193,3 +5194,34 @@ Recorded 2026-11-21 in `history/notes/lambda-rest-parameter.json`.
 - Holds when Lion is run: `r7rs-4.1.4-lambda-rest-parameter` is `list`. "A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them."
 - Holds when Lion is run: rule `same-as-plain-code` holds. "Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place."
 - Stated, not checked by running Lion: `r7rs-cases-differing` is 10. "of the 36 cases probed, 26 give what Scheme gives and 10 differ, each as a decision names"
+
+<a id="fixing-pays-off"></a>
+
+## fixing-pays-off
+
+Now: `fix-or-improve`.
+
+- 2026-11-21 `fixing-pays-off`: `fix-or-improve` over `fixes-counted-apart`, `fixes-only-for-problem-directions`: "An experiment pays off when its version improved a score, or fixed a problem that one of its beliefs targeted" (`fixing-pays-off.json`)
+
+<a id="fixing-pays-off"></a>
+
+### An experiment pays off when it fixes a problem it targets, as when it improves a score
+
+Recorded 2026-11-21 in `history/notes/fixing-pays-off.json`.
+
+**Context.** The lion-reasoning skill counted an experiment as paying off only when its version improved a score. The improvement loop's first five experiments included three made to fix a problem, two flaky properties and two stale mutations, and each fixed what it aimed at while leaving the scores where they were, so the record counted them as misses and set two of the directions aside. A change made to fix something was judged by a measure it never aimed to move.
+
+**Decision.** An experiment pays off when its version improved a score, or fixed a problem that one of its beliefs targeted: where the version answers the problem's question as the belief predicted. `paid_off` then names the problem's question, and a direction's misses, its patience, and its place in "Where should the next experiment go?" count both kinds of payoff. The improvement record takes the rule with the skill's core, in `improvement/steps/00-core.json`.
+
+**Consequences.** The loop's three problem-fixing directions now each paid off once, and none is set aside. A direction that targets a problem and leaves it unfixed still misses unless it improved a score. `bun run loop status` builds the record's model again from its steps before it asks, so a changed step, the core among them, is never read from an old model.
+
+**Alternatives considered.**
+
+- Count fixes apart and leave misses as they were. A direction would still be set aside for doing what it was for, and "Where should the next experiment go?" would rank it below directions never tried.
+- Judge a direction that addresses problems only by its fixes. One experiment can fix a problem and improve a score, and both are what it gained.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `fixing-pays-off`: `fix-or-improve`. "An experiment pays off when its version improved a score, or fixed a problem that one of its beliefs targeted"
+- Stated, not checked by running Lion: `reasoning-fix-pays-off` is `paid-off`. "`paid_off` then names the problem's question, and a direction's misses, its patience, and its place in "Where should the next experiment go?" count both kinds of payoff"
+- Stated, not checked by running Lion: `loop-status-replays` exists. "`bun run loop status` builds the record's model again from its steps before it asks"

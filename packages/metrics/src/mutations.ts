@@ -907,6 +907,88 @@ const WEIGHTS: readonly Mutation[] = [
 
 export const MUTATIONS: readonly Mutation[] = [
   {
+    name: "a pair's inner row keeps the relations it declares under their names",
+    file: "packages/metrics/src/pairs.ts",
+    find: "return variable || relations.has(form) ?",
+    replace: "return variable ?",
+    package: "metrics",
+    tests: ["src/tests/pairs.test.ts"],
+  },
+  {
+    name: "a pair's inner row keeps its own variables",
+    file: "packages/metrics/src/pairs.ts",
+    find: 'const variable = form.startsWith("?") && form !== X && form !== "?_";',
+    replace: "const variable = false;",
+    package: "metrics",
+    tests: ["src/tests/pairs.test.ts"],
+  },
+  {
+    name: "a pair's exception where a row cannot stand is no surprise",
+    file: "packages/metrics/src/pairs.ts",
+    find: 'return verdict === "same" || verdict === "skipped";',
+    replace: 'return verdict === "same";',
+    package: "metrics",
+    tests: ["src/tests/pairs.test.ts"],
+  },
+  {
+    name: "a failed try whose message no cause's words hold is not counted",
+    file: "packages/metrics/src/agent-errors.json",
+    find: '["cause", "?t", "?n", "other"],\n    ["attempt", "?t", "?n", "?m"],',
+    replace:
+      '["cause", "?t", "?n", "other"],\n    ["attempt", "?t", "?n", "?m"],\n    ["=", "?m", "never"],',
+    package: "metrics",
+    tests: ["src/tests/corpus-agents.test.ts"],
+  },
+  {
+    name: "a failed try whose message holds two causes' words is counted under neither",
+    file: "packages/metrics/src/agent-errors.json",
+    find: '["says", "?w", "?c"],\n    ["string/includes", "?m", "?w"]\n  ],',
+    replace:
+      '["says", "?w", "?c"],\n    ["string/includes", "?m", "?w"],\n    ["not", ["and", ["says", "?v", "?d"], ["string/includes", "?m", "?v"], ["not", ["=", "?d", "?c"]]]]\n  ],',
+    package: "metrics",
+    tests: ["src/tests/corpus-agents.test.ts"],
+  },
+  {
+    name: "the agent is not told the inputs' values",
+    file: "packages/metrics/src/corpus-agents.ts",
+    find: "JSON.stringify(task.inputs[name])",
+    replace: '""',
+    package: "metrics",
+    tests: ["src/tests/corpus-agents.test.ts"],
+  },
+  {
+    name: "a try's message is lost when it is read back",
+    file: "packages/metrics/src/corpus-agents.ts",
+    find: 'return [typeof error === "string" ? { error, ok } : { ok }];',
+    replace: "return [{ ok }];",
+    package: "metrics",
+    tests: ["src/tests/corpus-agents.test.ts"],
+  },
+  {
+    name: "how many first tries ran is read as none",
+    file: "packages/metrics/src/loop.ts",
+    find: "                firstRan: agents.firstRan,",
+    replace: "                firstRan: 0,",
+    package: "metrics",
+    tests: ["src/tests/loop.test.ts"],
+  },
+  {
+    name: "how many agents' first tries ran is no score",
+    file: "packages/metrics/src/loop.ts",
+    find: '      label.startsWith("agents\' first tries that ran, ");',
+    replace: '      label.startsWith("agents\' first tries that never ran, ");',
+    package: "metrics",
+    tests: ["src/tests/loop.test.ts"],
+  },
+  {
+    name: "an experiment that fixes the problem it targets is a miss",
+    file: reasoning("assets/core.json"),
+    find: '["targets", "?d", "?v", "?p", "?b"],\n    ["aims", "?b", "?p", "?q", "?predicted"],\n    ["answer_in", "?v", "?q", "?predicted", "?_"]\n  ],',
+    replace:
+      '["targets", "?d", "?v", "?p", "?b"],\n    ["aims", "?b", "?p", "?q", "?predicted"],\n    ["answer_in", "?v", "?q", "?predicted", "?_"],\n    ["=", "?d", "nothing"]\n  ],',
+    ...REASONING_TESTS,
+  },
+  {
     name: "a module's entries are named only when they are functions",
     file: core("modules/index.ts"),
     find: "    const [key, value] = entry;",

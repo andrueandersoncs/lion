@@ -52,6 +52,7 @@ How to use the numbers:
 
 - **Pay for what you add.** A feature usually adds code. Pay for it in the same change: find the rule that makes special cases redundant, and delete them. The waiting rule and the asking rule each replaced a list of cases this way.
 - **Keep the grid's exceptions at the documented ones.** A new exception fails the tests of `packages/metrics`. Fix the feature rather than add to `KNOWN`.
+- **Keep pairs unsurprising.** `bun run pairs` writes each row of the grid inside every other, in every place. A pair's exception where neither row has one is a surprise: two features that fail together. Its count should stay at 0; fix the interaction that makes one.
 - **Never buy a lower number with a worse Lion.** Do not remove a feature, a test, or a message a user needs, and do not squeeze code until it is hard to read.
 - **Check the speed.** Run `bun run bench --against main` twice, since times move by a few percent between runs, and report any benchmark that got slower.
 - **Check the growth.** Run `bun run scale --against main`. A benchmark times one size, so it cannot show a step that reads everything again for each row. A workload should grow as its facts do, `n^1.0`; report any that grows faster, or that keeps more memory. Add a workload to `packages/metrics/src/workloads.ts` for a way of growing the list does not cover.

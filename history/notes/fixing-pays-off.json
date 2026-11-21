@@ -1,0 +1,44 @@
+{
+  "title": "An experiment pays off when it fixes a problem it targets, as when it improves a score",
+  "context": "The lion-reasoning skill counted an experiment as paying off only when its version improved a score. The improvement loop's first five experiments included three made to fix a problem, two flaky properties and two stale mutations, and each fixed what it aimed at while leaving the scores where they were, so the record counted them as misses and set two of the directions aside. A change made to fix something was judged by a measure it never aimed to move.",
+  "decision": "An experiment pays off when its version improved a score, or fixed a problem that one of its beliefs targeted: where the version answers the problem's question as the belief predicted. `paid_off` then names the problem's question, and a direction's misses, its patience, and its place in \"Where should the next experiment go?\" count both kinds of payoff. The improvement record takes the rule with the skill's core, in `improvement/steps/00-core.json`.",
+  "consequences": "The loop's three problem-fixing directions now each paid off once, and none is set aside. A direction that targets a problem and leaves it unfixed still misses unless it improved a score. `bun run loop status` builds the record's model again from its steps before it asks, so a changed step, the core among them, is never read from an old model.",
+  "alternatives": [
+    {
+      "option": "Count fixes apart and leave misses as they were",
+      "rejected": "A direction would still be set aside for doing what it was for, and \"Where should the next experiment go?\" would rank it below directions never tried."
+    },
+    {
+      "option": "Judge a direction that addresses problems only by its fixes",
+      "rejected": "One experiment can fix a problem and improve a score, and both are what it gained."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "An experiment pays off when its version improved a score, or fixed a problem that one of its beliefs targeted",
+      "says": {
+        "decision": "fixing-pays-off",
+        "chose": "fix-or-improve",
+        "over": ["fixes-counted-apart", "fixes-only-for-problem-directions"],
+        "area": "skills",
+        "because": "a change made to fix something is judged by whether it did, not by a score it never aimed to move"
+      }
+    },
+    {
+      "quote": "`paid_off` then names the problem's question, and a direction's misses, its patience, and its place in \"Where should the next experiment go?\" count both kinds of payoff",
+      "says": {
+        "behavior": "reasoning-fix-pays-off",
+        "is": "paid-off",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "`bun run loop status` builds the record's model again from its steps before it asks",
+      "says": {
+        "feature": "loop-status-replays",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+[
+  "begin",
+  ["relation", "attempt", ["task", "try", "message"]],
+  ["relation", "says", ["words", "cause"]],
+
+  ["relation", "cause", ["task", "try", "cause"]],
+  [
+    "rule",
+    ["cause", "?t", "?n", "?c"],
+    ["attempt", "?t", "?n", "?m"],
+    ["says", "?w", "?c"],
+    ["string/includes", "?m", "?w"]
+  ],
+  [
+    "rule",
+    ["cause", "?t", "?n", "other"],
+    ["attempt", "?t", "?n", "?m"],
+    ["not", ["and", ["says", "?w", "?_"], ["string/includes", "?m", "?w"]]]
+  ],
+
+  ["relation", "counted", ["cause", "tries", "tasks"]],
+  [
+    "rule",
+    [
+      "counted",
+      "?c",
+      [
+        "array/length",
+        [
+          "aggregate/unique",
+          ["find", ["array/make", "?t", "?n"], ["cause", "?t", "?n", "?c"]]
+        ]
+      ],
+      [
+        "array/length",
+        ["aggregate/unique", ["find", "?t", ["cause", "?t", "?_", "?c"]]]
+      ]
+    ],
+    ["cause", "?_", "?_", "?c"]
+  ],
+
+  [
+    "fact",
+    ["says", "Nothing is bound to", "unbound-name"],
+    ["says", "arguments but got", "arity"],
+    ["says", "argument but got", "arity"],
+    ["says", "as argument", "argument-type"],
+    ["says", "Unsafe rule head", "unsafe-rule"],
+    ["says", "which depends on", "recursion-through-negation"],
+    ["says", "is already declared", "relation-declared-twice"],
+    ["says", "is not a call", "not-a-call"],
+    ["says", "Facts may only contain data", "fact-not-data"],
+    ["says", "breaks an invariant", "invariant"],
+    ["says", "is not JSON", "not-json"],
+    ["says", "There is no solution.json", "no-program"],
+    ["says", "does not fit", "shape"],
+    ["says", "is not well-formed", "shape"]
+  ]
+]

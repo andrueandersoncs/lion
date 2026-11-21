@@ -164,7 +164,7 @@ When the task is to make a number better, such as a benchmark's time, a bundle's
 - A score's **question** holds everything that makes two runs comparable: the command, its input, the machine, and the budget, such as `{"val_bpb": "train.py", "minutes": 5}`. A run under another budget answers another question, so the two are never compared.
 - **`better`** is `lower` or `higher`.
 - **`requires`** lists the answers a version must have for its runs to count, such as no failing tests. Where a requirement is unanswered or answered otherwise, the version has no score, so a change that breaks the tests can never become the best.
-- A **direction** is an idea you will try. Its **`patience`** is how many experiments in a row it may make without improving a score before it is set aside, 3 unless you say. An experiment that improves a score starts the count again.
+- A **direction** is an idea you will try. Its **`patience`** is how many experiments in a row it may make without paying off before it is set aside, 3 unless you say. An experiment that pays off starts the count again.
 - **`addresses`** lists the problems a direction is meant to fix, such as `"addresses": ["spaces"]`, so the model can say what was tried for each problem and which problems have no direction left.
 - **`needs`** lists the answers a direction depends on. While such a question is unanswered, or not yet decided by whoever `ask` names, the direction waits; once it is answered otherwise, the direction is ruled out. A choice that is the user's goes here, so their answer prunes the directions.
 
@@ -181,7 +181,7 @@ How the model judges, for each version of the files:
 - **A score's runs in a version are its range.** Run it again to see how far it moves; runs of a score that differ are its spread, not a dispute.
 - **What a version is sure to give is its worst run.** The **best** is the best of those across versions, so one lucky run never becomes the best.
 - **A version improves a score when even its worst run beats the best that any version before it was sure to give.** With one run each, that is beating the best so far. With several, the improvement has to clear the noise on both sides, and a later run of an earlier version can take an improvement back: the verdicts follow the evidence, not the order it came in. Run the score the same number of times on each version, since a version run once has a worst run that is its only one.
-- **An experiment is the version its run was made on.** It pays off when that version improved a score, and misses otherwise.
+- **An experiment is the version its run was made on.** It pays off when that version improved a score or fixed a problem one of its beliefs targeted (see [What an experiment was expected to fix](#what-an-experiment-was-expected-to-fix)), and misses otherwise.
 
 When an experiment misses, put the files back with git. Once they hold what they held before, the runs made on them speak for the present again, so the score is known without running it again.
 
@@ -232,6 +232,7 @@ Record the belief after you make the change and before the run, then record what
 - **A belief that tries a direction is judged in the version it was recorded in, and no other.** It says what that change does. What the files show after you put them back, or after the next experiment, neither confirms nor contradicts it.
 - **An experiment targets a problem** when its belief predicts the problem's question otherwise than the problem shows. The direction then addresses that problem, whether or not it said so.
 - **The problem is fixed** where the version answers as predicted, and **not fixed** where it answers otherwise. Until a run in that version answers, it is not checked.
+- **An experiment that fixes a problem it targets pays off**, as one that improves a score does, and `paid_off` names the problem's question. A change made to fix something is judged by whether it did, so a direction that fixes what it aimed at is never set aside for leaving the scores where they were.
 
 The eval then printed `pass: double spaces` and `fail: trailing mark`, and the standing questions gave:
 
@@ -242,7 +243,7 @@ The eval then printed `pass: double spaces` and `fail: trailing mark`, and the s
  "Which beliefs does the evidence contradict?": [{"belief": "collapse-1", "witness": "t2-mark"}]}
 ```
 
-The score went from 3 to 4, so the experiment paid off, and half of what it was expected to do did not happen. Both stay in the model with the run that showed them, so the next idea for `mark` starts from what was tried. `["why", ["unfixed", "collapse", "v0002", "mark", "fail", "t2-mark"]]` ends in the prediction, the problem, and the quote `fail: trailing mark`.
+The score went from 3 to 4, and the experiment fixed `spaces`, so it paid off twice over, and half of what it was expected to do did not happen. Both stay in the model with the run that showed them, so the next idea for `mark` starts from what was tried. `["why", ["unfixed", "collapse", "v0002", "mark", "fail", "t2-mark"]]` ends in the prediction, the problem, and the quote `fail: trailing mark`.
 
 ### A new model, benchmark, or machine
 
@@ -296,7 +297,7 @@ Record what you observe before you change what it depends on. `see.mjs` hashes t
 | `regressed(question, now, best)` | Every run of the files as they are now is worse than the best: put the best version back, or say why not. |
 | `unmet(version, score, question, needed)` | A version whose runs of a score do not count, because what the score requires is unanswered there or answered otherwise. |
 | `experiment(direction, version)` | The versions a direction was tried on. |
-| `paid_off(direction, version, question)` | Experiments that improved a score. |
+| `paid_off(direction, version, question)` | Experiments that improved a score, or fixed a problem they targeted: the question is the score's or the problem's. |
 | `exhausted(direction)` | Directions that missed as many times in a row as their patience. |
 | `blocked(direction, question)` | Directions waiting for an answer they need: one nobody has given, or one only the user may give. |
 | `ruled_out(direction, question, needed, found)` | Directions whose need is answered otherwise. |

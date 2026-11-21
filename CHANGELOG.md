@@ -25,6 +25,13 @@
 - `bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word (`loop-command` added)
 - The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met (`loop-fail-fast` added)
 - give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI (`words/first` added)
+- what caused the tries that failed, by the rules in `agent-errors.json` (`agent-error-causes` added)
+- `bun run capability --agents` has a headless `claude -p` session work each task of the corpus in a folder of its own outside the repository, with the task's statement, Lion's documentation, `./lion`, and `./try`, and grades what the agents wrote as a suite of its own (`capability-agents` added)
+- `./try` runs `solution.json` the way the grader does, with the inputs bound, and prints its value, or why it failed (`corpus-try` added)
+- `bun run pairs` runs the interop grid over pairs of its rows: each kind of expression written where another has its variable, in each place the grid has, held to the grid's rule that it gives what plain code gives (`grid-pairs` added)
+- --agents            also have agents write a program for each corpus (`loop-agents` added)
+- surprising pairs, grid (`loop-pairs` added)
+- `bun run loop status` builds the record's model again from its steps before it asks (`loop-status-replays` added)
 
 ### Changed
 
@@ -41,6 +48,12 @@
 - The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/` (`reasoning-task-folder-in-versions` is `left-out`)
 - the commit hook builds the workspace and runs `bun run affected --run`: the test files and checks the change since HEAD can reach (`pre-commit-hook-agent-branch` is `picked-tests`)
 - A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`r7rs-4.1.4-lambda-rest-parameter` is `list`, was `error`)
+- It stops starting tasks before what it spent could pass --budget (`capability-agents-budget` is `stops-before-the-budget`)
+- A gap is a task Lion cannot express yet, so no agent works it. (`capability-agents-gaps` is `not-worked`)
+- Held-out tasks keep their runs in their own folder, so nothing of them reaches the repository. (`capability-agents-held-out-runs` is `outside-the-repository`)
+- A pair's cell that is an exception where neither of its rows has one in that place is a surprise (`grid-pair-surprises` is `none`)
+- the inner row's own variables and the relations it declares are renamed apart from the outer row's words (`grid-pairs-hygiene` is `renamed-apart`)
+- `paid_off` then names the problem's question, and a direction's misses, its patience, and its place in "Where should the next experiment go?" count both kinds of payoff (`reasoning-fix-pays-off` is `paid-off`)
 
 ### Fixed
 
@@ -78,6 +91,7 @@
 - `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`empty-list-head`: `fails` over `null`)
 - `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list (`func-apply-arguments`: `spread-last-list` over `pass-as-given`)
 - A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`lambda-rest-parameter`: `one-name-for-all` over `dotted-list`, `fixed-only`)
+- An experiment pays off when its version improved a score, or fixed a problem that one of its beliefs targeted (`fixing-pays-off`: `fix-or-improve` over `fixes-counted-apart`, `fixes-only-for-problem-directions`)
 
 ### Rules
 

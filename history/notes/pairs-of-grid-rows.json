@@ -1,0 +1,36 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run pairs` runs the interop grid over pairs of its rows: each kind of expression written where another has its variable, in each place the grid has, held to the grid's rule that it gives what plain code gives",
+      "says": {
+        "feature": "grid-pairs",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "quote": "A pair's cell that is an exception where neither of its rows has one in that place is a surprise",
+      "says": {
+        "behavior": "grid-pair-surprises",
+        "is": "none",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "the inner row's own variables and the relations it declares are renamed apart from the outer row's words",
+      "says": {
+        "behavior": "grid-pairs-hygiene",
+        "is": "renamed-apart",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "surprising pairs, grid",
+      "says": {
+        "feature": "loop-pairs",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

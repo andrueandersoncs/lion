@@ -5,6 +5,16 @@
 //   bun run capability                      the public tasks, by their reference programs
 //   bun run capability --solutions <dir>    by the programs in <dir>, <id>.json each, instead
 //   bun run capability --json               the scores and every verdict, as JSON
+//   bun run capability --agents             by programs agents write, one per task
+//     [--model sonnet] [--budget 25] [--task-budget 0.5] [--jobs 4] [--tasks a,b]
+//
+// With --agents, a headless `claude -p` session works each task in a folder
+// of its own outside the repository, but a gap's, with the task's statement, Lion's
+// documentation, `./lion`, and `./try`, and the run grades what they wrote.
+// It stops starting tasks before what it spent could pass --budget (US
+// dollars), prints what it cost, how many first tries ran, and what caused
+// the tries that failed, and keeps every transcript in out/capability/agents/,
+// or, for held-out tasks, in the held-out folder's runs/.
 //
 // LION_HELD_OUT names a folder outside the repository with the corpus's
 // layout, tasks/ and solutions/; its tasks are graded too, by its own
@@ -21,9 +31,17 @@ import {
   loadSolutions,
   PUBLIC_CORPUS,
   type Score,
+  type Task,
   tally,
 } from "./src/capability.ts";
-import { load } from "./src/lion.ts";
+import {
+  type AgentsSummary,
+  agentsLines,
+  causesOf,
+  firstTryRan,
+} from "./src/corpus-agents.ts";
+import { type AgentsOptions, runAgents } from "./src/corpus-run.ts";
+import { type Lion, load } from "./src/lion.ts";
 import { CORE, REPOSITORY } from "./src/sources.ts";
 
 const option = (name: string) => {
@@ -32,6 +50,17 @@ const option = (name: string) => {
 };
 const asJson = process.argv.includes("--json");
 const solutionsFolder = option("--solutions");
+const agents: AgentsOptions | undefined = process.argv.includes("--agents")
+  ? {
+      budget: Number(option("--budget") ?? 25),
+      jobs: Number(option("--jobs") ?? 4),
+      maxTurns: 40,
+      model: option("--model") ?? "sonnet",
+      taskBudget: Number(option("--task-budget") ?? 0.5),
+      timeoutSeconds: 900,
+    }
+  : undefined;
+const only = option("--tasks")?.split(",");
 
 /** What graded a suite's tasks, in words. */
 const sourceOf = (name: string) => {
@@ -42,12 +71,40 @@ const sourceOf = (name: string) => {
 };
 
 interface Suite {
+  readonly agents?: AgentsSummary & { readonly folder: string };
   readonly corpus: Corpus;
   readonly graded: readonly Graded[];
   readonly name: string;
   readonly scores: readonly Score[];
   readonly source: string;
 }
+
+/**
+ * Agents work a suite's tasks, and the run says where their programs are
+ * and what the agents spent and tried. Held-out tasks keep their runs in
+ * their own folder, so nothing of them reaches the repository.
+ */
+const worked = (lion: Lion, tasks: readonly Task[], out: string) =>
+  Effect.gen(function* () {
+    const options = agents as AgentsOptions;
+    const run = yield* Effect.promise(() => runAgents(tasks, out, options));
+    const causes = yield* causesOf(lion, run.worked).pipe(Effect.orDie);
+    const summary: AgentsSummary & { readonly folder: string } = {
+      causes,
+      costUsd: run.worked.reduce(
+        (sum, each) => sum + (each.spent.costUsd ?? 0),
+        0
+      ),
+      firstRan: run.worked.filter((each) => firstTryRan(each.attempts)).length,
+      folder: run.folder,
+      models: [
+        ...new Set(run.worked.flatMap((each) => each.spent.models)),
+      ].sort(),
+      notRun: run.notRun.length,
+      worked: run.worked.length,
+    };
+    return { solutions: run.solutions, summary };
+  });
 
 const line = (label: string, passed: number, total: number) =>
   `  ${label.padEnd(13)} ${String(passed).padStart(3)} of ${String(total).padStart(3)} passed`;
@@ -60,6 +117,13 @@ const printed = (suite: Suite) => {
   const passed = suite.scores.reduce((sum, score) => sum + score.passed, 0);
   const total = suite.scores.reduce((sum, score) => sum + score.total, 0);
   lines.push(line("all", passed, total));
+  if (suite.agents !== undefined) {
+    lines.push(
+      "",
+      ...agentsLines(suite.agents),
+      `transcripts: ${suite.agents.folder}`
+    );
+  }
   if (suite.corpus.gaps.size > 0) {
     lines.push(
       "",
@@ -125,13 +189,46 @@ const main = Effect.gen(function* () {
       process.exitCode = 1;
       return;
     }
+    const chosen: Corpus =
+      only === undefined
+        ? corpus
+        : {
+            ...corpus,
+            tasks: corpus.tasks.filter((task) => only.includes(task.id)),
+          };
+    if (agents !== undefined) {
+      const out =
+        name === "public"
+          ? join(REPOSITORY, "out", "capability", "agents")
+          : join(folder, "runs");
+      // A gap is a task Lion cannot express yet, so no agent works it.
+      const run = yield* worked(
+        lion,
+        chosen.tasks.filter((task) => !chosen.gaps.has(task.id)),
+        out
+      );
+      const graded = yield* gradeCorpus(
+        lion,
+        chosen,
+        loadSolutions(run.solutions)
+      );
+      suites.push({
+        agents: run.summary,
+        corpus: chosen,
+        graded,
+        name: `${name} by ${agents.model} agents`,
+        scores: tally(graded),
+        source: `the programs ${agents.model} agents wrote`,
+      });
+      continue;
+    }
     const solutions =
       solutionsFolder === undefined
-        ? corpus.solutions
+        ? chosen.solutions
         : loadSolutions(solutionsFolder);
-    const graded = yield* gradeCorpus(lion, corpus, solutions);
+    const graded = yield* gradeCorpus(lion, chosen, solutions);
     suites.push({
-      corpus,
+      corpus: chosen,
       graded,
       name,
       scores: tally(graded),
@@ -145,6 +242,7 @@ const main = Effect.gen(function* () {
           suites.map((suite) => [
             suite.name,
             {
+              ...(suite.agents === undefined ? {} : { agents: suite.agents }),
               gaps: Object.fromEntries(suite.corpus.gaps),
               scores: suite.scores,
               verdicts: Object.fromEntries(

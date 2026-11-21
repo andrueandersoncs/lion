@@ -12,6 +12,7 @@
     "compare": "bun run compare.ts",
     "affected": "bun run affected.ts",
     "loop": "bun run loop.ts",
+    "pairs": "bun run pairs.ts",
     "skill-eval": "bun run skill-eval.ts",
     "capability": "bun run capability.ts",
     "test": "vitest run",

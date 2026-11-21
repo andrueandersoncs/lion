@@ -1,0 +1,60 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run capability --agents` has a headless `claude -p` session work each task of the corpus in a folder of its own outside the repository, with the task's statement, Lion's documentation, `./lion`, and `./try`, and grades what the agents wrote as a suite of its own",
+      "says": {
+        "feature": "capability-agents",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "It stops starting tasks before what it spent could pass --budget",
+      "says": {
+        "behavior": "capability-agents-budget",
+        "is": "stops-before-the-budget",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "`./try` runs `solution.json` the way the grader does, with the inputs bound, and prints its value, or why it failed",
+      "says": {
+        "feature": "corpus-try",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "quote": "what caused the tries that failed, by the rules in `agent-errors.json`",
+      "says": {
+        "feature": "agent-error-causes",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "A gap is a task Lion cannot express yet, so no agent works it.",
+      "says": {
+        "behavior": "capability-agents-gaps",
+        "is": "not-worked",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "Held-out tasks keep their runs in their own folder, so nothing of them reaches the repository.",
+      "says": {
+        "behavior": "capability-agents-held-out-runs",
+        "is": "outside-the-repository",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "--agents            also have agents write a program for each corpus",
+      "says": {
+        "feature": "loop-agents",
+        "kind": "option",
+        "present": true
+      }
+    }
+  ]
+}
