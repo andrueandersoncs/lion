@@ -1408,7 +1408,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - The fixes that made the standard library follow JSON each have a property written first and confirmed to fail (rule `bugs-become-properties`)
 - Describe each feature's semantics in the README, including what it does alongside the features it touches, and use it in an example in the docs (rule `document-feature-combinations`)
 - point out surprising behavior and fix it instead of building on it (rule `dont-build-on-surprises`)
-- A property uses `it.prop` or `it.effect.prop` from `@effect/vitest` with Schemas or generators from `effect/Arbitrary` (rule `effect-vitest-properties`)
+- Every test file of the core writes its tests with @effect/vitest (rule `effect-vitest-properties`)
 - Shape generators so they reach the interesting cases, then confirm they do. (rule `generators-reach-interesting-cases`)
 - adding what the database already holds changes nothing (rule `idempotent-additions`)
 - ask what someone who already knows Lion would expect it to do, on its own and combined with every existing feature, and make it do that (rule `least-astonishment`)
@@ -1422,7 +1422,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - Walk through the combinations (rule `walk-through-combinations`)
 - Standard library functions that mirror a JavaScript operation must agree (rule `stdlib-agrees-with-javascript`)
 - `string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`. (rule `subject-first`)
-- After editing a fragment, or the core evaluator, rebuild the page: (rule `rebuild-docs-after-change`)
+- `docs/docs.html` is what the docs build writes from the fragments and the core, as `bun run --cwd packages/site-runtime docs --check` says (rule `rebuild-docs-after-change`)
 
 ## 2026-11-10 — @lionlang/core 0.4.0, @lionlang/cli 0.3.0
 
@@ -1830,9 +1830,9 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 ### Rules
 
 - `AGENTS.md` tells agents to run `bun run check`, the tests, and the build before committing (rule `check-test-build-before-commit`)
-- lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it. (rule `ci-checks-site-asset-versions`)
+- CI runs the check of the site's asset versions (rule `ci-checks-site-asset-versions`)
 - Otherwise, the expression evaluates each of its elements and returns the resulting array: (rule `arrays-are-never-data` withdrawn)
-- Lion core has no UI module, no `$ui` schema, no renderer-facing types. (rule `no-ui-primitives-in-core`)
+- No file of the core imports a UI library (rule `no-ui-primitives-in-core`)
 - `quote` and `eval` remain the escape hatches when literal-vs-reference disambiguation is needed at a specific site. (rule `quote-disambiguates-literals`)
 - Mental model is now: one JSON tree, one stream of JSON-Patch ops, that's (rule `ui-stream-one-document`)
 - The program's JSON is canonical, and the semantic graph, outline, inspector, and results are derived from it (rule `editor-source-canonical`)
@@ -2326,7 +2326,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - Validate all inputs using Effect Schemas (rule `validate-inputs-with-schemas`)
 - There can only be EXACTLY one operation_completed entry for a given operation_started entry (rule `one-completion-per-operation`)
 - When continuing an evaluation, all non-effectful expressions are re-evaluated, all effectful operations are hydrated from the oplog. (rule `resumable-evaluation`)
-- New behavior gets property-based tests, not tests with fixed example inputs (rule `property-based-tests`)
+- Most of the core's tests are properties, not tests with fixed example inputs (rule `property-based-tests`)
 - a call to a host function calls it (rule `no-resumable-evaluation`)
 - The operation log, its service and schemas, and the errors `ContinuationNeededError` and `OplogMismatchError` were deleted (rule `one-completion-per-operation` withdrawn)
 - Resumability was removed on March 27, 2026 (rule `resumable-evaluation` withdrawn)

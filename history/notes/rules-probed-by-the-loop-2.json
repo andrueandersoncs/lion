@@ -1,0 +1,58 @@
+{
+  "claims": [
+    {
+      "quote": "`docs/docs.html` is what the docs build writes from the fragments and the core, as `bun run --cwd packages/site-runtime docs --check` says",
+      "says": {
+        "rule": "rebuild-docs-after-change",
+        "holds": true,
+        "statement": "After editing a docs fragment or the core evaluator, rebuild docs/docs.html.",
+        "area": "docs",
+        "predicts": [{ "behavior": "docs-build-current", "is": "current" }]
+      }
+    },
+    {
+      "quote": "CI runs the check of the site's asset versions",
+      "says": {
+        "rule": "ci-checks-site-asset-versions",
+        "holds": true,
+        "statement": "CI fails when the site's asset version hash is out of date",
+        "area": "process",
+        "predicts": [{ "behavior": "ci-stamp-check", "is": "checked" }]
+      }
+    },
+    {
+      "quote": "No file of the core imports a UI library",
+      "says": {
+        "rule": "no-ui-primitives-in-core",
+        "holds": true,
+        "statement": "Lion core has no UI-specific primitives; a UI is Lion plus a host environment that binds tags to components.",
+        "area": "host",
+        "predicts": [{ "behavior": "core-ui-imports", "is": "none" }]
+      }
+    },
+    {
+      "quote": "Every test file of the core writes its tests with @effect/vitest",
+      "says": {
+        "rule": "effect-vitest-properties",
+        "holds": true,
+        "statement": "Write properties with it.prop or it.effect.prop from @effect/vitest, with Schemas or effect/Arbitrary generators as inputs",
+        "area": "process",
+        "predicts": [
+          { "behavior": "core-test-framework", "is": "effect-vitest" }
+        ]
+      }
+    },
+    {
+      "quote": "Most of the core's tests are properties, not tests with fixed example inputs",
+      "says": {
+        "rule": "property-based-tests",
+        "holds": true,
+        "statement": "New behavior gets property-based tests, not tests with fixed example inputs",
+        "area": "process",
+        "predicts": [
+          { "behavior": "core-tests-kind", "is": "mostly-properties" }
+        ]
+      }
+    }
+  ]
+}

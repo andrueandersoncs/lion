@@ -289,5 +289,15 @@
       "found": "some"
     },
     "note": "Found by the improvement loop's experiment probe-rules (2026-11-21): two screen recordings are committed, .artifacts/proof/repl-server-output-dock.webm and packages/repl/artifacts/thicker-black-background-dots.webm, though AGENTS.md says proof is not committed into git. Settle by removing them from git, which the user decides."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "effect-vitest-properties",
+      "case": "core-test-framework",
+      "predicted": "effect-vitest",
+      "found": "some-plain-vitest"
+    },
+    "note": "Found by the improvement loop's experiment probe-rules (2026-11-21): packages/core/src/modules/tests/index.test.ts imports describe, expect, and test from plain vitest and checks fixed inputs. Settle by writing it as properties with @effect/vitest, or by naming it an exception; the user decides."
   }
 ]

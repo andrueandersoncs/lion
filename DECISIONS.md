@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 228 questions have been decided, 102 records explain them, and of what the records assert, 671 hold when Lion is run, 2 are broken, 385 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 228 questions have been decided, 102 records explain them, and of what the records assert, 673 hold when Lion is run, 3 are broken, 382 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -705,7 +705,7 @@ Recorded 2026-03-20 in `history/notes/quality-gates.json`.
 - Holds when Lion is run: `ci-build` is `runs`. "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`"
 - Holds when Lion is run: `ci-install-lockfile` is `frozen`. "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`"
 - Stated, not checked by running Lion: `commit-with-failing-tests` is `refused`. "A commit whose tests fail is refused unless the hook is skipped"
-- Stated, not checked by running Lion: rule `ci-checks-site-asset-versions` holds. "Later checks join the same workflow, such as the check of the site's asset versions"
+- Holds when Lion is run: rule `ci-checks-site-asset-versions` holds. "Later checks join the same workflow, such as the check of the site's asset versions"
 - Holds when Lion is run: rule `quality-gates` holds. "Every commit runs the tests and the formatter, and CI checks every pull request and push to `main`"
 - Stated, not checked by running Lion: rule `check-test-build-before-commit` holds. "`AGENTS.md` tells agents to run `bun run check`, the tests, and the build before committing"
 - Stated, not checked by running Lion: decided `lint-format-tool`: `ultracite`. "the repository adopted Ultracite, a preset of Biome lint and format rules, as `bun run check` and `bun run fix`"
@@ -777,9 +777,9 @@ Recorded 2026-11-11 in `history/notes/property-based-tests.json`.
 - Stated, not checked by running Lion: decided `test-style`: `property-based`. "Lion's tests are property-based, checked against a model, a round trip, or an equivalence"
 - Holds when Lion is run: rule `snapshots-are-programs` holds. "a snapshot rebuilds its database"
 - Stated, not checked by running Lion: `property-default-runs` is 100. "A property is checked against many generated inputs, 100 by default"
-- Stated, not checked by running Lion: rule `property-based-tests` holds. "New behavior gets property-based tests, not tests with fixed example inputs"
+- Holds when Lion is run: rule `property-based-tests` holds. "New behavior gets property-based tests, not tests with fixed example inputs"
 - Stated, not checked by running Lion: rule `example-based-tests` is withdrawn. "Example-based unit tests with fixed inputs, as AGENTS.md showed before"
-- Stated, not checked by running Lion: rule `effect-vitest-properties` holds. "A property uses `it.prop` or `it.effect.prop` from `@effect/vitest` with Schemas or generators from `effect/Arbitrary`"
+- Broken: Lion does otherwise: rule `effect-vitest-properties` holds. "A property uses `it.prop` or `it.effect.prop` from `@effect/vitest` with Schemas or generators from `effect/Arbitrary`"
 - Stated, not checked by running Lion: rule `test-against-independent-model` holds. "checks behavior against something independent of the code under test: a simpler model, a round trip such as save, load, and save again, or an equivalence such as two ways of computing the same answer"
 - Stated, not checked by running Lion: rule `shared-generators` holds. "A domain's generators live in a module next to its tests"
 - Stated, not checked by running Lion: rule `properties-can-fail` holds. "each property must be shown to fail when the code it covers is broken"

@@ -1,0 +1,119 @@
+{
+  "observations": [
+    {
+      "id": "probe-rules-2-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "probe-rules-2"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "probe-rules-2",
+      "value": 1
+    },
+    {
+      "id": "probe-rules-2-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "probe-rules-2",
+      "tries": "probe-rules",
+      "value": 3
+    },
+    {
+      "id": "probe-rules-2-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "probe-rules-2",
+      "value": 0
+    },
+    {
+      "id": "probe-rules-2-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "probe-rules-2"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "probe-rules-2",
+      "value": 0
+    },
+    {
+      "id": "probe-rules-2-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "probe-rules-2",
+      "value": 0
+    },
+    {
+      "id": "probe-rules-2-8",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "probe-rules-2"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 40 s",
+      "source": "probe-rules-2",
+      "value": 40
+    },
+    {
+      "id": "probe-rules-2-9",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "probe-rules-2",
+      "value": 0
+    },
+    {
+      "id": "probe-rules-2-10",
+      "question": {
+        "seconds of check": "record",
+        "observation": "probe-rules-2"
+      },
+      "quote": "ran record: bun run history check, exit 0, 64 s",
+      "source": "probe-rules-2",
+      "value": 64
+    },
+    {
+      "id": "probe-rules-2-11",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "probe-rules-2",
+      "value": "holds"
+    },
+    {
+      "id": "probe-rules-2-12",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 96",
+      "source": "probe-rules-2",
+      "tries": "probe-rules",
+      "value": 96
+    },
+    {
+      "id": "probe-rules-2-13",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "probe-rules-2"
+      },
+      "quote": "ran tests: bun run test, exit 0, 124 s",
+      "source": "probe-rules-2",
+      "value": 124
+    },
+    {
+      "id": "probe-rules-2-14",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "probe-rules-2",
+      "value": 0
+    }
+  ]
+}

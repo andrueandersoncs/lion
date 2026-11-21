@@ -1,5 +1,207 @@
 [
   {
+    "case": "docs-build-current",
+    "area": "docs",
+    "program": [
+      "begin",
+      ["define", "built", ["repo/run", "docs-check"]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["schema/fits?", ["object/get", "built", "exit"], 0],
+            ["string/includes", ["object/get", "built", "output"], "is current"]
+          ],
+          ["quote", "current"]
+        ],
+        ["else", ["quote", "stale"]]
+      ]
+    ]
+  },
+  {
+    "case": "ci-stamp-check",
+    "area": "process",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["repo/read", ".github/workflows/ci.yml"],
+          "stamp --check"
+        ],
+        ["quote", "checked"]
+      ],
+      ["else", ["quote", "unchecked"]]
+    ]
+  },
+  {
+    "case": "core-ui-imports",
+    "area": "host",
+    "program": [
+      "cond",
+      [
+        [
+          "array/some?",
+          ["repo/files", "packages/core/src"],
+          [
+            "lambda",
+            ["file"],
+            [
+              "and",
+              ["boolean/not", ["string/includes", "file", "/tests/"]],
+              [
+                "array/some?",
+                [
+                  "quote",
+                  [
+                    "from \"react",
+                    "from \"@opentui",
+                    "from \"solid-js",
+                    "from \"vue",
+                    "from \"svelte"
+                  ]
+                ],
+                [
+                  "lambda",
+                  ["ui"],
+                  ["string/includes", ["repo/read", "file"], "ui"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["quote", "some"]
+      ],
+      ["else", ["quote", "none"]]
+    ]
+  },
+  {
+    "case": "core-test-framework",
+    "area": "process",
+    "program": [
+      "cond",
+      [
+        [
+          "array/every?",
+          ["repo/files", "packages/core/src"],
+          [
+            "lambda",
+            ["file"],
+            [
+              "or",
+              [
+                "boolean/not",
+                [
+                  [
+                    "lambda",
+                    ["file"],
+                    [
+                      "and",
+                      ["string/includes", "file", "/tests/"],
+                      ["string/endsWith", "file", ".test.ts"]
+                    ]
+                  ],
+                  "file"
+                ]
+              ],
+              ["string/includes", ["repo/read", "file"], "@effect/vitest"]
+            ]
+          ]
+        ],
+        ["quote", "effect-vitest"]
+      ],
+      ["else", ["quote", "some-plain-vitest"]]
+    ]
+  },
+  {
+    "case": "core-tests-kind",
+    "area": "process",
+    "program": [
+      "begin",
+      [
+        "define",
+        "count",
+        [
+          "lambda",
+          ["text", "word"],
+          [
+            "number/subtract",
+            ["array/length", ["string/split", "text", "word"]],
+            1
+          ]
+        ]
+      ],
+      [
+        "define",
+        "texts",
+        [
+          "array/flat-map",
+          ["repo/files", "packages/core/src"],
+          [
+            "lambda",
+            ["file"],
+            [
+              "cond",
+              [
+                [
+                  [
+                    "lambda",
+                    ["file"],
+                    [
+                      "and",
+                      ["string/includes", "file", "/tests/"],
+                      ["string/endsWith", "file", ".test.ts"]
+                    ]
+                  ],
+                  "file"
+                ],
+                ["array/make", ["repo/read", "file"]]
+              ],
+              ["else", ["quote", []]]
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "tally",
+        [
+          "lambda",
+          ["word"],
+          [
+            "array/reduce",
+            "texts",
+            0,
+            [
+              "lambda",
+              ["sum", "text"],
+              ["number/add", "sum", ["count", "text", "word"]]
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "properties",
+        ["number/add", ["tally", "it.prop("], ["tally", "it.effect.prop("]]
+      ],
+      [
+        "define",
+        "examples",
+        ["number/add", ["tally", " it("], ["tally", " it.effect("]]
+      ],
+      [
+        "cond",
+        [
+          ["number/greaterThan", "properties", "examples"],
+          ["quote", "mostly-properties"]
+        ],
+        ["else", ["quote", "mostly-examples"]]
+      ]
+    ]
+  },
+  {
     "case": "package-test-runner",
     "area": "tests",
     "program": [
