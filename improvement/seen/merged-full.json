@@ -1,0 +1,7 @@
+{
+ "hashes": {
+  ".": "e4118adefbbb323e05a81481426297180a8af5a0"
+ },
+ "kind": "ran",
+ "what": "bun run loop scores"
+}

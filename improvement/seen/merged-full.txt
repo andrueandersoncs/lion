@@ -1,0 +1,29 @@
+$ bun run loop scores
+$ bun run --cwd packages/metrics loop scores
+$ bun run loop.ts scores
+ran measure: bun run measure, exit 0, 1 s
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 0
+ran replay: bun run affected --replay 30, exit 0, 1 s
+tests' time picked, last 30 commits: 99
+ran bench: bun run bench, exit 0, 4 s
+bench total ms, every benchmark: 1232.1
+ran capability: bun run capability --json, exit 0, 1 s
+capability passed, public, computation: 24
+capability passed, public, logic: 14
+capability passed, public, proofs: 10
+capability passed, public, all: 48
+code lines per passed task, core: 468.5
+messages per passed task, core: 5.2
+ran scale: bun run scale, exit 0, 51 s
+workloads faster than linear, scale: 0
+ran record: bun run history check, exit 0, 79 s
+record check, history: holds
+rules no probe checks, record: 107
+ran check: bun run affected --check, exit 0, 97 s
+picking unsound, listed mutations: 0
+ran tests: bun run test, exit 0, 162 s
+failing test tasks, all packages: 0
+[exit status 0]

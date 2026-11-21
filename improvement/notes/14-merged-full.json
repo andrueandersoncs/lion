@@ -1,0 +1,242 @@
+{
+  "observations": [
+    {
+      "id": "merged-full-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "merged-full"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "merged-full",
+      "value": 1
+    },
+    {
+      "id": "merged-full-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "merged-full",
+      "value": 3
+    },
+    {
+      "id": "merged-full-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "merged-full",
+      "value": 0
+    },
+    {
+      "id": "merged-full-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "merged-full"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "merged-full",
+      "value": 0
+    },
+    {
+      "id": "merged-full-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "merged-full",
+      "value": 0
+    },
+    {
+      "id": "merged-full-8",
+      "question": {
+        "seconds of check": "replay",
+        "observation": "merged-full"
+      },
+      "quote": "ran replay: bun run affected --replay 30, exit 0, 1 s",
+      "source": "merged-full",
+      "value": 1
+    },
+    {
+      "id": "merged-full-9",
+      "question": {
+        "tests' time picked": "last 30 commits"
+      },
+      "quote": "tests' time picked, last 30 commits: 99",
+      "source": "merged-full",
+      "value": 99
+    },
+    {
+      "id": "merged-full-10",
+      "question": {
+        "seconds of check": "bench",
+        "observation": "merged-full"
+      },
+      "quote": "ran bench: bun run bench, exit 0, 4 s",
+      "source": "merged-full",
+      "value": 4
+    },
+    {
+      "id": "merged-full-11",
+      "question": {
+        "bench total ms": "every benchmark"
+      },
+      "quote": "bench total ms, every benchmark: 1232.1",
+      "source": "merged-full",
+      "value": 1232.1
+    },
+    {
+      "id": "merged-full-12",
+      "question": {
+        "seconds of check": "capability",
+        "observation": "merged-full"
+      },
+      "quote": "ran capability: bun run capability --json, exit 0, 1 s",
+      "source": "merged-full",
+      "value": 1
+    },
+    {
+      "id": "merged-full-13",
+      "question": {
+        "capability passed": "public",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, public, computation: 24",
+      "source": "merged-full",
+      "value": 24
+    },
+    {
+      "id": "merged-full-14",
+      "question": {
+        "capability passed": "public",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, public, logic: 14",
+      "source": "merged-full",
+      "value": 14
+    },
+    {
+      "id": "merged-full-15",
+      "question": {
+        "capability passed": "public",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, public, proofs: 10",
+      "source": "merged-full",
+      "value": 10
+    },
+    {
+      "id": "merged-full-16",
+      "question": {
+        "capability passed": "public",
+        "pillar": "all"
+      },
+      "quote": "capability passed, public, all: 48",
+      "source": "merged-full",
+      "value": 48
+    },
+    {
+      "id": "merged-full-17",
+      "question": {
+        "code lines per passed task": "core"
+      },
+      "quote": "code lines per passed task, core: 468.5",
+      "source": "merged-full",
+      "value": 468.5
+    },
+    {
+      "id": "merged-full-18",
+      "question": {
+        "messages per passed task": "core"
+      },
+      "quote": "messages per passed task, core: 5.2",
+      "source": "merged-full",
+      "value": 5.2
+    },
+    {
+      "id": "merged-full-19",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "merged-full"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 51 s",
+      "source": "merged-full",
+      "value": 51
+    },
+    {
+      "id": "merged-full-20",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "merged-full",
+      "value": 0
+    },
+    {
+      "id": "merged-full-21",
+      "question": {
+        "seconds of check": "record",
+        "observation": "merged-full"
+      },
+      "quote": "ran record: bun run history check, exit 0, 79 s",
+      "source": "merged-full",
+      "value": 79
+    },
+    {
+      "id": "merged-full-22",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "merged-full",
+      "value": "holds"
+    },
+    {
+      "id": "merged-full-23",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 107",
+      "source": "merged-full",
+      "value": 107
+    },
+    {
+      "id": "merged-full-24",
+      "question": {
+        "seconds of check": "check",
+        "observation": "merged-full"
+      },
+      "quote": "ran check: bun run affected --check, exit 0, 97 s",
+      "source": "merged-full",
+      "value": 97
+    },
+    {
+      "id": "merged-full-25",
+      "question": {
+        "picking unsound": "listed mutations"
+      },
+      "quote": "picking unsound, listed mutations: 0",
+      "source": "merged-full",
+      "value": 0
+    },
+    {
+      "id": "merged-full-26",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "merged-full"
+      },
+      "quote": "ran tests: bun run test, exit 0, 162 s",
+      "source": "merged-full",
+      "value": 162
+    },
+    {
+      "id": "merged-full-27",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "merged-full",
+      "value": 0
+    }
+  ]
+}

@@ -1,0 +1,675 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran"
+   ],
+   [
+    "quote",
+    "bun run loop scores"
+   ]
+  ],
+  [
+   "about",
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "."
+   ],
+   [
+    "quote",
+    "e4118adefbbb323e05a81481426297180a8af5a0"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-3"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran measure: bun run measure, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "measure",
+     "observation": "merged-full"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-4"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "grid exceptions, core: 3"
+   ],
+   [
+    "quote",
+    {
+     "grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-5"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "undocumented grid exceptions, core: 0"
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-6"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "instruments",
+     "observation": "merged-full"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-7"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "instrument lines removed, since the base: 0"
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-8"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran replay: bun run affected --replay 30, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "replay",
+     "observation": "merged-full"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-9"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "tests' time picked, last 30 commits: 99"
+   ],
+   [
+    "quote",
+    {
+     "tests' time picked": "last 30 commits"
+    }
+   ],
+   [
+    "quote",
+    99
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-10"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran bench: bun run bench, exit 0, 4 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "bench",
+     "observation": "merged-full"
+    }
+   ],
+   [
+    "quote",
+    4
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-11"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "bench total ms, every benchmark: 1232.1"
+   ],
+   [
+    "quote",
+    {
+     "bench total ms": "every benchmark"
+    }
+   ],
+   [
+    "quote",
+    1232.1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-12"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran capability: bun run capability --json, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "capability",
+     "observation": "merged-full"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-13"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "capability passed, public, computation: 24"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    24
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-14"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "capability passed, public, logic: 14"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    14
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-15"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "capability passed, public, proofs: 10"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    10
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-16"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "capability passed, public, all: 48"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    48
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-17"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "code lines per passed task, core: 468.5"
+   ],
+   [
+    "quote",
+    {
+     "code lines per passed task": "core"
+    }
+   ],
+   [
+    "quote",
+    468.5
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-18"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "messages per passed task, core: 5.2"
+   ],
+   [
+    "quote",
+    {
+     "messages per passed task": "core"
+    }
+   ],
+   [
+    "quote",
+    5.2
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-19"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran scale: bun run scale, exit 0, 51 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "scale",
+     "observation": "merged-full"
+    }
+   ],
+   [
+    "quote",
+    51
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-20"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "workloads faster than linear, scale: 0"
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-21"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran record: bun run history check, exit 0, 79 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "record",
+     "observation": "merged-full"
+    }
+   ],
+   [
+    "quote",
+    79
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-22"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "record check, history: holds"
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-23"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "rules no probe checks, record: 107"
+   ],
+   [
+    "quote",
+    {
+     "rules no probe checks": "record"
+    }
+   ],
+   [
+    "quote",
+    107
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-24"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran check: bun run affected --check, exit 0, 97 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "check",
+     "observation": "merged-full"
+    }
+   ],
+   [
+    "quote",
+    97
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-25"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "picking unsound, listed mutations: 0"
+   ],
+   [
+    "quote",
+    {
+     "picking unsound": "listed mutations"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-26"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "ran tests: bun run test, exit 0, 162 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "tests",
+     "observation": "merged-full"
+    }
+   ],
+   [
+    "quote",
+    162
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "merged-full-27"
+   ],
+   [
+    "quote",
+    "merged-full"
+   ],
+   [
+    "quote",
+    "failing test tasks, all packages: 0"
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ]
+ ],
+ "recorded"
+]
