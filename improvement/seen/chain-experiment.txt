@@ -1,0 +1,18 @@
+$ bun run loop scores "--skip" "measure,capability,scale,bench,replay,check" "--repeat" "6" "--mutations" "a broken chain of figures ignores the measurements between"
+$ bun run --cwd packages/metrics loop scores --skip "measure,capability,scale,bench,replay,check" --repeat "6" --mutations "a broken chain of figures ignores the measurements between"
+$ bun run loop.ts scores --skip "measure,capability,scale,bench,replay,check" --repeat "6" --mutations "a broken chain of figures ignores the measurements between"
+ran record: bun run history check, exit 0, 57 s
+record check, history: holds
+rules no probe checks, record: 107
+ran tests: bun run test, exit 0, 117 s
+failing test tasks, all packages: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 0
+ran mutations-0: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 32 s
+ran mutations-1: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 31 s
+ran mutations-2: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 32 s
+ran mutations-3: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 29 s
+ran mutations-4: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 27 s
+ran mutations-5: bun run mutate a broken chain of figures ignores the measurements between, exit 0, 29 s
+mutation runs caught of 6, a broken chain of figures ignores the measurements between: 6
+[exit status 0]

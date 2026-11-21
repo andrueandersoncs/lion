@@ -569,6 +569,61 @@ describe("the research frame", () => {
   );
 });
 
+/**
+ * Figures of one metric, each from its own commit at a rising time, so a
+ * chain has links with measurements between them in nearly every world.
+ */
+const chain: Arbitrary.Arbitrary<World> = Arbitrary.map(
+  Arbitrary.array(
+    Arbitrary.all([
+      int(0, 3),
+      Arbitrary.flatMap(boolean, (some) =>
+        some
+          ? Arbitrary.map(int(0, 3), (n): number | null => n)
+          : Arbitrary.Constant<number | null>(null)
+      ),
+    ]),
+    { maxLength: 6, minLength: 3 }
+  ),
+  (figures) => ({
+    claims: figures.map(([after, before], at) => ({
+      id: `k${at}`,
+      says: {
+        after,
+        area: "metrics",
+        measured: "m0",
+        ...(before === null ? {} : { before }),
+      },
+      source: `s${at}`,
+    })),
+    sources: figures.map((_, at) => ({
+      commit: true,
+      id: `s${at}`,
+      published: 20_260_101_000_000 + at * 100,
+      publisher: REPO,
+    })),
+  })
+);
+
+describe("a chain of figures", () => {
+  it.effect.prop(
+    "breaks only where a figure does not start where the one just before it ended",
+    { w: chain },
+    ({ w }) =>
+      Effect.gen(function* () {
+        const answers = (yield* run(
+          programOf(w, { chainBreak: QUESTIONS.chainBreak }) as never,
+          stdlib,
+          { database: new LogicDatabase() }
+        )) as { chainBreak: string[] };
+        expect([...new Set(answers.chainBreak.map(unquote))].sort()).toEqual(
+          model(w).chainBreak.map(unquote)
+        );
+      }),
+    { arbitrary: { runs: 100 } }
+  );
+});
+
 const FINDINGS = join(
   REPOSITORY,
   "history/research/steps/06-findings.src.json"

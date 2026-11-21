@@ -1,0 +1,7 @@
+{
+ "hashes": {
+  ".": "905ac5182cf3e3bf537f4536d1de3017b9a06395"
+ },
+ "kind": "ran",
+ "what": "bun run loop scores \"--skip\" \"measure,capability,scale,bench,replay,check\" \"--repeat\" \"6\" \"--mutations\" \"a broken chain of figures ignores the measurements between\""
+}
