@@ -47,6 +47,8 @@
       "!docs/docs.html",
       // Written by the model of Lion's development from history/outputs.json.
       "!docs/changelog.html",
+      // The improvement record: written by the lion-reasoning skill's scripts, which quote and hash it as they wrote it.
+      "!improvement",
       // Docs sources: example code inside them must keep its exact whitespace.
       "!packages/site-runtime/content",
       "!!.agents",

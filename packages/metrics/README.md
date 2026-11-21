@@ -1,6 +1,6 @@
 # @lionlang/metrics
 
-Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer eight questions:
+Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer nine questions:
 
 | Question | Command |
 | --- | --- |
@@ -9,6 +9,7 @@ Tools that measure Lion, so a change can be judged by numbers and not by feel. T
 | Does its time grow as the facts do, or faster? | `bun run scale --against main` |
 | Do the tests notice when the code is wrong? | `bun run mutate` |
 | Which tests, checks, and mutations can a change reach? | `bun run affected` |
+| Did an experiment pay off, and what should the next one try? | `bun run loop status` |
 | What does the change do to a program's result? | `bun run compare main programs.json` |
 | Which documented results did the change make untrue? | `bun run compare main --docs` |
 | How well does an agent do a skill's eval case? | `bun run skill-eval lion-research verifies-company-figures` |
@@ -200,6 +201,33 @@ Median over 30 commits: 98% of the tests' time, 555 of 599 mutations.
 ```
 
 The seconds are each test file's own time, added up, from the traced run. "in its files" is what `bun run mutate --in` would choose. Picking chooses more, because it also brings back the mutations whose tests a change reaches.
+
+## The improvement loop: `bun run loop`
+
+```bash
+bun run loop scores
+bun run loop observe <label> --tries <direction>
+bun run loop status
+```
+
+`scores` runs every measuring tool and prints one line for each question the improvement record in [`improvement/`](../../improvement/README.md) asks, such as `grid exceptions, core: 3` or `rules no probe checks, record: 107`. The parsing is in [`src/loop.ts`](src/loop.ts), and the record's constraints and scores are the lines it reads. `observe` runs `scores` through the lion-reasoning skill's `see.mjs`, records each line as an observation that quotes it, and prints what the record then says. `status` prints the record's standing questions that have answers.
+
+The record's first observation, of 06c885e with this runner added, printed these lines:
+
+```
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+record check, history: holds
+rules no probe checks, record: 107
+workloads faster than linear, scale: 0
+failing test tasks, all packages: 0
+bench total ms, every benchmark: 965.8
+tests' time picked, last 30 commits: 98
+picking unsound, listed mutations: 0
+instrument lines removed, since the base: 0
+```
+
+It took six minutes, most of them in the tests, the record's check, the soundness check, and scale. `--skip` leaves tools out, `--mutations "a|b"` runs listed mutations by name, `--repeat n` runs them n times and counts the runs that caught each, and `--full` runs every listed mutation. `guidelines/improving.md` says how an experiment uses them.
 
 ## Behavior: `bun run compare`
 

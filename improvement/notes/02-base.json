@@ -1,0 +1,121 @@
+{
+  "observations": [
+    {
+      "id": "base-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "base",
+      "value": 3
+    },
+    {
+      "id": "base-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "base",
+      "value": 0
+    },
+    {
+      "id": "base-7",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "base",
+      "value": "holds"
+    },
+    {
+      "id": "base-8",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 107",
+      "source": "base",
+      "value": 107
+    },
+    {
+      "id": "base-10",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "base",
+      "value": 0
+    },
+    {
+      "id": "base-12",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "base",
+      "value": 0
+    },
+    {
+      "id": "base-14",
+      "question": {
+        "bench total ms": "every benchmark"
+      },
+      "quote": "bench total ms, every benchmark: 965.8",
+      "source": "base",
+      "value": 965.8
+    },
+    {
+      "id": "base-16",
+      "question": {
+        "tests' time picked": "last 30 commits"
+      },
+      "quote": "tests' time picked, last 30 commits: 98",
+      "source": "base",
+      "value": 98
+    },
+    {
+      "id": "base-18",
+      "question": {
+        "picking unsound": "listed mutations"
+      },
+      "quote": "picking unsound, listed mutations: 0",
+      "source": "base",
+      "value": 0
+    },
+    {
+      "id": "base-20",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "base",
+      "value": 0
+    },
+    {
+      "id": "base-22",
+      "question": {
+        "mutation": "a broken chain of figures ignores the measurements between"
+      },
+      "quote": "mutation, a broken chain of figures ignores the measurements between: caught",
+      "source": "base",
+      "value": "caught"
+    },
+    {
+      "id": "base-23",
+      "question": {
+        "mutation": "a rule that asks assuming is followed through a change as other rules are"
+      },
+      "quote": "mutation, a rule that asks assuming is followed through a change as other rules are: caught",
+      "source": "base",
+      "value": "caught"
+    },
+    {
+      "id": "base-24",
+      "question": {
+        "mutation": "a relation goal reads a relation's rows before they are derived"
+      },
+      "quote": "mutation, a relation goal reads a relation's rows before they are derived: stale",
+      "source": "base",
+      "value": "stale"
+    }
+  ]
+}

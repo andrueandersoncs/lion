@@ -1,0 +1,7 @@
+{
+ "hashes": {
+  ".": "a1f20388efda383eee6aa5799b4964a724dcd8cd"
+ },
+ "kind": "ran",
+ "what": "bun run loop scores \"--skip\" \"measure,capability,record,scale,tests,bench,replay,check,instruments\" \"--repeat\" \"6\" \"--mutations\" \"a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are\""
+}

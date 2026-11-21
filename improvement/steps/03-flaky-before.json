@@ -1,0 +1,89 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "flaky-before"
+   ],
+   [
+    "quote",
+    "ran"
+   ],
+   [
+    "quote",
+    "bun run loop scores \"--skip\" \"measure,capability,record,scale,tests,bench,replay,check,instruments\" \"--repeat\" \"6\" \"--mutations\" \"a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are\""
+   ]
+  ],
+  [
+   "about",
+   [
+    "quote",
+    "flaky-before"
+   ],
+   [
+    "quote",
+    "."
+   ],
+   [
+    "quote",
+    "a1f20388efda383eee6aa5799b4964a724dcd8cd"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "flaky-before-9"
+   ],
+   [
+    "quote",
+    "flaky-before"
+   ],
+   [
+    "quote",
+    "mutation runs caught of 6, a broken chain of figures ignores the measurements between: 5"
+   ],
+   [
+    "quote",
+    {
+     "mutation runs caught": "a broken chain of figures ignores the measurements between",
+     "of": "6"
+    }
+   ],
+   [
+    "quote",
+    5
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "flaky-before-10"
+   ],
+   [
+    "quote",
+    "flaky-before"
+   ],
+   [
+    "quote",
+    "mutation runs caught of 6, a rule that asks assuming is followed through a change as other rules are: 5"
+   ],
+   [
+    "quote",
+    {
+     "mutation runs caught": "a rule that asks assuming is followed through a change as other rules are",
+     "of": "6"
+    }
+   ],
+   [
+    "quote",
+    5
+   ]
+  ]
+ ],
+ "recorded"
+]

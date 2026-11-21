@@ -1,0 +1,51 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "problem",
+   [
+    "quote",
+    "p-chain-runs"
+   ],
+   [
+    "quote",
+    "The properties catch a broken chain of figures that ignores the measurements between in only some runs"
+   ],
+   [
+    "quote",
+    {
+     "mutation runs caught": "a broken chain of figures ignores the measurements between",
+     "of": "6"
+    }
+   ],
+   [
+    "quote",
+    5
+   ]
+  ],
+  [
+   "problem",
+   [
+    "quote",
+    "p-assuming-runs"
+   ],
+   [
+    "quote",
+    "The properties catch a rule that asks assuming followed through a change as other rules are in only some runs"
+   ],
+   [
+    "quote",
+    {
+     "mutation runs caught": "a rule that asks assuming is followed through a change as other rules are",
+     "of": "6"
+    }
+   ],
+   [
+    "quote",
+    5
+   ]
+  ]
+ ],
+ "recorded"
+]

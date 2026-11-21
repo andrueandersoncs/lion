@@ -18,6 +18,7 @@
     "skill-eval": "bun run --cwd packages/metrics skill-eval",
     "compare": "bun run --cwd packages/metrics compare",
     "affected": "bun run --cwd packages/metrics affected",
+    "loop": "bun run --cwd packages/metrics loop",
     "history": "bun run --cwd packages/history history"
   },
   "devDependencies": {

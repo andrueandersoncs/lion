@@ -11,6 +11,7 @@
     "mutate": "bun run mutate.ts",
     "compare": "bun run compare.ts",
     "affected": "bun run affected.ts",
+    "loop": "bun run loop.ts",
     "skill-eval": "bun run skill-eval.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

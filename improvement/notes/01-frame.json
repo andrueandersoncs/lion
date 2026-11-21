@@ -1,0 +1,148 @@
+{
+  "sources": [{ "id": "user", "kind": "told", "what": "the user" }],
+  "ask": [
+    { "question": { "complexity judged": "self-improvement" }, "of": "user" },
+    { "question": { "scheme fidelity": "self-improvement" }, "of": "user" },
+    { "question": { "autonomy": "self-improvement" }, "of": "user" },
+    { "question": { "capability yardstick": "self-improvement" }, "of": "user" },
+    { "question": { "check selection": "self-improvement" }, "of": "user" },
+    { "question": { "speed constraint": "self-improvement" }, "of": "user" },
+    { "question": { "held-out tasks": "self-improvement" }, "of": "user" },
+    { "question": { "budget": "self-improvement" }, "of": "user" },
+    { "question": { "unbound string": "scheme departure" }, "of": "user" },
+    { "question": { "dollar cap": "per experiment" }, "of": "user" },
+    { "question": { "run picked tests in the commit hook": "quality gates" }, "of": "user" },
+    { "question": { "merge phase 1B": "this branch" }, "of": "user" }
+  ],
+  "observations": [
+    { "id": "u1", "source": "user", "quote": "Complexity: Per capability (Recommended)",
+      "question": { "complexity judged": "self-improvement" }, "value": "per capability" },
+    { "id": "u2", "source": "user", "quote": "Scheme fidelity: Conformance + listed departures (Recommended)",
+      "question": { "scheme fidelity": "self-improvement" }, "value": "conformance with listed departures" },
+    { "id": "u3", "source": "user", "quote": "Autonomy: Branches only (Recommended)",
+      "question": { "autonomy": "self-improvement" }, "value": "branches only" },
+    { "id": "u4", "source": "user", "quote": "I like both agent-solved task corpus AND external suites - do both",
+      "question": { "capability yardstick": "self-improvement" }, "value": "agent corpus and external suites" },
+    { "id": "u5", "source": "user", "quote": "Faster checks: Yes, full before merge (Recommended)",
+      "question": { "check selection": "self-improvement" }, "value": "picked, full before merge" },
+    { "id": "u6", "source": "user", "quote": "Speed constraint: Growth hard, speed soft (Recommended)",
+      "question": { "speed constraint": "self-improvement" }, "value": "growth hard, speed soft" },
+    { "id": "u7", "source": "user", "quote": "Held-out tasks: Outside the repo (Recommended)",
+      "question": { "held-out tasks": "self-improvement" }, "value": "outside the repository" },
+    { "id": "u8", "source": "user", "quote": "Spend: Per-experiment cap (Recommended)",
+      "question": { "budget": "self-improvement" }, "value": "per-experiment cap" },
+    { "id": "u9", "source": "user", "quote": "yes I approve the unbound-string departure",
+      "question": { "unbound string": "scheme departure" }, "value": "approved" }
+  ],
+  "scores": [
+    { "question": { "capability passed": "public", "pillar": "all" }, "better": "higher",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] },
+    { "question": { "capability passed": "public", "pillar": "computation" }, "better": "higher",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] },
+    { "question": { "capability passed": "public", "pillar": "logic" }, "better": "higher",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] },
+    { "question": { "capability passed": "public", "pillar": "proofs" }, "better": "higher",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] },
+    { "question": { "code lines per passed task": "core" }, "better": "lower",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] },
+    { "question": { "messages per passed task": "core" }, "better": "lower",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] },
+    { "question": { "grid exceptions": "core" }, "better": "lower",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] },
+    { "question": { "rules no probe checks": "record" }, "better": "lower",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] },
+    { "question": { "mutations missed": "listed" }, "better": "lower",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] },
+    { "question": { "tests' time picked": "last 30 commits" }, "better": "lower",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 },
+        { "question": { "picking unsound": "listed mutations" }, "value": 0 }
+      ] },
+    { "question": { "bench total ms": "every benchmark" }, "better": "lower",
+      "requires": [
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 }
+      ] }
+  ],
+  "problems": [
+    { "id": "p-chain", "statement": "No property fails when a broken chain of figures ignores the measurements between",
+      "question": { "mutation": "a broken chain of figures ignores the measurements between" }, "value": "missed" },
+    { "id": "p-assuming", "statement": "No property fails when a rule that asks assuming is followed through a change as other rules are",
+      "question": { "mutation": "a rule that asks assuming is followed through a change as other rules are" }, "value": "missed" },
+    { "id": "p-stale", "statement": "A listed mutation's text is no longer in its file, so it checks nothing",
+      "question": { "mutation": "a relation goal reads a relation's rows before they are derived" }, "value": "stale" }
+  ],
+  "directions": [
+    { "id": "chain-property", "statement": "Add a property that finds a broken chain of figures whatever measurements stand between its links", "addresses": ["p-chain"], "patience": 2 },
+    { "id": "assuming-property", "statement": "Add a property that a rule asking assuming is followed through a change as plain code would see it", "addresses": ["p-assuming"], "patience": 2 },
+    { "id": "stale-pointer", "statement": "Point the stale mutation at the code that now reads a relation's rows", "addresses": ["p-stale"], "patience": 1 },
+    { "id": "probe-rules", "statement": "Give rules no probe checks a prediction and a probe, the most stated first", "patience": 3 },
+    { "id": "function-reach", "statement": "Map what each test reaches by function, so a change to one function picks only the tests that run it", "patience": 2 },
+    { "id": "hook-picks", "statement": "Run only the picked tests in the commit hook on loop branches, and everything before a merge",
+      "needs": [{ "question": { "run picked tests in the commit hook": "quality gates" }, "value": "yes" }] },
+    { "id": "close-gaps", "statement": "Make a corpus task that Lion cannot express yet expressible, by the rule that removes the gap", "patience": 3,
+      "needs": [{ "question": { "merge phase 1B": "this branch" }, "value": "yes" }] },
+    { "id": "joins", "statement": "Worst-case optimal joins, the research model's first idea left to build", "patience": 2 }
+  ]
+}

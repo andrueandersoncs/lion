@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 213 questions have been decided, 95 records explain them, and of what the records assert, 638 hold when Lion is run, 2 are broken, 366 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 215 questions have been decided, 96 records explain them, and of what the records assert, 641 hold when Lion is run, 2 are broken, 369 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -219,6 +219,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`improvement-order`](#improvement-order) | `constraints-capability-cost-rate` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
 | 2026-11-21 | [`scheme-fidelity`](#scheme-fidelity) | `departures-decided-and-probed` | [Lion's departures from Scheme and Racket are the exceptions a decision names, and any other difference from Scheme is a finding](#scheme-departures-listed) |
 | 2026-11-21 | [`speed-constraint`](#speed-constraint) | `growth-hard-constant-soft` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
+| 2026-11-21 | [`improvement-judge`](#improvement-judge) | `published-cli` | [Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion](#improvement-record) |
+| 2026-11-21 | [`improvement-record`](#improvement-record) | `lion-reasoning-folder` | [Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion](#improvement-record) |
 
 <a id="program-representation"></a>
 
@@ -4861,3 +4863,46 @@ Recorded 2026-11-21 in `history/notes/scheme-departures-listed.json`.
 Now: `growth-hard-constant-soft`.
 
 - 2026-11-21 `speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`: "A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change." (`improvement-judged-by-capability.json`)
+
+<a id="improvement-judge"></a>
+
+## improvement-judge
+
+Now: `published-cli`.
+
+- 2026-11-21 `improvement-judge`: `published-cli` over `working-tree`: "The record is judged by the published Lion CLI that `LION_CLI` names" (`improvement-record.json`)
+
+<a id="improvement-record"></a>
+
+### Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion
+
+Recorded 2026-11-21 in `history/notes/improvement-record.json`.
+
+**Context.** The decision records `improvement-judged-by-capability` and `improvement-loop-on-branches` say how a change to Lion is judged and who may do what, but nothing kept the experiments themselves: what each was expected to do, what the measuring tools showed before and after it, and whether it paid off. The project already has three Lion models. The project record in `history/` checks decisions against Lion at HEAD, by commit. The research model in `research/` weighs ideas from sources. The lion-reasoning skill keeps an experiment loop: scores, the directions tried to improve them, beliefs that predict what an experiment does, and the rule that a version improves a score only when its worst run beats the best any earlier version was sure to give.
+
+**Decision.** Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository. Its frame declares the scores the plan measures, each requiring Lion's constraints, the directions to try, the problems they address, and the user's decisions as what the user told. `bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word, so no figure in the record is typed in. The record is judged by the published Lion CLI that `LION_CLI` names, `bunx @lionlang/cli@0.14.0` unless it is set, never by the Lion the loop is changing.
+
+**Consequences.** An experiment's verdict comes from the record, not from its author's report, and a change to Lion cannot change how its own experiments are judged. A direction that needs the user's answer, such as running only the picked tests in the commit hook, waits until they give it. The record's versions are the hashes of the project's files, so two worktrees that observe at once keep versions of their own; the record is kept on the integration branch, and an experiment on another branch is observed there before it merges. The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/`, so recording notes in `improvement/` never makes a new version and a belief can be judged in the version it was recorded in.
+
+**Alternatives considered.**
+
+- Keep experiments in the project record in `history/`. The record is about commits and what each said, and has no scores, directions, patience, or the rule that one lucky run never becomes the best, which the skill already checks.
+- Keep experiments in the research model in `research/`. It weighs ideas from what sources say; an experiment is what the measuring tools showed on one version of the files.
+- Judge the record with the Lion in the working tree. An experiment that changed Lion would change the judge of its own experiment.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `improvement-record`: `lion-reasoning-folder`. "Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository."
+- Stated, not checked by running Lion: decided `improvement-judge`: `published-cli`. "The record is judged by the published Lion CLI that `LION_CLI` names"
+- Holds when Lion is run: `loop-command` exists. "`bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word"
+- Holds when Lion is run: `improvement-record` exists. "Experiments on Lion are recorded in `improvement/`"
+- Holds when Lion is run: rule `loop-figures-observed` holds. "so no figure in the record is typed in"
+- Stated, not checked by running Lion: `reasoning-task-folder-in-versions` is `left-out`. "The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/`"
+
+<a id="improvement-record"></a>
+
+## improvement-record
+
+Now: `lion-reasoning-folder`.
+
+- 2026-11-21 `improvement-record`: `lion-reasoning-folder` over `project-record`, `research-model`: "Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository." (`improvement-record.json`)

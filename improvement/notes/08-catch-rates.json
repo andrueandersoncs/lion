@@ -1,0 +1,16 @@
+{
+  "problems": [
+    {
+      "id": "p-chain-runs",
+      "statement": "The properties catch a broken chain of figures that ignores the measurements between in only some runs",
+      "question": { "mutation runs caught": "a broken chain of figures ignores the measurements between", "of": "6" },
+      "value": 5
+    },
+    {
+      "id": "p-assuming-runs",
+      "statement": "The properties catch a rule that asks assuming followed through a change as other rules are in only some runs",
+      "question": { "mutation runs caught": "a rule that asks assuming is followed through a change as other rules are", "of": "6" },
+      "value": 5
+    }
+  ]
+}

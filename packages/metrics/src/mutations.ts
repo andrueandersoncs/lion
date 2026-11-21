@@ -4265,6 +4265,22 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/modules/tests/continuations.test.ts"],
   },
   {
+    name: "a task folder outside .lion is a part of the project it observes",
+    file: "skills/lion-reasoning/scripts/lib.mjs",
+    find: '    (file) => !(file.split("/").includes(TASKS) || inOwn(file))',
+    replace: '    (file) => !file.split("/").includes(TASKS)',
+    package: "metrics",
+    tests: ["src/tests/reasoning-skill.test.ts"],
+  },
+  {
+    name: "a task folder named relatively is found from the project's root",
+    file: "skills/lion-reasoning/scripts/lib.mjs",
+    find: "pathIn(realOrSelf(root), realOrSelf(resolve(folder)))",
+    replace: "pathIn(realOrSelf(root), folder)",
+    package: "metrics",
+    tests: ["src/tests/reasoning-skill.test.ts"],
+  },
+  {
     name: "a test that runs git is picked only for a file it reached",
     file: "packages/metrics/src/affected.json",
     find: '    ["changed", "?c", "?_"],\n    ["reads_repository", "?t"]',

@@ -1,0 +1,81 @@
+{
+  "title": "Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion",
+  "context": "The decision records `improvement-judged-by-capability` and `improvement-loop-on-branches` say how a change to Lion is judged and who may do what, but nothing kept the experiments themselves: what each was expected to do, what the measuring tools showed before and after it, and whether it paid off. The project already has three Lion models. The project record in `history/` checks decisions against Lion at HEAD, by commit. The research model in `research/` weighs ideas from sources. The lion-reasoning skill keeps an experiment loop: scores, the directions tried to improve them, beliefs that predict what an experiment does, and the rule that a version improves a score only when its worst run beats the best any earlier version was sure to give.",
+  "decision": "Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository. Its frame declares the scores the plan measures, each requiring Lion's constraints, the directions to try, the problems they address, and the user's decisions as what the user told. `bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word, so no figure in the record is typed in. The record is judged by the published Lion CLI that `LION_CLI` names, `bunx @lionlang/cli@0.14.0` unless it is set, never by the Lion the loop is changing.",
+  "consequences": "An experiment's verdict comes from the record, not from its author's report, and a change to Lion cannot change how its own experiments are judged. A direction that needs the user's answer, such as running only the picked tests in the commit hook, waits until they give it. The record's versions are the hashes of the project's files, so two worktrees that observe at once keep versions of their own; the record is kept on the integration branch, and an experiment on another branch is observed there before it merges. The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/`, so recording notes in `improvement/` never makes a new version and a belief can be judged in the version it was recorded in.",
+  "alternatives": [
+    {
+      "option": "Keep experiments in the project record in `history/`",
+      "rejected": "The record is about commits and what each said, and has no scores, directions, patience, or the rule that one lucky run never becomes the best, which the skill already checks."
+    },
+    {
+      "option": "Keep experiments in the research model in `research/`",
+      "rejected": "It weighs ideas from what sources say; an experiment is what the measuring tools showed on one version of the files."
+    },
+    {
+      "option": "Judge the record with the Lion in the working tree",
+      "rejected": "An experiment that changed Lion would change the judge of its own experiment."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository.",
+      "says": {
+        "decision": "improvement-record",
+        "chose": "lion-reasoning-folder",
+        "over": ["project-record", "research-model"],
+        "area": "metrics",
+        "because": "the skill already keeps scores, directions, beliefs, and the rule that one lucky run never becomes the best"
+      }
+    },
+    {
+      "quote": "The record is judged by the published Lion CLI that `LION_CLI` names",
+      "says": {
+        "decision": "improvement-judge",
+        "chose": "published-cli",
+        "over": ["working-tree"],
+        "area": "metrics",
+        "because": "an experiment that changed Lion would change the judge of its own experiment"
+      }
+    },
+    {
+      "quote": "`bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word",
+      "says": {
+        "feature": "loop-command",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "quote": "Experiments on Lion are recorded in `improvement/`",
+      "says": {
+        "feature": "improvement-record",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "so no figure in the record is typed in",
+      "says": {
+        "rule": "loop-figures-observed",
+        "holds": true,
+        "statement": "Every figure in the improvement record is a line a measuring tool printed, recorded word for word",
+        "area": "metrics",
+        "predicts": [
+          {
+            "behavior": "loop-observation-quotes",
+            "is": "in-their-source"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/`",
+      "says": {
+        "behavior": "reasoning-task-folder-in-versions",
+        "is": "left-out",
+        "area": "skills"
+      }
+    }
+  ]
+}

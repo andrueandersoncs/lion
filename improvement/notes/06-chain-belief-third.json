@@ -1,0 +1,36 @@
+{
+  "beliefs": [
+    {
+      "id": "chain-3",
+      "tries": "chain-property",
+      "statement": "With a property whose worlds are chains of three to six figures of one metric, each from its own commit, every run catches a chain break that ignores the measurements between, and nothing else fails (recorded a third time: chain-1's version left the record's pages stale, and chain-2's was cut off by the record's own notes, which the skill now leaves out of versions)",
+      "predicts": [
+        {
+          "question": {
+            "mutation runs caught": "a broken chain of figures ignores the measurements between",
+            "of": "6"
+          },
+          "value": 6
+        },
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}

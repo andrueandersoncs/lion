@@ -1,0 +1,861 @@
+[
+  "begin",
+  [
+    "schema",
+    "Source",
+    {
+      "id": "value/string?",
+      "kind": ["schema/anyOf", "ran", "read", "told", "recalled"],
+      "what": "value/string?"
+    }
+  ],
+  [
+    "relation",
+    "source",
+    ["id", "kind", "what"],
+    {
+      "key": "id",
+      "schema": "Source"
+    }
+  ],
+  ["relation", "about", ["source", "path", "hash"]],
+  [
+    "relation",
+    "observed",
+    ["id", "source", "quote", "question", "value"],
+    {
+      "key": "id"
+    }
+  ],
+  [
+    "relation",
+    "belief",
+    ["id", "statement"],
+    {
+      "key": "id"
+    }
+  ],
+  ["relation", "predicts", ["belief", "question", "value"]],
+  [
+    "relation",
+    "problem",
+    ["id", "statement", "question", "value"],
+    {
+      "key": "id"
+    }
+  ],
+  ["relation", "explains", ["belief", "problem"]],
+  ["relation", "needed", ["question"]],
+  ["relation", "ask", ["question", "of"]],
+  ["relation", "violated", ["belief", "witness"]],
+  ["relation", "version", ["name", "number"]],
+  [
+    "relation",
+    "since",
+    ["belief", "number"],
+    {
+      "key": "belief"
+    }
+  ],
+  [
+    "relation",
+    "at",
+    ["version", "path", "hash"],
+    {
+      "key": ["version", "path"]
+    }
+  ],
+  [
+    "relation",
+    "scored",
+    ["question", "better"],
+    {
+      "key": "question"
+    }
+  ],
+  ["relation", "requires", ["score", "question", "value"]],
+  [
+    "relation",
+    "direction",
+    ["id", "statement", "patience"],
+    {
+      "key": "id"
+    }
+  ],
+  ["relation", "tries", ["observation", "direction"]],
+  ["relation", "needs", ["direction", "question", "value"]],
+  ["relation", "expects", ["direction", "belief"]],
+  ["relation", "addresses", ["direction", "problem"]],
+  ["relation", "valid", ["observation", "version"]],
+  [
+    "relation",
+    "seen_in",
+    ["version", "observation", "question", "value", "kind"]
+  ],
+  ["relation", "overruled_in", ["version", "observation", "by"]],
+  ["relation", "answer_in", ["version", "question", "value", "observation"]],
+  ["relation", "answer", ["question", "value", "observation"]],
+  ["relation", "overruled", ["observation", "by"]],
+  ["relation", "stale", ["source", "path"]],
+  ["relation", "answers", ["question", "values"]],
+  ["relation", "disputed", ["question", "values"]],
+  ["relation", "hearsay", ["question", "value"]],
+  ["relation", "changed", ["question", "before", "after"]],
+  ["relation", "occurs", ["problem", "version"]],
+  ["relation", "judged_from", ["belief", "number"]],
+  ["relation", "judged_in", ["belief", "version"]],
+  [
+    "relation",
+    "contradicted",
+    ["belief", "question", "predicted", "found", "observation"]
+  ],
+  ["relation", "holds", ["belief"]],
+  ["relation", "borne_out", ["belief", "question", "value", "observation"]],
+  ["relation", "untested", ["belief", "question", "value"]],
+  ["relation", "splits", ["problem", "question"]],
+  ["relation", "decisive", ["problem", "question", "predictions"]],
+  ["relation", "remaining", ["problem", "beliefs"]],
+  ["relation", "unexplained", ["problem"]],
+  ["relation", "settled", ["problem", "belief"]],
+  ["relation", "open", ["question"]],
+  ["relation", "undecided", ["question", "of"]],
+  ["relation", "presumed", ["question", "value", "observation"]],
+  ["relation", "unmet", ["version", "score", "question", "needed"]],
+  ["relation", "first", ["version", "number"]],
+  ["relation", "range_in", ["version", "question", "low", "high"]],
+  ["relation", "score_in", ["version", "question", "best", "worst"]],
+  ["relation", "sure_ever", ["question", "lowest_worst", "highest_worst"]],
+  ["relation", "best", ["question", "value"]],
+  [
+    "relation",
+    "sure_before",
+    ["version", "question", "lowest_worst", "highest_worst"]
+  ],
+  ["relation", "improved", ["question", "version", "before", "after"]],
+  ["relation", "regressed", ["question", "now", "best"]],
+  ["relation", "ran_in", ["observation", "number"]],
+  ["relation", "experiment", ["direction", "version"]],
+  ["relation", "paid_off", ["direction", "version", "question"]],
+  ["relation", "last_payoff", ["direction", "number"]],
+  ["relation", "miss", ["direction", "version"]],
+  ["relation", "exhausted", ["direction"]],
+  ["relation", "blocked", ["direction", "question"]],
+  ["relation", "ruled_out", ["direction", "question", "needed", "found"]],
+  ["relation", "live", ["direction"]],
+  ["relation", "progress", ["direction", "tried", "paid_off", "misses"]],
+  ["relation", "aims", ["belief", "problem", "question", "predicted"]],
+  ["relation", "targets", ["direction", "version", "problem", "belief"]],
+  ["relation", "fixed", ["direction", "version", "problem", "observation"]],
+  [
+    "relation",
+    "unfixed",
+    ["direction", "version", "problem", "found", "observation"]
+  ],
+  ["relation", "carried", ["direction", "score"]],
+  [
+    "invariant",
+    [
+      "and",
+      ["observed", "?id", "?source", "?_", "?_", "?_"],
+      ["not", ["source", "?source", "?_", "?_"]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["about", "?source", "?_", "?_"],
+      ["not", ["source", "?source", "?_", "?_"]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["observed", "?id", "?_", "?quote", "?question", "?_"],
+      [
+        "not",
+        [
+          "and",
+          ["or", ["value/string?", "?quote"], ["value/array?", "?quote"]],
+          ["value/object?", "?question"]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["predicts", "?belief", "?question", "?_"],
+      [
+        "not",
+        ["and", ["belief", "?belief", "?_"], ["value/object?", "?question"]]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["problem", "?id", "?_", "?question", "?_"],
+      ["not", ["value/object?", "?question"]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["explains", "?belief", "?problem"],
+      [
+        "not",
+        [
+          "and",
+          ["belief", "?belief", "?_"],
+          ["problem", "?problem", "?_", "?_", "?_"]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["violated", "?belief", "?_"],
+      ["not", ["belief", "?belief", "?_"]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    ["and", ["since", "?belief", "?_"], ["not", ["belief", "?belief", "?_"]]],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    ["and", ["needed", "?question"], ["not", ["value/object?", "?question"]]],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["ask", "?question", "?_"],
+      ["not", ["value/object?", "?question"]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["scored", "?q", "?b"],
+      [
+        "not",
+        [
+          "and",
+          ["value/object?", "?q"],
+          ["in", "?b", ["quote", ["lower", "higher"]]]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["scored", "?q", "?_"],
+      ["observed", "?_", "?_", "?_", "?q", "?value"],
+      ["not", ["value/number?", "?value"]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["direction", "?d", "?_", "?patience"],
+      [
+        "not",
+        [
+          "and",
+          ["value/integer?", "?patience"],
+          ["number/greaterThan", "?patience", 0]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["tries", "?o", "?d"],
+      [
+        "not",
+        [
+          "and",
+          ["observed", "?o", "?_", "?_", "?_", "?_"],
+          ["direction", "?d", "?_", "?_"]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["needs", "?d", "?q", "?_"],
+      ["not", ["and", ["direction", "?d", "?_", "?_"], ["value/object?", "?q"]]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["expects", "?d", "?b"],
+      ["not", ["and", ["direction", "?d", "?_", "?_"], ["belief", "?b", "?_"]]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["addresses", "?d", "?p"],
+      [
+        "not",
+        [
+          "and",
+          ["direction", "?d", "?_", "?_"],
+          ["problem", "?p", "?_", "?_", "?_"]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["requires", "?s", "?q", "?_"],
+      ["not", ["and", ["scored", "?s", "?_"], ["value/object?", "?q"]]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "rule",
+    ["valid", "?o", "?v"],
+    ["version", "?v", "?_"],
+    ["observed", "?o", "?s", "?_", "?_", "?_"],
+    [
+      "not",
+      [
+        "and",
+        ["about", "?s", "?path", "?then"],
+        ["at", "?v", "?path", "?there"],
+        ["not", ["=", "?then", "?there"]]
+      ]
+    ]
+  ],
+  [
+    "rule",
+    ["seen_in", "?v", "?o", "?q", "?value", "?kind"],
+    ["valid", "?o", "?v"],
+    ["observed", "?o", "?s", "?_", "?q", "?value"],
+    ["source", "?s", "?kind", "?_"]
+  ],
+  [
+    "rule",
+    ["overruled_in", "?v", "?o", "?by"],
+    ["seen_in", "?v", "?o", "?q", "?said", "?heard"],
+    ["in", "?heard", ["quote", ["told", "recalled"]]],
+    ["seen_in", "?v", "?by", "?q", "?seen", "?kind"],
+    ["in", "?kind", ["quote", ["ran", "read"]]],
+    ["not", ["=", "?said", "?seen"]]
+  ],
+  [
+    "rule",
+    ["answer_in", "?v", "?q", "?value", "?o"],
+    ["seen_in", "?v", "?o", "?q", "?value", "?_"],
+    ["not", ["overruled_in", "?v", "?o", "?_"]]
+  ],
+  [
+    "rule",
+    ["answer", "?q", "?value", "?o"],
+    ["answer_in", "now", "?q", "?value", "?o"]
+  ],
+  ["rule", ["overruled", "?o", "?by"], ["overruled_in", "now", "?o", "?by"]],
+  [
+    "rule",
+    ["stale", "?s", "?path"],
+    ["about", "?s", "?path", "?then"],
+    ["at", "now", "?path", "?now"],
+    ["not", ["=", "?then", "?now"]]
+  ],
+  [
+    "rule",
+    ["answers", "?q", ["aggregate/unique", "?value"]],
+    ["answer", "?q", "?value", "?_"]
+  ],
+  [
+    "rule",
+    ["disputed", "?q", "?values"],
+    ["answers", "?q", "?values"],
+    ["number/greaterThan", ["array/length", "?values"], 1],
+    ["not", ["scored", "?q", "?_"]]
+  ],
+  [
+    "rule",
+    ["hearsay", "?q", "?value"],
+    ["answer", "?q", "?value", "?_"],
+    [
+      "not",
+      [
+        "and",
+        ["seen_in", "now", "?_", "?q", "?value", "?kind"],
+        ["in", "?kind", ["quote", ["ran", "read"]]]
+      ]
+    ]
+  ],
+  [
+    "rule",
+    ["changed", "?q", "?before", "?after"],
+    ["answer_in", "?v", "?q", "?before", "?_"],
+    ["not", ["=", "?v", "now"]],
+    ["answer", "?q", "?after", "?_"],
+    ["not", ["=", "?before", "?after"]]
+  ],
+  [
+    "rule",
+    ["occurs", "?p", "?v"],
+    ["problem", "?p", "?_", "?q", "?value"],
+    ["answer_in", "?v", "?q", "?value", "?_"]
+  ],
+  [
+    "rule",
+    ["judged_in", "?b", "?v"],
+    ["explains", "?b", "?p"],
+    ["occurs", "?p", "?v"]
+  ],
+  ["rule", ["judged_from", "?b", "?n"], ["since", "?b", "?n"]],
+  [
+    "rule",
+    ["judged_from", "?b", 0],
+    ["belief", "?b", "?_"],
+    ["not", ["since", "?b", "?_"]]
+  ],
+  [
+    "rule",
+    ["judged_in", "?b", "?v"],
+    ["belief", "?b", "?_"],
+    ["not", ["and", ["explains", "?b", "?p"], ["occurs", "?p", "?_"]]],
+    ["not", ["expects", "?_", "?b"]],
+    ["judged_from", "?b", "?first"],
+    ["version", "?v", "?n"],
+    ["number/greaterThanOrEqualTo", "?n", "?first"]
+  ],
+  [
+    "rule",
+    ["judged_in", "?b", "?v"],
+    ["expects", "?_", "?b"],
+    ["judged_from", "?b", "?n"],
+    ["version", "?v", "?n"]
+  ],
+  [
+    "rule",
+    ["contradicted", "?b", "?q", "?predicted", "?found", "?o"],
+    ["judged_in", "?b", "?v"],
+    ["predicts", "?b", "?q", "?predicted"],
+    ["answer_in", "?v", "?q", "?found", "?o"],
+    ["not", ["=", "?predicted", "?found"]]
+  ],
+  [
+    "rule",
+    ["violated", "?b", "?o"],
+    ["contradicted", "?b", "?_", "?_", "?_", "?o"]
+  ],
+  [
+    "rule",
+    ["holds", "?b"],
+    ["belief", "?b", "?_"],
+    ["not", ["violated", "?b", "?_"]]
+  ],
+  [
+    "rule",
+    ["borne_out", "?b", "?q", "?value", "?o"],
+    ["judged_in", "?b", "?v"],
+    ["predicts", "?b", "?q", "?value"],
+    ["answer_in", "?v", "?q", "?value", "?o"]
+  ],
+  [
+    "rule",
+    ["untested", "?b", "?q", "?value"],
+    ["holds", "?b"],
+    ["predicts", "?b", "?q", "?value"],
+    [
+      "not",
+      ["and", ["judged_in", "?b", "?v"], ["answer_in", "?v", "?q", "?_", "?_"]]
+    ]
+  ],
+  [
+    "rule",
+    ["splits", "?p", "?q"],
+    ["explains", "?b1", "?p"],
+    ["holds", "?b1"],
+    ["predicts", "?b1", "?q", "?v1"],
+    ["explains", "?b2", "?p"],
+    ["holds", "?b2"],
+    ["predicts", "?b2", "?q", "?v2"],
+    ["not", ["=", "?v1", "?v2"]]
+  ],
+  [
+    "rule",
+    [
+      "decisive",
+      "?p",
+      "?q",
+      [
+        "aggregate/unique",
+        {
+          "belief": "?b",
+          "predicts": "?value"
+        }
+      ]
+    ],
+    ["splits", "?p", "?q"],
+    ["explains", "?b", "?p"],
+    ["holds", "?b"],
+    ["predicts", "?b", "?q", "?value"]
+  ],
+  [
+    "rule",
+    ["remaining", "?p", ["aggregate/unique", "?b"]],
+    ["explains", "?b", "?p"],
+    ["holds", "?b"]
+  ],
+  [
+    "rule",
+    ["unexplained", "?p"],
+    ["explains", "?_", "?p"],
+    ["not", ["and", ["explains", "?b", "?p"], ["holds", "?b"]]]
+  ],
+  [
+    "rule",
+    ["settled", "?p", "?b"],
+    ["remaining", "?p", ["array/make", "?b"]],
+    ["borne_out", "?b", "?_", "?_", "?_"],
+    ["not", ["untested", "?b", "?_", "?_"]]
+  ],
+  [
+    "rule",
+    ["open", "?q"],
+    ["needed", "?q"],
+    ["not", ["answer", "?q", "?_", "?_"]]
+  ],
+  [
+    "rule",
+    ["undecided", "?q", "?of"],
+    ["ask", "?q", "?of"],
+    ["not", ["observed", "?_", "?of", "?_", "?q", "?_"]]
+  ],
+  [
+    "rule",
+    ["presumed", "?q", "?value", "?o"],
+    ["ask", "?q", "?of"],
+    ["observed", "?o", "?source", "?_", "?q", "?value"],
+    ["not", ["=", "?source", "?of"]]
+  ],
+  ["rule", ["first", "?v", ["aggregate/min", "?n"]], ["version", "?v", "?n"]],
+  [
+    "rule",
+    ["range_in", "?v", "?q", ["aggregate/min", "?x"], ["aggregate/max", "?x"]],
+    ["scored", "?q", "?_"],
+    ["answer_in", "?v", "?q", "?x", "?_"],
+    ["not", ["unmet", "?v", "?q", "?_", "?_"]]
+  ],
+  [
+    "rule",
+    ["score_in", "?v", "?q", "?low", "?high"],
+    ["scored", "?q", "lower"],
+    ["range_in", "?v", "?q", "?low", "?high"]
+  ],
+  [
+    "rule",
+    ["score_in", "?v", "?q", "?high", "?low"],
+    ["scored", "?q", "higher"],
+    ["range_in", "?v", "?q", "?low", "?high"]
+  ],
+  [
+    "rule",
+    ["sure_ever", "?q", ["aggregate/min", "?high"], ["aggregate/max", "?low"]],
+    ["range_in", "?_", "?q", "?low", "?high"]
+  ],
+  [
+    "rule",
+    ["best", "?q", "?sure"],
+    ["scored", "?q", "lower"],
+    ["sure_ever", "?q", "?sure", "?_"]
+  ],
+  [
+    "rule",
+    ["best", "?q", "?sure"],
+    ["scored", "?q", "higher"],
+    ["sure_ever", "?q", "?_", "?sure"]
+  ],
+  [
+    "rule",
+    [
+      "sure_before",
+      "?v",
+      "?q",
+      ["aggregate/min", "?high"],
+      ["aggregate/max", "?low"]
+    ],
+    ["first", "?v", "?n"],
+    ["range_in", "?u", "?q", "?low", "?high"],
+    ["first", "?u", "?m"],
+    ["number/lessThan", "?m", "?n"]
+  ],
+  [
+    "rule",
+    ["improved", "?q", "?v", "?before", "?after"],
+    ["scored", "?q", "lower"],
+    ["range_in", "?v", "?q", "?_", "?after"],
+    ["sure_before", "?v", "?q", "?before", "?_"],
+    ["number/lessThan", "?after", "?before"]
+  ],
+  [
+    "rule",
+    ["improved", "?q", "?v", "?before", "?after"],
+    ["scored", "?q", "higher"],
+    ["range_in", "?v", "?q", "?after", "?_"],
+    ["sure_before", "?v", "?q", "?_", "?before"],
+    ["number/greaterThan", "?after", "?before"]
+  ],
+  [
+    "rule",
+    ["regressed", "?q", "?now", "?best"],
+    ["scored", "?q", "lower"],
+    ["range_in", "now", "?q", "?now", "?_"],
+    ["best", "?q", "?best"],
+    ["number/greaterThan", "?now", "?best"]
+  ],
+  [
+    "rule",
+    ["regressed", "?q", "?now", "?best"],
+    ["scored", "?q", "higher"],
+    ["range_in", "now", "?q", "?_", "?now"],
+    ["best", "?q", "?best"],
+    ["number/lessThan", "?now", "?best"]
+  ],
+  [
+    "rule",
+    ["unmet", "?v", "?s", "?q", "?needed"],
+    ["requires", "?s", "?q", "?needed"],
+    ["answer_in", "?v", "?s", "?_", "?_"],
+    ["not", ["answer_in", "?v", "?q", "?needed", "?_"]]
+  ],
+  [
+    "rule",
+    ["unmet", "?v", "?s", "?q", "?needed"],
+    ["requires", "?s", "?q", "?needed"],
+    ["answer_in", "?v", "?s", "?_", "?_"],
+    ["answer_in", "?v", "?q", "?found", "?_"],
+    ["not", ["=", "?found", "?needed"]]
+  ],
+  [
+    "rule",
+    ["ran_in", "?o", ["aggregate/min", "?n"]],
+    ["tries", "?o", "?_"],
+    ["valid", "?o", "?v"],
+    ["first", "?v", "?n"]
+  ],
+  [
+    "rule",
+    ["experiment", "?d", "?v"],
+    ["tries", "?o", "?d"],
+    ["ran_in", "?o", "?n"],
+    ["first", "?v", "?n"]
+  ],
+  [
+    "rule",
+    ["paid_off", "?d", "?v", "?q"],
+    ["experiment", "?d", "?v"],
+    ["improved", "?q", "?v", "?_", "?_"]
+  ],
+  [
+    "rule",
+    ["last_payoff", "?d", ["aggregate/max", "?n"]],
+    ["paid_off", "?d", "?v", "?_"],
+    ["first", "?v", "?n"]
+  ],
+  [
+    "rule",
+    ["miss", "?d", "?v"],
+    ["experiment", "?d", "?v"],
+    ["not", ["paid_off", "?d", "?v", "?_"]],
+    ["first", "?v", "?n"],
+    [
+      "not",
+      [
+        "and",
+        ["last_payoff", "?d", "?last"],
+        ["number/lessThan", "?n", "?last"]
+      ]
+    ]
+  ],
+  [
+    "rule",
+    ["exhausted", "?d"],
+    ["direction", "?d", "?_", "?patience"],
+    [
+      "number/greaterThanOrEqualTo",
+      [
+        "array/length",
+        ["aggregate/unique", ["find", "?v", ["miss", "?d", "?v"]]]
+      ],
+      "?patience"
+    ]
+  ],
+  [
+    "rule",
+    ["blocked", "?d", "?q"],
+    ["needs", "?d", "?q", "?_"],
+    ["undecided", "?q", "?_"]
+  ],
+  [
+    "rule",
+    ["blocked", "?d", "?q"],
+    ["needs", "?d", "?q", "?_"],
+    ["not", ["answer", "?q", "?_", "?_"]]
+  ],
+  [
+    "rule",
+    ["ruled_out", "?d", "?q", "?needed", "?found"],
+    ["needs", "?d", "?q", "?needed"],
+    ["not", ["undecided", "?q", "?_"]],
+    ["answer", "?q", "?found", "?_"],
+    ["not", ["=", "?found", "?needed"]]
+  ],
+  [
+    "rule",
+    ["live", "?d"],
+    ["direction", "?d", "?_", "?_"],
+    ["not", ["exhausted", "?d"]],
+    ["not", ["blocked", "?d", "?_"]],
+    ["not", ["ruled_out", "?d", "?_", "?_", "?_"]]
+  ],
+  [
+    "rule",
+    [
+      "progress",
+      "?d",
+      [
+        "array/length",
+        ["aggregate/unique", ["find", "?v", ["experiment", "?d", "?v"]]]
+      ],
+      [
+        "array/length",
+        ["aggregate/unique", ["find", "?v", ["paid_off", "?d", "?v", "?_"]]]
+      ],
+      [
+        "array/length",
+        ["aggregate/unique", ["find", "?v", ["miss", "?d", "?v"]]]
+      ]
+    ],
+    ["direction", "?d", "?_", "?_"]
+  ],
+  [
+    "rule",
+    ["aims", "?b", "?p", "?q", "?predicted"],
+    ["predicts", "?b", "?q", "?predicted"],
+    ["problem", "?p", "?_", "?q", "?shows"],
+    ["not", ["=", "?predicted", "?shows"]]
+  ],
+  [
+    "rule",
+    ["targets", "?d", "?v", "?p", "?b"],
+    ["expects", "?d", "?b"],
+    ["judged_from", "?b", "?n"],
+    ["version", "?v", "?n"],
+    ["aims", "?b", "?p", "?_", "?_"]
+  ],
+  ["rule", ["addresses", "?d", "?p"], ["targets", "?d", "?_", "?p", "?_"]],
+  [
+    "rule",
+    ["fixed", "?d", "?v", "?p", "?o"],
+    ["targets", "?d", "?v", "?p", "?b"],
+    ["aims", "?b", "?p", "?q", "?predicted"],
+    ["answer_in", "?v", "?q", "?predicted", "?o"]
+  ],
+  [
+    "rule",
+    ["unfixed", "?d", "?v", "?p", "?found", "?o"],
+    ["targets", "?d", "?v", "?p", "?b"],
+    ["aims", "?b", "?p", "?q", "?predicted"],
+    ["answer_in", "?v", "?q", "?found", "?o"],
+    ["not", ["=", "?found", "?predicted"]]
+  ],
+  [
+    "rule",
+    ["carried", "?d", "?q"],
+    ["experiment", "?d", "?_"],
+    ["scored", "?q", "?_"],
+    [
+      "not",
+      [
+        "and",
+        ["experiment", "?d", "?v"],
+        ["answer_in", "?v", "?q", "?_", "?_"],
+        ["sure_before", "?v", "?q", "?_", "?_"]
+      ]
+    ]
+  ],
+  "ready"
+]

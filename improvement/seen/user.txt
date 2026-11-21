@@ -1,0 +1,16 @@
+The user's answers on 2026-11-21, word for word, to the questions the plan research/runs/self-improvement/plan.md asked.
+
+Complexity: Per capability (Recommended)
+Scheme fidelity: Conformance + listed departures (Recommended)
+Autonomy: Branches only (Recommended)
+Purpose yardstick: I like both agent-solved task corpus AND external suites - do both
+Faster checks: Yes, full before merge (Recommended)
+Speed constraint: Growth hard, speed soft (Recommended)
+Held-out tasks: Outside the repo (Recommended)
+Spend: Per-experiment cap (Recommended)
+
+Later message: "I think I'm solving the number gap already in [Clef language insights for Lion] - is that what you're talking about? other than that, yes I approve the unbound-string departure. You have my permission to proceed with this when you're ready"
+
+Later message, on starting phase 1A here and 1B in a parallel session: "Yes, both"
+
+Later message: "the child session [Phase 1B: capability corpus and R7RS probes] is working, coordinate with it and continue"

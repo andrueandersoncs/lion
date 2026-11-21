@@ -1,0 +1,213 @@
+{
+  "Which evidence is out of date, because a file it depends on changed?": [
+    "query",
+    ["and", ["stale", "?source", "?path"], ["source", "?source", "?_", "?what"]]
+  ],
+  "What did the work change?": [
+    "query",
+    ["changed", "?question", "?before", "?after"]
+  ],
+  "Which beliefs does the evidence contradict?": [
+    "query",
+    ["violated", "?belief", "?witness"]
+  ],
+  "Which beliefs hold?": ["find", "?belief", ["holds", "?belief"]],
+  "What would tell the remaining explanations apart?": [
+    "query",
+    ["decisive", "?problem", "?question", "?predictions"]
+  ],
+  "Which explanations are left for each problem?": [
+    "query",
+    ["remaining", "?problem", "?explanations"]
+  ],
+  "Which problems are settled, and by which explanation?": [
+    "query",
+    ["settled", "?problem", "?explanation"]
+  ],
+  "Which problems have no explanation left?": [
+    "find",
+    "?problem",
+    ["unexplained", "?problem"]
+  ],
+  "Which predictions of standing beliefs has nothing checked?": [
+    "query",
+    ["untested", "?belief", "?question", "?predicts"]
+  ],
+  "Where does current evidence disagree?": [
+    "query",
+    ["disputed", "?question", "?values"]
+  ],
+  "What I was told or recalled that what I saw overrules": [
+    "query",
+    [
+      "and",
+      ["overruled", "?observation", "?by"],
+      ["observed", "?observation", "?_", "?_", "?question", "?said"],
+      ["observed", "?by", "?_", "?_", "?_", "?seen"]
+    ]
+  ],
+  "What rests only on what I was told or recalled?": [
+    "query",
+    ["hearsay", "?question", "?value"]
+  ],
+  "What does the task still need?": [
+    "find",
+    "?question",
+    ["open", "?question"]
+  ],
+  "What must the user decide, that they have not?": [
+    "query",
+    ["undecided", "?question", "?of"]
+  ],
+  "What did I settle that was the user's to decide?": [
+    "query",
+    ["presumed", "?question", "?value", "?observation"]
+  ],
+  "What is each score on the files as they are now?": [
+    "query",
+    ["score_in", "now", "?score", "?best", "?worst"]
+  ],
+  "Which scores have no run that counts on the files as they are now?": [
+    "find",
+    "?score",
+    [
+      "and",
+      ["scored", "?score", "?_"],
+      ["not", ["score_in", "now", "?score", "?_", "?_"]]
+    ]
+  ],
+  "What is the best each score is sure to give, and in which version?": [
+    "query",
+    [
+      "and",
+      ["best", "?score", "?best"],
+      ["score_in", "?version", "?score", "?_", "?best"],
+      ["not", ["=", "?version", "now"]]
+    ]
+  ],
+  "Which scores are worse now than their best?": [
+    "query",
+    ["regressed", "?score", "?now", "?best"]
+  ],
+  "Which versions improved a score, from what to what?": [
+    "query",
+    ["improved", "?score", "?version", "?before", "?after"]
+  ],
+  "Which versions' scores do not count, because a requirement is not met?": [
+    "query",
+    ["unmet", "?version", "?score", "?question", "?needed"]
+  ],
+  "Where should the next experiment go?": [
+    "query",
+    [
+      "and",
+      ["live", "?direction"],
+      ["progress", "?direction", "?tried", "?paid_off", "?misses"]
+    ],
+    {
+      "order": ["-paid_off", "tried"]
+    }
+  ],
+  "Which directions are set aside, and why?": [
+    "find",
+    {
+      "direction": "?direction",
+      "why": "?why"
+    },
+    [
+      "or",
+      [
+        "and",
+        ["exhausted", "?direction"],
+        ["progress", "?direction", "?_", "?_", "?misses"],
+        [
+          "=",
+          "?why",
+          {
+            "missed in a row": "?misses"
+          }
+        ]
+      ],
+      [
+        "and",
+        ["blocked", "?direction", "?question"],
+        [
+          "=",
+          "?why",
+          {
+            "waits for": "?question"
+          }
+        ]
+      ],
+      [
+        "and",
+        ["ruled_out", "?direction", "?question", "?needed", "?found"],
+        [
+          "=",
+          "?why",
+          {
+            "needs": "?question",
+            "to be": "?needed",
+            "but is": "?found"
+          }
+        ]
+      ]
+    ]
+  ],
+  "What was each experiment expected to fix, and did it?": [
+    "find",
+    {
+      "direction": "?direction",
+      "version": "?version",
+      "problem": "?problem",
+      "came": "?came"
+    },
+    [
+      "and",
+      ["targets", "?direction", "?version", "?problem", "?_"],
+      [
+        "or",
+        [
+          "and",
+          ["fixed", "?direction", "?version", "?problem", "?_"],
+          ["=", "?came", ["quote", "fixed"]]
+        ],
+        [
+          "and",
+          ["unfixed", "?direction", "?version", "?problem", "?_", "?_"],
+          ["=", "?came", ["quote", "not fixed"]]
+        ],
+        [
+          "and",
+          ["not", ["fixed", "?direction", "?version", "?problem", "?_"]],
+          [
+            "not",
+            ["unfixed", "?direction", "?version", "?problem", "?_", "?_"]
+          ],
+          ["=", "?came", ["quote", "not checked"]]
+        ]
+      ]
+    ]
+  ],
+  "Which problems still show, though every direction that addresses them is set aside?": [
+    "find",
+    "?problem",
+    [
+      "and",
+      ["occurs", "?problem", "now"],
+      ["addresses", "?_", "?problem"],
+      [
+        "not",
+        ["and", ["addresses", "?direction", "?problem"], ["live", "?direction"]]
+      ]
+    ]
+  ],
+  "Which directions' experiments say nothing about a score, because none ran it with an earlier version to beat?": [
+    "query",
+    [
+      "and",
+      ["carried", "?direction", "?score"],
+      ["progress", "?direction", "?tried", "?paid_off", "?misses"]
+    ]
+  ]
+}

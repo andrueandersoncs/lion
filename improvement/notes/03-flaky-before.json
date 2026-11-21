@@ -1,0 +1,24 @@
+{
+  "observations": [
+    {
+      "id": "flaky-before-9",
+      "question": {
+        "mutation runs caught": "a broken chain of figures ignores the measurements between",
+        "of": "6"
+      },
+      "quote": "mutation runs caught of 6, a broken chain of figures ignores the measurements between: 5",
+      "source": "flaky-before",
+      "value": 5
+    },
+    {
+      "id": "flaky-before-10",
+      "question": {
+        "mutation runs caught": "a rule that asks assuming is followed through a change as other rules are",
+        "of": "6"
+      },
+      "quote": "mutation runs caught of 6, a rule that asks assuming is followed through a change as other rules are: 5",
+      "source": "flaky-before",
+      "value": 5
+    }
+  ]
+}

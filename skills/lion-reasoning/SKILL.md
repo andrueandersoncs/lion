@@ -86,7 +86,7 @@ The question is a record that names what was asked; the value is the answer. Cho
 node <skill>/scripts/see.mjs t1 --about packages/core -- bun run test
 ```
 
-`--about` lists what the output depends on; without it, the whole project. Name it as narrowly as is true: a test of one package depends on that package, but if it imports others, list them too, or leave `--about` out. A source run this way needs no entry in the notes' `sources`. Versions keep the files git tracks and the new ones it does not ignore; a path git ignores, such as build output, and a path outside the project are hashed from disk as they are now.
+`--about` lists what the output depends on; without it, the whole project. Name it as narrowly as is true: a test of one package depends on that package, but if it imports others, list them too, or leave `--about` out. A source run this way needs no entry in the notes' `sources`. Versions keep the files git tracks and the new ones it does not ignore, never the task folder's own, wherever it is, so recording notes never makes a new version; a path git ignores, such as build output, and a path outside the project are hashed from disk as they are now.
 
 Run a check of the old code against a copy of it, not by undoing your change in place: the result depends only on the old code, which does not change, and on what you bring to it, such as a new test. See "Checking a test against the old code" in [references/patterns.md](references/patterns.md).
 

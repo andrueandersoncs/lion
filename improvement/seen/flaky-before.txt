@@ -1,0 +1,12 @@
+$ bun run loop scores "--skip" "measure,capability,record,scale,tests,bench,replay,check,instruments" "--repeat" "6" "--mutations" "a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are"
+$ bun run --cwd packages/metrics loop scores --skip "measure,capability,record,scale,tests,bench,replay,check,instruments" --repeat "6" --mutations "a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are"
+$ bun run loop.ts scores --skip "measure,capability,record,scale,tests,bench,replay,check,instruments" --repeat "6" --mutations "a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are"
+ran mutations-0: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 0, 32 s
+ran mutations-1: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 0, 45 s
+ran mutations-2: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 0, 40 s
+ran mutations-3: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 0, 37 s
+ran mutations-4: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 1, 36 s
+ran mutations-5: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are, exit 1, 39 s
+mutation runs caught of 6, a broken chain of figures ignores the measurements between: 5
+mutation runs caught of 6, a rule that asks assuming is followed through a change as other rules are: 5
+[exit status 0]

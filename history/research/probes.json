@@ -23928,5 +23928,77 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "feature": "loop-command",
+    "kind": "command",
+    "program": [
+      "array/includes?",
+      ["object/keys", ["object/get", ["repo/json", "package.json"], "scripts"]],
+      "loop"
+    ]
+  },
+  {
+    "feature": "affected-command",
+    "kind": "command",
+    "program": [
+      "array/includes?",
+      ["object/keys", ["object/get", ["repo/json", "package.json"], "scripts"]],
+      "affected"
+    ]
+  },
+  {
+    "feature": "improvement-record",
+    "kind": "file",
+    "program": [
+      "number/greaterThan",
+      ["array/length", ["repo/files", "improvement/notes"]],
+      0
+    ]
+  },
+  {
+    "case": "loop-observation-quotes",
+    "area": "metrics",
+    "program": [
+      "cond",
+      [
+        [
+          "array/every?",
+          ["repo/files", "improvement/notes"],
+          [
+            "lambda",
+            ["file"],
+            [
+              "array/every?",
+              [
+                "object/get",
+                ["repo/json", "file"],
+                "observations",
+                ["quote", []]
+              ],
+              [
+                "lambda",
+                ["seen"],
+                [
+                  "string/includes",
+                  [
+                    "repo/read",
+                    [
+                      "string/concat",
+                      "improvement/seen/",
+                      ["object/get", "seen", "source"],
+                      ".txt"
+                    ]
+                  ],
+                  ["object/get", "seen", "quote"]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["quote", "in-their-source"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
   }
 ]

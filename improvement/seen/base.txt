@@ -1,0 +1,26 @@
+$ bun run loop scores "--mutations" "a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are|a relation goal reads a relation's rows before they are derived"
+$ bun run --cwd packages/metrics loop scores --mutations "a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are|a relation goal reads a relation's rows before they are derived"
+$ bun run loop.ts scores --mutations "a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are|a relation goal reads a relation's rows before they are derived"
+ran measure: bun run measure, exit 0, 1 s
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+ran record: bun run history check, exit 0, 61 s
+record check, history: holds
+rules no probe checks, record: 107
+ran scale: bun run scale, exit 0, 42 s
+workloads faster than linear, scale: 0
+ran tests: bun run test, exit 0, 150 s
+failing test tasks, all packages: 0
+ran bench: bun run bench, exit 0, 3 s
+bench total ms, every benchmark: 965.8
+ran replay: bun run affected --replay 30, exit 0, 1 s
+tests' time picked, last 30 commits: 98
+ran check: bun run affected --check, exit 0, 71 s
+picking unsound, listed mutations: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 0
+ran mutations: bun run mutate a broken chain of figures ignores the measurements between a rule that asks assuming is followed through a change as other rules are a relation goal reads a relation's rows before they are derived, exit 1, 30 s
+mutation, a broken chain of figures ignores the measurements between: caught
+mutation, a rule that asks assuming is followed through a change as other rules are: caught
+mutation, a relation goal reads a relation's rows before they are derived: stale
+[exit status 0]

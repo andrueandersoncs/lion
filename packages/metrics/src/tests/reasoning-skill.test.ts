@@ -1882,6 +1882,50 @@ describe("the reasoning skill's versions", () => {
   );
 
   it.effect.prop(
+    "leave out the task folder's own files, wherever the folder is, so recording never makes a version",
+    {
+      files: project,
+      notes: Arbitrary.array(between(0, 2), { maxLength: 3, minLength: 1 }),
+      relativeTo: Arbitrary.map(between(0, 1), (n) => n === 1),
+      where: element(["record", "deep/record", ".lion/record"]),
+    },
+    ({ files, notes, relativeTo, where }) =>
+      Effect.gen(function* () {
+        const { manifestNow, snapshot, versionsOf } = yield* Effect.promise(
+          () => library
+        );
+        const root = join(scratch, "own");
+        const folder = join(root, where);
+        writeProject(root, files);
+        mkdirSync(folder, { recursive: true });
+        const outside = manifestNow(root);
+        for (const [at, note] of notes.entries()) {
+          writeFileSync(join(folder, `note-${at}.json`), `note ${note}`);
+          // The scripts run in the task folder and name it ".".
+          const back = process.cwd();
+          try {
+            if (relativeTo) {
+              process.chdir(folder);
+            }
+            snapshot(relativeTo ? "." : folder, root);
+          } finally {
+            process.chdir(back);
+          }
+        }
+        const kept = versionsOf(folder);
+        expect(kept.length).toBe(1);
+        expect(kept[0]?.manifest).toEqual(
+          Object.fromEntries(
+            Object.entries(outside).filter(
+              ([path]) => !path.startsWith(`${where}/`)
+            )
+          )
+        );
+      }),
+    { arbitrary: { runs: 40 } }
+  );
+
+  it.effect.prop(
     "are kept as changes and read back as the projects they were taken from",
     { states: Arbitrary.array(project, { minLength: 1, maxLength: 4 }) },
     ({ states }) =>

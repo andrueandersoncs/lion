@@ -15,7 +15,15 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, isAbsolute, join, relative, sep } from "node:path";
+import {
+  basename,
+  dirname,
+  isAbsolute,
+  join,
+  relative,
+  resolve,
+  sep,
+} from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const SKILL = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -79,8 +87,21 @@ const walk = (root, prefix) =>
     return entry.isFile() ? [path] : [];
   });
 
-/** Every file of the project, as paths from its root, without `.lion`. */
-const projectFiles = (root) => {
+/** A path read through any link in it, or the path itself when it is not there. */
+const realOrSelf = (path) => {
+  try {
+    return realpathSync(path);
+  } catch {
+    return path;
+  }
+};
+
+/**
+ * Every file of the project, as paths from its root, without `.lion` and
+ * without the task folder's own files, wherever the folder is: the record
+ * observes the project, and is never a part of it.
+ */
+const projectFiles = (root, folder) => {
   const git = spawnSync(
     "git",
     ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
@@ -90,7 +111,20 @@ const projectFiles = (root) => {
     git.status === 0
       ? git.stdout.split("\0").filter((file) => file !== "")
       : walk(root, "");
-  return listed.filter((file) => !file.split("/").includes(TASKS));
+  // A folder given as a relative path, such as "." inside the task folder,
+  // is relative to where the script runs, not to the project; both are read
+  // through any link, as the project's root is.
+  const own =
+    folder === undefined
+      ? undefined
+      : pathIn(realOrSelf(root), realOrSelf(resolve(folder)));
+  const inOwn = (file) =>
+    own !== undefined &&
+    own !== "." &&
+    (file === own || file.startsWith(`${own}/`));
+  return listed.filter(
+    (file) => !(file.split("/").includes(TASKS) || inOwn(file))
+  );
 };
 
 /**
@@ -99,7 +133,7 @@ const projectFiles = (root) => {
  * again. A file changed in the last few seconds is never cached, since a
  * second change within the clock's resolution would keep its time.
  */
-export const manifestNow = (root, cachePath) => {
+export const manifestNow = (root, cachePath, folder) => {
   const cache =
     cachePath !== undefined && existsSync(cachePath)
       ? JSON.parse(readFileSync(cachePath, "utf8"))
@@ -107,7 +141,7 @@ export const manifestNow = (root, cachePath) => {
   const manifest = {};
   const kept = {};
   const settled = Date.now() - SETTLED_MS;
-  for (const file of projectFiles(root).sort()) {
+  for (const file of projectFiles(root, folder).sort()) {
     const full = join(root, file);
     if (!existsSync(full)) {
       continue;
@@ -262,7 +296,7 @@ export const changesBetween = (before, after) => {
  * version kept is the same. Gives the manifest.
  */
 export const snapshot = (folder, root) => {
-  const manifest = manifestNow(root, join(folder, "hash-cache.json"));
+  const manifest = manifestNow(root, join(folder, "hash-cache.json"), folder);
   const kept = versionsOf(folder);
   const changes = changesBetween(kept.at(-1)?.manifest ?? {}, manifest);
   if (kept.length === 0 || Object.keys(changes).length > 0) {
@@ -317,7 +351,7 @@ export const versionsNow = (folder, root, watched) =>
     [
       ...versionsOf(folder),
       {
-        manifest: manifestNow(root, join(folder, "hash-cache.json")),
+        manifest: manifestNow(root, join(folder, "hash-cache.json"), folder),
         name: NOW,
       },
     ],

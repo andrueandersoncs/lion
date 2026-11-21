@@ -11,6 +11,12 @@
 - `bun run affected --replay 30` says what picking would have run for each of the last 30 commits, beside everything (`affected-replay` added)
 - `bun run mutate --affected` checks only the mutations the changes since HEAD can reach: those in a changed file, and those whose tests a changed file reaches (`mutate-affected` added)
 - `bun run affected --map` runs every package's tests once with a setup file that records the source files whose functions each test file ran, the files it read, and whether it ran git (`reach-map` added)
+- Experiments on Lion are recorded in `improvement/` (`improvement-record` added)
+- `bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word (`loop-command` added)
+
+### Changed
+
+- The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/` (`reasoning-task-folder-in-versions` is `left-out`)
 
 ### Decided
 
@@ -24,6 +30,8 @@
 - Versions of Lion are compared in a fixed order, never by a weighted sum (`improvement-order`: `constraints-capability-cost-rate` over `weighted-sum`)
 - Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why. (`scheme-fidelity`: `departures-decided-and-probed` over `where-unclear`, `separate-departures-list`, `racket-first`)
 - A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change. (`speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`)
+- The record is judged by the published Lion CLI that `LION_CLI` names (`improvement-judge`: `published-cli` over `working-tree`)
+- Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository. (`improvement-record`: `lion-reasoning-folder` over `project-record`, `research-model`)
 
 ### Rules
 
@@ -33,6 +41,7 @@
 - A person merges, releases, and approves every decision that overturns a documented rule. (rule `people-merge-and-release`)
 - `bun run affected --check` treats each listed mutation as a change to its file, and lists every test the mutation names that picking would skip (rule `picked-checks-catch-what-full-catches`)
 - a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check` (rule `scheme-departures-are-decided`)
+- so no figure in the record is typed in (rule `loop-figures-observed`)
 
 ## 2026-11-20 — @lionlang/core 0.15.0, @lionlang/cli 0.14.0
 
