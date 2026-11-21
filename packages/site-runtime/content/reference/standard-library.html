@@ -3,24 +3,24 @@
 <p>Every function <a href="#logic-waiting">waits</a> when it is called with a logic variable among its arguments, so all of them work as filters and computed values in rules and queries. A function that is given a goal gets its answer, <code>true</code> or <code>false</code>; see <a href="#logic-asking">Asking questions</a>. Functions of the <code>aggregate</code> and <code>graph</code> modules take logic variables as they are, to build aggregates and goals.</p>
 
 <h2 id="module-number">number</h2>
-<p>Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with <code>ArithmeticError</code>. Integers a JSON number holds exactly, up to 2^53 - 1 either side of zero, do exact arithmetic: a sum, difference, product, or power of them that a JSON number cannot hold exactly fails with <code>ArithmeticError</code> too, instead of rounding. Past that range a number is a float, and rounds as one.</p>
+<p>Every argument must be a number. Every number is exact, as Scheme's exact numbers are: an integer of any size or a fraction. A number a program writes is the exact value its digits write, so <code>0.1</code> is one tenth, and arithmetic is exact: <code>0.1 + 0.2</code> is <code>0.3</code>, no sum or product overflows, and <code>1 ÷ 3</code> is the fraction one third. JSON cannot hold a fraction no decimal writes, so a result that holds one fails to print with <code>ArithmeticError</code>: write it as text with <code>number/toString</code>, or round it with <code>number/round</code>.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
     <tr data-entry="number/add"><td><code>["number/add", a, b, ...]</code></td><td><code>a + b</code>, and so on for one or more numbers</td></tr>
     <tr data-entry="number/subtract"><td><code>["number/subtract", a, b]</code></td><td><code>a - b</code></td></tr>
     <tr data-entry="number/multiply"><td><code>["number/multiply", a, b, ...]</code></td><td><code>a × b</code>, and so on for one or more numbers</td></tr>
-    <tr data-entry="number/divide"><td><code>["number/divide", a, b]</code></td><td><code>a ÷ b</code>. Dividing by 0 fails with <code>ArithmeticError</code>.</td></tr>
+    <tr data-entry="number/divide"><td><code>["number/divide", a, b]</code></td><td><code>a ÷ b</code>, exactly: <code>1 ÷ 3</code> is the fraction one third. Dividing by 0 fails with <code>ArithmeticError</code>.</td></tr>
     <tr data-entry="number/remainder"><td><code>["number/remainder", a, b]</code></td><td>What is left of <code>a</code> after dividing by <code>b</code>, with the sign of <code>a</code>. A remainder by 0 fails with <code>ArithmeticError</code>.</td></tr>
-    <tr data-entry="number/power"><td><code>["number/power", a, b]</code></td><td><code>a</code> to the power of <code>b</code></td></tr>
+    <tr data-entry="number/power"><td><code>["number/power", a, b]</code></td><td><code>a</code> to the power of <code>b</code>: exact for a whole <code>b</code>, and failing with <code>ArithmeticError</code> past 4,300 digits; for any other <code>b</code>, such as <code>0.5</code>, the nearest double</td></tr>
     <tr data-entry="number/min"><td><code>["number/min", a, b, ...]</code></td><td>The smallest of one or more numbers</td></tr>
     <tr data-entry="number/max"><td><code>["number/max", a, b, ...]</code></td><td>The largest of one or more numbers</td></tr>
     <tr data-entry="number/absolute"><td><code>["number/absolute", a]</code></td><td><code>a</code> without its sign</td></tr>
     <tr data-entry="number/floor"><td><code>["number/floor", a]</code></td><td>The largest whole number that is at most <code>a</code></td></tr>
     <tr data-entry="number/ceiling"><td><code>["number/ceiling", a]</code></td><td>The smallest whole number that is at least <code>a</code></td></tr>
-    <tr data-entry="number/round"><td><code>["number/round", a]</code></td><td>The nearest whole number; a half rounds up</td></tr>
-    <tr data-entry="number/toString"><td><code>["number/toString", a]</code><br><code>["number/toString", a, separator]</code></td><td><code>a</code> as text, the way JSON writes it. With a separator, a string, the whole part is written in groups of three digits with it between them: <code>"1,234,567.5"</code></td></tr>
-    <tr data-entry="number/fromString"><td><code>["number/fromString", text]</code><br><code>["number/fromString", text, separator]</code></td><td>The number <code>text</code> writes, as <code>string->number</code> reads it in Scheme, or <code>null</code> when <code>text</code> is not one number. With a separator, the whole part may be in groups of three digits with it between them, so it reads back what <code>number/toString</code> writes with the same separator</td></tr>
+    <tr data-entry="number/round"><td><code>["number/round", a]</code><br><code>["number/round", a, places]</code></td><td>The nearest whole number, or with <code>places</code>, the nearest number with that many digits after the point; a half rounds up</td></tr>
+    <tr data-entry="number/toString"><td><code>["number/toString", a]</code><br><code>["number/toString", a, separator]</code></td><td><code>a</code> as text, the way JSON writes it, and a fraction no decimal writes as Scheme writes it, <code>"1/3"</code>. With a separator, a string, the whole part is written in groups of three digits with it between them: <code>"1,234,567.5"</code></td></tr>
+    <tr data-entry="number/fromString"><td><code>["number/fromString", text]</code><br><code>["number/fromString", text, separator]</code></td><td>The number <code>text</code> writes, as <code>string->number</code> reads it in Scheme, exactly, <code>"1/3"</code> among them, or <code>null</code> when <code>text</code> is not one number. With a separator, the whole part may be in groups of three digits with it between them, so it reads back what <code>number/toString</code> writes with the same separator</td></tr>
     <tr data-entry="number/equals?"><td><code>["number/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
     <tr data-entry="number/lessThan"><td><code>["number/lessThan", a, b]</code></td><td>Whether <code>a &lt; b</code></td></tr>
     <tr data-entry="number/greaterThan"><td><code>["number/greaterThan", a, b]</code></td><td>Whether <code>a &gt; b</code></td></tr>
@@ -34,6 +34,9 @@
  "subtract": ["number/subtract", 7, 3],
  "multiply": ["number/multiply", 7, 3],
  "divide": ["number/divide", 7, 2],
+ "a third, as text": ["number/toString", ["number/divide", 1, 3]],
+ "exact decimals": ["number/add", 0.1, 0.2],
+ "past 2^53": ["number/add", 9007199254740991, 2],
  "remainder": ["number/remainder", 7, 3],
  "power": ["number/power", 2, 10],
  "min": ["number/min", 7, 3],
@@ -42,6 +45,7 @@
  "floor": ["number/floor", 2.7],
  "ceiling": ["number/ceiling", 2.1],
  "round": ["number/round", 2.5],
+ "round to places": ["number/round", ["number/divide", 2, 3], 2],
  "toString": ["string/concat", "order ", ["number/toString", 42]],
  "grouped": ["number/toString", 1234567.5, ","],
  "fromString": ["number/fromString", "1,234,567.5", ","],
@@ -403,8 +407,8 @@
   <tbody>
     <tr data-entry="aggregate/count"><td><code>["aggregate/count", values]</code></td><td>How many values</td><td><code>0</code></td></tr>
     <tr data-entry="aggregate/countUnique"><td><code>["aggregate/countUnique", values]</code></td><td>How many distinct values</td><td><code>0</code></td></tr>
-    <tr data-entry="aggregate/sum"><td><code>["aggregate/sum", values]</code></td><td>The sum, rounded once to the number nearest the exact sum, so the order of the values never changes it; values must be numbers, and an overflow fails with <code>ArithmeticError</code>; a sum of integers a JSON number holds exactly fails where the exact sum is one it cannot hold</td><td><code>0</code></td></tr>
-    <tr data-entry="aggregate/mean"><td><code>["aggregate/mean", values]</code></td><td>The mean: the sum, rounded once, divided by how many values there are; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/sum"><td><code>["aggregate/sum", values]</code></td><td>The exact sum, so the order of the values never changes it; values must be numbers</td><td><code>0</code></td></tr>
+    <tr data-entry="aggregate/mean"><td><code>["aggregate/mean", values]</code></td><td>The exact mean: the sum divided by how many values there are, which may be a fraction such as 7/3; values must be numbers</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/min"><td><code>["aggregate/min", values]</code></td><td>The smallest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/max"><td><code>["aggregate/max", values]</code></td><td>The largest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/shortest"><td><code>["aggregate/shortest", values]</code></td><td>The shortest list or string; ties go to the smaller value. Lattice.</td><td><code>null</code></td></tr>
@@ -413,10 +417,10 @@
     <tr data-entry="aggregate/unique"><td><code>["aggregate/unique", values]</code></td><td>The distinct values, sorted</td><td><code>[]</code></td></tr>
   </tbody>
 </table>
-<p>A sum is rounded once, so adding the same numbers in another order, as the matches of a rule or the candidates of a key may come, gives the same number:</p>
+<p>A sum is exact, so adding the same numbers in another order, as the matches of a rule or the candidates of a key may come, gives the same number:</p>
 <lion-example name="A sum in any order">
-{"forward": ["aggregate/sum", ["array/make", 1e16, 1, -1e16]],
- "backward": ["aggregate/sum", ["array/make", -1e16, 1, 1e16]]}
+{"forward": ["aggregate/sum", ["array/make", 1e16, 0.1, -1e16, 0.2]],
+ "backward": ["aggregate/sum", ["array/make", 0.2, -1e16, 0.1, 1e16]]}
 </lion-example>
 <p>Lattice aggregates only move one way as values arrive, so they may aggregate through recursion. See <a href="#logic-guarantees">Logic database guarantees</a>.</p>
 <lion-example name="aggregate">

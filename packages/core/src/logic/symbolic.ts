@@ -24,19 +24,12 @@ import { fits } from "@/logic/fit";
 import {
   type Constraint,
   constant,
-  divide,
-  isZero,
   type Linear,
   minus,
-  multiply,
-  negate,
-  ONE,
   plus,
-  ratio,
   type Sort,
   times,
   variable,
-  ZERO,
 } from "@/logic/solver";
 import {
   and,
@@ -80,6 +73,15 @@ import {
   recordKeys,
   show,
 } from "@/logic/terms";
+import {
+  divide,
+  isZero,
+  multiply,
+  negate,
+  ONE,
+  ratio,
+  ZERO,
+} from "@/numbers/exact";
 
 /** The context a goal is worked out in. */
 export interface Context {

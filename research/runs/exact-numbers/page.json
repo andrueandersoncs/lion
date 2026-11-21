@@ -1,44 +1,72 @@
 {
   "title": "Exact numbers for Lion",
   "summary": [
-    "string/concat",
-    "Lion should make every number exact, as Scheme's exact numbers are: integers of any size and fractions, each number read as the exact value its digits write. ",
+    "cond",
     [
-      "cond",
+      ["built"],
       [
-        ["violated", ["quote", "en-solver-sound"], "?_"],
-        "Today Lion's solver proves over exact numbers while its code computes with doubles, so a proof can be false of Lion's own code; exact numbers close that gap where it starts. "
-      ],
-      ["else", ""]
-    ],
-    "Of ",
-    ["words/count", ["array/length", ["ours"]], "idea", "ideas"],
-    " weighed here, the model ranks “",
-    ["label", ["firstIdea"]],
-    "” first of everything left to build in every run",
-    [
-      "cond",
-      [
-        ["number/greaterThan", ["array/length", ["setAside"]], 0],
+        "string/concat",
+        "Every Lion number is now exact, as Scheme's exact numbers are: an integer of any size or a fraction, each number read as the exact value its digits write. ",
         [
-          "string/concat",
-          ", and sets aside ",
+          "cond",
           [
-            "words/count",
-            ["array/length", ["setAside"]],
-            "alternative",
-            "alternatives"
+            ["violated", ["quote", "en-solver-sound"], "?_"],
+            "The solver had proved statements that Lion's own code broke, because plain code rounded; now both compute with the same exact numbers, so what the solver proves about numbers holds of plain code. "
           ],
-          " because it gives all they give, and more"
-        ]
-      ],
-      ["else", ""]
+          ["else", ""]
+        ],
+        "Of ",
+        ["words/count", ["array/length", ["ours"]], "idea", "ideas"],
+        " weighed here, Lion does ",
+        ["words/number", ["array/length", ["doneAlready"]]],
+        " already. What the model ranks next, for proofs past what the solver decides: ",
+        ["words/listed", ["nextIdeas"]],
+        "."
+      ]
     ],
-    ". A model of exact numbers estimates that Lion would take ",
-    ["words/number", ["slowdown"]],
-    " times as long to add decimals. What it opens up for proofs comes after: ",
-    ["listOf", ["array/map", ["later"], "label"]],
-    "."
+    [
+      "else",
+      [
+        "string/concat",
+        "Lion should make every number exact, as Scheme's exact numbers are: integers of any size and fractions, each number read as the exact value its digits write. ",
+        [
+          "cond",
+          [
+            ["violated", ["quote", "en-solver-sound"], "?_"],
+            "Today Lion's solver proves over exact numbers while its code computes with doubles, so a proof can be false of Lion's own code; exact numbers close that gap where it starts. "
+          ],
+          ["else", ""]
+        ],
+        "Of ",
+        ["words/count", ["array/length", ["ours"]], "idea", "ideas"],
+        " weighed here, the model ranks “",
+        ["label", ["firstIdea"]],
+        "” first of everything left to build in every run",
+        [
+          "cond",
+          [
+            ["number/greaterThan", ["array/length", ["setAside"]], 0],
+            [
+              "string/concat",
+              ", and sets aside ",
+              [
+                "words/count",
+                ["array/length", ["setAside"]],
+                "alternative",
+                "alternatives"
+              ],
+              " because it gives all they give, and more"
+            ]
+          ],
+          ["else", ""]
+        ],
+        ". A model of exact numbers estimates that Lion would take ",
+        ["words/number", ["slowdown"]],
+        " times as long to add decimals. What it opens up for proofs comes after: ",
+        ["listOf", ["array/map", ["later"], "label"]],
+        "."
+      ]
+    ]
   ],
   "names": {
     "exact-rationals": "Make every number exact",
@@ -454,6 +482,48 @@
         ]
       ]
     ],
+    "built": [
+      "lambda",
+      [],
+      [
+        "verdict",
+        ["quote", "exact-rationals"],
+        ["quote", "Lion does this already"]
+      ]
+    ],
+    "nextIdeas": [
+      "lambda",
+      [],
+      [
+        "array/map",
+        ["ranked"],
+        ["lambda", ["row"], ["label", ["object/get", "row", "idea"]]]
+      ]
+    ],
+    "alternatives": [
+      "lambda",
+      [],
+      [
+        "quote",
+        ["scheme-tower", "exact-decimals", "opaque-floats", "float-theory"]
+      ]
+    ],
+    "doneAlready": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["weighed_in", "?c", ["quote", "exact-numbers"]],
+            ["verdict", "?c", ["quote", "Lion does this already"]]
+          ]
+        ]
+      ]
+    ],
     "undecidedBy": [
       "lambda",
       ["f"],
@@ -505,8 +575,12 @@
               "value": ["words/number", ["array/length", ["ours"]]]
             },
             {
-              "label": "First to build, of every run",
+              "label": "Next to build, of the ideas here",
               "value": ["label", ["firstIdea"]]
+            },
+            {
+              "label": "Ideas Lion does already",
+              "value": ["words/number", ["array/length", ["doneAlready"]]]
             },
             {
               "label": "Time to add decimals, estimated",
@@ -516,6 +590,31 @@
                 " times"
               ],
               "note": "from a model of exact numbers and Lion's own evaluator"
+            },
+            {
+              "label": "Time to add decimals, built",
+              "value": [
+                "string/concat",
+                [
+                  "words/number",
+                  [
+                    "array/head",
+                    [
+                      "find",
+                      "?t",
+                      [
+                        "en_built",
+                        ["quote", "adding a hundred thousand decimals"],
+                        "?_",
+                        "?_",
+                        "?t"
+                      ]
+                    ]
+                  ]
+                ],
+                " times"
+              ],
+              "note": "Lion with exact numbers beside main, timed alternately"
             },
             {
               "label": "Proofs of Lion's solver that its code breaks",
@@ -541,42 +640,77 @@
           "question": "How should Lion make its numbers exact?",
           "answer": [
             "string/concat",
-            ["label", ["firstIdea"]],
+            ["label", ["quote", "exact-rationals"]],
             ". ",
-            ["case", ["firstIdea"]],
-            "Set aside, each because it gives nothing this does not: ",
+            ["caseAll", ["quote", "exact-rationals"]],
             [
-              "string/join",
+              "cond",
               [
-                "array/map",
-                ["setAside"],
+                ["number/greaterThan", ["array/length", ["setAside"]], 0],
                 [
-                  "lambda",
-                  ["c"],
+                  "string/concat",
+                  "Set aside, each because it gives nothing this does not: ",
                   [
-                    "string/concat",
-                    ["label", "c"],
+                    "string/join",
                     [
-                      "cond",
+                      "array/map",
+                      ["setAside"],
                       [
-                        ["caveat", "c", "?_", "?_"],
+                        "lambda",
+                        ["c"],
                         [
                           "string/concat",
-                          ", which also fails to give ",
+                          ["label", "c"],
                           [
-                            "listOf",
-                            ["find", "?f", ["caveat", "c", "?f", "?_"]]
+                            "cond",
+                            [
+                              ["caveat", "c", "?_", "?_"],
+                              [
+                                "string/concat",
+                                ", which also fails to give ",
+                                [
+                                  "listOf",
+                                  ["find", "?f", ["caveat", "c", "?f", "?_"]]
+                                ]
+                              ]
+                            ],
+                            ["else", ""]
                           ]
                         ]
-                      ],
-                      ["else", ""]
-                    ]
-                  ]
+                      ]
+                    ],
+                    "; "
+                  ],
+                  "."
                 ]
               ],
-              "; "
-            ],
-            "."
+              [
+                "else",
+                [
+                  "string/concat",
+                  "The alternatives weighed beside it: ",
+                  [
+                    "string/join",
+                    [
+                      "array/map",
+                      ["alternatives"],
+                      [
+                        "lambda",
+                        ["c"],
+                        [
+                          "string/concat",
+                          ["label", "c"],
+                          ", ",
+                          ["array/head", ["find", "?v", ["verdict", "c", "?v"]]]
+                        ]
+                      ]
+                    ],
+                    "; "
+                  ],
+                  ". What each would give, exact numbers give too."
+                ]
+              ]
+            ]
           ],
           "evidence": ["evidenceOf", ["quote", "exact-rationals"]]
         },
@@ -589,7 +723,7 @@
               "cond",
               [
                 ["violated", ["quote", "en-solver-sound"], "?_"],
-                "Yes. Lion's reference says the solver decides with exact numbers while plain code computes with floating-point numbers, and two programs show what follows: the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away, and that no integer from two to the 53rd up is unchanged by adding 1, and Lion's own code breaks both, at 0.1 and at two to the 53rd. "
+                "Yes. Lion's reference said the solver decides with exact numbers while plain code computes with floating-point numbers, and two programs showed what followed: the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away, and that no integer from two to the 53rd up is unchanged by adding 1, and Lion's own code breaks both, at 0.1 and at two to the 53rd. "
               ],
               [
                 "else",
@@ -598,6 +732,19 @@
             ],
             [
               "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "lion has": [
+                      "quote",
+                      "proofs that hold of the code's own arithmetic"
+                    ]
+                  },
+                  true
+                ],
+                "Now that numbers are exact, Lion's code agrees with both: it gives 0.1 back, and 2^53 + 1 is 9007199254740993. "
+              ],
               [
                 [
                   "stated",
@@ -774,6 +921,87 @@
             [
               "cond",
               [
+                [
+                  "en_built",
+                  ["quote", "adding a hundred thousand decimals"],
+                  "?_",
+                  "?_",
+                  "?_"
+                ],
+                [
+                  "string/concat",
+                  "Built, Lion adds the same decimals in ",
+                  [
+                    "words/number",
+                    [
+                      "array/head",
+                      [
+                        "find",
+                        "?a",
+                        [
+                          "en_built",
+                          ["quote", "adding a hundred thousand decimals"],
+                          "?_",
+                          "?a",
+                          "?_"
+                        ]
+                      ]
+                    ]
+                  ],
+                  " ms against ",
+                  [
+                    "words/number",
+                    [
+                      "array/head",
+                      [
+                        "find",
+                        "?b",
+                        [
+                          "en_built",
+                          ["quote", "adding a hundred thousand decimals"],
+                          "?b",
+                          "?_",
+                          "?_"
+                        ]
+                      ]
+                    ]
+                  ],
+                  " ms before: ",
+                  [
+                    "words/number",
+                    [
+                      "array/head",
+                      [
+                        "find",
+                        "?t",
+                        [
+                          "en_built",
+                          ["quote", "adding a hundred thousand decimals"],
+                          "?_",
+                          "?_",
+                          "?t"
+                        ]
+                      ]
+                    ]
+                  ],
+                  " times as long, against the model's estimate of ",
+                  ["words/number", ["slowdown"]],
+                  ". ",
+                  [
+                    "cond",
+                    [
+                      ["violated", ["quote", "en-cost"], "?_"],
+                      "That is more than the run expected, twice the time at most. "
+                    ],
+                    [
+                      "else",
+                      "That is within what the run expected, twice the time at most. "
+                    ]
+                  ],
+                  "Whole numbers keep their fast path, and Lion's benchmarks, which mostly add whole numbers and ask questions, are measured in the report."
+                ]
+              ],
+              [
                 ["violated", ["quote", "en-cost"], "?_"],
                 "That is more than the run expected, twice the time at most."
               ],
@@ -842,6 +1070,10 @@
           "question": "What is left for you to decide?",
           "answer": [
             "cond",
+            [
+              ["built"],
+              "Nothing waits for your decision. The decision record exact-numbers settled the three choices exact numbers left: a fraction no decimal writes, such as 1/3, is refused when a value is written as JSON, as Racket's JSON library refuses it; a number read from text may have at most 4,300 digits, as Python limits them; and a power that is not whole gives the nearest double. Each result that cannot be printed says to round it or write it as text."
+            ],
             [
               [
                 "and",
@@ -1185,10 +1417,28 @@
             ],
             ". ",
             "Lion has the first layer already, a solver whose certificates a small program rechecks. ",
-            ["listOf", ["array/map", ["later"], "label"]],
-            " would add the rest once numbers are exact, and ",
-            ["label", ["quote", "recursive-induction"]],
-            " can start now."
+            [
+              "cond",
+              [
+                ["built"],
+                [
+                  "string/concat",
+                  "Numbers are exact now, so each can start; the model ranks them ",
+                  ["words/listed", ["nextIdeas"]],
+                  "."
+                ]
+              ],
+              [
+                "else",
+                [
+                  "string/concat",
+                  ["listOf", ["array/map", ["later"], "label"]],
+                  " would add the rest once numbers are exact, and ",
+                  ["label", ["quote", "recursive-induction"]],
+                  " can start now."
+                ]
+              ]
+            ]
           ],
           "evidence": [
             "query",

@@ -5,6 +5,21 @@ export type Guard = (value: unknown) => boolean;
 
 const ANY: Guard = () => true;
 
+/**
+ * Guards for schemas declared with a predicate, such as a Lion number, that
+ * the decoder gives back as they are.
+ */
+const DECLARED = new WeakMap<SchemaAST.AST, Guard>();
+
+/** A schema whose values the guard tells by `guard` alone. */
+export const guarded = <S extends { readonly ast: SchemaAST.AST }>(
+  schema: S,
+  guard: Guard
+): S => {
+  DECLARED.set(schema.ast, guard);
+  return schema;
+};
+
 /** The options the decoder runs with when it is given none. */
 const OPTIONS: SchemaAST.ParseOptions = {};
 
@@ -81,7 +96,9 @@ export const guardOf = (ast: SchemaAST.AST): Guard | undefined => {
   if (ast.encoding !== undefined) {
     return undefined;
   }
-  const kind = ast._tag === "Arrays" ? listGuard(ast) : KINDS[ast._tag];
+  const kind =
+    DECLARED.get(ast) ??
+    (ast._tag === "Arrays" ? listGuard(ast) : KINDS[ast._tag]);
   const checks = ast.checks;
   if (kind === undefined || checks === undefined) {
     return kind;

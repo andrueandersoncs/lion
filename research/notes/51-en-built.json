@@ -1,0 +1,179 @@
+{
+  "sources": [
+    {
+      "id": "lion-probes-en-built",
+      "url": "research/probes/en-*.json",
+      "title": "Lion programs of the exact-numbers run, run again with exact numbers built, on branch claude/exact-numbers",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261121180000
+    },
+    {
+      "id": "lion-logic-forms-en-built",
+      "url": "packages/site-runtime/content/reference/logic-forms.html",
+      "title": "Lion reference: Logic forms, with exact numbers built",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261121180000
+    },
+    {
+      "id": "exact-built-timing",
+      "url": "research/probes/exact-model/alternate.ts",
+      "title": "Lion adding decimals on main and with exact numbers built, timed alternately under the same load",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261121190000
+    }
+  ],
+  "claims": [
+    {
+      "id": "en-n1",
+      "source": "lion-probes-en-built",
+      "quote": "\"plain code: 0.1 with 0.2 added and taken away\": 0.1, \"plain code: that equals 0.1\": true",
+      "says": {
+        "lion": "proofs that hold of the code's own arithmetic",
+        "has": true
+      },
+      "where": "program en-fraction-proof.json: the solver's proof and plain code now agree"
+    },
+    {
+      "id": "en-n2",
+      "source": "lion-probes-en-built",
+      "quote": "\"plain code: two to the 53rd plus 1\": 9007199254740993",
+      "says": {
+        "lion": "integers kept exact past two to the 53rd",
+        "has": true
+      },
+      "where": "program en-big-integer-proof.json"
+    },
+    {
+      "id": "en-n3",
+      "source": "lion-probes-en-built",
+      "quote": "\"plain code: two to the 53rd plus 1 equals two to the 53rd\": false",
+      "says": {
+        "lion": "proofs that hold of the code's own arithmetic",
+        "has": true
+      },
+      "where": "program en-big-integer-proof.json, beside the solver's proof that no integer from two to the 53rd up is unchanged by adding 1"
+    },
+    {
+      "id": "en-n4",
+      "source": "lion-probes-en-built",
+      "quote": "\"plain code: two to the 53rd plus 1\": 9007199254740993",
+      "says": {
+        "lion": "an integer refused when it cannot be held exactly",
+        "has": true
+      },
+      "where": "program en-big-integer-proof.json: every integer is held exactly, so no integer is rounded without a word, and there is none left to refuse"
+    },
+    {
+      "id": "en-n5",
+      "source": "lion-probes-en-built",
+      "quote": "\"0.1 plus 0.2 equals 0.3\": true",
+      "says": {
+        "lion": "decimals written in JSON kept exact",
+        "has": true
+      },
+      "where": "program en-built-decimals.json"
+    },
+    {
+      "id": "en-n6",
+      "source": "lion-probes-en-built",
+      "quote": "\"1 divided by 49, times 49, equals 1\": true",
+      "says": {
+        "lion": "fractions kept exact",
+        "has": true
+      },
+      "where": "program en-built-decimals.json"
+    },
+    {
+      "id": "en-n7",
+      "source": "lion-probes-en-built",
+      "quote": "\"a number written with 21 decimal places, 0.100000000000000000001\": 0.100000000000000000001",
+      "says": {
+        "lion": "a way to read a JSON number's text exactly",
+        "has": true
+      },
+      "where": "program en-built-decimals.json"
+    },
+    {
+      "id": "en-n8",
+      "source": "lion-probes-en-built",
+      "quote": "1/3 is a fraction no decimal writes, so JSON cannot hold it",
+      "says": {
+        "lion": "fractions written as JSON",
+        "has": false
+      },
+      "where": "program en-decimals.json: its result holds 1/3, so the lion command refuses to print it"
+    },
+    {
+      "id": "en-n9",
+      "source": "lion-probes-en-built",
+      "quote": "The solver cannot reason about number/multiply of two unknowns",
+      "says": {
+        "lion": "polynomial identities decided exactly",
+        "has": false
+      },
+      "where": "program en-polynomial.json"
+    },
+    {
+      "id": "en-n10",
+      "source": "lion-probes-en-built",
+      "quote": "The solver cannot reason about number/multiply of two unknowns",
+      "says": {
+        "lion": "proofs about arithmetic the solver cannot decide",
+        "has": false
+      },
+      "where": "program en-square.json"
+    },
+    {
+      "id": "en-n11",
+      "source": "lion-probes-en-built",
+      "quote": "The solver cannot reason about a function that calls itself",
+      "says": {
+        "lion": "proofs about functions that call themselves",
+        "has": false
+      },
+      "where": "program en-recursion.json"
+    },
+    {
+      "id": "en-n12",
+      "source": "lion-logic-forms-en-built",
+      "quote": "Plain code computes with the same exact numbers, so what the solver proves about numbers holds of what plain code computes.",
+      "says": {
+        "lion": "plain code computes with floating-point numbers, which can round where the solver does not",
+        "has": false
+      },
+      "where": "Solving for values"
+    },
+    {
+      "id": "en-n13",
+      "source": "lion-logic-forms-en-built",
+      "quote": "Plain code computes with the same exact numbers, so what the solver proves about numbers holds of what plain code computes.",
+      "says": {
+        "lion": "proofs that hold of the code's own arithmetic",
+        "has": true
+      },
+      "where": "Solving for values"
+    },
+    {
+      "id": "en-n14",
+      "source": "exact-built-timing",
+      "quote": "adding a hundred thousand decimals with array/reduce, before exact numbers: 20.0 ms",
+      "says": {
+        "lion measured": "adding a hundred thousand decimals",
+        "ms": 20.0
+      },
+      "where": "timed alternately with the next, so both under the same load"
+    },
+    {
+      "id": "en-n15",
+      "source": "exact-built-timing",
+      "quote": "adding the same hundred thousand decimals, with exact numbers built: 38.0 ms",
+      "says": {
+        "lion measured": "adding a hundred thousand decimals, with exact numbers built",
+        "ms": 38.0
+      }
+    }
+  ]
+}

@@ -134,3 +134,37 @@ Eleven beliefs held:
   - Python's Inexact trap became errors at the edges of exact arithmetic.
 - **Timings.** They come from one machine and one run of an untuned model. A built version should be measured with `bun run bench` and `bun run scale`.
 - **Not checked.** Whether Lion has proofs written by hand and checked by machine. No program in this run shows either way.
+
+## After the build
+
+Exact numbers were built on branch `claude/exact-numbers`, as decision record `exact-numbers` (`history/notes/exact-numbers.json`) sets out. Step `51-en-built` records Lion afterwards:
+- **What changed.** Every number is exact: an integer of any size or a fraction, each number read as the exact value its digits write.
+  - A JavaScript number stands for the decimal its shortest digits write.
+  - A fraction no decimal writes, such as 1/3, is refused when a value is printed as JSON. `number/toString` writes it as `1/3`, and a snapshot as `["number/divide", 1, 3]`.
+  - `number/round` takes a number of places.
+  - Text may write at most 4,300 digits.
+- **The two probes now agree.** Plain code gives 0.1 back from (0.1 + 0.2) - 0.2, and 2^53 + 1 is 9007199254740993, so what the solver proves about numbers holds of plain code.
+- **The model's verdicts.** Making every number exact, Scheme's two kinds, decimals, and refusing what doubles round are now things Lion does already. Solving doubles bit for bit has nothing in Lion to work on. The proof ideas no longer wait for exact numbers:
+
+| Idea | Rank of everything left to build |
+|---|---|
+| Induction over recursive functions | 3 |
+| Nonlinear facts from products of hypotheses | 4 |
+| Proofs as values a small checker accepts | 4 |
+| Polynomial identities | 7 |
+
+### What it cost, measured against main
+
+- **Code** (`bun run measure --against main`): 23,003 lines against 22,392 (+611, +2.7%).
+  - Functions +38 (+1.5%), paths +142 (+2.4%), nesting-weighted decisions +128 (+3.0%), tests of a value's kind +16 (+6.2%).
+  - Semantics: messages 249 against 250. The interop grid has 3 exceptions against 4, and its three new rows (an exact fraction, an exact decimal sum, a fraction written as text) give what plain code gives everywhere.
+- **Speed** (`bun run bench --against main`, three runs while another session loaded the machine): the median speeds have a geometric mean of 1.02×. Every benchmark lies between 0.93× and 1.13×, within the noise of the runs.
+  - Adding a hundred thousand decimals, timed alternately with main, takes 38 ms against 20 ms: 1.9 times as long. The model had estimated 1.7, and the run expected at most twice the time.
+- **Growth** (`bun run scale --against main`): every workload grows by the same power of n as on main, within 0.1. Peak memory moves with garbage collection, as "every path" at 498 MB against 418 MB shows.
+
+### What building it found
+
+- **A mean that cannot be printed.** `aggregate/mean` of 3, 1, and 3 is 7/3, which JSON cannot hold, so two examples in "Summarize groups" now show it as text and rounded. This is the refusal the decision chose. A reader will meet it whenever a mean is not a finite decimal.
+- **A schema that slowed every program.** Adding the exact number to the schema every program is checked against made Lion 10 to 20% slower on large programs. Now a program is checked without it first, and a special form that holds an exact number is checked with each one as 0, which brought the benchmarks back level with main.
+- **Tests that assumed doubles.** Test models in twelve files modelled doubles: a sum rounded once, `Math.max`, `-0`. They now model exact numbers, and `finite-numbers.test.ts`, whose properties asserted rounding and refusals, was replaced by `numbers/tests/exact.test.ts`. That file has 12 properties against a fraction model written apart from the code, and checks that the solver's answers hold of plain code.
+- **Mutations.** Seventeen mutations no longer applied. All seventeen were rewritten to break the new code, one of them stale on main already, and seven new ones were added. Every mutation in the changed files is caught.

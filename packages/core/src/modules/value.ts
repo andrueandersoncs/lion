@@ -2,6 +2,7 @@ import { Effect } from "effect";
 import { takes } from "@/errors/evaluation";
 import { Delayed } from "@/evaluation/special-forms/delay";
 import { allowsOnly, Unknown } from "@/logic/terms";
+import { Exact, isInteger, isNumber } from "@/numbers/exact";
 
 /** A predicate on one value. */
 const is = (test: (a: unknown) => boolean) =>
@@ -12,10 +13,11 @@ export const module = {
 
   "function?": is((a) => typeof a === "function"),
 
-  "number?": is((a) => typeof a === "number"),
+  /** Any number: a whole number of any size, or a fraction such as 1/3. */
+  "number?": is(isNumber),
 
-  /** A whole number. */
-  "integer?": is(Number.isInteger),
+  /** A whole number, of any size. */
+  "integer?": is(isInteger),
 
   "string?": is((a) => typeof a === "string"),
 
@@ -32,7 +34,8 @@ export const module = {
       a !== null &&
       !Array.isArray(a) &&
       !(a instanceof Unknown) &&
-      !(a instanceof Delayed)
+      !(a instanceof Delayed) &&
+      !(a instanceof Exact)
   ),
 
   /**

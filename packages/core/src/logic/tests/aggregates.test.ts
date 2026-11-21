@@ -3,7 +3,7 @@ import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
 import { seed, shuffled } from "./merges";
-import { element, nearestSum, oneOf } from "./programs";
+import { element, exactSum, oneOf } from "./programs";
 
 const int = (minimum: number, maximum: number) =>
   Arbitrary.schema(Schema.Int.check(Schema.isBetween({ minimum, maximum })));
@@ -524,7 +524,7 @@ describe("aggregate/sum", () => {
           ["aggregate/sum", ["quote", values]],
           stdlib
         )) as number;
-        expect(total).toBe(nearestSum(values));
+        expect(total).toBe(exactSum(values));
         // Facts come in another order, as candidates of a merge or as the
         // matches of a rule: the total is the same.
         const at = values.length === 0 ? 0 : turn % values.length;
@@ -563,9 +563,9 @@ describe("aggregate/sum", () => {
   );
 });
 
-describe("aggregate/sum near the largest number", () => {
+describe("aggregate/sum past the largest double", () => {
   it.effect.prop(
-    "is the exact sum where adding in order would pass the largest number, and fails only where the exact sum does",
+    "is the exact sum, also where it, or a sum on the way, is past every double",
     {
       big: Arbitrary.array(element([1e308, 1.5e308, 1.7e308]), {
         minLength: 2,
@@ -586,15 +586,12 @@ describe("aggregate/sum near the largest number", () => {
           ...big.filter((_, at) => !kept[at]).map((value) => -value),
           rest,
         ];
-        const exact = nearestSum(values);
+        const exact = exactSum(values);
         const outcome = yield* Effect.result(
           run(["aggregate/sum", ["quote", values]], stdlib)
         );
-        if (Number.isFinite(exact)) {
-          expect(outcome).toMatchObject({ success: exact });
-        } else {
-          expect(outcome._tag).toBe("Failure");
-        }
+        // Numbers are exact, so no sum is too large to hold.
+        expect(outcome).toMatchObject({ success: exact });
       })
   );
 });

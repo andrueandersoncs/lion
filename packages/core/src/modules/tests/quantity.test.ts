@@ -4,11 +4,20 @@
  * quotient takes them away; a sum needs one unit; and a result with no unit
  * left is its number.
  */
+
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { element } from "@/logic/tests/programs";
 import { stdlib } from "@/modules";
+import {
+  difference,
+  type LionNumber,
+  power,
+  product,
+  quotient,
+  sum,
+} from "@/numbers/exact";
 
 type Unit = Record<string, number>;
 
@@ -59,7 +68,7 @@ const combined = (a: Unit, b: Unit, by: number) => {
 };
 
 /** What Lion gives for a quantity: its number when no unit is left. */
-const given = (value: number, unit: Unit) =>
+const given = (value: LionNumber, unit: Unit) =>
   Object.keys(unit).length === 0 ? value : { value, unit };
 
 const literal = (q: Quantity) => ["quote", q];
@@ -81,12 +90,15 @@ describe("quantities", () => {
         expect(
           yield* outcome(["quantity/multiply", literal(a), literal(b)])
         ).toEqual({
-          value: given(a.value * b.value, combined(a.unit, b.unit, 1)),
+          value: given(product(a.value, b.value), combined(a.unit, b.unit, 1)),
         });
         expect(
           yield* outcome(["quantity/divide", literal(a), literal(b)])
         ).toEqual({
-          value: given(a.value / b.value, combined(a.unit, b.unit, -1)),
+          value: given(
+            quotient(a.value, b.value) as LionNumber,
+            combined(a.unit, b.unit, -1)
+          ),
         });
       })
   );
@@ -106,7 +118,9 @@ describe("quantities", () => {
         if (same) {
           expect(result).toEqual({
             value: given(
-              op === "add" ? a.value + b.value : a.value - b.value,
+              op === "add"
+                ? sum(a.value, b.value)
+                : difference(a.value, b.value),
               normal(a.unit)
             ),
           });
@@ -140,7 +154,7 @@ describe("quantities", () => {
           Object.entries(a.unit).map(([name, e]) => [name, e * n])
         );
         expect(yield* outcome(["quantity/power", literal(a), n])).toEqual({
-          value: given(a.value ** n, normal(powered)),
+          value: given(power(a.value, n) as LionNumber, normal(powered)),
         });
       })
   );

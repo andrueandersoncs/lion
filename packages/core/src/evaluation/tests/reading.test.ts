@@ -1,13 +1,13 @@
 /**
- * Reading JSON text: the value `JSON.parse` gives, unless the text writes an
- * integer that would not read as itself. The model writes the text itself,
- * from a tree of values whose integers are kept as their digits, so it knows
- * each integer it wrote and whether a JSON number holds it.
+ * Reading JSON text: each number exactly as its digits write it. The model
+ * writes the text itself, from a tree of values whose integers are kept as
+ * their digits, so it knows each integer it wrote.
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Result, Schema } from "effect";
 import { readJson } from "@/evaluation/reading";
 import { oneOf } from "@/logic/tests/programs";
+import { fromRational, ratio } from "@/numbers/exact";
 
 /** A value written as JSON text, with each integer kept as its digits. */
 type Tree =
@@ -86,41 +86,37 @@ const written = (value: Tree): string => {
   return `{${value.record.map(([key, part]) => `${JSON.stringify(key)}:${written(part)}`).join(",")}}`;
 };
 
-/** The integers a tree writes, in the order the text writes them. */
-const integers = (value: Tree): bigint[] => {
+/**
+ * The value a tree's text writes: each integer exactly, however large, in
+ * Lion's one form for it, and each other number as the double that wrote it.
+ */
+const valueIn = (value: Tree): unknown => {
   if ("integer" in value) {
-    return [value.integer];
+    return fromRational(ratio(value.integer));
+  }
+  if ("number" in value) {
+    // JSON writes -0 as 0.
+    return value.number + 0;
+  }
+  if ("text" in value) {
+    return value.text;
   }
   if ("list" in value) {
-    return value.list.flatMap(integers);
+    return value.list.map(valueIn);
   }
-  return "record" in value
-    ? value.record.flatMap(([, part]) => integers(part))
-    : [];
+  return Object.fromEntries(
+    value.record.map(([key, part]) => [key, valueIn(part)])
+  );
 };
 
 describe("reading JSON text", () => {
   it.effect.prop(
-    "gives what JSON.parse gives, unless an integer it writes would not read as itself, which it names",
+    "gives each number exactly as its digits write it, an integer past 2^53 among them",
     { value: tree(2) },
     ({ value }) =>
       Effect.gen(function* () {
-        const source = written(value);
-        const result = yield* Effect.result(readJson(source));
-        // An integer reads as itself, or as the number JSON writes with its
-        // digits, which a float past 2^53 may be.
-        const inexact = integers(value).find(
-          (each) =>
-            BigInt(Number(each)) !== each &&
-            JSON.stringify(Number(each)) !== `${each}`
-        );
-        if (inexact === undefined) {
-          expect(result).toStrictEqual(Result.succeed(JSON.parse(source)));
-        } else {
-          expect(Result.isFailure(result) && result.failure.message).toContain(
-            `The integer ${inexact} at `
-          );
-        }
+        const result = yield* Effect.result(readJson(written(value)));
+        expect(result).toStrictEqual(Result.succeed(valueIn(value)));
       }),
     { arbitrary: { runs: 300 } }
   );

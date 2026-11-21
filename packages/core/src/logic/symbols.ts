@@ -14,21 +14,16 @@
 import { LogicError } from "@/errors/evaluation";
 import {
   type Constraint,
-  compare,
   constant,
   fromNumber,
   type Linear,
   minus,
-  negate,
-  ONE,
-  type Rational,
   type Sort,
   times,
   toNumber,
   type Values,
   valueAt,
   variable,
-  ZERO,
 } from "@/logic/solver";
 import {
   allowedBy,
@@ -40,6 +35,14 @@ import {
   schemaOf,
   show,
 } from "@/logic/terms";
+import {
+  compare,
+  isNumber,
+  negate,
+  ONE,
+  type Rational,
+  ZERO,
+} from "@/numbers/exact";
 
 /** Constraints that hold in any one of several ways: an `or` of `and`s. */
 export type Formula = readonly (readonly Constraint[])[];
@@ -119,7 +122,7 @@ export const truthSym = (formula: Formula): Sym => ({ formula, kind: "truth" });
 
 /** A value as a symbolic value: a number as a sum, a truth as a formula. */
 export const fromValue = (value: unknown): Sym => {
-  if (typeof value === "number") {
+  if (isNumber(value)) {
     return numberSym(constant(fromNumber(value)));
   }
   if (typeof value === "boolean") {

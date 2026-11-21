@@ -70,14 +70,20 @@ const handle = async (request: Request): Promise<Response> => {
         )
       : await evaluate(run(request.program as never, stdlib, { database }));
   const ms = performance.now() - started;
-  return Exit.isSuccess(exit)
-    ? { id: request.id, ok: true, json: toJson(exit.value), ms }
-    : {
-        id: request.id,
-        ok: false,
-        error: describe(Cause.squash(exit.cause)),
-        ms,
-      };
+  if (Exit.isSuccess(exit)) {
+    try {
+      return { id: request.id, ok: true, json: toJson(exit.value), ms };
+    } catch (error) {
+      // A fraction no decimal writes, such as 1/3, has no JSON text.
+      return { id: request.id, ok: false, error: describe(error), ms };
+    }
+  }
+  return {
+    id: request.id,
+    ok: false,
+    error: describe(Cause.squash(exit.cause)),
+    ms,
+  };
 };
 
 self.addEventListener("message", (event) => {

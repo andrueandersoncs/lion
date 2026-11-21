@@ -38,12 +38,9 @@ import { factsOf, originalName } from "@/logic/magic";
 import {
   type Constraint,
   enumerate,
-  add as plusRational,
-  type Rational,
   type Sort,
   solve as solveConstraints,
   cases as splitCases,
-  multiply as timesRational,
 } from "@/logic/solver";
 import { mentioned, type Stratum, strataOf } from "@/logic/strata";
 import {
@@ -94,6 +91,11 @@ import {
   valueKey,
 } from "@/logic/terms";
 import { deriveRows, type Support } from "@/logic/weights";
+import {
+  add as plusRational,
+  type Rational,
+  multiply as timesRational,
+} from "@/numbers/exact";
 import type { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluationError } from "@/types/evaluation";
 

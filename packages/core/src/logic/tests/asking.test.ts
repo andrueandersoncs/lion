@@ -4,13 +4,15 @@
  * value, and a question has variables of its own. Each is checked against a
  * model that reads the facts as plain sets.
  */
+
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { LogicDatabase, writtenRules } from "@/logic/database";
 import { loadDatabase } from "@/logic/snapshot";
 import { stdlib } from "@/modules";
-import { element, oneOf } from "./programs";
+import { quotient } from "@/numbers/exact";
+import { element, exactSum, oneOf } from "./programs";
 import { type Told, toldIn } from "./trees";
 import {
   chainOf,
@@ -538,10 +540,9 @@ const COMBINE: Record<string, (values: number[]) => unknown> = {
   count: (values) => values.length,
   countUnique: (values) => new Set(values).size,
   sum: (values) => values.reduce((sum, value) => sum + value, 0),
+  // A mean is exact, as every number is: 4/3 is a fraction.
   mean: (values) =>
-    values.length === 0
-      ? null
-      : values.reduce((sum, value) => sum + value, 0) / values.length,
+    values.length === 0 ? null : quotient(exactSum(values), values.length),
   min: (values) => (values.length === 0 ? null : Math.min(...values)),
   max: (values) => (values.length === 0 ? null : Math.max(...values)),
   collect: (values) => [...values].sort(numeric),

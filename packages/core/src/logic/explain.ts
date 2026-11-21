@@ -403,7 +403,7 @@ const opens = (
   vars: Vars
 ): LogicEffect<boolean> =>
   Effect.gen(function* () {
-    const key = JSON.stringify(instantiate(goal, vars));
+    const key = valueKey(instantiate(goal, vars));
     const known = telling.opened.get(key);
     if (known !== undefined) {
       return known;
@@ -721,7 +721,7 @@ const missing = (
     if (step !== undefined) {
       return { ...node, ...(yield* refuted(telling, step, vars)) };
     }
-    const key = JSON.stringify(absent);
+    const key = valueKey(absent);
     if (!hasRoutes(goal) || telling.told.has(key)) {
       return node;
     }

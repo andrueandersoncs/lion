@@ -9,6 +9,7 @@
  */
 import { Effect } from "effect";
 import type { LogicDatabase } from "@/logic/database";
+import { valueKey } from "@/logic/terms";
 import type { EvaluationError } from "@/types/evaluation";
 
 /** What a watcher is told: the answers now, and those that came and went. */
@@ -27,11 +28,11 @@ interface Watcher {
 
 const WATCHERS = new WeakMap<LogicDatabase, Set<Watcher>>();
 
-/** The answers of a query, by their JSON text, in the order given. */
+/** The answers of a query, by their value, in the order given. */
 const keyed = (answers: unknown): ReadonlyMap<string, unknown> =>
   new Map(
     (Array.isArray(answers) ? answers : [answers]).map((answer) => [
-      JSON.stringify(answer),
+      valueKey(answer),
       answer,
     ])
   );

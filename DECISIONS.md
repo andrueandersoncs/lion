@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 203 questions have been decided, 92 records explain them, and of what the records assert, 632 hold when Lion is run, 5 are broken, 351 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 204 questions have been decided, 93 records explain them, and of what the records assert, 643 hold when Lion is run, 5 are broken, 353 are stated but not checked by running Lion, and 32 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -197,7 +197,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`eval-code-declarations`](#eval-code-declarations) | `declares-its-definitions` | [Logic forms, forms that wait, and code that `eval` runs read strings by the scopes they are written in](#logic-forms-read-by-scope) |
 | 2026-11-19 | [`form-name-definition-in-own-body`](#form-name-definition-in-own-body) | `error-that-says-why` | [A body cannot define the name of a form it uses](#form-name-definition) |
 | 2026-11-19 | [`logic-form-strings`](#logic-form-strings) | `written-scope` | [Logic forms, forms that wait, and code that `eval` runs read strings by the scopes they are written in](#logic-forms-read-by-scope) |
-| 2026-11-19 | [`sum-rounding`](#sum-rounding) | `nearest-exact-sum` | [A sum is rounded once, so the order of its values never changes it](#exact-sums) |
+| 2026-11-19 | [`sum-rounding`](#sum-rounding) | `exact-sum` | [Every number is exact, so what the solver proves holds of plain code](#exact-numbers), [A sum is rounded once, so the order of its values never changes it](#exact-sums) |
 | 2026-11-19 | [`research-page-engine`](#research-page-engine) | `lion-command-worker` | [A research page runs the Lion of the lion command that checks it](#research-page-runs-checking-lion) |
 | 2026-11-19 | [`schema-binds-its-value`](#schema-binds-its-value) | `list-finite-schemas` | [A schema stands for each value it allows: schema/fits? binds the value it checks when its schema can list them](#schemas-list-their-values) |
 | 2026-11-19 | [`solve-typed-variables`](#solve-typed-variables) | `exact-linear-decision-in-lion` | [A variable that a schema types and no goal binds is solved for: the filters about it become constraints, decided exactly in Lion](#solve-typed-variables) |
@@ -209,6 +209,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-20 | [`set-in-rule-bodies`](#set-in-rule-bodies) | `refused-for-outside-bindings` | [set! fails where the engine chooses the order, for a binding made outside](#set-where-the-engine-orders) |
 | 2026-11-20 | [`match-fallback`](#match-fallback) | `optional` | [A match may leave out its fallback, and a case no value can reach is found without running](#match-cases-checked) |
 | 2026-11-20 | [`begin-waits-as-a-whole`](#begin-waits-as-a-whole) | `whole-form-but-the-program` | [A begin waits as a whole for an expression before its last](#begin-waits-as-a-whole) |
+| 2026-11-21 | [`exact-numbers`](#exact-numbers) | `exact-rationals` | [Every number is exact, so what the solver proves holds of plain code](#exact-numbers) |
 
 <a id="program-representation"></a>
 
@@ -544,9 +545,9 @@ Recorded 2026-11-11 in `history/notes/values-are-json.json`.
 - Replaced by a later word: decided `object-get-missing-key`: `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
 - Holds when Lion is run: rule `values-are-json` holds. "Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`"
 - Holds when Lion is run: `division-by-zero` is `error`. "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`"
-- Holds when Lion is run: `number-overflow` is `error`. "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`"
+- Replaced by a later word: `number-overflow` is `error`. "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`"
 - Holds when Lion is run: `ArithmeticError` exists. "fails with the new `ArithmeticError`"
-- Holds when Lion is run: `aggregate-sum-non-finite` is `error`. "this covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list"
+- Replaced by a later word: `aggregate-sum-non-finite` is `error`. "this covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list"
 - Replaced by a later word: `object-get-missing-key` is `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
 
 <a id="test-location"></a>
@@ -4311,9 +4312,50 @@ Now: `written-scope`.
 
 ## sum-rounding
 
-Now: `nearest-exact-sum`.
+Now: `exact-sum`.
 
 - 2026-11-19 `sum-rounding`: `nearest-exact-sum` over `added-as-values-come`, `added-in-sorted-order`: "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308." (`exact-sums.json`)
+- 2026-11-21 `sum-rounding`: `exact-sum` over `nearest-exact-sum`, `added-as-values-come`, was `nearest-exact-sum`: "A sum is the exact sum in any order, which replaces the sum rounded once." (`exact-numbers.json`)
+
+<a id="exact-numbers"></a>
+
+### Every number is exact, so what the solver proves holds of plain code
+
+Recorded 2026-11-21 in `history/notes/exact-numbers.json`.
+
+**Context.** Lion's solver decided with exact rationals, but plain code computed with JavaScript's doubles, which can round where the solver does not. So the solver could prove a statement that Lion's own code breaks: it proved that no number between 0 and 1 changes when 0.2 is added and taken away, while plain code gives 0.10000000000000003 for 0.1; and that no integer from 2^53 up is unchanged by adding 1, while plain code gives 9007199254740992 for 2^53 + 1. The research run `exact-numbers` (research/runs/exact-numbers/) weighed nine ways out against Scheme, Racket, Lean, Dafny, ACL2, SMT-LIB, Python, and JSON, and ranked making every number exact first of everything left to build.
+
+**Decision.** Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are. A number written in a program or a database is the exact value its digits write, so 0.1 is one tenth and 9007199254740993 is itself; a JavaScript number a host passes stands for the decimal its shortest digits write. Arithmetic, sums, and means are exact: `["number/add", 0.1, 0.2]` is 0.3, `["number/add", 9007199254740991, 2]` is 9007199254740993, and `["number/divide", 1, 3]` is the fraction 1/3. A value is written as JSON with each number's digits, and a fraction no decimal writes, such as 1/3, has no JSON text: writing it fails with `ArithmeticError`, as Racket's JSON library refuses it, and `number/toString` writes it as `1/3`, which `number/fromString` reads back. A number read from text may have at most 4,300 digits, and a whole power at most as many, as Python limits the digits of an integer it reads. A power that is not whole gives the nearest double, read as its digits.
+
+**Consequences.** Each number has one form: the JavaScript number whose shortest digits write it, when one does, and otherwise an exact rational kept once for each value, in `packages/core/src/numbers/exact.ts`, so equality is identity and hosts mostly see plain numbers. The solver reads numbers through the same rationals, so what it proves about numbers holds of what plain code computes. A sum is the exact sum in any order, which replaces the sum rounded once. Integers past 2^53 - 1 are no longer refused, and no sum or product overflows. `number/round` takes a number of decimal places. A snapshot writes 1/3 as `["number/divide", 1, 3]`, so it reads back exactly. The CLI, the website's examples, and the editor read programs with each number's digits, through `JSON.parse`'s source text, and refuse to print 1/3. A model of exact numbers estimated that adding decimals in Lion takes about 1.7 times as long. Lion's values are still JSON values with no undefined, NaN, or Infinity: dividing by zero still fails, and an overflow, which once failed, is now an exact number.
+
+**Alternatives considered.**
+
+- Scheme's exact and inexact numbers side by side, with 0.1 read as inexact. A decimal written in a program would still be a double, so a proof over decimals would still fail of plain code; exact numbers give all it gives.
+- Decimal floating point, as Python's decimal module. A division rounds to a fixed number of digits, so 1/3 would round and proofs over division would fail.
+- Keep doubles and have the solver refuse what they round. Sound, but it gives nothing exact numbers do not, and it leaves 0.1 + 0.2 as 0.30000000000000004.
+- Keep doubles and have the solver reason about them bit for bit, as SMT-LIB's FloatingPoint theory does. Lion has no decision procedure for floating point, and proofs about doubles break the laws people prove with, such as associativity.
+- Write 1/3 in JSON output as the expression that makes it, or as its nearest decimal. The first reads as a list where a number was meant, and the second loses the value; refusing says so, as Racket's JSON library does, and the message says how to round.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `exact-numbers`: `exact-rationals`. "Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are."
+- Holds when Lion is run: `number-from-string-past-exact-range` is `exact`. "`number/toString` writes it as `1/3`, which `number/fromString` reads back."
+- Holds when Lion is run: `number-to-string-fraction` is `fraction-text`. "`number/toString` writes it as `1/3`, which `number/fromString` reads back."
+- Holds when Lion is run: `json-of-fraction` is `error`. "A value is written as JSON with each number's digits, and a fraction no decimal writes, such as 1/3, has no JSON text: writing it fails with `ArithmeticError`, as Racket's JSON library refuses it, and `number/toString` writes it as `1/3`, which `number/fromString` reads back."
+- Holds when Lion is run: `sum-exactly-rounded` is `exact`. "A sum is the exact sum in any order, which replaces the sum rounded once."
+- Holds when Lion is run: `solver-proof-holds-of-plain-code` is `holds`. "The solver reads numbers through the same rationals, so what it proves about numbers holds of what plain code computes."
+- Holds when Lion is run: `number-round-places` is `half-up`. "`number/round` takes a number of decimal places."
+- Holds when Lion is run: `numbers/exact` exists. "Each number has one form: the JavaScript number whose shortest digits write it, when one does, and otherwise an exact rational kept once for each value, in `packages/core/src/numbers/exact.ts`, so equality is identity and hosts mostly see plain numbers."
+- Holds when Lion is run: rule `values-are-json` holds. "Lion's values are still JSON values with no undefined, NaN, or Infinity: dividing by zero still fails, and an overflow, which once failed, is now an exact number."
+- Stated, not checked by running Lion: decided `sum-rounding`: `exact-sum`. "A sum is the exact sum in any order, which replaces the sum rounded once."
+- Holds when Lion is run: `decimal-sum` is `exact`. "Arithmetic, sums, and means are exact: `["number/add", 0.1, 0.2]` is 0.3, `["number/add", 9007199254740991, 2]` is 9007199254740993, and `["number/divide", 1, 3]` is the fraction 1/3."
+- Holds when Lion is run: `integer-arithmetic-past-exact-range` is `exact`. "Arithmetic, sums, and means are exact: `["number/add", 0.1, 0.2]` is 0.3, `["number/add", 9007199254740991, 2]` is 9007199254740993, and `["number/divide", 1, 3]` is the fraction 1/3."
+- Holds when Lion is run: `integer-division-fraction` is `exact`. "Arithmetic, sums, and means are exact: `["number/add", 0.1, 0.2]` is 0.3, `["number/add", 9007199254740991, 2]` is 9007199254740993, and `["number/divide", 1, 3]` is the fraction 1/3."
+- Holds when Lion is run: `float-arithmetic-past-exact-range` is `exact`. "Integers past 2^53 - 1 are no longer refused, and no sum or product overflows."
+- Holds when Lion is run: `number-overflow` is `exact`. "Integers past 2^53 - 1 are no longer refused, and no sum or product overflows."
+- Holds when Lion is run: `aggregate-sum-non-finite` is `exact`. "Integers past 2^53 - 1 are no longer refused, and no sum or product overflows."
+- Stated, not checked by running Lion: `integer-literal-past-exact-range` is `exact`. "A number written in a program or a database is the exact value its digits write, so 0.1 is one tenth and 9007199254740993 is itself; a JavaScript number a host passes stands for the decimal its shortest digits write."
 
 <a id="exact-sums"></a>
 
@@ -4334,8 +4376,8 @@ Recorded 2026-11-19 in `history/notes/exact-sums.json`.
 
 **What it asserts, checked.**
 
-- Stated, not checked by running Lion: decided `sum-rounding`: `nearest-exact-sum`. "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308."
-- Holds when Lion is run: `sum-exactly-rounded` is `nearest`. "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308."
+- Replaced by a later word: decided `sum-rounding`: `nearest-exact-sum`. "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308."
+- Replaced by a later word: `sum-exactly-rounded` is `nearest`. "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308."
 
 <a id="research-page-engine"></a>
 
@@ -4685,3 +4727,11 @@ Recorded 2026-11-20 in `history/notes/begin-waits-as-a-whole.json`.
 
 - Stated, not checked by running Lion: decided `begin-waits-as-a-whole`: `whole-form-but-the-program`. "A `begin` waits for an expression before its last as `cond` waits for a condition"
 - Holds when Lion is run: `program-begin-after-a-definition-that-waits` is `runs-on`. "A program's own `begin`, and a `begin` among its forms, runs its forms one at a time instead, as Scheme splices a top-level `begin` into the program"
+
+<a id="exact-numbers"></a>
+
+## exact-numbers
+
+Now: `exact-rationals`.
+
+- 2026-11-21 `exact-numbers`: `exact-rationals` over `binary64-doubles`, `scheme-numeric-tower`, `decimal-floating-point`, `solver-refuses-rounding`, `floating-point-theory`: "Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are." (`exact-numbers.json`)

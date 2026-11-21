@@ -4,9 +4,30 @@
 
 ## Unreleased
 
+### Breaking
+
+- Integers past 2^53 - 1 are no longer refused, and no sum or product overflows. (`aggregate-sum-non-finite` is `exact`, was `error`; `float-arithmetic-past-exact-range` is `exact`, was `rounded`; `number-overflow` is `exact`, was `error`)
+- Arithmetic, sums, and means are exact: `["number/add", 0.1, 0.2]` is 0.3, `["number/add", 9007199254740991, 2]` is 9007199254740993, and `["number/divide", 1, 3]` is the fraction 1/3. (`decimal-sum` is `exact`, was `rounded`; `integer-arithmetic-past-exact-range` is `exact`, was `error`; `integer-division-fraction` is `exact`, was `rounded`)
+- A number written in a program or a database is the exact value its digits write, so 0.1 is one tenth and 9007199254740993 is itself; a JavaScript number a host passes stands for the decimal its shortest digits write. (`integer-literal-past-exact-range` is `exact`, was `error`)
+- A sum is the exact sum in any order, which replaces the sum rounded once. (`sum-exactly-rounded` is `exact`, was `nearest`)
+
 ### Added
 
 - The research model weighs how Lion should make its numbers exact, so that what its solver proves holds of what its code computes, and how provers such as Lean prove arithmetic no procedure decides. Its page, `research/runs/exact-numbers/`, ranks first of everything left to build making every number exact: integers of any size and fractions, each number read as the value its digits write, which a model of exact numbers estimates would make Lion's adding of decimals take 1.7 times as long. Its probes found that the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away, and that no integer from 2^53 up is unchanged by adding 1, while Lion's own code breaks both, and that Lion rounds 2^53 + 1 without a word. After exact numbers it orders polynomial identities, nonlinear facts from products of hypotheses, and proofs as values a small checker accepts; induction over recursive functions can start now. (`research-exact-numbers` added)
+- Each number has one form: the JavaScript number whose shortest digits write it, when one does, and otherwise an exact rational kept once for each value, in `packages/core/src/numbers/exact.ts`, so equality is identity and hosts mostly see plain numbers. (`numbers/exact` added)
+- The research model records Lion with exact numbers built, in step `research/steps/51-en-built.json`: the run's programs run again, and the time to add decimals measured beside main. The solver's two proofs now hold of plain code, every number idea the run weighed is one Lion does already, adding a hundred thousand decimals takes 1.9 times as long against the model's estimate of 1.7, and the proof ideas no longer wait for exact numbers, with induction over recursive functions ranked first of them. (`research-exact-numbers-built-step` added)
+
+### Changed
+
+- A value is written as JSON with each number's digits, and a fraction no decimal writes, such as 1/3, has no JSON text: writing it fails with `ArithmeticError`, as Racket's JSON library refuses it, and `number/toString` writes it as `1/3`, which `number/fromString` reads back. (`json-of-fraction` is `error`)
+- `number/toString` writes it as `1/3`, which `number/fromString` reads back. (`number-from-string-past-exact-range` is `exact`, was `null`; `number-to-string-fraction` is `fraction-text`)
+- `number/round` takes a number of decimal places. (`number-round-places` is `half-up`)
+- The solver reads numbers through the same rationals, so what it proves about numbers holds of what plain code computes. (`solver-proof-holds-of-plain-code` is `holds`, was `rounds`)
+
+### Decided
+
+- Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are. (`exact-numbers`: `exact-rationals` over `binary64-doubles`, `scheme-numeric-tower`, `decimal-floating-point`, `solver-refuses-rounding`, `floating-point-theory`)
+- A sum is the exact sum in any order, which replaces the sum rounded once. (`sum-rounding`: `exact-sum` over `nearest-exact-sum`, `added-as-values-come`, was `nearest-exact-sum`)
 
 ## 2026-11-20 — @lionlang/core 0.15.0, @lionlang/cli 0.14.0
 
@@ -2231,7 +2252,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - An array is always a special form or a call, never a list that evaluates to itself (rule `arrays-are-never-data`)
 - // Automatic currying (rule `automatic-currying`)
 - The evaluator is written with Effect, and evaluating a program gives an Effect (rule `evaluate-with-effect`)
-- It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (rule `values-are-json`)
+- Lion's values are still JSON values with no undefined, NaN, or Infinity: dividing by zero still fails, and an overflow, which once failed, is now an exact number. (rule `values-are-json`)
 - Library functions are named `module/name`, with modules named for the kind of value they work on, such as `number/add` (rule `library-names-module-slash-name`)
 - breaks every form case out into its own testable unit (rule `unit-per-form`)
 - moved tests into dedicated folders (rule `tests-in-tests-folders`)

@@ -1,14 +1,14 @@
 import { Effect, Schema } from "effect";
 import { show } from "@/logic/terms";
 import { isSpecialFormName } from "@/schemas/evaluation";
-import { LionExpressionSchema } from "@/schemas/lion-expression";
+import { ExactExpressionSchema } from "@/schemas/lion-expression";
 
 export class InvalidFunctionCallError extends Schema.TaggedError<InvalidFunctionCallError>()(
   "InvalidFunctionCallError",
-  { expression: LionExpressionSchema }
+  { expression: ExactExpressionSchema }
 ) {
   override get message() {
-    return `${JSON.stringify(this.expression)} is not a call: its first element must be a special form or evaluate to a function.`;
+    return `${show(this.expression)} is not a call: its first element must be a special form or evaluate to a function.`;
   }
 }
 
@@ -73,13 +73,13 @@ export class UndefinedYetError extends Schema.TaggedError<UndefinedYetError>()(
 export class MalformedFormError extends Schema.TaggedError<MalformedFormError>()(
   "MalformedFormError",
   {
-    expression: LionExpressionSchema,
+    expression: ExactExpressionSchema,
     form: Schema.String,
     usage: Schema.String,
   }
 ) {
   override get message() {
-    return `${JSON.stringify(this.expression)} is not a well-formed ${this.form} form: ${this.usage}`;
+    return `${show(this.expression)} is not a well-formed ${this.form} form: ${this.usage}`;
   }
 }
 

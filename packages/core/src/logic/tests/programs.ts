@@ -3,46 +3,27 @@
  * them. Programs share a fixed set of relations so any generated fact, rule,
  * or invariant can be combined with any other.
  */
+
 import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import type { LogicDatabase } from "@/logic/database";
-import { render } from "@/logic/terms";
+import { isPlainObject, render } from "@/logic/terms";
 import { stdlib } from "@/modules";
+import { Exact, fromRational, ratio } from "@/numbers/exact";
+import { asFraction, type Fraction, plus } from "@/numbers/tests/model";
 
 type Form = readonly unknown[];
 
-/** A finite number as an exact count of 2^-1074, the smallest step. */
-const exactly = (value: number) => {
-  const view = new DataView(new ArrayBuffer(8));
-  view.setFloat64(0, value);
-  const bits = view.getBigUint64(0);
-  const unit = 2n ** 52n;
-  const exponent = Number((bits / unit) % 2048n);
-  const fraction = bits % unit;
-  const magnitude =
-    exponent === 0 ? fraction : (fraction + unit) * 2n ** BigInt(exponent - 1);
-  return bits >= 2n ** 63n ? -magnitude : magnitude;
-};
-
 /**
- * A plain model of a sum: the number nearest the exact sum of the values,
- * a tie going to the even one, computed with whole numbers.
+ * The exact sum of numbers, as Lion's numbers are exact: the model adds the
+ * fractions their digits write, apart from Lion's own arithmetic.
  */
-export const nearestSum = (values: readonly number[]) => {
-  const total = values.reduce((sum, value) => sum + exactly(value), 0n);
-  const size = total < 0n ? -total : total;
-  const digits = size.toString(2).length;
-  // Keep 53 significant bits; the rest round the last one.
-  const dropped = Math.max(0, digits - 53);
-  const step = 2n ** BigInt(dropped);
-  let kept = size / step;
-  const rest = size % step;
-  const half = step / 2n;
-  if (dropped > 0 && (rest > half || (rest === half && kept % 2n === 1n))) {
-    kept += 1n;
-  }
-  const value = Number(kept) * 2 ** (dropped - 1074);
-  return total < 0n ? -value : value;
+export const exactSum = (values: readonly unknown[]) => {
+  const [n, d] = values.reduce<Fraction>(
+    (total, value) => plus(total, asFraction(value)),
+    [0n, 1n]
+  );
+  return fromRational(ratio(n, d));
 };
 
 const index = (count: number) =>
@@ -281,12 +262,42 @@ export type Outcome =
  * as Lion writes it: by its name when it has one, such as a relation's or a
  * schema's, and otherwise as the form that makes it, such as its lambda.
  */
-export const reported = (value: unknown): unknown =>
-  JSON.parse(
-    JSON.stringify(value, (_, item: unknown) =>
-      typeof item === "function" ? render(item) : item
-    )
-  );
+export const reported = (value: unknown): unknown => {
+  // A number keeps its one form, so outcomes compare as Lion compares them;
+  // a function is written as Lion writes it.
+  const MARK = "\u0000exact:";
+  const marked = (item: unknown): unknown => {
+    if (item instanceof Exact) {
+      return `${MARK}${item.n}/${item.d}`;
+    }
+    if (typeof item === "function") {
+      return render(item);
+    }
+    if (Array.isArray(item)) {
+      return item.map(marked);
+    }
+    return isPlainObject(item)
+      ? Object.fromEntries(
+          Object.entries(item).map(([key, inner]) => [key, marked(inner)])
+        )
+      : item;
+  };
+  const restored = (item: unknown): unknown => {
+    if (typeof item === "string" && item.startsWith(MARK)) {
+      const [n = "", d = ""] = item.slice(MARK.length).split("/");
+      return Exact.of(ratio(BigInt(n), BigInt(d)));
+    }
+    if (Array.isArray(item)) {
+      return item.map(restored);
+    }
+    return isPlainObject(item)
+      ? Object.fromEntries(
+          Object.entries(item).map(([key, inner]) => [key, restored(inner)])
+        )
+      : item;
+  };
+  return restored(JSON.parse(JSON.stringify(marked(value))));
+};
 
 /** The value of a run as data, or the message of its error. */
 export const outcome = (

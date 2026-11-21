@@ -1,0 +1,3 @@
+research/probes/exact-model/alternate.ts run five times on main's core and five on this branch's core, alternating, on 2026-11-21 under the same load.
+Lion's evaluator adding a hundred thousand decimals with array/reduce, before exact numbers: 20.0 ms (median of 19.8, 20.9, 20.0, 19.7, 20.1)
+Lion's evaluator adding the same hundred thousand decimals, with exact numbers built: 38.0 ms (median of 37.3, 37.6, 38.0, 40.0, 38.9)

@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { analyze, flattenAnalysis } from "@lionlang/core/analysis/analyze";
 import { run } from "@lionlang/core/evaluation/evaluate";
-import { readJson } from "@lionlang/core/evaluation/reading";
+import { readJson, writeJson } from "@lionlang/core/evaluation/reading";
 import { LogicDatabase } from "@lionlang/core/logic/database";
 import { loadDatabase, saveDatabase } from "@lionlang/core/logic/snapshot";
 import { stdlib } from "@lionlang/core/modules";
@@ -75,7 +75,7 @@ const evaluateCommand = Command.make(
         path === undefined ? new LogicDatabase() : yield* readDatabase(path);
       const program = yield* readJson(file);
       const result = yield* run(program, stdlib, { database: store });
-      yield* Console.log(JSON.stringify(result, null, 2));
+      yield* Console.log(yield* writeJson(result, 2));
       if (path !== undefined) {
         yield* writeDatabase(path, store);
       }

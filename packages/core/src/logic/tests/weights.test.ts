@@ -31,14 +31,16 @@
  * Aggregates are kept by counted candidates: what each gives after any
  * changes is what a plain model computes from the facts there are.
  */
+
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { LogicDatabase } from "@/logic/database";
 import { loadDatabase, saveDatabase } from "@/logic/snapshot";
 import { keptBy } from "@/logic/weights";
 import { stdlib } from "@/modules";
+import { quotient } from "@/numbers/exact";
 import { seed, shuffled } from "./merges";
-import { attempt, element, nearestSum, oneOf } from "./programs";
+import { attempt, element, exactSum, oneOf } from "./programs";
 
 type Form = readonly unknown[];
 
@@ -1254,13 +1256,13 @@ const distinct = <A>(values: readonly A[]) => [
 const combinedPlainly = (items: readonly Form[]) => {
   const values = items.map((it) => it[3] as number).sort(ascending);
   const words = items.map((it) => it[4] as string);
-  const sum = nearestSum(values);
+  const sum = exactSum(values);
   return {
     collect: values,
     count: values.length,
     countUnique: distinct(values).length,
     max: values.at(-1),
-    mean: sum / values.length,
+    mean: quotient(sum, values.length),
     min: values[0],
     shortest: [...words].sort(
       (a, b) => a.length - b.length || ascending(a, b)

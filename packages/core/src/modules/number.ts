@@ -2,58 +2,55 @@ import { Effect, Schema } from "effect";
 import { ArithmeticError, atLeast, type Count } from "@/errors/evaluation";
 import { readNumber } from "@/modules/lib/numerals";
 import { combining, over } from "@/modules/lib/shared";
+import {
+  absolute,
+  ceilingOf,
+  compareNumbers,
+  DIGITS,
+  difference,
+  floorOf,
+  type LionNumber,
+  numberText,
+  power,
+  product,
+  quotient,
+  remainder,
+  roundTo,
+  sum,
+} from "@/numbers/exact";
+import { NumberSchema } from "@/schemas/number";
 
-const compare = (test: (a: number, b: number) => boolean) =>
-  over([Schema.Number, Schema.Number], test);
+const compare = (test: (order: number) => boolean) =>
+  over([NumberSchema, NumberSchema], (a, b) => test(compareNumbers(a, b)));
 
 /**
  * Arithmetic on two numbers, or on as many as `count` says, taken from left
- * to right. A result that is not a finite number, such as one from dividing
- * by zero, fails: JSON cannot hold Infinity or NaN. Integers a JSON number
- * holds exactly, those from -(2^53 - 1) to 2^53 - 1, do exact arithmetic,
- * as Scheme's exact integers do: given `exact`, the exact result of such
- * integers, a result that is not the exact one fails, as
- * 9007199254740991 + 2 would round to 9007199254740992. Past that range a
- * JSON number is a float, and rounds as one.
+ * to right. Every number is exact, so every result is: a sum, difference,
+ * product, or quotient of numbers is the exact one, as Scheme's exact
+ * numbers give, and 0.1 + 0.2 is 0.3. `operate` gives undefined where there
+ * is no result, as for dividing by zero, and the call fails.
  */
 const arithmetic = (
   name: string,
   operator: string,
-  operate: (a: number, b: number) => number,
+  operate: (a: LionNumber, b: LionNumber) => LionNumber | undefined,
   count: Count = 2,
-  exact?: (a: bigint, b: bigint) => bigint
+  why = "has no finite result"
 ) =>
   combining(
-    Schema.Number,
+    NumberSchema,
     (values) => {
-      const result = values.reduce((a, b) => operate(a, b));
-      const said = () => `number/${name}: ${values.join(` ${operator} `)}`;
-      if (!Number.isFinite(result)) {
-        return Effect.fail(
-          new ArithmeticError({ message: `${said()} has no finite result.` })
-        );
+      let result: LionNumber | undefined = values[0] as LionNumber;
+      for (let at = 1; at < values.length && result !== undefined; at += 1) {
+        result = operate(result, values[at] as LionNumber);
       }
-      // A result of rounding once is exact when a JSON number holds it,
-      // and one that is no integer, as a negative power is, is a float.
-      if (
-        exact === undefined ||
-        Number.isSafeInteger(result) ||
-        !Number.isInteger(result) ||
-        !values.every(Number.isSafeInteger)
-      ) {
-        return Effect.succeed(result);
-      }
-      const whole = values
-        .slice(1)
-        .reduce((a, b) => exact(a, BigInt(b)), BigInt(values[0] as number));
-      if (whole === BigInt(result)) {
-        return Effect.succeed(result);
-      }
-      return Effect.fail(
-        new ArithmeticError({
-          message: `${said()} is ${whole}, but a JSON number would hold it as ${result}: it holds every integer only from -9007199254740991 to 9007199254740991.`,
-        })
-      );
+      return result === undefined
+        ? Effect.fail(
+            new ArithmeticError({
+              message: `number/${name}: ${values.map(numberText).join(` ${operator} `)} ${why}.`,
+            })
+          )
+        : Effect.succeed(result);
     },
     count
   );
@@ -62,8 +59,8 @@ const arithmetic = (
 const SOME = atLeast(1);
 
 /** Arithmetic on one number. */
-const rounding = (operate: (a: number) => number) =>
-  over([Schema.Number], operate);
+const rounding = (operate: (a: LionNumber) => LionNumber) =>
+  over([NumberSchema], operate);
 
 /** The digits of a number's whole part: the first run of digits in its text. */
 const WHOLE = /\d+/;
@@ -71,75 +68,75 @@ const WHOLE = /\d+/;
 /** Each digit with a multiple of three digits after it, up to the end. */
 const GROUPS = /\d(?=(\d{3})+$)/g;
 
+const least = (a: LionNumber, b: LionNumber) =>
+  compareNumbers(b, a) < 0 ? b : a;
+const most = (a: LionNumber, b: LionNumber) =>
+  compareNumbers(b, a) > 0 ? b : a;
+
 export const module = {
   symbol: Symbol("number"),
 
-  "equals?": compare((a, b) => a === b),
-  lessThan: compare((a, b) => a < b),
-  greaterThan: compare((a, b) => a > b),
-  lessThanOrEqualTo: compare((a, b) => a <= b),
-  greaterThanOrEqualTo: compare((a, b) => a >= b),
+  "equals?": compare((order) => order === 0),
+  lessThan: compare((order) => order < 0),
+  greaterThan: compare((order) => order > 0),
+  lessThanOrEqualTo: compare((order) => order <= 0),
+  greaterThanOrEqualTo: compare((order) => order >= 0),
 
-  add: arithmetic(
-    "add",
-    "+",
-    (a, b) => a + b,
-    SOME,
-    (a, b) => a + b
-  ),
-  subtract: arithmetic(
-    "subtract",
-    "-",
-    (a, b) => a - b,
-    2,
-    (a, b) => a - b
-  ),
-  multiply: arithmetic(
-    "multiply",
-    "×",
-    (a, b) => a * b,
-    SOME,
-    (a, b) => a * b
-  ),
-  // A quotient of such integers is exact whenever it is an integer.
-  divide: arithmetic("divide", "÷", (a, b) => a / b),
+  add: arithmetic("add", "+", sum, SOME),
+  subtract: arithmetic("subtract", "-", difference),
+  multiply: arithmetic("multiply", "×", product, SOME),
+  /** The exact quotient: 1 ÷ 3 is the fraction one third. */
+  divide: arithmetic("divide", "÷", quotient),
   /** What is left after dividing, with the sign of the first number. */
-  remainder: arithmetic("remainder", "mod", (a, b) => a % b),
-  // A negative power of an integer is a fraction, which never comes here.
+  remainder: arithmetic("remainder", "mod", remainder),
+  /**
+   * A whole power is exact; a power past so many digits that it would take
+   * long to make fails. A power that is not whole, such as a square root,
+   * is the nearest number a JavaScript number writes.
+   */
   power: arithmetic(
     "power",
     "to the power of",
-    (a, b) => a ** b,
+    power,
     2,
-    (a, b) => (b >= 0n ? a ** b : 0n)
+    `has no finite result, or would have more than ${DIGITS} digits`
   ),
-  min: arithmetic("min", "and", Math.min, SOME),
-  max: arithmetic("max", "and", Math.max, SOME),
+  min: arithmetic("min", "and", least, SOME),
+  max: arithmetic("max", "and", most, SOME),
 
-  absolute: rounding(Math.abs),
-  floor: rounding(Math.floor),
-  ceiling: rounding(Math.ceil),
-  /** The nearest whole number; a half rounds up. */
-  round: rounding(Math.round),
+  absolute: rounding(absolute),
+  floor: rounding(floorOf),
+  ceiling: rounding(ceilingOf),
+  /**
+   * The nearest whole number, or with `places`, the nearest number with that
+   * many digits after the point; a half rounds up.
+   */
+  round: over(
+    [NumberSchema, Schema.Int],
+    (n, places = 0) => roundTo(n, places),
+    1
+  ),
 
   /**
-   * The number as text, the way JSON writes it. With a separator, the whole
-   * part is written in groups of three digits with it between them, as
-   * `#:group-sep` does in Racket: "1,234,567.5".
+   * The number as text, the way JSON writes it, and a fraction no decimal
+   * writes as Scheme writes it, "1/3". With a separator, the whole part is
+   * written in groups of three digits with it between them, as `#:group-sep`
+   * does in Racket: "1,234,567.5".
    */
   toString: over(
-    [Schema.Number, Schema.String],
+    [NumberSchema, Schema.String],
     (n, between = "") =>
-      String(n).replace(WHOLE, (digits) =>
+      numberText(n).replace(WHOLE, (digits) =>
         digits.replace(GROUPS, (digit) => digit + between)
       ),
     1
   ),
   /**
    * The number the text writes, as `string->number` reads it in Scheme, or
-   * null when the text is not one number. With a separator, the whole part
-   * may be in groups of three digits with it between them, so the text
-   * `toString` writes with a separator reads back as the number.
+   * null when the text is not one number: "0.1" is one tenth and "1/3" one
+   * third. With a separator, the whole part may be in groups of three digits
+   * with it between them, so the text `toString` writes with a separator
+   * reads back as the number.
    */
   fromString: over(
     [Schema.String, Schema.String],

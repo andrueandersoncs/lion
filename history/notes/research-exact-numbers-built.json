@@ -1,0 +1,12 @@
+{
+  "claims": [
+    {
+      "quote": "The research model records Lion with exact numbers built, in step `research/steps/51-en-built.json`: the run's programs run again, and the time to add decimals measured beside main. The solver's two proofs now hold of plain code, every number idea the run weighed is one Lion does already, adding a hundred thousand decimals takes 1.9 times as long against the model's estimate of 1.7, and the proof ideas no longer wait for exact numbers, with induction over recursive functions ranked first of them.",
+      "says": {
+        "feature": "research-exact-numbers-built-step",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}

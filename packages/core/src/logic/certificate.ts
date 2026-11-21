@@ -17,18 +17,27 @@
  * numbers, a few problems have no solution only because of the Omega test's
  * dark and grey shadows, and get no certificate here.
  */
-import { type Constraint, gcd, type Sort } from "@/logic/solver";
+
+import type { Constraint, Sort } from "@/logic/solver";
+import {
+  compareNumbers,
+  fromRational,
+  gcd,
+  type LionNumber,
+  ratio,
+  toRational,
+} from "@/numbers/exact";
 
 /** A line of a certificate: whole-number coefficients by variable, a constant, and a relation to 0. */
 export interface Line {
-  readonly constant: number;
+  readonly constant: LionNumber;
   readonly relation: ">=" | ">" | "=";
-  readonly sum: Readonly<Record<string, number>>;
+  readonly sum: Readonly<Record<string, LionNumber>>;
 }
 
 /** How a line is made: earlier lines, each with its multiplier, added, and maybe tightened. */
 export interface Step {
-  readonly from: readonly (readonly [number, number])[];
+  readonly from: readonly (readonly [number, LionNumber])[];
   readonly tightened: boolean;
 }
 
@@ -287,9 +296,8 @@ const eliminate = (
   return out;
 };
 
-const SAFE = BigInt(Number.MAX_SAFE_INTEGER);
-
-const safe = (n: bigint) => n <= SAFE && n >= -SAFE;
+/** A whole number as the Lion number it is, written exactly however large. */
+const whole = (n: bigint) => fromRational(ratio(n));
 
 /**
  * The certificate up to the false line, with only the steps that line
@@ -347,23 +355,16 @@ const written = (
     tightened: boolean;
   }[]
 ): Certificate | undefined => {
-  const numbers = [
-    ...constraints.flatMap((l) => [...l.coefficients.values(), l.constant]),
-    ...steps.flatMap((s) => s.from.map(([, m]) => m)),
-  ];
-  if (!numbers.every(safe)) {
-    return undefined;
-  }
   return {
     constraints: constraints.map((l) => ({
-      constant: Number(l.constant),
+      constant: whole(l.constant),
       relation: l.relation,
       sum: Object.fromEntries(
-        [...l.coefficients].map(([name, k]) => [name, Number(k)])
+        [...l.coefficients].map(([name, k]) => [name, whole(k)])
       ),
     })),
     steps: steps.map((s) => ({
-      from: s.from.map(([f, m]) => [f, Number(m)] as const),
+      from: s.from.map(([f, m]) => [f, whole(m)] as const),
       tightened: s.tightened,
     })),
   };
@@ -373,9 +374,9 @@ const written = (
 export const checks = (certificate: Certificate): boolean => {
   const lines: (Whole | undefined)[] = certificate.constraints.map((l) => ({
     coefficients: new Map(
-      Object.entries(l.sum).map(([name, k]) => [name, BigInt(k)])
+      Object.entries(l.sum).map(([name, k]) => [name, toRational(k).n])
     ),
-    constant: BigInt(l.constant),
+    constant: toRational(l.constant).n,
     relation: l.relation,
   }));
   for (const step of certificate.steps) {
@@ -383,14 +384,14 @@ export const checks = (certificate: Certificate): boolean => {
       step.from.some(
         ([at, m]) =>
           lines[at] === undefined ||
-          (m < 0 && (lines[at] as Whole).relation !== "=")
+          (compareNumbers(m, 0) < 0 && (lines[at] as Whole).relation !== "=")
       )
     ) {
       return false;
     }
     const combined = combine(
       lines as Whole[],
-      step.from.map(([at, m]) => [at, BigInt(m)] as const)
+      step.from.map(([at, m]) => [at, toRational(m).n] as const)
     );
     lines.push(step.tightened ? tighten(combined) : combined);
   }

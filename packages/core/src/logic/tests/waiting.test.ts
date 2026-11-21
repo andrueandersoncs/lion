@@ -2,6 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
 import { LogicDatabase, writtenRules } from "@/logic/database";
 import { loadDatabase } from "@/logic/snapshot";
+import { asFraction, order } from "@/numbers/tests/model";
 import {
   attempt,
   booleanOf,
@@ -15,7 +16,7 @@ import {
   values,
   WORLD_RULES,
 } from "./expressions";
-import { element, nearestSum, type Outcome } from "./programs";
+import { element, exactSum, type Outcome } from "./programs";
 
 const ANY = { saveable: false };
 const SAVEABLE = { saveable: true };
@@ -202,11 +203,16 @@ describe("an expression that mentions a logic variable", () => {
         ]);
         expectRows(actual, expected, (results) => {
           const numbers = results as number[];
+          // Numbers are exact, so they are ordered as their fractions are.
+          const ordered = (a: unknown, b: unknown) =>
+            order(asFraction(a), asFraction(b));
           return [
             {
-              total: nearestSum(numbers),
-              largest: Math.max(...numbers),
-              all: [...numbers].sort((a, b) => a - b),
+              total: exactSum(numbers),
+              largest: numbers.reduce((most, n) =>
+                ordered(n, most) > 0 ? n : most
+              ),
+              all: [...numbers].sort(ordered),
             },
           ];
         });
@@ -273,7 +279,7 @@ describe("a rule that holds waiting forms", () => {
           yield* attempt([["query", ["total", "?sum"]]], database),
           expected,
           // Matches have no order, so their sum is rounded once.
-          (results) => [{ sum: nearestSum(results as number[]) }]
+          (results) => [{ sum: exactSum(results as number[]) }]
         );
       }),
     OPTIONS

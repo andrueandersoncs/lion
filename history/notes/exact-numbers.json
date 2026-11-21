@@ -1,0 +1,213 @@
+{
+  "title": "Every number is exact, so what the solver proves holds of plain code",
+  "context": "Lion's solver decided with exact rationals, but plain code computed with JavaScript's doubles, which can round where the solver does not. So the solver could prove a statement that Lion's own code breaks: it proved that no number between 0 and 1 changes when 0.2 is added and taken away, while plain code gives 0.10000000000000003 for 0.1; and that no integer from 2^53 up is unchanged by adding 1, while plain code gives 9007199254740992 for 2^53 + 1. The research run `exact-numbers` (research/runs/exact-numbers/) weighed nine ways out against Scheme, Racket, Lean, Dafny, ACL2, SMT-LIB, Python, and JSON, and ranked making every number exact first of everything left to build.",
+  "decision": "Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are. A number written in a program or a database is the exact value its digits write, so 0.1 is one tenth and 9007199254740993 is itself; a JavaScript number a host passes stands for the decimal its shortest digits write. Arithmetic, sums, and means are exact: `[\"number/add\", 0.1, 0.2]` is 0.3, `[\"number/add\", 9007199254740991, 2]` is 9007199254740993, and `[\"number/divide\", 1, 3]` is the fraction 1/3. A value is written as JSON with each number's digits, and a fraction no decimal writes, such as 1/3, has no JSON text: writing it fails with `ArithmeticError`, as Racket's JSON library refuses it, and `number/toString` writes it as `1/3`, which `number/fromString` reads back. A number read from text may have at most 4,300 digits, and a whole power at most as many, as Python limits the digits of an integer it reads. A power that is not whole gives the nearest double, read as its digits.",
+  "consequences": "Each number has one form: the JavaScript number whose shortest digits write it, when one does, and otherwise an exact rational kept once for each value, in `packages/core/src/numbers/exact.ts`, so equality is identity and hosts mostly see plain numbers. The solver reads numbers through the same rationals, so what it proves about numbers holds of what plain code computes. A sum is the exact sum in any order, which replaces the sum rounded once. Integers past 2^53 - 1 are no longer refused, and no sum or product overflows. `number/round` takes a number of decimal places. A snapshot writes 1/3 as `[\"number/divide\", 1, 3]`, so it reads back exactly. The CLI, the website's examples, and the editor read programs with each number's digits, through `JSON.parse`'s source text, and refuse to print 1/3. A model of exact numbers estimated that adding decimals in Lion takes about 1.7 times as long. Lion's values are still JSON values with no undefined, NaN, or Infinity: dividing by zero still fails, and an overflow, which once failed, is now an exact number.",
+  "alternatives": [
+    {
+      "option": "Scheme's exact and inexact numbers side by side, with 0.1 read as inexact",
+      "rejected": "A decimal written in a program would still be a double, so a proof over decimals would still fail of plain code; exact numbers give all it gives."
+    },
+    {
+      "option": "Decimal floating point, as Python's decimal module",
+      "rejected": "A division rounds to a fixed number of digits, so 1/3 would round and proofs over division would fail."
+    },
+    {
+      "option": "Keep doubles and have the solver refuse what they round",
+      "rejected": "Sound, but it gives nothing exact numbers do not, and it leaves 0.1 + 0.2 as 0.30000000000000004."
+    },
+    {
+      "option": "Keep doubles and have the solver reason about them bit for bit, as SMT-LIB's FloatingPoint theory does",
+      "rejected": "Lion has no decision procedure for floating point, and proofs about doubles break the laws people prove with, such as associativity."
+    },
+    {
+      "option": "Write 1/3 in JSON output as the expression that makes it, or as its nearest decimal",
+      "rejected": "The first reads as a list where a number was meant, and the second loses the value; refusing says so, as Racket's JSON library does, and the message says how to round."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are.",
+      "says": {
+        "decision": "exact-numbers",
+        "chose": "exact-rationals",
+        "over": [
+          "binary64-doubles",
+          "scheme-numeric-tower",
+          "decimal-floating-point",
+          "solver-refuses-rounding",
+          "floating-point-theory"
+        ],
+        "area": "library",
+        "because": "the solver decides with exact numbers, so plain code must compute with them for what the solver proves to hold of plain code"
+      }
+    },
+    {
+      "quote": "A sum is the exact sum in any order, which replaces the sum rounded once.",
+      "says": {
+        "decision": "sum-rounding",
+        "chose": "exact-sum",
+        "over": ["nearest-exact-sum", "added-as-values-come"],
+        "area": "logic",
+        "because": "numbers are exact, so the exact sum is a number and needs no rounding"
+      }
+    },
+    {
+      "quote": "Arithmetic, sums, and means are exact: `[\"number/add\", 0.1, 0.2]` is 0.3, `[\"number/add\", 9007199254740991, 2]` is 9007199254740993, and `[\"number/divide\", 1, 3]` is the fraction 1/3.",
+      "says": {
+        "behavior": "decimal-sum",
+        "is": "exact",
+        "area": "library",
+        "was": "rounded",
+        "follows": "scheme",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "Arithmetic, sums, and means are exact: `[\"number/add\", 0.1, 0.2]` is 0.3, `[\"number/add\", 9007199254740991, 2]` is 9007199254740993, and `[\"number/divide\", 1, 3]` is the fraction 1/3.",
+      "says": {
+        "behavior": "integer-arithmetic-past-exact-range",
+        "is": "exact",
+        "area": "library",
+        "was": "error",
+        "follows": "scheme",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "Arithmetic, sums, and means are exact: `[\"number/add\", 0.1, 0.2]` is 0.3, `[\"number/add\", 9007199254740991, 2]` is 9007199254740993, and `[\"number/divide\", 1, 3]` is the fraction 1/3.",
+      "says": {
+        "behavior": "integer-division-fraction",
+        "is": "exact",
+        "area": "library",
+        "was": "rounded",
+        "follows": "scheme",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "Integers past 2^53 - 1 are no longer refused, and no sum or product overflows.",
+      "says": {
+        "behavior": "float-arithmetic-past-exact-range",
+        "is": "exact",
+        "area": "library",
+        "was": "rounded",
+        "follows": "scheme",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "Integers past 2^53 - 1 are no longer refused, and no sum or product overflows.",
+      "says": {
+        "behavior": "number-overflow",
+        "is": "exact",
+        "area": "library",
+        "was": "error",
+        "follows": "scheme",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "Integers past 2^53 - 1 are no longer refused, and no sum or product overflows.",
+      "says": {
+        "behavior": "aggregate-sum-non-finite",
+        "is": "exact",
+        "area": "library",
+        "was": "error",
+        "follows": "scheme",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "A number written in a program or a database is the exact value its digits write, so 0.1 is one tenth and 9007199254740993 is itself; a JavaScript number a host passes stands for the decimal its shortest digits write.",
+      "says": {
+        "behavior": "integer-literal-past-exact-range",
+        "is": "exact",
+        "area": "evaluation",
+        "was": "error",
+        "follows": "scheme",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "`number/toString` writes it as `1/3`, which `number/fromString` reads back.",
+      "says": {
+        "behavior": "number-from-string-past-exact-range",
+        "is": "exact",
+        "area": "library",
+        "was": "null",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "`number/toString` writes it as `1/3`, which `number/fromString` reads back.",
+      "says": {
+        "behavior": "number-to-string-fraction",
+        "is": "fraction-text",
+        "area": "library",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "A value is written as JSON with each number's digits, and a fraction no decimal writes, such as 1/3, has no JSON text: writing it fails with `ArithmeticError`, as Racket's JSON library refuses it, and `number/toString` writes it as `1/3`, which `number/fromString` reads back.",
+      "says": {
+        "behavior": "json-of-fraction",
+        "is": "error",
+        "area": "library",
+        "follows": "racket"
+      }
+    },
+    {
+      "quote": "A sum is the exact sum in any order, which replaces the sum rounded once.",
+      "says": {
+        "behavior": "sum-exactly-rounded",
+        "is": "exact",
+        "area": "logic",
+        "was": "nearest",
+        "follows": "scheme",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "The solver reads numbers through the same rationals, so what it proves about numbers holds of what plain code computes.",
+      "says": {
+        "behavior": "solver-proof-holds-of-plain-code",
+        "is": "holds",
+        "area": "logic",
+        "was": "rounds"
+      }
+    },
+    {
+      "quote": "`number/round` takes a number of decimal places.",
+      "says": {
+        "behavior": "number-round-places",
+        "is": "half-up",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "Each number has one form: the JavaScript number whose shortest digits write it, when one does, and otherwise an exact rational kept once for each value, in `packages/core/src/numbers/exact.ts`, so equality is identity and hosts mostly see plain numbers.",
+      "says": {
+        "feature": "numbers/exact",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "quote": "Lion's values are still JSON values with no undefined, NaN, or Infinity: dividing by zero still fails, and an overflow, which once failed, is now an exact number.",
+      "says": {
+        "rule": "values-are-json",
+        "holds": true,
+        "statement": "Lion's values are JSON, so the standard library never gives undefined, NaN, or Infinity; numbers are exact, so an overflow is an exact number rather than an error",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "division-by-zero",
+            "is": "error"
+          }
+        ],
+        "except": ["number-overflow", "aggregate-sum-non-finite"]
+      }
+    }
+  ]
+}

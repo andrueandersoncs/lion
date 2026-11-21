@@ -895,5 +895,82 @@
    2
   ]
  ],
+ [
+  "relation",
+  "en_built",
+  [
+   "workload",
+   "before_ms",
+   "after_ms",
+   "times"
+  ]
+ ],
+ [
+  "rule",
+  [
+   "en_built",
+   "?w",
+   "?before",
+   "?after",
+   [
+    "number/divide",
+    [
+     "number/round",
+     [
+      "number/multiply",
+      10,
+      [
+       "number/divide",
+       "?after",
+       "?before"
+      ]
+     ]
+    ],
+    10
+   ]
+  ],
+  [
+   "stated",
+   {
+    "lion measured": "?w"
+   },
+   "?before"
+  ],
+  [
+   "stated",
+   {
+    "lion measured": [
+     "string/concat",
+     "?w",
+     ", with exact numbers built"
+    ]
+   },
+   "?after"
+  ]
+ ],
+ [
+  "rule",
+  [
+   "violated",
+   "en-cost",
+   [
+    "string/concat",
+    "?w",
+    ", built"
+   ]
+  ],
+  [
+   "en_built",
+   "?w",
+   "?_",
+   "?_",
+   "?t"
+  ],
+  [
+   "number/greaterThan",
+   "?t",
+   2
+  ]
+ ],
  "en framed"
 ]

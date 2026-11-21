@@ -3,11 +3,9 @@
 // page, and the docs build uses it to write each example's result, so a
 // published result always matches what the page computes.
 import { run } from "@lionlang/core/evaluation/evaluate";
-import {
-  inexactInteger,
-  inexactIntegerError,
-} from "@lionlang/core/evaluation/reading";
+import { readJson } from "@lionlang/core/evaluation/reading";
 import { stdlib } from "@lionlang/core/modules";
+import { NotJson } from "@lionlang/core/numbers/exact";
 import { Cause, Console, Effect, Exit, Scheduler } from "effect";
 
 export interface EvaluateRequest {
@@ -59,6 +57,19 @@ const stringify = (value: unknown) => {
   return json === undefined ? undefined : showFunctions(json);
 };
 
+const raw = JSON as {
+  readonly isRawJSON?: (value: unknown) => boolean;
+  readonly rawJSON?: (text: string) => unknown;
+};
+
+/** Reads JSON text back with each number's digits as they are written. */
+const digits = (_key: string, value: unknown, context?: { source?: string }) =>
+  typeof value === "number" &&
+  context?.source !== undefined &&
+  raw.rawJSON !== undefined
+    ? raw.rawJSON(context.source)
+    : value;
+
 /**
  * Indents arrays and objects, keeping any part that fits within the width on
  * one line so nested results such as `why` explanations stay readable.
@@ -68,6 +79,7 @@ const pretty = (value: unknown, indent = ""): string => {
   if (
     value === null ||
     typeof value !== "object" ||
+    raw.isRawJSON?.(value) === true ||
     indent.length + compact.length <= INLINE_WIDTH
   ) {
     return compact;
@@ -98,10 +110,16 @@ export const formatValue = (value: unknown): string => {
     }
     return truncate(
       showFunctions(
-        json.length <= COMPACT_LENGTH ? json : pretty(JSON.parse(json))
+        json.length <= COMPACT_LENGTH
+          ? json
+          : pretty(JSON.parse(json, digits as Parameters<typeof JSON.parse>[1]))
       )
     );
-  } catch {
+  } catch (error) {
+    // A fraction no decimal writes, such as 1/3, has no JSON text.
+    if (error instanceof NotJson) {
+      throw error;
+    }
     // Cyclic host values cannot be serialized.
     return truncate(String(value));
   }
@@ -178,29 +196,16 @@ export const evaluateSource = async ({
 }: EvaluateRequest): Promise<EvaluateResponse> => {
   const logs: string[] = [];
   const started = performance.now();
-  let program: unknown;
-  try {
-    program = JSON.parse(source);
-  } catch (error) {
+  const read = await Effect.runPromiseExit(readJson(source));
+  if (Exit.isFailure(read)) {
     return {
       id,
       ok: false,
-      error: `Invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
+      error: describeError(Cause.squash(read.cause)),
       logs,
     };
   }
-  // An integer the text writes that would not read as itself is refused.
-  const inexact = inexactInteger(source);
-  if (inexact !== undefined) {
-    return {
-      id,
-      ok: false,
-      error: describeError(
-        inexactIntegerError(source, inexact.at, inexact.written)
-      ),
-      logs,
-    };
-  }
+  const program = read.value;
   const exit = await Effect.runPromiseExit(
     run(program, stdlib).pipe(
       Effect.provideService(Console.Console, makeConsole(logs)),
@@ -208,13 +213,18 @@ export const evaluateSource = async ({
     )
   );
   const ms = performance.now() - started;
-  return Exit.isSuccess(exit)
-    ? { id, ok: true, value: formatValue(exit.value), logs, ms }
-    : {
-        id,
-        ok: false,
-        error: describeError(Cause.squash(exit.cause)),
-        logs,
-        ms,
-      };
+  if (Exit.isSuccess(exit)) {
+    try {
+      return { id, ok: true, value: formatValue(exit.value), logs, ms };
+    } catch (error) {
+      return { id, ok: false, error: describeError(error), logs, ms };
+    }
+  }
+  return {
+    id,
+    ok: false,
+    error: describeError(Cause.squash(exit.cause)),
+    logs,
+    ms,
+  };
 };

@@ -21,6 +21,19 @@ const KINDS: Partial<Record<SchemaAST.AST["_tag"], Taken>> = {
   Declaration: taken("a function", "functions"),
 };
 
+/** What a declared schema takes, as a schema that names its own kind says it. */
+const DESCRIBED = new WeakMap<SchemaAST.AST, Taken>();
+
+/** A schema whose values a message calls `one`, and `many` in the plural. */
+export const describedAs = <S extends { readonly ast: SchemaAST.AST }>(
+  schema: S,
+  one: string,
+  many: string
+): S => {
+  DESCRIBED.set(schema.ast, taken(one, many));
+  return schema;
+};
+
 const INTEGER = "an integer";
 
 /** How a check that says what a value is starts. */
@@ -47,6 +60,10 @@ const checked = (kind: Taken, ast: SchemaAST.AST): Taken => {
 
 /** What a schema takes, said as a library function's message says it. */
 const takenBy = (ast: SchemaAST.AST): Taken => {
+  const described = DESCRIBED.get(ast);
+  if (described !== undefined) {
+    return checked(described, ast);
+  }
   if (ast._tag === "Arrays") {
     const [rest] = ast.rest;
     return ast.elements.length === 0 && rest !== undefined

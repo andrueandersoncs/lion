@@ -1,12 +1,15 @@
 import { Effect, flow, Record, Schema } from "effect";
 import {
+  ArithmeticError,
   atLeast,
   KeyNotFoundError,
+  type LogicError,
   logicError,
   takes,
 } from "@/errors/evaluation";
 import { show as written } from "@/logic/terms";
 import { over } from "@/modules/lib/shared";
+import { NotJson } from "@/numbers/exact";
 import { RecordKeySchema } from "@/schemas/lion-expression";
 
 const show = (value: unknown) => {
@@ -290,8 +293,17 @@ export const module = {
       value: unknown,
       replacer?: Parameters<typeof JSON.stringify>[1],
       space?: number
-    ) => {
-      const text: unknown = JSON.stringify(value, replacer, space);
+    ): Effect.Effect<string, ArithmeticError | LogicError> => {
+      let text: unknown;
+      try {
+        text = JSON.stringify(value, replacer, space);
+      } catch (error) {
+        // A fraction no decimal writes, such as 1/3, has no JSON text.
+        if (error instanceof NotJson) {
+          return Effect.fail(new ArithmeticError({ message: error.message }));
+        }
+        throw error;
+      }
       return typeof text === "string"
         ? Effect.succeed(text)
         : logicError(`${written(value)} has no JSON text.`);
