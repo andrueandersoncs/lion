@@ -7,6 +7,10 @@
 //   bun run mutate --in logic/model.ts,logic/database.ts
 //                                    only those in files whose paths hold a word
 //   bun run mutate --jobs 2          how many run at once; 4 unless given
+//   bun run mutate --affected        those the changes since HEAD can reach,
+//                                    by the reach map of `bun run affected`
+//   bun run mutate --affected --against main
+//                                    those the changes since a commit can reach
 //   bun run mutate --list            the names, and whether each still applies
 //   bun run mutate --file packages/core/src/logic/model.ts \
 //     --find "values.sort(compareValues)" --replace "values" \
@@ -16,9 +20,13 @@
 // The mutations are made in copies of the working tree under `out/`, as it
 // stood when the run began, uncommitted changes included. So the code can
 // be edited while this runs; what is edited meanwhile is not checked.
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { Effect } from "effect";
+import { checkedOf, pick } from "./src/affected.ts";
 import { copyWorkingTree, removeCheckout } from "./src/checkout.ts";
+import { load } from "./src/lion.ts";
 import {
   checkAll,
   DEFAULT_TESTS,
@@ -27,10 +35,12 @@ import {
   type Verdict,
 } from "./src/mutation.ts";
 import { MUTATIONS } from "./src/mutations.ts";
+import { readMap } from "./src/reach.ts";
 import { readArguments } from "./src/report.ts";
-import { REPOSITORY } from "./src/sources.ts";
+import { CORE, REPOSITORY } from "./src/sources.ts";
 
 const args = readArguments(process.argv.slice(2), [
+  "against",
   "file",
   "find",
   "in",
@@ -53,10 +63,46 @@ const ownMutation = (): Mutation | undefined => {
 
 const own = ownMutation();
 
+const git = (...words: string[]) =>
+  spawnSync("git", words, { cwd: REPOSITORY, encoding: "utf8" })
+    .stdout.split("\n")
+    .filter((line) => line !== "");
+
+/**
+ * The names of the mutations the changes since a commit can reach, by the
+ * reach map, or undefined when --affected is not given.
+ */
+const affected = async (): Promise<Set<string> | undefined> => {
+  if (!args.flag("affected")) {
+    return;
+  }
+  const map = readMap();
+  if (map === undefined) {
+    throw new Error(
+      "There is no reach map. Make one with: bun run affected --map"
+    );
+  }
+  const ref = args.option("against") ?? "HEAD";
+  const files = [
+    ...new Set([
+      ...git("diff", "--name-only", ref),
+      ...git("ls-files", "--others", "--exclude-standard"),
+    ]),
+  ];
+  const lion = await Effect.runPromise(load(join(REPOSITORY, CORE)));
+  const picked = await Effect.runPromise(
+    pick(lion, map, [{ files, id: "now" }], MUTATIONS.map(checkedOf))
+  );
+  return new Set(picked.mutations.now ?? []);
+};
+
+const reached = await affected();
+
 const chosen =
   own === undefined
     ? MUTATIONS.filter(
         ({ file, name }) =>
+          (reached === undefined || reached.has(name)) &&
           (args.rest.length === 0 ||
             args.rest.some((word) => name.includes(word))) &&
           (args.option("in")?.split(",") ?? [""]).some((word) =>

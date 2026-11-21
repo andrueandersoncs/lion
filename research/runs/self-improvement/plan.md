@@ -118,7 +118,7 @@ These are today's numbers and the numbers at each release. Grid exceptions are l
 
 | Quality | Instrument | Baseline |
 |---|---|---|
-| Check time per change: the hook, `history check`, `mutate --in`, `bench`, `scale` | **new**: telemetry | about 1 h per item (11-20); `history check` about 1 min 50 s (11-16); a full `mutate` takes most of an hour |
+| Check time per change: the hook, `history check`, `mutate --in`, `bench`, `scale` | **new**: telemetry | about 1 h per item (11-20). Measured 2026-11-21 at 9d59e05: the commit hook 1 min 58 s (core 72 s, history 56 s, metrics 52 s, and cli 20 s, run side by side); `history write` 63 s; `history check` 55–62 s; `scale` 50 s; `bench` 5 s; `measure` 4 s; `compare --docs` 1 s; the docs build 0.4 s; a full `mutate` far longer than all of these together. Per change, the tests are minutes and mutations are the hour. |
 | Throughput | git ✓ | 304 commits since 2025-12-03; core went from 0.6.0 (11-12) to 0.15.0 (11-20); 50 commits on 11-18 |
 | Hit rate: experiments that paid off, of those tried | lion-reasoning `progress` ✓ | not recorded for Lion itself |
 | Calibration: predictions the evidence bore out, and predictions it contradicted, per kind of change | lion-reasoning `borne_out` and `contradicted` ✓ | not recorded |
@@ -299,6 +299,11 @@ Each mechanism is a Lion program or a Lion model. The host only observes, the wa
 - **Soundness property.** For every mutation in `mutations.ts`, the checks picked for that mutation's diff include a test that catches it, whenever the full set does. If the property fails, the picking falls back to a wider set. The full suite runs before merge.
 - **What it pays.** Every later cycle gets shorter.
 - **What it gives Lion.** Tens of thousands of coverage facts, followed as files change, make a real workload for the logic engine's incremental following. If the impact model is slow, Lion has found a performance bug in itself.
+- **As built in phase 1A** (`bun run affected`, `packages/metrics/src/affected.json`):
+  - The facts are per test file, not per function. They are what its tests ran (load time left out, since every test loads the whole library), the files it read, and whether it ran `git`.
+  - Every fact carries a change id. A diff, a past commit, and each listed mutation are all changes, so one set of rules picks the checks and judges their soundness (`unsound`).
+  - The mutations picked are those in a changed file and those whose named tests a change reaches. A change that weakens a property so brings back the mutations it guarded, which `mutate --in` misses.
+  - Not built: the docs examples' forms (the docs build runs every example in under a second, so picking them would save nothing), and per-function facts.
 
 ### M4. The capability corpus and the external suites
 
@@ -389,7 +394,7 @@ A change to the process is a direction in the same loop. It is scored on R and o
 | Phase | Work | Done when |
 |---|---|---|
 | **0. Record and baseline** | Eight decision records (§3.0). Ledger v0 as a Lion program, with each constraint's level. A baseline scoreboard: today's `measure` (done), `bench`, `scale`, a full `mutate` in the background, and `compare --docs`. Weigh M1 to M9 as candidates in `research/` under the run `self-improvement` (prefix `si-`), reusing `held-out-eval`, `agents`, and `testing`. | The ledger answers `untested`. The baseline is recorded as observations. **Status:** the decision records, `untested`, and four probes are built. The baseline runs and the `si-` candidates are not done yet. |
-| **1A. Cycle time** (M8, M3) | Telemetry, the impact model, and its soundness property. | The mutation property passes. Median check time is measured before and after. |
+| **1A. Cycle time** (M8, M3) | Telemetry, the impact model, and its soundness property. | The mutation property passes. Median check time is measured before and after. **Status:** built (`bun run affected`, `mutate --affected`). `--check` finds picking sound for all 599 listed mutations: 595 have every named test picked, and the other 4 are caught by the tests picking keeps. `--replay 30` gives a median of 98% of the tests' time and 555 of 599 mutations. A change to core reaches about 96 of 107 test files, while one to the docs, research, or record reaches 6 to 25. At file level, picking pays only outside core; per-function reach is the next direction to try. |
 | **1B. Capability** (M4, part) | The public corpus with reference programs as a gate. Probes of the cases R7RS-small settles, predicted by `scheme-racket-semantics`. Can run beside 1A: the files are separate. | A per-pillar baseline exists, and every difference from Scheme the probes find is excepted by a decision or fixed. |
 | **2. The loop** (M1) | Constraints as `requires`, a branch-only runner, budgets, the held-out folder, and agent runs. | Five experiments run end to end, each with a belief, a verdict, and its cost. |
 | **3. Oracles and mining** (M5, M6, M7) | The solver differential property. Lints from the three most frequent agent errors. Pair coverage. | Each has a score in the record. The solver property waits for the exact-numbers work in the Clef session. |
@@ -397,7 +402,7 @@ A change to the process is a direction in the same loop. It is scored on R and o
 
 What the loop would take up first, from today's evidence:
 
-1. Raise constraints 1, 2, and 21 from stated to gated. They are cheap and need no decision.
+1. Raise constraints 1, 2, and 21 from stated to gated. They are cheap and need no decision. Done in phase 0 (9d59e05), with constraint 4's grid check: the probes `lisp-text-string`, `core-imports-host-modules`, `scripts-call-npm`, and `grid-undocumented-exceptions`. The line counts of AGENTS.md and CLAUDE.md were probed already.
 2. Constraint 7, the solver number gap: the Clef session's `exact-numbers` run is on it.
 3. Constraint 3's one known departure: done in phase 0, with your approval. An unbound string is a listed departure.
 4. The join gap, ranked first in `to_build`, which is a logic capability and a growth score.

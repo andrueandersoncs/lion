@@ -74,12 +74,15 @@ packages/metrics/
 │   ├── mutations.ts    # the breaks `bun run mutate` checks
 │   ├── benchmarks.ts   # the programs `bun run bench` times
 │   ├── workloads.ts    # the workloads `bun run scale` times at growing sizes
+│   ├── affected.json   # the Lion rules that pick the checks a change can reach
+│   ├── reach-trace.ts  # the setup file that records what each test file reaches
 │   └── *.ts
 ├── measure.ts
 ├── bench.ts
 ├── scale.ts
 ├── mutate.ts
 ├── compare.ts
+├── affected.ts
 └── package.json
 ```
 

@@ -23,6 +23,15 @@ bun run scale --against main
 # Break the code in each listed place and check that the tests notice
 bun run mutate
 
+# Map what each test reaches, then run only the tests and mutations a change can reach
+bun run affected --map
+bun run affected --run
+bun run mutate --affected
+
+# Check that picking skips no test a listed mutation names, and what it would have run lately
+bun run affected --check
+bun run affected --replay 30
+
 # Run the same programs on main and on the working tree
 bun run compare main programs.json
 
@@ -45,3 +54,4 @@ How to use the numbers:
 - **Check the growth.** Run `bun run scale --against main`. A benchmark times one size, so it cannot show a step that reads everything again for each row. A workload should grow as its facts do, `n^1.0`; report any that grows faster, or that keeps more memory. Add a workload to `packages/metrics/src/workloads.ts` for a way of growing the list does not cover.
 - **Check what you say about behavior.** Before you write that a change fixes, breaks, or keeps something, in a changelog or a report, put the program in a file and run `bun run compare`.
 - **Go on working while `bun run mutate` runs.** It breaks copies of the working tree under `out/metrics/`, never the tree itself, so run it in the background. It checks the tree as it stood when the run began.
+- **While you iterate, run what the change reaches.** `bun run affected --run` runs the test files and checks the changes since HEAD can reach, and `bun run mutate --affected` the mutations: those in a changed file, and those whose tests a changed file reaches, so a change that weakens a property brings back the mutations it guarded, which `--in` would not. Both read the map `bun run affected --map` writes, which is of the commit it was made at, so make it again after a large change, and run `bun run affected --check`, which fails when picking would skip a test a listed mutation names. Before a merge, run everything.

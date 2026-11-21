@@ -17,6 +17,7 @@
     "mutate": "bun run --cwd packages/metrics mutate",
     "skill-eval": "bun run --cwd packages/metrics skill-eval",
     "compare": "bun run --cwd packages/metrics compare",
+    "affected": "bun run --cwd packages/metrics affected",
     "history": "bun run --cwd packages/history history"
   },
   "devDependencies": {

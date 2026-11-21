@@ -1,6 +1,6 @@
 # @lionlang/metrics
 
-Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer seven questions:
+Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer eight questions:
 
 | Question | Command |
 | --- | --- |
@@ -8,6 +8,7 @@ Tools that measure Lion, so a change can be judged by numbers and not by feel. T
 | Did it make Lion faster or slower? | `bun run bench --against main` |
 | Does its time grow as the facts do, or faster? | `bun run scale --against main` |
 | Do the tests notice when the code is wrong? | `bun run mutate` |
+| Which tests, checks, and mutations can a change reach? | `bun run affected` |
 | What does the change do to a program's result? | `bun run compare main programs.json` |
 | Which documented results did the change make untrue? | `bun run compare main --docs` |
 | How well does an agent do a skill's eval case? | `bun run skill-eval lion-research verifies-company-figures` |
@@ -144,6 +145,61 @@ bun run mutate --file packages/core/src/logic/model.ts --find "values.sort(compa
 The copies are removed when the run ends, also when it is stopped.
 
 When you add behavior, add a mutation that breaks it, and see it caught.
+
+## What a change reaches: `bun run affected`
+
+```bash
+bun run affected --map
+bun run affected
+bun run affected --against main --run
+bun run mutate --affected
+bun run affected --check
+bun run affected --replay 30
+```
+
+A change can make a test give another result only if the test runs the code it changed or reads the file it changed. `--map` runs every package's tests once, with [`src/reach-trace.ts`](src/reach-trace.ts) as a setup file, and writes `out/reach/map.json`. For each test file, the map holds:
+
+- the source files whose functions its tests ran, with what imports ran as they loaded left out, since every test loads the whole library;
+- the files of the repository it read;
+- whether it ran `git`, which reads files the map cannot see;
+- how long it took.
+
+A built file in a package's `dist/` counts as the source file of the same name, or as the whole package when no source file has its name. A command a package's test script runs besides vitest, such as the project record's check, reads the whole repository, so every change reaches it.
+
+Rules in Lion, in [`src/affected.json`](src/affected.json), pick what a change reaches from the map:
+
+- a test reaches a changed file it ran or read;
+- a test that runs `git` reaches every change;
+- a changed file that no test reached, such as a new one, reaches every test of its package;
+- a file at the root that configures the build, such as `bun.lock` or `tsconfig.json`, reaches every test when no test reached it, while one of the root's Markdown files, such as `CHANGELOG.md`, reaches only the tests that run `git`;
+- a mutation is reached when its own file changed, or a test it names is reached, so a change that weakens a property brings back the mutations that property catches, which `bun run mutate --in` would not.
+
+With no option, `affected` lists what the changes since HEAD, or since `--against`, reach, and `--run` runs them. `bun run mutate --affected` runs the mutations they reach.
+
+`--check` asks whether picking is sound: it gives each listed mutation as a change to its own file, and lists every test the mutation names that would not be picked for it. A test a mutation names should catch it, so a test that picking skips is one that might catch the break while picking says nothing ran. `--replay n` asks the same rules about each of the last n commits, and says what they would have run beside everything. The map is of the commit it was made at, so make it again after a large change.
+
+At 9d59e05 the map held 107 test files and checks. `--check` gave each of the 599 listed mutations as a change to its file. For 595, every test the mutation names is picked. For 4, picking skips one named test that never ran the mutated file, and the tests it keeps still catch the break:
+
+```
+SKIPS    cond does not ask a goal it tests
+         packages/core/src/logic/tests/connectives.test.ts
+CAUGHT  cond does not ask a goal it tests, by the tests picking keeps
+
+Picking is sound for every listed mutation: the tests it picks catch each one.
+```
+
+`--replay 30` over the commits before it shows where picking pays. A change to core reaches nearly everything, since the evaluator runs under every package's tests. A change to the docs, the research, or the record reaches a few tests:
+
+```
+commit   files  tests picked  seconds picked  mutations picked  in its files
+d50cf12     22    100 of 107    1526 of 1531        587 of 599            49
+f985647     23      6 of 107     305 of 1531         56 of 599             0
+c03b128      3     14 of 107     557 of 1531        111 of 599             0
+
+Median over 30 commits: 98% of the tests' time, 555 of 599 mutations.
+```
+
+The seconds are each test file's own time, added up, from the traced run. "in its files" is what `bun run mutate --in` would choose. Picking chooses more, because it also brings back the mutations whose tests a change reaches.
 
 ## Behavior: `bun run compare`
 

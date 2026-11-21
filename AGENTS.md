@@ -75,6 +75,11 @@ bun run measure --against main
 bun run bench --against main
 bun run scale --against main
 bun run mutate
+
+# The tests, checks, and mutations a change can reach, from a map of what each test reached
+bun run affected --map
+bun run affected --run
+bun run mutate --affected
 ```
 
 ### Package-Specific Commands

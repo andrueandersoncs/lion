@@ -7,6 +7,10 @@
 ### Added
 
 - `bun run history check` counts the rules in force that no probe of Lion checks, beside what the model holds, and `["untested", "?rule"]` lists them (`untested-rules` added)
+- `bun run affected` says which test files, checks, and mutations the changes since a commit can reach, picked by Lion rules from a map of what each test file reached when it last ran, and `--run` runs them (`affected-command` added)
+- `bun run affected --replay 30` says what picking would have run for each of the last 30 commits, beside everything (`affected-replay` added)
+- `bun run mutate --affected` checks only the mutations the changes since HEAD can reach: those in a changed file, and those whose tests a changed file reaches (`mutate-affected` added)
+- `bun run affected --map` runs every package's tests once with a setup file that records the source files whose functions each test file ran, the files it read, and whether it ran git (`reach-map` added)
 
 ### Decided
 
@@ -27,7 +31,7 @@
 - what a programmer must know, the grid's exceptions, the vocabulary, and the messages, and the code lines per passed task may not rise (rule `cost-per-capability-never-rises`)
 - An experiment never changes the instruments that score it: the metrics package, the corpus and its graders, the grid's `KNOWN`, `known.json` and `accepted.json`, the mutations, and the probes. (rule `experiments-leave-instruments-alone`)
 - A person merges, releases, and approves every decision that overturns a documented rule. (rule `people-merge-and-release`)
-- every listed mutation that the full suite catches is caught by the checks picked for it (rule `picked-checks-catch-what-full-catches`)
+- `bun run affected --check` treats each listed mutation as a change to its file, and lists every test the mutation names that picking would skip (rule `picked-checks-catch-what-full-catches`)
 - a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check` (rule `scheme-departures-are-decided`)
 
 ## 2026-11-20 — @lionlang/core 0.15.0, @lionlang/cli 0.14.0

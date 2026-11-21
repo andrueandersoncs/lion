@@ -10,6 +10,7 @@
     "scale": "bun run scale.ts",
     "mutate": "bun run mutate.ts",
     "compare": "bun run compare.ts",
+    "affected": "bun run affected.ts",
     "skill-eval": "bun run skill-eval.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

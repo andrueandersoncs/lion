@@ -1,0 +1,45 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run affected` says which test files, checks, and mutations the changes since a commit can reach, picked by Lion rules from a map of what each test file reached when it last ran, and `--run` runs them",
+      "says": {
+        "feature": "affected-command",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "quote": "`bun run affected --map` runs every package's tests once with a setup file that records the source files whose functions each test file ran, the files it read, and whether it ran git",
+      "says": {
+        "feature": "reach-map",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "quote": "`bun run affected --check` treats each listed mutation as a change to its file, and lists every test the mutation names that picking would skip",
+      "says": {
+        "rule": "picked-checks-catch-what-full-catches",
+        "holds": true,
+        "statement": "For every listed mutation, the checks picked for its change catch it whenever the full suite does",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "`bun run mutate --affected` checks only the mutations the changes since HEAD can reach: those in a changed file, and those whose tests a changed file reaches",
+      "says": {
+        "feature": "mutate-affected",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "`bun run affected --replay 30` says what picking would have run for each of the last 30 commits, beside everything",
+      "says": {
+        "feature": "affected-replay",
+        "kind": "option",
+        "present": true
+      }
+    }
+  ]
+}

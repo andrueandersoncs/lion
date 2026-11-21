@@ -1,0 +1,107 @@
+[
+  "begin",
+  ["relation", "package", ["package"]],
+  ["relation", "test", ["test", "package", "seconds"]],
+  ["relation", "reaches", ["test", "file"]],
+  ["relation", "reaches_package", ["test", "package"]],
+  ["relation", "reads_repository", ["test"]],
+  ["relation", "changed", ["change", "file"]],
+  ["relation", "mutation", ["mutation", "file"]],
+  ["relation", "mutation_test", ["mutation", "test"]],
+
+  ["relation", "in_package", ["change", "file", "package"]],
+  [
+    "rule",
+    ["in_package", "?c", "?f", "?p"],
+    ["changed", "?c", "?f"],
+    ["package", "?p"],
+    ["string/startsWith", "?f", ["string/concat", "?p", "/"]]
+  ],
+
+  ["relation", "reached", ["change", "file"]],
+  [
+    "rule",
+    ["reached", "?c", "?f"],
+    ["changed", "?c", "?f"],
+    ["reaches", "?_", "?f"]
+  ],
+  [
+    "rule",
+    ["reached", "?c", "?f"],
+    ["in_package", "?c", "?f", "?p"],
+    ["reaches_package", "?_", "?p"]
+  ],
+
+  ["relation", "unmapped", ["change", "file"]],
+  [
+    "rule",
+    ["unmapped", "?c", "?f"],
+    ["changed", "?c", "?f"],
+    ["not", ["reached", "?c", "?f"]]
+  ],
+
+  ["relation", "picked", ["change", "test"]],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["changed", "?c", "?f"],
+    ["reaches", "?t", "?f"]
+  ],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["in_package", "?c", "?f", "?p"],
+    ["reaches_package", "?t", "?p"]
+  ],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["changed", "?c", "?_"],
+    ["reads_repository", "?t"]
+  ],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["changed", "?c", "?t"],
+    ["test", "?t", "?_", "?_"]
+  ],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["unmapped", "?c", "?f"],
+    ["in_package", "?c", "?f", "?p"],
+    ["test", "?t", "?p", "?_"]
+  ],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["unmapped", "?c", "?f"],
+    ["boolean/not", ["string/includes", "?f", "/"]],
+    ["boolean/not", ["string/endsWith", "?f", ".md"]],
+    ["test", "?t", "?_", "?_"]
+  ],
+
+  ["relation", "picked_mutation", ["change", "mutation"]],
+  [
+    "rule",
+    ["picked_mutation", "?c", "?m"],
+    ["changed", "?c", "?f"],
+    ["mutation", "?m", "?f"]
+  ],
+  [
+    "rule",
+    ["picked_mutation", "?c", "?m"],
+    ["picked", "?c", "?t"],
+    ["mutation_test", "?m", "?t"]
+  ],
+
+  ["relation", "unsound", ["mutation", "test"]],
+  [
+    "rule",
+    ["unsound", "?m", "?t"],
+    ["mutation", "?m", "?f"],
+    ["changed", "?m", "?f"],
+    ["mutation_test", "?m", "?t"],
+    ["not", ["picked", "?m", "?t"]]
+  ]
+]
