@@ -58,6 +58,8 @@
 - the inner row's own variables and the relations it declares are renamed apart from the outer row's words (`grid-pairs-hygiene` is `renamed-apart`)
 - `paid_off` then names the problem's question, and a direction's misses, its patience, and its place in "Where should the next experiment go?" count both kinds of payoff (`reasoning-fix-pays-off` is `paid-off`)
 - A run of some of the tasks answers another question than a run of all of them, so its suite says how many it chose. (`capability-agents-subset-suite` is `named-by-its-count`)
+- a workload past the limit is timed again, and counts only when it is past the limit both times: a real regression shows in both, and noise seldom does (`loop-scale-past-the-limit` is `timed-again`)
+- The experiment function-reach stopped after scale: the workload of a rule that invents grew as n^1.3 under a load of 14, with no change to @lionlang/core (`loop-scale-under-load` is `noisy`)
 
 ### Fixed
 

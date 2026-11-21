@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "a workload past the limit is timed again, and counts only when it is past the limit both times: a real regression shows in both, and noise seldom does",
+      "says": {
+        "behavior": "loop-scale-past-the-limit",
+        "is": "timed-again",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "The experiment function-reach stopped after scale: the workload of a rule that invents grew as n^1.3 under a load of 14, with no change to @lionlang/core",
+      "says": {
+        "behavior": "loop-scale-under-load",
+        "is": "noisy",
+        "area": "metrics"
+      }
+    }
+  ]
+}

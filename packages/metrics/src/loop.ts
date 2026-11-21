@@ -264,6 +264,18 @@ export const readScale = (text: string, limit = 1.15) =>
     return power !== undefined && Number(power) > limit;
   }).length;
 
+const COLUMNS = /\s{2,}/;
+
+/**
+ * The workloads of `bun run scale` that grow faster than `limit`, or were
+ * stopped, by name: what `readScale` counts.
+ */
+export const fasterIn = (text: string, limit = 1.15): string[] =>
+  text
+    .split("\n")
+    .filter((row) => readScale(row, limit) === 1)
+    .map((row) => row.trim().split(COLUMNS)[0] ?? row.trim());
+
 /** The sum of `bun run bench`'s times, in milliseconds. */
 export const readBench = (text: string) =>
   Math.round(

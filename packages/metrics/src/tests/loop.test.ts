@@ -4,6 +4,7 @@ import {
   agentsCauseQuestion,
   agentsQuestion,
   capabilityQuestion,
+  fasterIn,
   line,
   mutationQuestion,
   mutationRunsQuestion,
@@ -195,6 +196,36 @@ describe("the loop's scoreboard", () => {
           `${name} ${at}`,
           verdict.toLowerCase(),
         ])
+      );
+    }
+  );
+
+  it.prop(
+    "names the scale workloads past the limit, or stopped, as many as it counts, and no other",
+    {
+      rows: Arbitrary.array(
+        Arbitrary.all({
+          name: word,
+          power: between(0, 30),
+          stops: Arbitrary.schema(Schema.Boolean),
+        }),
+        { maxLength: 6 }
+      ),
+    },
+    ({ rows }) => {
+      const text = rows
+        .map(({ name, power, stops }, at) =>
+          stops
+            ? `load: ${name} ${at}    12 ms    stops at 1.2 s`
+            : `load: ${name} ${at}    12 ms    40 ms    n^${(power / 10).toFixed(1)}   9 MB`
+        )
+        .join("\n");
+      const named = fasterIn(text);
+      expect(named.length).toBe(readScale(text));
+      expect(named).toStrictEqual(
+        rows.flatMap(({ name, power, stops }, at) =>
+          stops || power / 10 > 1.15 ? [`load: ${name} ${at}`] : []
+        )
       );
     }
   );

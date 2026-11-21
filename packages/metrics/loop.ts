@@ -45,6 +45,7 @@ import {
   agentsCauseQuestion,
   agentsQuestion,
   capabilityQuestion,
+  fasterIn,
   line,
   mutationQuestion,
   mutationRunsQuestion,
@@ -61,7 +62,6 @@ import {
   readRecord,
   readRemoved,
   readReplay,
-  readScale,
   readTurbo,
 } from "./src/loop.ts";
 import { readArguments } from "./src/report.ts";
@@ -247,10 +247,22 @@ const fullTool = () => {
   print(QUESTIONS.missed, missed.length);
 };
 
+/**
+ * The workloads that grow faster than the facts do. One run's times move
+ * with the machine's load, so a workload past the limit is timed again, and
+ * counts only when it is past the limit both times: a real regression shows
+ * in both, and noise seldom does.
+ */
 const scaleTool = () => {
-  const faster = readScale(run("scale", ["bun", "run", "scale"]).text);
-  print(QUESTIONS.workloads, faster);
-  return faster === 0;
+  const first = fasterIn(run("scale", ["bun", "run", "scale"]).text);
+  const faster =
+    first.length === 0
+      ? first
+      : fasterIn(run("scale-again", ["bun", "run", "scale"]).text).filter(
+          (name) => first.includes(name)
+        );
+  print(QUESTIONS.workloads, faster.length);
+  return faster.length === 0;
 };
 
 /**

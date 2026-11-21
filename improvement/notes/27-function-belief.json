@@ -1,0 +1,18 @@
+{
+  "beliefs": [
+    {
+      "id": "function-1",
+      "tries": "function-reach",
+      "statement": "Reading a change by the named functions it touches, from a map of the functions each test ran, cuts the median share of the tests' time picked over the last 30 commits from 98% to 90%, while every listed mutation stays caught by the tests picking keeps and nothing else fails or changes an instrument",
+      "predicts": [
+        { "question": { "tests' time picked": "last 30 commits" }, "value": 90 },
+        { "question": { "picking unsound": "listed mutations" }, "value": 0 },
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 }
+      ]
+    }
+  ]
+}
