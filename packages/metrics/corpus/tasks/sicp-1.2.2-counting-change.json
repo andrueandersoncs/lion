@@ -1,0 +1,17 @@
+{
+  "id": "sicp-1.2.2-counting-change",
+  "pillar": "computation",
+  "statement": "Define a function of an amount in cents that gives the number of ways to make change for it with half-dollars, quarters, dimes, nickels, and pennies. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["count"],
+    [
+      "=",
+      ["array/map", ["quote", [0, 11, 100]], "count"],
+      ["quote", [1, 4, 292]]
+    ]
+  ],
+  "tags": ["recursion", "tree-recursion"],
+  "origin": "SICP 1.2.2, Example: Counting change"
+}

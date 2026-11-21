@@ -1,0 +1,352 @@
+{
+  "claims": [
+    {
+      "quote": "R7RS-small 3.5: a call in tail position uses no space for the call it is in, so 300,000 mutual calls of even? and odd? finish",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-3.5-mutual-tail-calls",
+            "is": "finishes"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 4.1.3: a call whose operator is not a procedure, as in (1 2 3), is an error",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-4.1.3-call-non-procedure",
+            "is": "error"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 4.1.4: a lambda keeps the environment it was made in, so each counter a make-counter makes keeps a count of its own, and (lambda args args) takes any number of arguments as a list",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-4.1.4-closure-own-state",
+            "is": "independent"
+          },
+          {
+            "behavior": "r7rs-4.1.4-lambda-rest-parameter",
+            "is": "list"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 4.1.6: set! changes the value of a variable that is bound, and setting one that is not bound is an error",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-4.1.6-set-changes-binding",
+            "is": "changed"
+          },
+          {
+            "behavior": "r7rs-4.1.6-set-unbound-variable",
+            "is": "error"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 4.2.1: (and) is #t and (or) is #f; and gives the value of its last expression, as (and 1 2) is 2, and or the first value that is not #f, as (or #f 3) is 3; a cond clause's body is a sequence, whose last value the clause gives; and cond evaluates no test after the first that is true",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-4.2.1-and-no-arguments",
+            "is": "true"
+          },
+          {
+            "behavior": "r7rs-4.2.1-or-no-arguments",
+            "is": "false"
+          },
+          {
+            "behavior": "r7rs-4.2.1-and-gives-last-value",
+            "is": "last-value"
+          },
+          {
+            "behavior": "r7rs-4.2.1-or-gives-first-true-value",
+            "is": "first-true-value"
+          },
+          {
+            "behavior": "r7rs-4.2.1-cond-clause-sequence",
+            "is": "last-value"
+          },
+          {
+            "behavior": "r7rs-4.2.1-cond-stops-at-first-true",
+            "is": "not-evaluated"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 4.2.2: let is a lambda called with the values, as ((lambda (x y) (* x y)) 2 3) is 6, and let* binds in order, so (let ((x 2) (y 3)) (let* ((x 7) (z (+ x y))) (* z x))) is 70",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-4.2.2-let-through-lambda",
+            "is": "bound"
+          },
+          {
+            "behavior": "r7rs-4.2.2-let-star-through-nested-lambdas",
+            "is": "sequential"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 4.2.3: begin evaluates its expressions in order and gives the value of the last",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-4.2.3-begin-gives-last",
+            "is": "last"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 4.2.5: delay evaluates nothing until the promise is forced, and a promise forced again while it is being forced gives the value the first force to finish computed, 6 in the report's example",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-4.2.5-delay-runs-only-when-forced",
+            "is": "not-evaluated"
+          },
+          {
+            "behavior": "r7rs-4.2.5-force-reentrant",
+            "is": "first-value"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 4.2.7: the handler of guard is given the object that was raised, so (guard (e (#t e)) (raise 'boom)) is boom",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-4.2.7-raise-handler-gets-raised-object",
+            "is": "raised-object"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 5.3: a definition at the top level of a name already bound changes its value, and the internal definitions of a body are bound together, so they can call each other",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-5.3.1-define-again-rebinds",
+            "is": "rebinds"
+          },
+          {
+            "behavior": "r7rs-5.3.2-internal-defines-mutually-recursive",
+            "is": "mutually-recursive"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 5.5: a record's accessor gives the value its field holds, and its modifier changes that field of the record, so (kar k) after (set-kar! k 3) is 3",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-5.5-record-field-access",
+            "is": "field-value"
+          },
+          {
+            "behavior": "r7rs-5.5-record-modifier-mutates",
+            "is": "changed"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 6.1: equal? compares lists and strings by what they hold",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-6.1-equal-compares-structure",
+            "is": "equal"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 6.2.6: (+) is 0 and (*) is 1",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-6.2.6-add-no-arguments",
+            "is": "zero"
+          },
+          {
+            "behavior": "r7rs-6.2.6-multiply-no-arguments",
+            "is": "one"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 6.3: not is #f of every value but #f, so (not 3) is #f",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-6.3-not-of-non-boolean",
+            "is": "false"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 6.4: taking the car or the cdr of the empty list is an error, and (append) is the empty list",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-6.4-car-of-empty-list",
+            "is": "error"
+          },
+          {
+            "behavior": "r7rs-6.4-cdr-of-empty-list",
+            "is": "error"
+          },
+          {
+            "behavior": "r7rs-6.4-append-no-arguments",
+            "is": "empty-list"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 6.7: a string is a sequence of characters, so (string-length \"𝄞\") is 1, and (string-append) is the empty string",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-6.7-string-length-counts-characters",
+            "is": "one"
+          },
+          {
+            "behavior": "r7rs-6.7-string-append-no-arguments",
+            "is": "empty-string"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "R7RS-small 6.10: procedure? is #t of a procedure such as car; apply calls a procedure with the elements of its last argument, so (apply + (list 3 4)) is 7; map applies a procedure to the elements of several lists in turn, so (map + '(1 2 3) '(10 20 30)) is (11 22 33); a continuation escapes, giving -3 in the report's example of call/cc; and a continuation can be resumed more than once, as (reset (+ 1 (shift k (+ (k 1) (k 10))))) is 13 in Racket",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "r7rs-6.10-procedure-predicate",
+            "is": "true"
+          },
+          {
+            "behavior": "r7rs-6.10-apply-spreads-last-argument",
+            "is": "spread"
+          },
+          {
+            "behavior": "r7rs-6.10-map-several-lists",
+            "is": "elementwise"
+          },
+          {
+            "behavior": "r7rs-6.10-continuation-escapes",
+            "is": "escaped"
+          },
+          {
+            "behavior": "r7rs-6.10-continuation-resumed-twice",
+            "is": "resumes"
+          }
+        ]
+      },
+      "decisions": ["scheme-departures-listed"]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+[
+  "begin",
+  ["relation", "node", ["n"]],
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "reached", ["n"]],
+  ["rule", ["node", "?n"], ["in", "?n", "nodes"]],
+  ["rule", ["edge", "?a", "?b"], ["in", ["array/make", "?a", "?b"], "edges"]],
+  ["rule", ["reached", "start"], ["node", "start"]],
+  ["rule", ["reached", "?b"], ["reached", "?a"], ["edge", "?a", "?b"]],
+  ["find", "?n", ["and", ["node", "?n"], ["not", ["reached", "?n"]]]]
+]

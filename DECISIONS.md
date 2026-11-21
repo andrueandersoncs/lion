@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 213 questions have been decided, 95 records explain them, and of what the records assert, 638 hold when Lion is run, 2 are broken, 366 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 213 questions have been decided, 95 records explain them, and of what the records assert, 634 hold when Lion is run, 6 are broken, 366 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -1128,7 +1128,7 @@ Recorded 2026-04-04 in `history/notes/lexical-closures.json`.
 - Holds when Lion is run: `name-lookup-local-miss` is `parent-environment`. "A name is looked up from the innermost environment outward"
 - Holds when Lion is run: `lambda-body-global-environment` is `accessible`. "Each environment holds its own bindings and points to the environment around it, and the outermost is the global environment"
 - Replaced by a later word: `define-inside-lambda` is `global`. "`define` binds in the global environment, also inside a lambda"
-- Holds when Lion is run: rule `scheme-racket-semantics` holds. "A `define` inside a lambda's body does not make a local name, as it would in Scheme"
+- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "A `define` inside a lambda's body does not make a local name, as it would in Scheme"
 - Holds when Lion is run: `lambda-free-variable` is `enclosing-scope`. "the innermost body sees all three parameters"
 - Holds when Lion is run: `lambda-global-defined-after-creation` is `visible`. "A lambda sees a global defined after it was made"
 
@@ -1275,7 +1275,7 @@ Recorded 2026-11-19 in `history/notes/names-by-scope.json`.
 - Holds when Lion is run: `setLocalBinding` exists. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Holds when Lion is run: rule `lexical-closures` holds. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Stated, not checked by running Lion: rule `cond-truthiness` is withdrawn. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
-- Holds when Lion is run: rule `scheme-racket-semantics` holds. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
 - Stated, not checked by running Lion: decided `define-scope`: `body`. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Holds when Lion is run: `host-callback-define` is `local`. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
 - Holds when Lion is run: `UndefinedYetError` exists. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
@@ -2014,7 +2014,7 @@ Recorded 2026-11-12 in `history/notes/scheme-where-unclear.json`.
 
 **What it asserts, checked.**
 
-- Holds when Lion is run: rule `scheme-racket-semantics` holds. "Where a base form's behavior is unclear, Lion follows Scheme and Racket"
+- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "Where a base form's behavior is unclear, Lion follows Scheme and Racket"
 - Holds when Lion is run: `combining-functions-several-arguments` is `combine-left-to-right`. "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do."
 - Holds when Lion is run: `string-join-before-last` is `before-last-string`. "`string/join` takes a string to put before the last item, as `#:before-last` does in Racket."
 - Holds when Lion is run: `string/join` exists. "`string/join` takes a string to put before the last item"
@@ -4850,7 +4850,7 @@ Recorded 2026-11-21 in `history/notes/scheme-departures-listed.json`.
 **What it asserts, checked.**
 
 - Stated, not checked by running Lion: decided `scheme-fidelity`: `departures-decided-and-probed`. "Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why."
-- Holds when Lion is run: rule `scheme-racket-semantics` holds. "An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself."
+- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself."
 - Holds when Lion is run: `unbound-string` is `itself`. "An unbound string is the first: it evaluates to itself"
 - Stated, not checked by running Lion: rule `scheme-departures-are-decided` holds. "a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check`"
 

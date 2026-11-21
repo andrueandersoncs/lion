@@ -1,0 +1,30 @@
+[
+  "lambda",
+  ["w"],
+  [
+    "value/identity",
+    [
+      "not",
+      [
+        "exists",
+        ["?account", "?amount"],
+        [
+          "and",
+          ["schema/fits?", "?account", { "balance": "value/integer?" }],
+          ["schema/fits?", "?amount", "value/integer?"],
+          [
+            "number/greaterThanOrEqualTo",
+            ["object/get", "?account", "balance"],
+            0
+          ],
+          ["number/greaterThan", "?amount", 0],
+          [
+            "number/lessThan",
+            ["object/get", ["w", "?account", "?amount"], "balance"],
+            0
+          ]
+        ]
+      ]
+    ]
+  ]
+]

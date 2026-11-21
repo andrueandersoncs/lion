@@ -1,0 +1,69 @@
+[
+  "begin",
+  ["relation", "uses", ["assembly", "part", "quantity"]],
+  [
+    "rule",
+    ["uses", "?a", "?p", "?q"],
+    ["in", ["array/make", "?a", "?p", "?q"], "bom"]
+  ],
+  [
+    "define",
+    "add-into",
+    [
+      "lambda",
+      ["total", "part", "n"],
+      [
+        "object/set",
+        "total",
+        "part",
+        ["number/add", ["object/get", "total", "part", 0], "n"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "explode",
+    [
+      "lambda",
+      ["item", "times", "total"],
+      [
+        "begin",
+        [
+          "define",
+          "parts",
+          ["find", ["array/make", "?p", "?q"], ["uses", "item", "?p", "?q"]]
+        ],
+        [
+          "cond",
+          [
+            ["=", "parts", ["quote", []]],
+            ["add-into", "total", "item", "times"]
+          ],
+          [
+            "else",
+            [
+              "array/reduce",
+              "parts",
+              "total",
+              [
+                "lambda",
+                ["sum", "use"],
+                [
+                  "explode",
+                  ["array/head", "use"],
+                  [
+                    "number/multiply",
+                    "times",
+                    ["array/head", ["array/tail", "use"]]
+                  ],
+                  "sum"
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["explode", "bike", 1, {}]
+]

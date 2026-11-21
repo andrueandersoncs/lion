@@ -42,5 +42,9 @@
   "measure": {
     "cwd": "packages/metrics",
     "command": ["bun", "run", "measure.ts"]
+  },
+  "capability": {
+    "cwd": "packages/metrics",
+    "command": ["bun", "run", "capability.ts"]
   }
 }

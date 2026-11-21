@@ -1,0 +1,39 @@
+{
+  "id": "datalog-andersen-points-to",
+  "pillar": "logic",
+  "statement": "A program's pointer statements are given as pairs: addresses [x, y] for x = &y, copies [x, y] for x = y, loads [x, y] for x = *y, and stores [x, y] for *x = y. The program's value is every pair [variable, object] such that the variable may point to the object, by Andersen's inclusion-based analysis, in any order.",
+  "inputs": {
+    "addresses": [["p", "a"], ["q", "b"], ["t", "c"]],
+    "copies": [["r", "p"]],
+    "loads": [["s", "p"], ["u", "r"]],
+    "stores": [["r", "q"], ["p", "t"]]
+  },
+  "check": [
+    "lambda",
+    ["pairs"],
+    [
+      "=",
+      ["aggregate/unique", "pairs"],
+      [
+        "aggregate/unique",
+        [
+          "quote",
+          [
+            ["a", "b"],
+            ["a", "c"],
+            ["p", "a"],
+            ["q", "b"],
+            ["r", "a"],
+            ["s", "b"],
+            ["s", "c"],
+            ["t", "c"],
+            ["u", "b"],
+            ["u", "c"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["rules", "recursion", "program-analysis"],
+  "origin": "Andersen's points-to analysis (Andersen, 1994), as Datalog rules in Whaley and Lam (PLDI 2004)"
+}

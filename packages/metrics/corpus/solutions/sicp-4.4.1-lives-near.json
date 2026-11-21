@@ -1,0 +1,18 @@
+[
+  "begin",
+  ["relation", "address", ["person", "where"]],
+  ["relation", "lives_near", ["a", "b"]],
+  [
+    "rule",
+    ["address", "?p", "?w"],
+    ["in", ["array/make", "?p", "?w"], "addresses"]
+  ],
+  [
+    "rule",
+    ["lives_near", "?a", "?b"],
+    ["address", "?a", ["schema/open", ["array/make", "?town"]]],
+    ["address", "?b", ["schema/open", ["array/make", "?town"]]],
+    ["not", ["=", "?a", "?b"]]
+  ],
+  ["find", "?who", ["lives_near", "?who", "Bitdiddle Ben"]]
+]

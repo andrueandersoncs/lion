@@ -1,0 +1,50 @@
+{
+  "id": "sicp-4.4.1-microshaft-divisions",
+  "pillar": "logic",
+  "statement": "The inputs jobs and salaries list [person, title] and [person, amount] pairs of the Microshaft company. A person's division is the first word of their title. The program's value is one record {\"division\", \"people\", \"salaries\"} for each division: how many people it has, and the sum of their salaries, in any order.",
+  "inputs": {
+    "jobs": [
+      ["Bitdiddle Ben", "computer wizard"],
+      ["Hacker Alyssa P", "computer programmer"],
+      ["Fect Cy D", "computer programmer"],
+      ["Tweakit Lem E", "computer technician"],
+      ["Reasoner Louis", "computer programmer trainee"],
+      ["Warbucks Oliver", "administration big wheel"],
+      ["Scrooge Eben", "accounting chief accountant"],
+      ["Cratchet Robert", "accounting scrivener"],
+      ["Aull DeWitt", "administration secretary"]
+    ],
+    "salaries": [
+      ["Bitdiddle Ben", 60000],
+      ["Hacker Alyssa P", 40000],
+      ["Fect Cy D", 35000],
+      ["Tweakit Lem E", 25000],
+      ["Reasoner Louis", 30000],
+      ["Warbucks Oliver", 150000],
+      ["Scrooge Eben", 75000],
+      ["Cratchet Robert", 18000],
+      ["Aull DeWitt", 25000]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["divisions"],
+    [
+      "=",
+      ["aggregate/unique", "divisions"],
+      [
+        "aggregate/unique",
+        [
+          "quote",
+          [
+            { "division": "accounting", "people": 2, "salaries": 93000 },
+            { "division": "administration", "people": 2, "salaries": 175000 },
+            { "division": "computer", "people": 5, "salaries": 190000 }
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["rules", "aggregates", "strings"],
+  "origin": "SICP 4.4.1, the Microshaft personnel database, grouped with aggregates"
+}

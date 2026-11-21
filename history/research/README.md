@@ -160,7 +160,7 @@ A path is relative to the repository. A path that leads out of it, a path `repo/
 }
 ```
 
-It gives `"runs-tests"`, so the assertion holds. `commands.json` lists every command a probe may run, each as the words of one command line, which no shell reads, and the folder it runs in. A command that needs more than a line is a script in `packages/history/commands/` that the line runs, such as `host-run.mjs`, which calls `run` as a TypeScript host does and prints what each call gave. Two of the eleven:
+It gives `"runs-tests"`, so the assertion holds. `commands.json` lists every command a probe may run, each as the words of one command line, which no shell reads, and the folder it runs in. A command that needs more than a line is a script in `packages/history/commands/` that the line runs, such as `host-run.mjs`, which calls `run` as a TypeScript host does and prints what each call gave. Two of the twelve:
 
 ```json
 {
@@ -175,7 +175,7 @@ It gives `"runs-tests"`, so the assertion holds. `commands.json` lists every com
 }
 ```
 
-`["repo/run", "docs-check"]` gives `{"exit": 0, "output": "docs/docs.html is current.\n"}` while every library function has an example in the docs. A command runs once in a build, however many probes ask for it, and every build runs it, so declare commands that are quick and change nothing in the repository; the eleven take about two and a half seconds together.
+`["repo/run", "docs-check"]` gives `{"exit": 0, "output": "docs/docs.html is current.\n"}` while every library function has an example in the docs. A command runs once in a build, however many probes ask for it, and every build runs it, so declare commands that are quick and change nothing in the repository; the twelve take about four seconds together, a second of it the grading of the capability corpus, which the probe `capability-reference-failures` runs to see that every reference program still passes.
 
 A probe can also run a Lion program the repository holds. The research skill's rules are one, so the probe of who counts as a voice loads them with `["eval", ["repo/json", "skills/lion-research/assets/core.json"]]`, states a few facts as the skill's scripts write them, and asks the relation the decision record names.
 

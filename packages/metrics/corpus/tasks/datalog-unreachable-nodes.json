@@ -1,0 +1,22 @@
+{
+  "id": "datalog-unreachable-nodes",
+  "pillar": "logic",
+  "statement": "The inputs nodes and edges are a graph's nodes and its [from, to] edges. The program's value is the nodes that no path of edges reaches from \"start\", in any order; \"start\" reaches itself.",
+  "inputs": {
+    "nodes": ["start", "a", "b", "c", "d", "e"],
+    "edges": [
+      ["start", "a"],
+      ["a", "b"],
+      ["c", "d"],
+      ["d", "c"],
+      ["e", "start"]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["found"],
+    ["=", ["aggregate/collect", "found"], ["quote", ["c", "d", "e"]]]
+  ],
+  "tags": ["rules", "recursion", "negation"],
+  "origin": "Stratified negation over recursion (Abiteboul, Hull, and Vianu, Foundations of Databases, ch. 15)"
+}

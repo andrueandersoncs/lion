@@ -1,0 +1,20 @@
+{
+  "id": "lion-schema-inclusion-across-kinds",
+  "pillar": "proofs",
+  "statement": "The input pairs lists pairs [a, b] of Lion schemas, each written as the Lion expression that makes it. The program's value is a list of booleans, one for each pair in order: whether every value a allows fits b. Here the answer depends on values a allows that b's predicate rejects, such as a number that is not whole.",
+  "inputs": {
+    "pairs": [
+      ["value/number?", "value/integer?"],
+      ["value/string?", "value/number?"],
+      [["schema/open", { "x": "value/number?" }], { "x": "value/integer?" }],
+      ["value/integer?", "value/integer?"]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["found"],
+    ["=", "found", ["quote", [false, false, false, true]]]
+  ],
+  "tags": ["solver", "schemas"],
+  "origin": "Lion README, Proving that a command keeps a rule: schema/includes?"
+}

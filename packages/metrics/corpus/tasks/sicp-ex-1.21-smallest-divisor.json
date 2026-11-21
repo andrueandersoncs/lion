@@ -1,0 +1,17 @@
+{
+  "id": "sicp-ex-1.21-smallest-divisor",
+  "pillar": "computation",
+  "statement": "Define a function of a whole number n above 1 that gives its smallest divisor greater than 1, trying 2, 3, 4, and so on, and giving n once the square of the next divisor to try is above n. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["smallest"],
+    [
+      "=",
+      ["array/map", ["quote", [199, 1999, 19999, 2, 91]], "smallest"],
+      ["quote", [199, 1999, 7, 2, 7]]
+    ]
+  ],
+  "tags": ["recursion", "numbers"],
+  "origin": "SICP Exercise 1.21"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "datalog-magic-sets-ancestors",
+  "pillar": "logic",
+  "statement": "Person n's parent is person n + 1, for every n from 0 up to the input generations. The program's value is the ancestors of person generations - 3, in any order. Answering it should not derive the ancestors of everyone: that is about 4.5 million rows.",
+  "inputs": { "generations": 3000 },
+  "check": [
+    "lambda",
+    ["found"],
+    ["=", ["aggregate/collect", "found"], ["quote", [2998, 2999, 3000]]]
+  ],
+  "tags": ["rules", "recursion", "goal-directed"],
+  "origin": "Magic sets (Bancilhon, Maier, Sagiv, and Ullman, 1986): a recursive query with a known argument"
+}

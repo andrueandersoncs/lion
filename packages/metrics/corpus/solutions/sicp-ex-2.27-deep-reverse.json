@@ -1,0 +1,29 @@
+[
+  "begin",
+  [
+    "define",
+    "deep-reverse",
+    [
+      "lambda",
+      ["x"],
+      [
+        "cond",
+        [
+          ["value/array?", "x"],
+          [
+            "array/reduce",
+            "x",
+            ["quote", []],
+            [
+              "lambda",
+              ["done", "item"],
+              ["array/concat", ["array/make", ["deep-reverse", "item"]], "done"]
+            ]
+          ]
+        ],
+        ["else", "x"]
+      ]
+    ]
+  ],
+  "deep-reverse"
+]

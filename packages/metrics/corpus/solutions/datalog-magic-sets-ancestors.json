@@ -1,0 +1,18 @@
+[
+  "begin",
+  ["relation", "parent", ["child", "parent"]],
+  ["relation", "ancestor", ["person", "ancestor"]],
+  [
+    "rule",
+    ["parent", "?n", ["number/add", "?n", 1]],
+    ["in", "?n", ["array/range", 0, "generations"]]
+  ],
+  ["rule", ["ancestor", "?x", "?y"], ["parent", "?x", "?y"]],
+  [
+    "rule",
+    ["ancestor", "?x", "?z"],
+    ["ancestor", "?x", "?y"],
+    ["parent", "?y", "?z"]
+  ],
+  ["find", "?a", ["ancestor", ["number/subtract", "generations", 3], "?a"]]
+]

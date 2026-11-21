@@ -1,0 +1,34 @@
+[
+  "begin",
+  [
+    "schema",
+    "Amount",
+    [
+      "schema/allOf",
+      "value/integer?",
+      ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+    ]
+  ],
+  [
+    "schema",
+    "Command",
+    ["schema/anyOf", { "deposit": "Amount" }, { "withdraw": "Amount" }]
+  ],
+  [
+    "lambda",
+    ["step"],
+    [
+      "value/identity",
+      [
+        "exists",
+        ["?run", "?balance"],
+        [
+          "and",
+          ["schema/fits?", "?run", ["schema/arrayOf", "Command", 3]],
+          ["in", "?balance", ["array/reductions", "?run", 0, "step"]],
+          ["number/lessThan", "?balance", 0]
+        ]
+      ]
+    ]
+  ]
+]

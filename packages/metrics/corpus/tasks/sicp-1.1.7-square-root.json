@@ -1,0 +1,32 @@
+{
+  "id": "sicp-1.1.7-square-root",
+  "pillar": "computation",
+  "statement": "Define a function of a positive number x that gives its square root by Newton's method: start from the guess 1, improve a guess g to the mean of g and x / g, and stop when the square of the guess is within 0.001 of x. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["sqrt"],
+    [
+      "array/every?",
+      ["quote", [2, 9, 137, 0.25, 1000000]],
+      [
+        "lambda",
+        ["x"],
+        [
+          "number/lessThan",
+          [
+            "number/absolute",
+            [
+              "number/subtract",
+              ["number/multiply", ["sqrt", "x"], ["sqrt", "x"]],
+              "x"
+            ]
+          ],
+          0.001
+        ]
+      ]
+    ]
+  ],
+  "tags": ["recursion", "numbers", "higher-order"],
+  "origin": "SICP 1.1.7, Example: Square Roots by Newton's Method"
+}

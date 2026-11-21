@@ -1,0 +1,63 @@
+[
+  "begin",
+  [
+    "define",
+    "gcd",
+    [
+      "lambda",
+      ["a", "b"],
+      [
+        "cond",
+        [["number/equals?", "b", 0], ["number/absolute", "a"]],
+        ["else", ["gcd", "b", ["number/remainder", "a", "b"]]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "make-rat",
+    [
+      "lambda",
+      ["n", "d"],
+      [
+        "begin",
+        [
+          "define",
+          "g",
+          [
+            "number/multiply",
+            ["gcd", "n", "d"],
+            ["cond", [["number/lessThan", "d", 0], -1], ["else", 1]]
+          ]
+        ],
+        ["array/make", ["number/divide", "n", "g"], ["number/divide", "d", "g"]]
+      ]
+    ]
+  ],
+  ["define", "numer", "array/head"],
+  ["define", "denom", ["lambda", ["x"], ["array/head", ["array/tail", "x"]]]],
+  {
+    "add": [
+      "lambda",
+      ["x", "y"],
+      [
+        "make-rat",
+        [
+          "number/add",
+          ["number/multiply", ["numer", "x"], ["denom", "y"]],
+          ["number/multiply", ["numer", "y"], ["denom", "x"]]
+        ],
+        ["number/multiply", ["denom", "x"], ["denom", "y"]]
+      ]
+    ],
+    "multiply": [
+      "lambda",
+      ["x", "y"],
+      [
+        "make-rat",
+        ["number/multiply", ["numer", "x"], ["numer", "y"]],
+        ["number/multiply", ["denom", "x"], ["denom", "y"]]
+      ]
+    ]
+  }
+]

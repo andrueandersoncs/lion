@@ -1,0 +1,32 @@
+[
+  "begin",
+  ["relation", "node", ["n"]],
+  ["relation", "link", ["a", "b"]],
+  ["relation", "joined", ["a", "b"]],
+  ["relation", "component", ["n", "least"]],
+  ["rule", ["node", "?n"], ["in", "?n", "nodes"]],
+  ["rule", ["link", "?a", "?b"], ["in", ["array/make", "?a", "?b"], "links"]],
+  ["rule", ["joined", "?n", "?n"], ["node", "?n"]],
+  [
+    "rule",
+    ["joined", "?a", "?c"],
+    ["joined", "?a", "?b"],
+    ["link", "?b", "?c"]
+  ],
+  [
+    "rule",
+    ["joined", "?a", "?c"],
+    ["joined", "?a", "?b"],
+    ["link", "?c", "?b"]
+  ],
+  [
+    "rule",
+    ["component", "?n", ["aggregate/min", "?m"]],
+    ["joined", "?n", "?m"]
+  ],
+  [
+    "find",
+    ["find", "?member", ["component", "?member", "?least"]],
+    ["component", "?least", "?least"]
+  ]
+]

@@ -1,0 +1,58 @@
+{
+  "id": "bloch-binary-search-midpoint",
+  "pillar": "proofs",
+  "statement": "A midpoint function m takes two whole numbers lo and hi and gives a number. Define a function of m that gives true when lo <= m(lo, hi) <= hi for all whole numbers with 0 <= lo <= hi <= 2147483647, and false when some lo and hi break that. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["proves"],
+    [
+      "and",
+      [
+        "proves",
+        [
+          "lambda",
+          ["lo", "hi"],
+          [
+            "number/add",
+            "lo",
+            ["number/divide", ["number/subtract", "hi", "lo"], 2]
+          ]
+        ]
+      ],
+      [
+        "proves",
+        [
+          "lambda",
+          ["lo", "hi"],
+          ["number/divide", ["number/add", "lo", "hi"], 2]
+        ]
+      ],
+      [
+        "not",
+        [
+          "proves",
+          [
+            "lambda",
+            ["lo", "hi"],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["number/add", "lo", "hi"], 2147483647],
+                [
+                  "number/divide",
+                  ["number/subtract", ["number/add", "lo", "hi"], 4294967296],
+                  2
+                ]
+              ],
+              ["else", ["number/divide", ["number/add", "lo", "hi"], 2]]
+            ]
+          ]
+        ]
+      ],
+      ["not", ["proves", ["lambda", ["lo", "hi"], ["number/add", "hi", 1]]]]
+    ]
+  ],
+  "tags": ["solver", "exists", "not"],
+  "origin": "Bloch, Extra, Extra - Read All About It: Nearly All Binary Searches and Mergesorts are Broken (2006)"
+}

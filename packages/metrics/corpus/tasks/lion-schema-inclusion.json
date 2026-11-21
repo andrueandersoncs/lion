@@ -1,0 +1,29 @@
+{
+  "id": "lion-schema-inclusion",
+  "pillar": "proofs",
+  "statement": "The input pairs lists pairs [a, b] of Lion schemas, each written as the Lion expression that makes it. The program's value is a list of booleans, one for each pair in order: whether every value a allows fits b.",
+  "inputs": {
+    "pairs": [
+      ["value/integer?", "value/number?"],
+      [{ "x": "value/integer?" }, ["schema/open", { "x": "value/number?" }]],
+      [["schema/anyOf", 1, 2], "value/integer?"],
+      [["schema/anyOf", 1, 2.5], "value/integer?"],
+      ["value/integer?", ["schema/anyOf", 1, 2]],
+      [
+        ["schema/arrayOf", "value/integer?", 3],
+        ["schema/arrayOf", "value/number?"]
+      ],
+      [
+        { "x": "value/integer?" },
+        { "x": "value/integer?", "y": ["schema/optional", "value/string?"] }
+      ]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["found"],
+    ["=", "found", ["quote", [true, true, true, false, false, true, true]]]
+  ],
+  "tags": ["solver", "schemas"],
+  "origin": "Lion README, Proving that a command keeps a rule: schema/includes?"
+}

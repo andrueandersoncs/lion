@@ -1,0 +1,132 @@
+{
+  "claims": [
+    {
+      "quote": "`packages/metrics/corpus/` holds Lion's public capability corpus: tasks of general computation, logic programming, and formal proofs, each a JSON record {id, pillar, statement, inputs, check, tags, origin} whose check is a Lion lambda that judges what a program gives, with a reference program for each task Lion can do",
+      "says": {
+        "feature": "capability-corpus",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": ["improvement-judged-by-capability"]
+    },
+    {
+      "quote": "`bun run capability` grades the corpus and prints how many of each pillar's tasks are passed, and `--solutions` grades a folder of programs in place of the reference programs",
+      "says": {
+        "feature": "capability",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "quote": "`LION_HELD_OUT` names a folder outside the repository with the corpus's layout, whose tasks are graded beside the public ones; a folder inside the repository is refused",
+      "says": {
+        "feature": "held-out-corpus",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "Every public task that has a reference program passes its check, and a property in `packages/metrics` fails when one stops passing, so capability cannot drop without a test failing",
+      "says": {
+        "rule": "capability-references-pass",
+        "holds": true,
+        "statement": "Every public task of the capability corpus that has a reference program passes its check",
+        "area": "metrics",
+        "predicts": [
+          {
+            "behavior": "capability-reference-failures",
+            "is": "none"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A task Lion cannot express yet is a gap: it stays in the corpus and counts as not passed, `gaps.json` says what Lion lacks, and it has no reference program",
+      "says": {
+        "rule": "capability-gaps-recorded",
+        "holds": true,
+        "statement": "A task of the capability corpus that Lion cannot express yet is a gap, with what Lion lacks, and no reference program",
+        "area": "metrics",
+        "predicts": [
+          {
+            "behavior": "capability-gap-with-solution",
+            "is": "none"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Of the 55 public tasks, the reference programs pass 48: 24 of 26 in general computation, 14 of 15 in logic programming, and 10 of 14 in formal proofs; the other 7 are gaps",
+      "says": {
+        "measured": "capability-public-passed",
+        "after": 48,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "Of the 55 public tasks",
+      "says": {
+        "measured": "capability-public-tasks",
+        "after": 55,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "24 of 26 in general computation",
+      "says": {
+        "measured": "capability-computation-passed",
+        "after": 24,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "14 of 15 in logic programming",
+      "says": {
+        "measured": "capability-logic-passed",
+        "after": 14,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "10 of 14 in formal proofs",
+      "says": {
+        "measured": "capability-proofs-passed",
+        "after": 10,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "the other 7 are gaps",
+      "says": {
+        "measured": "capability-gaps",
+        "after": 7,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "36 cases that R7RS-small settles are probes of the rule scheme-racket-semantics, and in 20 of them Lion gives something else than Scheme; each waits in `known.json` for a decision",
+      "says": {
+        "measured": "r7rs-cases-probed",
+        "after": 36,
+        "area": "record"
+      },
+      "decisions": ["scheme-departures-listed"]
+    },
+    {
+      "quote": "in 20 of them Lion gives something else than Scheme",
+      "says": {
+        "measured": "r7rs-cases-differing",
+        "after": 20,
+        "area": "record"
+      }
+    },
+    {
+      "quote": "13 mutations break the grader, the loader, and the corpus, and the properties catch all 13",
+      "says": {
+        "measured": "capability-mutations-caught",
+        "after": 13,
+        "area": "metrics"
+      }
+    }
+  ]
+}

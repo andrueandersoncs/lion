@@ -1,0 +1,22 @@
+{
+  "id": "sicp-ex-2.28-fringe",
+  "pillar": "computation",
+  "statement": "Define a function of a tree that gives its leaves, from left to right, as one list. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["fringe"],
+    [
+      "and",
+      ["=", ["fringe", ["quote", [[1, 2], [3, 4]]]], ["quote", [1, 2, 3, 4]]],
+      [
+        "=",
+        ["fringe", ["quote", [[[1, 2], [3, 4]], [[1, 2], [3, 4]]]]],
+        ["quote", [1, 2, 3, 4, 1, 2, 3, 4]]
+      ],
+      ["=", ["fringe", ["quote", []]], ["quote", []]]
+    ]
+  ],
+  "tags": ["lists", "trees", "recursion"],
+  "origin": "SICP Exercise 2.28"
+}

@@ -1,0 +1,41 @@
+[
+  "lambda",
+  ["s"],
+  [
+    "value/identity",
+    [
+      "not",
+      [
+        "exists",
+        ["?st"],
+        [
+          "and",
+          [
+            "schema/fits?",
+            "?st",
+            { "x": "value/integer?", "y": "value/integer?" }
+          ],
+          [
+            "or",
+            [
+              "not",
+              [
+                "number/equals?",
+                ["object/get", ["s", "?st"], "x"],
+                ["object/get", "?st", "y"]
+              ]
+            ],
+            [
+              "not",
+              [
+                "number/equals?",
+                ["object/get", ["s", "?st"], "y"],
+                ["object/get", "?st", "x"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

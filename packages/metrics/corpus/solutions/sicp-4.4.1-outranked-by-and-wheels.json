@@ -1,0 +1,30 @@
+[
+  "begin",
+  ["relation", "supervisor", ["staff", "boss"]],
+  ["relation", "outranked_by", ["staff", "boss"]],
+  ["relation", "wheel", ["person"]],
+  [
+    "rule",
+    ["supervisor", "?s", "?b"],
+    ["in", ["array/make", "?s", "?b"], "supervisors"]
+  ],
+  [
+    "rule",
+    ["outranked_by", "?s", "?b"],
+    [
+      "or",
+      ["supervisor", "?s", "?b"],
+      ["and", ["supervisor", "?s", "?m"], ["outranked_by", "?m", "?b"]]
+    ]
+  ],
+  [
+    "rule",
+    ["wheel", "?p"],
+    ["supervisor", "?m", "?p"],
+    ["supervisor", "?x", "?m"]
+  ],
+  {
+    "outranks_louis": ["find", "?b", ["outranked_by", "Reasoner Louis", "?b"]],
+    "wheels": ["find", "?p", ["wheel", "?p"]]
+  }
+]

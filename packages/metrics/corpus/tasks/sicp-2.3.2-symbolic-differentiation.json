@@ -1,0 +1,23 @@
+{
+  "id": "sicp-2.3.2-symbolic-differentiation",
+  "pillar": "computation",
+  "statement": "An expression is a number, a variable written as a string, or a list [\"+\", a, b] or [\"*\", a, b] of two expressions. Define a function of an expression and a variable that gives the derivative, simplified as SICP's make-sum and make-product do: a sum or product of numbers is computed, x + 0 is x, x * 0 is 0, and x * 1 is x. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["deriv"],
+    [
+      "and",
+      ["=", ["deriv", ["quote", ["+", "x", 3]], "x"], 1],
+      ["=", ["deriv", ["quote", ["*", "x", "y"]], "x"], "y"],
+      [
+        "=",
+        ["deriv", ["quote", ["*", ["*", "x", "y"], ["+", "x", 3]]], "x"],
+        ["quote", ["+", ["*", "x", "y"], ["*", "y", ["+", "x", 3]]]]
+      ],
+      ["=", ["deriv", 7, "x"], 0]
+    ]
+  ],
+  "tags": ["symbolic-data", "lists", "recursion"],
+  "origin": "SICP 2.3.2, Example: Symbolic Differentiation"
+}

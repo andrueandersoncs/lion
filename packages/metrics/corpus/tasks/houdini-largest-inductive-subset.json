@@ -1,0 +1,60 @@
+{
+  "id": "houdini-largest-inductive-subset",
+  "pillar": "proofs",
+  "statement": "An account is a record {\"balance\", \"limit\"} of whole numbers. A command is {\"deposit\": n} or {\"withdraw\": n}, with n a whole number above 0. A deposit adds n to the balance. A withdrawal subtracts n from the balance when the balance plus the limit is at least n, and leaves the account as it is otherwise; the limit never changes. The input candidates is a record from a name to a predicate on accounts, written as a Lion lambda. The program's value is the names, in ascending order, of the largest set of candidates such that every command takes every account that meets all of them to an account that meets each of them.",
+  "inputs": {
+    "candidates": {
+      "within limit": [
+        "lambda",
+        ["a"],
+        [
+          "number/greaterThanOrEqualTo",
+          [
+            "number/add",
+            ["object/get", "a", "balance"],
+            ["object/get", "a", "limit"]
+          ],
+          0
+        ]
+      ],
+      "limit not negative": [
+        "lambda",
+        ["a"],
+        ["number/greaterThanOrEqualTo", ["object/get", "a", "limit"], 0]
+      ],
+      "above minus twice the limit": [
+        "lambda",
+        ["a"],
+        [
+          "number/greaterThanOrEqualTo",
+          ["object/get", "a", "balance"],
+          ["number/multiply", -2, ["object/get", "a", "limit"]]
+        ]
+      ],
+      "not overdrawn": [
+        "lambda",
+        ["a"],
+        ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0]
+      ],
+      "small balance": [
+        "lambda",
+        ["a"],
+        ["number/lessThanOrEqualTo", ["object/get", "a", "balance"], 1000]
+      ]
+    }
+  },
+  "check": [
+    "lambda",
+    ["found"],
+    [
+      "=",
+      "found",
+      [
+        "quote",
+        ["above minus twice the limit", "limit not negative", "within limit"]
+      ]
+    ]
+  ],
+  "tags": ["solver", "schemas", "induction-step", "fixpoint"],
+  "origin": "Houdini (Flanagan and Leino, 2001), as the Lion README describes it in Proving that a command keeps a rule"
+}

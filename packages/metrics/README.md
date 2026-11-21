@@ -1,10 +1,11 @@
 # @lionlang/metrics
 
-Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer seven questions:
+Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer eight questions:
 
 | Question | Command |
 | --- | --- |
 | Did the change make Lion simpler or more complex? | `bun run measure --against main` |
+| How many tasks of each pillar can Lion do? | `bun run capability` |
 | Did it make Lion faster or slower? | `bun run bench --against main` |
 | Does its time grow as the facts do, or faster? | `bun run scale --against main` |
 | Do the tests notice when the code is wrong? | `bun run mutate` |
@@ -164,6 +165,33 @@ Runs each program of a file on an earlier commit and on the working tree, and sh
 Use it before you write that a change fixes, breaks, or keeps something: a changelog line about behavior should be a program that gives one thing before and another after.
 
 With `--docs` in place of a file, the programs are the ones the docs show: every fenced `json` block that is a program, in the README files, `AGENTS.md`, the guidelines in `guidelines/`, and each skill's `SKILL.md` and `references/`. Only the programs whose results differ are listed, so the run says which documented results a change made untrue. It is the first step of the documentation procedure in `guidelines/documentation.md`. The website's live examples are not among them: the docs build runs those and writes what they give.
+
+## Capability: `bun run capability`
+
+```bash
+bun run capability
+```
+
+Grades the capability corpus in [`corpus/`](corpus/README.md): tasks for each of Lion's three pillars, general computation, logic programming, and formal proofs, taken from where a reader would look for them, such as SICP's exercises, the Datalog classics, and the proofs Lion's README shows. Each task's `check` is a Lion lambda that judges what a program gives, so Lion computes the grade. A public task has a reference program, and the command prints how many of each pillar's tasks pass:
+
+```
+Capability: public tasks, graded by their reference programs
+  computation    24 of  26 passed
+  logic          14 of  15 passed
+  proofs         10 of  14 passed
+  all            48 of  55 passed
+
+Gaps: 7 tasks Lion cannot express yet
+  sicp-1.2.1-factorial-exact: Lion's numbers are exact integers only from -(2^53 - 1) to 2^53 - 1; …
+```
+
+A gap is a task Lion cannot express yet. It stays in the corpus and counts as not passed, so closing it raises the score, and `corpus/gaps.json` says what Lion lacks.
+
+- `--solutions <folder>` grades the programs in a folder, `<id>.json` each, in place of the reference programs, as an agent's attempts would be graded. A task with no program there is not passed, and a file that is not JSON is a program that fails.
+- `LION_HELD_OUT=<folder>` adds the held-out corpus: a folder with the corpus's layout outside the repository, where no agent that is scored can read it. Its tasks are graded by its own `solutions/`, or by `--solutions`. A folder inside the repository is refused.
+- `--json` prints each pillar's score, the gaps, and every task's verdict.
+
+The properties in `src/tests/capability.test.ts` make the reference programs a ratchet: each must pass its check, so a change to Lion that breaks one fails the tests. They also check that no task's check passes a generated value other than what its reference program gives, the grader against a plain model of passing, and the loader against the folders it was given.
 
 ## Skills: `bun run skill-eval`
 

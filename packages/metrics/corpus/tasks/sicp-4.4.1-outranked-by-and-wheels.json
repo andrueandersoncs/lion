@@ -1,0 +1,39 @@
+{
+  "id": "sicp-4.4.1-outranked-by-and-wheels",
+  "pillar": "logic",
+  "statement": "The input supervisors lists [staff, boss] pairs of the Microshaft company. A boss outranks someone they supervise, and everyone that person outranks. A wheel is someone who supervises someone who supervises someone. The program's value is a record {\"outranks_louis\": the people who outrank \"Reasoner Louis\", \"wheels\": the wheels}, each list in any order and without repeats.",
+  "inputs": {
+    "supervisors": [
+      ["Hacker Alyssa P", "Bitdiddle Ben"],
+      ["Fect Cy D", "Bitdiddle Ben"],
+      ["Tweakit Lem E", "Bitdiddle Ben"],
+      ["Reasoner Louis", "Hacker Alyssa P"],
+      ["Bitdiddle Ben", "Warbucks Oliver"],
+      ["Scrooge Eben", "Warbucks Oliver"],
+      ["Cratchet Robert", "Scrooge Eben"],
+      ["Aull DeWitt", "Warbucks Oliver"]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["found"],
+    [
+      "and",
+      [
+        "=",
+        ["aggregate/collect", ["object/get", "found", "outranks_louis"]],
+        [
+          "aggregate/collect",
+          ["quote", ["Hacker Alyssa P", "Bitdiddle Ben", "Warbucks Oliver"]]
+        ]
+      ],
+      [
+        "=",
+        ["aggregate/collect", ["object/get", "found", "wheels"]],
+        ["aggregate/collect", ["quote", ["Warbucks Oliver", "Bitdiddle Ben"]]]
+      ]
+    ]
+  ],
+  "tags": ["rules", "recursion", "or"],
+  "origin": "SICP 4.4.1, Deductive Information Retrieval: the rules outranked-by and wheel"
+}

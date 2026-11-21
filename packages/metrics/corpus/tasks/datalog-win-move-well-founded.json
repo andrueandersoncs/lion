@@ -1,0 +1,30 @@
+{
+  "id": "datalog-win-move-well-founded",
+  "pillar": "logic",
+  "statement": "The input moves lists [from, to] moves of a game; a player who cannot move loses. A position is won when some move leads to a lost position, lost when every move leads to a won one, and drawn otherwise, as the well-founded semantics of the rule win(x) :- move(x, y), not win(y) says. The program's value is a record {\"won\", \"lost\", \"drawn\"} of the positions in each, each list in ascending order.",
+  "inputs": {
+    "moves": [
+      ["a", "b"],
+      ["b", "a"],
+      ["b", "c"],
+      ["c", "d"],
+      ["e", "f"],
+      ["f", "g"],
+      ["g", "e"]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["found"],
+    [
+      "=",
+      "found",
+      [
+        "quote",
+        { "won": ["c"], "lost": ["d"], "drawn": ["a", "b", "e", "f", "g"] }
+      ]
+    ]
+  ],
+  "tags": ["rules", "recursion", "negation", "well-founded-semantics"],
+  "origin": "The win-move game, the standard example of the well-founded semantics (Van Gelder, Ross, and Schlipf, 1991)"
+}

@@ -1,0 +1,34 @@
+[
+  "begin",
+  ["define", "square", ["lambda", ["x"], ["number/multiply", "x", "x"]]],
+  [
+    "define",
+    "even?",
+    ["lambda", ["n"], ["number/equals?", ["number/remainder", "n", 2], 0]]
+  ],
+  [
+    "define",
+    "fast-expt",
+    [
+      "lambda",
+      ["b", "n"],
+      [
+        "cond",
+        [["number/equals?", "n", 0], 1],
+        [
+          ["even?", "n"],
+          ["square", ["fast-expt", "b", ["number/divide", "n", 2]]]
+        ],
+        [
+          "else",
+          [
+            "number/multiply",
+            "b",
+            ["fast-expt", "b", ["number/subtract", "n", 1]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "fast-expt"
+]

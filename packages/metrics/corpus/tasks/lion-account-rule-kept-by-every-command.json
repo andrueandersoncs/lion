@@ -1,0 +1,61 @@
+{
+  "id": "lion-account-rule-kept-by-every-command",
+  "pillar": "proofs",
+  "statement": "An account is a record {\"balance\", \"limit\"} of whole numbers. A command is {\"deposit\": n} or {\"withdraw\": n}, with n a whole number above 0. A deposit adds n to the balance. A withdrawal subtracts n from the balance when the balance plus the limit is at least n, and leaves the account as it is otherwise; the limit never changes. Define a function of a predicate on accounts that gives true when every command takes every account that meets the predicate to an account that meets it, for every account and amount, and false otherwise. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["keeps"],
+    [
+      "and",
+      [
+        "keeps",
+        [
+          "lambda",
+          ["a"],
+          [
+            "number/greaterThanOrEqualTo",
+            [
+              "number/add",
+              ["object/get", "a", "balance"],
+              ["object/get", "a", "limit"]
+            ],
+            0
+          ]
+        ]
+      ],
+      [
+        "keeps",
+        [
+          "lambda",
+          ["a"],
+          ["number/greaterThanOrEqualTo", ["object/get", "a", "limit"], 0]
+        ]
+      ],
+      [
+        "not",
+        [
+          "keeps",
+          [
+            "lambda",
+            ["a"],
+            ["number/greaterThanOrEqualTo", ["object/get", "a", "balance"], 0]
+          ]
+        ]
+      ],
+      [
+        "not",
+        [
+          "keeps",
+          [
+            "lambda",
+            ["a"],
+            ["number/lessThanOrEqualTo", ["object/get", "a", "balance"], 1000]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["solver", "schemas", "induction-step"],
+  "origin": "Lion README, Proving that a command keeps a rule"
+}

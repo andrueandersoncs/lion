@@ -1,0 +1,35 @@
+[
+  "begin",
+  [
+    "define",
+    "pascal",
+    [
+      "lambda",
+      ["row", "col"],
+      [
+        "cond",
+        [
+          [
+            "or",
+            ["number/equals?", "col", 0],
+            ["number/equals?", "col", "row"]
+          ],
+          1
+        ],
+        [
+          "else",
+          [
+            "number/add",
+            [
+              "pascal",
+              ["number/subtract", "row", 1],
+              ["number/subtract", "col", 1]
+            ],
+            ["pascal", ["number/subtract", "row", 1], "col"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "pascal"
+]

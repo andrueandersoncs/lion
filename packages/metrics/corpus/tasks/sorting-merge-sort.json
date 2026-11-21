@@ -1,0 +1,27 @@
+{
+  "id": "sorting-merge-sort",
+  "pillar": "computation",
+  "statement": "Define a function of a list of numbers that gives the same numbers in ascending order, keeping repeated numbers, by merge sort: split the list in halves, sort each, and merge them. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["sort"],
+    [
+      "array/every?",
+      [
+        "quote",
+        [
+          [],
+          [1],
+          [3, 1, 2],
+          [5, 3, 5, 1, -2, 0, 3],
+          [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+          [2.5, -1, 2.25]
+        ]
+      ],
+      ["lambda", ["xs"], ["=", ["sort", "xs"], ["aggregate/collect", "xs"]]]
+    ]
+  ],
+  "tags": ["lists", "recursion", "sorting"],
+  "origin": "Merge sort (von Neumann, 1945), a standard recursion exercise"
+}

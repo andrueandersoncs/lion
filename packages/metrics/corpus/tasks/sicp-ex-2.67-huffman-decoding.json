@@ -1,0 +1,26 @@
+{
+  "id": "sicp-ex-2.67-huffman-decoding",
+  "pillar": "computation",
+  "statement": "A Huffman tree is a leaf [\"leaf\", symbol, weight] or a list [left, right, symbols, weight]. Decode the message, a list of bits where 0 takes the left branch and 1 the right, with the tree. The program's value is the list of symbols.",
+  "inputs": {
+    "tree": [
+      ["leaf", "A", 4],
+      [
+        ["leaf", "B", 2],
+        [["leaf", "D", 1], ["leaf", "C", 1], ["D", "C"], 2],
+        ["B", "D", "C"],
+        4
+      ],
+      ["A", "B", "D", "C"],
+      8
+    ],
+    "message": [0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0]
+  },
+  "check": [
+    "lambda",
+    ["decoded"],
+    ["=", "decoded", ["quote", ["A", "D", "A", "B", "B", "C", "A"]]]
+  ],
+  "tags": ["trees", "lists", "symbolic-data"],
+  "origin": "SICP Exercise 2.67"
+}

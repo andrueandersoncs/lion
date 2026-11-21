@@ -1860,7 +1860,7 @@ turbo test --filter=@lionlang/core
 turbo dev --filter=@lionlang/repl
 ```
 
-To measure a change to the language, beside `main`: `bun run measure --against main` for how much code and how many rules it has, `bun run bench --against main` for speed, and `bun run scale --against main` for how time and memory grow as the facts grow from a thousand to a hundred thousand and more. [`packages/metrics`](packages/metrics/README.md) describes each.
+To measure a change to the language, beside `main`: `bun run measure --against main` for how much code and how many rules it has, `bun run bench --against main` for speed, and `bun run scale --against main` for how time and memory grow as the facts grow from a thousand to a hundred thousand and more. `bun run capability` grades the capability corpus, tasks of general computation, logic programming, and formal proofs that Lion's reference programs must keep passing. [`packages/metrics`](packages/metrics/README.md) describes each.
 
 ## Website
 

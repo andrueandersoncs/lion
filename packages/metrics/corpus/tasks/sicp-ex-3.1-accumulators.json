@@ -1,0 +1,25 @@
+{
+  "id": "sicp-ex-3.1-accumulators",
+  "pillar": "computation",
+  "statement": "Define make-accumulator: a function of a starting sum that gives an accumulator, a function of one number that adds it to the sum and gives the new sum. Each accumulator keeps its own sum. The program's value is make-accumulator.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["make"],
+    [
+      "begin",
+      ["define", "a", ["make", 5]],
+      ["define", "b", ["make", 100]],
+      ["define", "first", ["a", 10]],
+      ["define", "other", ["b", 1]],
+      ["define", "second", ["a", 10]],
+      [
+        "=",
+        ["array/make", "first", "other", "second"],
+        ["quote", [15, 101, 25]]
+      ]
+    ]
+  ],
+  "tags": ["closures", "assignment"],
+  "origin": "SICP Exercise 3.1"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "sicp-ex-1.10-ackermann",
+  "pillar": "computation",
+  "statement": "A(x, y) is 0 when y = 0, 2y when x = 0, 2 when y = 1, and A(x - 1, A(x, y - 1)) otherwise. The program's value is a function of x and y that gives A(x, y).",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["a"],
+    [
+      "=",
+      ["array/make", ["a", 1, 10], ["a", 2, 4], ["a", 3, 3]],
+      ["quote", [1024, 65536, 65536]]
+    ]
+  ],
+  "tags": ["recursion", "deep-recursion"],
+  "origin": "SICP Exercise 1.10"
+}

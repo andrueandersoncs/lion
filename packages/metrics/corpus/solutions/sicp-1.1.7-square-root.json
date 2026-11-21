@@ -1,0 +1,46 @@
+[
+  "begin",
+  [
+    "define",
+    "improve",
+    [
+      "lambda",
+      ["guess", "x"],
+      [
+        "number/divide",
+        ["number/add", "guess", ["number/divide", "x", "guess"]],
+        2
+      ]
+    ]
+  ],
+  [
+    "define",
+    "good-enough?",
+    [
+      "lambda",
+      ["guess", "x"],
+      [
+        "number/lessThan",
+        [
+          "number/absolute",
+          ["number/subtract", ["number/multiply", "guess", "guess"], "x"]
+        ],
+        0.001
+      ]
+    ]
+  ],
+  [
+    "define",
+    "sqrt-iter",
+    [
+      "lambda",
+      ["guess", "x"],
+      [
+        "cond",
+        [["good-enough?", "guess", "x"], "guess"],
+        ["else", ["sqrt-iter", ["improve", "guess", "x"], "x"]]
+      ]
+    ]
+  ],
+  ["lambda", ["x"], ["sqrt-iter", 1, "x"]]
+]

@@ -1,0 +1,18 @@
+[
+  "begin",
+  [
+    "define",
+    "find-divisor",
+    [
+      "lambda",
+      ["n", "test"],
+      [
+        "cond",
+        [["number/greaterThan", ["number/multiply", "test", "test"], "n"], "n"],
+        [["number/equals?", ["number/remainder", "n", "test"], 0], "test"],
+        ["else", ["find-divisor", "n", ["number/add", "test", 1]]]
+      ]
+    ]
+  ],
+  ["lambda", ["n"], ["find-divisor", "n", 2]]
+]

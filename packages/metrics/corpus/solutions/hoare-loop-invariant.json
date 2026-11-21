@@ -1,0 +1,43 @@
+[
+  "lambda",
+  ["inv"],
+  [
+    "value/identity",
+    [
+      "not",
+      [
+        "exists",
+        ["?st"],
+        [
+          "and",
+          [
+            "schema/fits?",
+            "?st",
+            {
+              "i": "value/integer?",
+              "s": "value/integer?",
+              "n": "value/integer?"
+            }
+          ],
+          ["inv", "?st"],
+          [
+            "number/lessThan",
+            ["object/get", "?st", "i"],
+            ["object/get", "?st", "n"]
+          ],
+          [
+            "not",
+            [
+              "inv",
+              {
+                "i": ["number/add", ["object/get", "?st", "i"], 1],
+                "s": ["number/add", ["object/get", "?st", "s"], 2],
+                "n": ["object/get", "?st", "n"]
+              }
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

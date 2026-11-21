@@ -1,0 +1,25 @@
+[
+  "begin",
+  [
+    "define",
+    "fib-iter",
+    [
+      "lambda",
+      ["a", "b", "count"],
+      [
+        "cond",
+        [["number/equals?", "count", 0], "b"],
+        [
+          "else",
+          [
+            "fib-iter",
+            ["number/add", "a", "b"],
+            "a",
+            ["number/subtract", "count", 1]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["lambda", ["n"], ["fib-iter", 1, 0, "n"]]
+]

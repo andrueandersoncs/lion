@@ -69,6 +69,112 @@ const REASONING_TESTS = {
 /** The properties of `lion worker`, checked against the lion command. */
 const WORKER_TESTS = "src/tests/worker.test.ts";
 
+/** The properties of the capability corpus, its grader, and its loader. */
+const CAPABILITY_TESTS = {
+  package: "metrics",
+  tests: ["src/tests/capability.test.ts"],
+};
+const CAPABILITY = "packages/metrics/src/capability.ts";
+const corpus = (file: string) => `packages/metrics/corpus/${file}`;
+
+/** Breaks in grading the capability corpus, and in its tasks. */
+const CAPABILITY_MUTATIONS: readonly Mutation[] = [
+  {
+    name: "a program that fails passes its task",
+    file: CAPABILITY,
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    find: "return failed(`the program failed: ${solved.error}`);",
+    replace: "return { passed: true };",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a check that gives a value other than true passes its task",
+    file: CAPABILITY,
+    find: "return judged.value === true",
+    replace: "return judged.value !== false",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a program runs without its task's inputs",
+    file: CAPABILITY,
+    find: "      database,\n      environment: task.inputs,\n    });",
+    replace: "      database,\n    });",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a check is made where the program's relations are names",
+    file: CAPABILITY,
+    find: "const made = yield* evaluate(lion, task.check, {\n      environment: task.inputs,",
+    replace:
+      "const made = yield* evaluate(lion, task.check, {\n      database,\n      environment: task.inputs,",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a check is called outside the program's database",
+    file: CAPABILITY,
+    find: 'evaluate(lion, ["check", "result"], {\n      database,',
+    replace: 'evaluate(lion, ["check", "result"], {',
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "tally counts a task that failed as passed",
+    file: CAPABILITY,
+    find: "mine.filter((each) => each.verdict?.passed === true).length",
+    replace: "mine.filter((each) => each.verdict !== undefined).length",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a task whose id is not its file's name is loaded",
+    file: CAPABILITY,
+    find: 'if (task.id !== basename(name, ".json")) {',
+    replace: "if (false) {",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a gap is kept for a task that has a solution",
+    file: CAPABILITY,
+    find: "} else if (solutions.has(id)) {",
+    replace: "} else if (false) {",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a solution that is not JSON is a program that gives null",
+    file: CAPABILITY,
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    find: '? ["func/raise", `${name} is not JSON: ${file.error}`]',
+    replace: "? null",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a held-out folder inside the repository is taken",
+    file: CAPABILITY,
+    find: "  return outside\n",
+    replace: "  return true\n",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a reference program stops solving its task",
+    file: corpus("solutions/sicp-ex-2.18-reverse.json"),
+    find: '["array/make", ["array/head", "items"]]',
+    replace: '["array/make", ["array/tail", "items"]]',
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a reference program of a logic task stops solving it",
+    file: corpus("solutions/datalog-transitive-closure.json"),
+    find: '["reach", "?x", "?y"], ["edge", "?y", "?z"]',
+    replace: '["edge", "?x", "?y"], ["edge", "?y", "?z"]',
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a task's check passes every value",
+    file: corpus("tasks/sicp-ex-2.18-reverse.json"),
+    find: '["and",',
+    replace: '["or", true,',
+    ...CAPABILITY_TESTS,
+  },
+];
+
 /** A break in the research skill's core program, caught by the skill's properties. */
 const research = (
   name: string,
@@ -2856,6 +2962,7 @@ export const MUTATIONS: readonly Mutation[] = [
     package: "metrics",
     tests: ["src/tests/skill-eval.test.ts"],
   },
+  ...CAPABILITY_MUTATIONS,
   {
     name: "a folder's hash ignores what its files hold",
     file: reasoning("scripts/lib.mjs"),

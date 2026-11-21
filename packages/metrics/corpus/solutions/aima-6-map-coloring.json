@@ -1,0 +1,84 @@
+[
+  "begin",
+  [
+    "define",
+    "clashes",
+    [
+      "lambda",
+      ["assigned", "region", "color"],
+      [
+        "array/some?",
+        "borders",
+        [
+          "lambda",
+          ["b"],
+          [
+            "or",
+            [
+              "and",
+              ["=", ["array/head", "b"], "region"],
+              [
+                "=",
+                [
+                  "object/get",
+                  "assigned",
+                  ["array/head", ["array/tail", "b"]],
+                  null
+                ],
+                "color"
+              ]
+            ],
+            [
+              "and",
+              ["=", ["array/head", ["array/tail", "b"]], "region"],
+              [
+                "=",
+                ["object/get", "assigned", ["array/head", "b"], null],
+                "color"
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "colorings",
+    [
+      "lambda",
+      ["assigned", "left"],
+      [
+        "cond",
+        [["=", "left", ["quote", []]], ["array/make", "assigned"]],
+        [
+          "else",
+          [
+            "array/flat-map",
+            "colors",
+            [
+              "lambda",
+              ["c"],
+              [
+                "cond",
+                [
+                  ["clashes", "assigned", ["array/head", "left"], "c"],
+                  ["quote", []]
+                ],
+                [
+                  "else",
+                  [
+                    "colorings",
+                    ["object/set", "assigned", ["array/head", "left"], "c"],
+                    ["array/tail", "left"]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["array/length", ["colorings", {}, "regions"]]
+]

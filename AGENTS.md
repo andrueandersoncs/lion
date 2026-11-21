@@ -70,6 +70,9 @@ bun run fix
 # Prepare development environment (installs the git hooks)
 bun run prepare
 
+# Grade the capability corpus: the tasks of each pillar Lion passes
+bun run capability
+
 # Measure complexity, speed, growth, and how well the tests catch broken code
 bun run measure --against main
 bun run bench --against main

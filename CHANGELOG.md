@@ -7,6 +7,9 @@
 ### Added
 
 - `bun run history check` counts the rules in force that no probe of Lion checks, beside what the model holds, and `["untested", "?rule"]` lists them (`untested-rules` added)
+- `bun run capability` grades the corpus and prints how many of each pillar's tasks are passed, and `--solutions` grades a folder of programs in place of the reference programs (`capability` added)
+- `packages/metrics/corpus/` holds Lion's public capability corpus: tasks of general computation, logic programming, and formal proofs, each a JSON record {id, pillar, statement, inputs, check, tags, origin} whose check is a Lion lambda that judges what a program gives, with a reference program for each task Lion can do (`capability-corpus` added)
+- `LION_HELD_OUT` names a folder outside the repository with the corpus's layout, whose tasks are graded beside the public ones; a folder inside the repository is refused (`held-out-corpus` added)
 
 ### Decided
 
@@ -29,6 +32,8 @@
 - A person merges, releases, and approves every decision that overturns a documented rule. (rule `people-merge-and-release`)
 - every listed mutation that the full suite catches is caught by the checks picked for it (rule `picked-checks-catch-what-full-catches`)
 - a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check` (rule `scheme-departures-are-decided`)
+- A task Lion cannot express yet is a gap: it stays in the corpus and counts as not passed, `gaps.json` says what Lion lacks, and it has no reference program (rule `capability-gaps-recorded`)
+- Every public task that has a reference program passes its check, and a property in `packages/metrics` fails when one stops passing, so capability cannot drop without a test failing (rule `capability-references-pass`)
 
 ## 2026-11-20 — @lionlang/core 0.15.0, @lionlang/cli 0.14.0
 
@@ -2287,5 +2292,5 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - The auto-quoting of lists was removed. (rule `non-call-arrays-are-lists` withdrawn)
 - A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (rule `special-forms-plain-names`)
 - A record pattern in `match` fits any record that has the pattern's keys with values that fit (rule `record-patterns-by-keys`)
-- An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself. (rule `scheme-racket-semantics`)
+- R7RS-small 4.2.7: the handler of guard is given the object that was raised, so (guard (e (#t e)) (raise 'boom)) is boom (rule `scheme-racket-semantics`)
 - All code is valid JSON. All JSON is valid code. (rule `all-json-is-code` withdrawn)

@@ -1,0 +1,24 @@
+[
+  "begin",
+  ["relation", "job", ["person", "title"]],
+  ["relation", "salary", ["person", "amount"]],
+  ["relation", "division", ["name", "people", "total"]],
+  ["rule", ["job", "?p", "?t"], ["in", ["array/make", "?p", "?t"], "jobs"]],
+  [
+    "rule",
+    ["salary", "?p", "?a"],
+    ["in", ["array/make", "?p", "?a"], "salaries"]
+  ],
+  [
+    "rule",
+    [
+      "division",
+      ["array/head", ["string/split", "?t", " "]],
+      ["aggregate/count", "?p"],
+      ["aggregate/sum", "?a"]
+    ],
+    ["job", "?p", "?t"],
+    ["salary", "?p", "?a"]
+  ],
+  ["query", ["division", "?division", "?people", "?salaries"]]
+]

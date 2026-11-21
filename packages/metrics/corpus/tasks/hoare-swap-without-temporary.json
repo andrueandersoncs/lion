@@ -1,0 +1,75 @@
+{
+  "id": "hoare-swap-without-temporary",
+  "pillar": "proofs",
+  "statement": "A state is a record {\"x\", \"y\"} of whole numbers. Define a function of a step function s from a state to a state that gives true when, for every state, s gives the state with x and y swapped, and false when some state shows it does not. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["proves"],
+    [
+      "and",
+      [
+        "proves",
+        [
+          "lambda",
+          ["st"],
+          { "x": ["object/get", "st", "y"], "y": ["object/get", "st", "x"] }
+        ]
+      ],
+      [
+        "proves",
+        [
+          "lambda",
+          ["st"],
+          [
+            [
+              "lambda",
+              ["x1"],
+              [
+                [
+                  "lambda",
+                  ["y1"],
+                  { "x": ["number/subtract", "x1", "y1"], "y": "y1" }
+                ],
+                ["number/subtract", "x1", ["object/get", "st", "y"]]
+              ]
+            ],
+            ["number/add", ["object/get", "st", "x"], ["object/get", "st", "y"]]
+          ]
+        ]
+      ],
+      [
+        "not",
+        [
+          "proves",
+          [
+            "lambda",
+            ["st"],
+            [
+              [
+                "lambda",
+                ["x1"],
+                [
+                  [
+                    "lambda",
+                    ["y1"],
+                    { "x": ["number/add", "x1", "y1"], "y": "y1" }
+                  ],
+                  ["number/subtract", "x1", ["object/get", "st", "y"]]
+                ]
+              ],
+              [
+                "number/add",
+                ["object/get", "st", "x"],
+                ["object/get", "st", "y"]
+              ]
+            ]
+          ]
+        ]
+      ],
+      ["not", ["proves", ["lambda", ["st"], "st"]]]
+    ]
+  ],
+  "tags": ["solver", "schemas", "exists"],
+  "origin": "Swapping two variables without a temporary, x := x + y; y := x - y; x := x - y, a classic exercise in Hoare logic"
+}

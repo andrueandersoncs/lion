@@ -1,0 +1,17 @@
+[
+  "begin",
+  [
+    "define",
+    "fringe",
+    [
+      "lambda",
+      ["x"],
+      [
+        "cond",
+        [["value/array?", "x"], ["array/flat-map", "x", "fringe"]],
+        ["else", ["array/make", "x"]]
+      ]
+    ]
+  ],
+  "fringe"
+]

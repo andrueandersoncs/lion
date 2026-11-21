@@ -1,0 +1,13 @@
+{
+  "id": [
+    "schema/allOf",
+    "value/string?",
+    ["lambda", ["id"], ["number/greaterThan", ["string/length", "id"], 0]]
+  ],
+  "pillar": ["schema/anyOf", "computation", "logic", "proofs"],
+  "statement": "value/string?",
+  "inputs": ["schema/recordOf", "value/any?"],
+  "check": "value/array?",
+  "tags": ["schema/arrayOf", "value/string?"],
+  "origin": "value/string?"
+}

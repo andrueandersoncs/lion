@@ -1,0 +1,28 @@
+{
+  "id": "sicp-2.1.1-rational-numbers",
+  "pillar": "computation",
+  "statement": "A rational number is a list [numerator, denominator] of whole numbers. The program's value is a record {\"add\": ..., \"multiply\": ...} of two functions of two rationals that give their sum and product in lowest terms, with a denominator above 0.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["rat"],
+    [
+      "begin",
+      ["define", "add", ["object/get", "rat", ["quote", "add"]]],
+      ["define", "times", ["object/get", "rat", ["quote", "multiply"]]],
+      [
+        "and",
+        ["=", ["add", ["quote", [1, 2]], ["quote", [1, 3]]], ["quote", [5, 6]]],
+        ["=", ["add", ["quote", [1, 3]], ["quote", [1, 3]]], ["quote", [2, 3]]],
+        [
+          "=",
+          ["times", ["quote", [1, 2]], ["quote", [-2, 3]]],
+          ["quote", [-1, 3]]
+        ],
+        ["=", ["add", ["quote", [1, 2]], ["quote", [-1, 2]]], ["quote", [0, 1]]]
+      ]
+    ]
+  ],
+  "tags": ["data-abstraction", "records", "numbers"],
+  "origin": "SICP 2.1.1, Example: Arithmetic Operations for Rational Numbers"
+}

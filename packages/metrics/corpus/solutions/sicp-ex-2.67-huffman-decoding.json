@@ -1,0 +1,53 @@
+[
+  "begin",
+  [
+    "define",
+    "leaf?",
+    ["lambda", ["node"], ["=", ["array/head", "node"], "leaf"]]
+  ],
+  [
+    "define",
+    "branch",
+    [
+      "lambda",
+      ["bit", "node"],
+      [
+        "cond",
+        [["number/equals?", "bit", 0], ["array/head", "node"]],
+        ["else", ["array/head", ["array/tail", "node"]]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "decode",
+    [
+      "lambda",
+      ["bits", "current"],
+      [
+        "cond",
+        [["=", "bits", ["quote", []]], ["quote", []]],
+        [
+          "else",
+          [
+            "begin",
+            ["define", "next", ["branch", ["array/head", "bits"], "current"]],
+            [
+              "cond",
+              [
+                ["leaf?", "next"],
+                [
+                  "array/concat",
+                  ["array/make", ["array/head", ["array/tail", "next"]]],
+                  ["decode", ["array/tail", "bits"], "tree"]
+                ]
+              ],
+              ["else", ["decode", ["array/tail", "bits"], "next"]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["decode", "message", "tree"]
+]

@@ -1,0 +1,42 @@
+{
+  "id": "sicp-2.2.3-permutations",
+  "pillar": "computation",
+  "statement": "Define a function of a list of distinct items that gives every ordering of them, each once, in any order. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["permutations"],
+    [
+      "begin",
+      ["define", "four", ["permutations", ["quote", [1, 2, 3, 4]]]],
+      [
+        "and",
+        [
+          "=",
+          ["aggregate/unique", ["permutations", ["quote", [1, 2, 3]]]],
+          [
+            "aggregate/unique",
+            [
+              "quote",
+              [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]
+            ]
+          ]
+        ],
+        ["=", ["array/length", "four"], 24],
+        ["=", ["aggregate/countUnique", "four"], 24],
+        [
+          "array/every?",
+          "four",
+          [
+            "lambda",
+            ["p"],
+            ["=", ["aggregate/collect", "p"], ["quote", [1, 2, 3, 4]]]
+          ]
+        ],
+        ["=", ["permutations", ["quote", []]], ["quote", [[]]]]
+      ]
+    ]
+  ],
+  "tags": ["lists", "recursion", "higher-order"],
+  "origin": "SICP 2.2.3, Nested Mappings: permutations"
+}

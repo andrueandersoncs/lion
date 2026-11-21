@@ -1,0 +1,24 @@
+{
+  "id": "sicp-1.2.5-greatest-common-divisor",
+  "pillar": "computation",
+  "statement": "Define a function of two whole numbers a and b, at least 0, that gives their greatest common divisor by Euclid's algorithm: gcd(a, 0) is a, and gcd(a, b) is gcd(b, the remainder of a divided by b). The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["gcd"],
+    [
+      "=",
+      [
+        "array/make",
+        ["gcd", 206, 40],
+        ["gcd", 1071, 462],
+        ["gcd", 17, 5],
+        ["gcd", 9, 0],
+        ["gcd", 0, 9]
+      ],
+      ["quote", [2, 21, 1, 9, 9]]
+    ]
+  ],
+  "tags": ["recursion", "numbers"],
+  "origin": "SICP 1.2.5, Greatest Common Divisors"
+}

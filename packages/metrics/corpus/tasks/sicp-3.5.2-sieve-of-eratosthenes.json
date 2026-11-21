@@ -1,0 +1,63 @@
+{
+  "id": "sicp-3.5.2-sieve-of-eratosthenes",
+  "pillar": "computation",
+  "statement": "A stream is a list [first, rest], where rest is a promise, made with delay, of the stream after first. The program's value is the infinite stream of the primes in order, made by the sieve of Eratosthenes over the stream of whole numbers from 2.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["primes"],
+    [
+      "begin",
+      [
+        "define",
+        "rest",
+        ["lambda", ["s"], ["value/force", ["array/head", ["array/tail", "s"]]]]
+      ],
+      [
+        "define",
+        "take",
+        [
+          "lambda",
+          ["s", "n"],
+          [
+            "cond",
+            [["number/equals?", "n", 0], ["quote", []]],
+            [
+              "else",
+              [
+                "array/concat",
+                ["array/make", ["array/head", "s"]],
+                ["take", ["rest", "s"], ["number/subtract", "n", 1]]
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "ref",
+        [
+          "lambda",
+          ["s", "n"],
+          [
+            "cond",
+            [["number/equals?", "n", 0], ["array/head", "s"]],
+            ["else", ["ref", ["rest", "s"], ["number/subtract", "n", 1]]]
+          ]
+        ]
+      ],
+      [
+        "and",
+        ["value/promise?", ["array/head", ["array/tail", "primes"]]],
+        [
+          "=",
+          ["take", "primes", 10],
+          ["quote", [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]]
+        ],
+        ["=", ["ref", "primes", 50], 233]
+      ]
+    ]
+  ],
+  "tags": ["streams", "delay", "closures"],
+  "origin": "SICP 3.5.2, Infinite Streams: the sieve of Eratosthenes"
+}

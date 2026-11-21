@@ -1,0 +1,55 @@
+[
+  "lambda",
+  ["tree"],
+  [
+    "begin",
+    ["define", "resume", null],
+    [
+      "define",
+      "walk",
+      [
+        "lambda",
+        ["t"],
+        [
+          "cond",
+          [["=", "t", ["quote", []]], null],
+          [
+            ["value/array?", "t"],
+            [
+              "begin",
+              ["walk", ["array/head", "t"]],
+              ["walk", ["array/tail", "t"]]
+            ]
+          ],
+          [
+            "else",
+            [
+              "func/shift",
+              ["lambda", ["k"], ["begin", ["set!", "resume", "k"], "t"]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    [
+      "lambda",
+      [],
+      [
+        "func/reset",
+        [
+          "lambda",
+          [],
+          [
+            "cond",
+            [
+              ["value/null?", "resume"],
+              ["begin", ["walk", "tree"], ["set!", "resume", "done"], "done"]
+            ],
+            [["value/function?", "resume"], ["resume", null]],
+            ["else", "done"]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

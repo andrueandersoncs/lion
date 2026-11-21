@@ -1,0 +1,26 @@
+{
+  "id": "sicp-ex-1.12-pascals-triangle",
+  "pillar": "computation",
+  "statement": "Define a function of a row and a position in it, both counted from 0, that gives the element of Pascal's triangle there: the edges are 1, and each element inside is the sum of the two above it. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["pascal"],
+    [
+      "and",
+      [
+        "=",
+        [
+          "array/map",
+          ["array/range", 0, 5],
+          ["lambda", ["c"], ["pascal", 4, "c"]]
+        ],
+        ["quote", [1, 4, 6, 4, 1]]
+      ],
+      ["=", ["pascal", 0, 0], 1],
+      ["=", ["pascal", 10, 5], 252]
+    ]
+  ],
+  "tags": ["recursion", "tree-recursion"],
+  "origin": "SICP Exercise 1.12"
+}

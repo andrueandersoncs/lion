@@ -23494,6 +23494,670 @@
     "program": ["lion/special-form?", "delay"]
   },
   {
+    "case": "r7rs-3.5-mutual-tail-calls",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      [
+        "define",
+        "even",
+        [
+          "lambda",
+          ["n"],
+          [
+            "cond",
+            [["number/equals?", "n", 0], true],
+            ["else", ["odd", ["number/subtract", "n", 1]]]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "odd",
+        [
+          "lambda",
+          ["n"],
+          [
+            "cond",
+            [["number/equals?", "n", 0], false],
+            ["else", ["even", ["number/subtract", "n", 1]]]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [["boolean/equals?", ["even", 300000], true], ["quote", "finishes"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "r7rs-4.1.3-call-non-procedure",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [["value/array?", [1, 2, 3]], ["quote", "list"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.1.4-closure-own-state",
+    "area": "names",
+    "program": [
+      "begin",
+      [
+        "define",
+        "make-counter",
+        [
+          "lambda",
+          [],
+          [
+            "begin",
+            ["define", "n", 0],
+            ["lambda", [], ["set!", "n", ["number/add", "n", 1]]]
+          ]
+        ]
+      ],
+      ["define", "a", ["make-counter"]],
+      ["define", "b", ["make-counter"]],
+      ["a"],
+      ["a"],
+      [
+        "cond",
+        [
+          ["=", ["array/make", ["a"], ["b"]], ["quote", [3, 1]]],
+          ["quote", "independent"]
+        ],
+        ["else", ["quote", "shared"]]
+      ]
+    ]
+  },
+  {
+    "case": "r7rs-4.1.4-lambda-rest-parameter",
+    "area": "forms",
+    "program": [
+      "cond",
+      [
+        ["=", [["lambda", "args", "args"], 1, 2], ["quote", [1, 2]]],
+        ["quote", "list"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.1.6-set-changes-binding",
+    "area": "names",
+    "program": [
+      "begin",
+      ["define", "x", 2],
+      ["set!", "x", 4],
+      [
+        "cond",
+        [["number/equals?", ["number/add", "x", 1], 5], ["quote", "changed"]],
+        ["else", ["quote", "unchanged"]]
+      ]
+    ]
+  },
+  {
+    "case": "r7rs-4.1.6-set-unbound-variable",
+    "area": "names",
+    "program": ["begin", ["set!", "nowhere", 1], ["quote", "bound-it"]]
+  },
+  {
+    "case": "r7rs-4.2.1-and-no-arguments",
+    "area": "forms",
+    "program": [
+      "cond",
+      [["boolean/equals?", ["and"], true], ["quote", "true"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.1-or-no-arguments",
+    "area": "forms",
+    "program": [
+      "cond",
+      [["boolean/equals?", ["or"], false], ["quote", "false"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.1-and-gives-last-value",
+    "area": "forms",
+    "program": [
+      "cond",
+      [["=", ["and", 1, 2], 2], ["quote", "last-value"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.1-or-gives-first-true-value",
+    "area": "forms",
+    "program": [
+      "cond",
+      [["=", ["or", false, 3], 3], ["quote", "first-true-value"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.1-cond-stops-at-first-true",
+    "area": "forms",
+    "program": [
+      "cond",
+      [true, ["quote", "not-evaluated"]],
+      [["number/equals?", ["number/divide", 1, 0], 1], ["quote", "evaluated"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.1-cond-clause-sequence",
+    "area": "forms",
+    "program": [
+      "cond",
+      [["=", ["cond", [true, 1, 2], ["else", 0]], 2], ["quote", "last-value"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.2-let-through-lambda",
+    "area": "names",
+    "program": [
+      "cond",
+      [
+        [
+          "number/equals?",
+          [["lambda", ["x", "y"], ["number/multiply", "x", "y"]], 2, 3],
+          6
+        ],
+        ["quote", "bound"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.2-let-star-through-nested-lambdas",
+    "area": "names",
+    "program": [
+      "cond",
+      [
+        [
+          "number/equals?",
+          [
+            [
+              "lambda",
+              ["x", "y"],
+              [
+                [
+                  "lambda",
+                  ["x"],
+                  [
+                    ["lambda", ["z"], ["number/multiply", "z", "x"]],
+                    ["number/add", "x", "y"]
+                  ]
+                ],
+                7
+              ]
+            ],
+            2,
+            3
+          ],
+          70
+        ],
+        ["quote", "sequential"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.3-begin-gives-last",
+    "area": "forms",
+    "program": [
+      "cond",
+      [["number/equals?", ["begin", 1, 2, 3], 3], ["quote", "last"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.5-delay-runs-only-when-forced",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      ["define", "p", ["delay", ["number/divide", 1, 0]]],
+      [
+        "cond",
+        [["value/promise?", "p"], ["quote", "not-evaluated"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.5-force-reentrant",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      ["define", "count", 0],
+      [
+        "define",
+        "p",
+        [
+          "delay",
+          [
+            "begin",
+            ["set!", "count", ["number/add", "count", 1]],
+            [
+              "cond",
+              [["number/greaterThan", "count", "x"], "count"],
+              ["else", ["value/force", "p"]]
+            ]
+          ]
+        ]
+      ],
+      ["define", "x", 5],
+      [
+        "cond",
+        [["number/equals?", ["value/force", "p"], 6], ["quote", "first-value"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "r7rs-4.2.7-raise-handler-gets-raised-object",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "func/catch",
+            ["lambda", [], ["func/raise", "boom"]],
+            ["lambda", ["e"], "e"]
+          ],
+          "boom"
+        ],
+        ["quote", "raised-object"]
+      ],
+      [
+        [
+          "value/object?",
+          [
+            "func/catch",
+            ["lambda", [], ["func/raise", "boom"]],
+            ["lambda", ["e"], "e"]
+          ]
+        ],
+        ["quote", "record"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-5.3.1-define-again-rebinds",
+    "area": "names",
+    "program": [
+      "begin",
+      ["define", "x", 1],
+      ["define", "x", 2],
+      [
+        "cond",
+        [["number/equals?", "x", 2], ["quote", "rebinds"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "r7rs-5.3.2-internal-defines-mutually-recursive",
+    "area": "names",
+    "program": [
+      [
+        "lambda",
+        [],
+        [
+          "begin",
+          [
+            "define",
+            "even",
+            [
+              "lambda",
+              ["n"],
+              [
+                "cond",
+                [["number/equals?", "n", 0], true],
+                ["else", ["odd", ["number/subtract", "n", 1]]]
+              ]
+            ]
+          ],
+          [
+            "define",
+            "odd",
+            [
+              "lambda",
+              ["n"],
+              [
+                "cond",
+                [["number/equals?", "n", 0], false],
+                ["else", ["even", ["number/subtract", "n", 1]]]
+              ]
+            ]
+          ],
+          [
+            "cond",
+            [["even", 100], ["quote", "mutually-recursive"]],
+            ["else", ["quote", "other"]]
+          ]
+        ]
+      ]
+    ]
+  },
+  {
+    "case": "r7rs-5.5-record-field-access",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["number/equals?", ["object/get", { "kar": 1, "kdr": 2 }, "kar"], 1],
+        ["quote", "field-value"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-5.5-record-modifier-mutates",
+    "area": "library",
+    "program": [
+      "begin",
+      ["define", "k", ["quote", { "kar": 1, "kdr": 2 }]],
+      ["object/set", "k", "kar", 3],
+      [
+        "cond",
+        [
+          ["number/equals?", ["object/get", "k", "kar"], 3],
+          ["quote", "changed"]
+        ],
+        ["else", ["quote", "unchanged"]]
+      ]
+    ]
+  },
+  {
+    "case": "r7rs-6.1-equal-compares-structure",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          ["quote", ["a", ["b"], "c"]],
+          ["array/make", "a", ["array/make", "b"], "c"]
+        ],
+        ["quote", "equal"]
+      ],
+      ["else", ["quote", "not-equal"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.2.6-add-no-arguments",
+    "area": "library",
+    "program": [
+      "cond",
+      [["number/equals?", ["number/add"], 0], ["quote", "zero"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.2.6-multiply-no-arguments",
+    "area": "library",
+    "program": [
+      "cond",
+      [["number/equals?", ["number/multiply"], 1], ["quote", "one"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.3-not-of-non-boolean",
+    "area": "library",
+    "program": [
+      "cond",
+      [["boolean/equals?", ["boolean/not", 3], false], ["quote", "false"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.4-car-of-empty-list",
+    "area": "library",
+    "program": [
+      "cond",
+      [["value/null?", ["array/head", ["quote", []]]], ["quote", "null"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.4-cdr-of-empty-list",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["=", ["array/tail", ["quote", []]], ["quote", []]],
+        ["quote", "empty-list"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.4-append-no-arguments",
+    "area": "library",
+    "program": [
+      "cond",
+      [["=", ["array/concat"], ["quote", []]], ["quote", "empty-list"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.7-string-append-no-arguments",
+    "area": "library",
+    "program": [
+      "cond",
+      [["string/equals?", ["string/concat"], ""], ["quote", "empty-string"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.7-string-length-counts-characters",
+    "area": "library",
+    "program": [
+      "cond",
+      [["number/equals?", ["string/length", "𝄞"], 1], ["quote", "one"]],
+      [["number/equals?", ["string/length", "𝄞"], 2], ["quote", "two"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.10-procedure-predicate",
+    "area": "library",
+    "program": [
+      "cond",
+      [["value/function?", "array/head"], ["quote", "true"]],
+      ["else", ["quote", "false"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.10-apply-spreads-last-argument",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "number/equals?",
+          ["func/apply", "number/add", null, ["quote", [3, 4]]],
+          7
+        ],
+        ["quote", "spread"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.10-map-several-lists",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "array/map",
+            ["quote", [1, 2, 3]],
+            ["quote", [10, 20, 30]],
+            "number/add"
+          ],
+          ["quote", [11, 22, 33]]
+        ],
+        ["quote", "elementwise"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.10-continuation-escapes",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "number/equals?",
+          [
+            "func/reset",
+            [
+              "lambda",
+              [],
+              [
+                "begin",
+                [
+                  "array/map",
+                  ["quote", [54, 0, 37, -3, 245, 19]],
+                  [
+                    "lambda",
+                    ["x"],
+                    [
+                      "cond",
+                      [
+                        ["number/lessThan", "x", 0],
+                        ["func/shift", ["lambda", ["k"], "x"]]
+                      ],
+                      ["else", null]
+                    ]
+                  ]
+                ],
+                true
+              ]
+            ]
+          ],
+          -3
+        ],
+        ["quote", "escaped"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "r7rs-6.10-continuation-resumed-twice",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "number/equals?",
+          [
+            "func/reset",
+            [
+              "lambda",
+              [],
+              [
+                "number/add",
+                1,
+                [
+                  "func/shift",
+                  ["lambda", ["k"], ["number/add", ["k", 1], ["k", 10]]]
+                ]
+              ]
+            ]
+          ],
+          13
+        ],
+        ["quote", "resumes"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "feature": "capability-corpus",
+    "kind": "capability",
+    "program": [
+      "number/greaterThan",
+      ["array/length", ["repo/files", "packages/metrics/corpus/tasks"]],
+      0
+    ]
+  },
+  {
+    "case": "capability-reference-failures",
+    "area": "metrics",
+    "program": [
+      "begin",
+      ["define", "graded", ["repo/run", "capability"]],
+      [
+        "cond",
+        [
+          [
+            "boolean/not",
+            ["number/equals?", ["object/get", "graded", "exit"], 0]
+          ],
+          ["quote", "unreadable"]
+        ],
+        [
+          ["string/includes", ["object/get", "graded", "output"], "Failed:"],
+          ["quote", "some"]
+        ],
+        [
+          [
+            "string/includes",
+            ["object/get", "graded", "output"],
+            "No program:"
+          ],
+          ["quote", "some"]
+        ],
+        ["else", ["quote", "none"]]
+      ]
+    ]
+  },
+  {
+    "case": "capability-gap-with-solution",
+    "area": "metrics",
+    "program": [
+      "cond",
+      [
+        [
+          "array/some?",
+          ["object/keys", ["repo/json", "packages/metrics/corpus/gaps.json"]],
+          [
+            "lambda",
+            ["id"],
+            [
+              "array/includes?",
+              ["repo/files", "packages/metrics/corpus/solutions"],
+              [
+                "string/concat",
+                "packages/metrics/corpus/solutions/",
+                "id",
+                ".json"
+              ]
+            ]
+          ]
+        ],
+        ["quote", "some"]
+      ],
+      ["else", ["quote", "none"]]
+    ]
+  },
+  {
     "case": "library-function-wrong-argument",
     "area": "library",
     "program": [

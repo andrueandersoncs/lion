@@ -1,0 +1,17 @@
+{
+  "id": "sicp-ex-1.11-iterative-recurrence",
+  "pillar": "computation",
+  "statement": "f(n) is n when n < 3, and f(n - 1) + 2 f(n - 2) + 3 f(n - 3) otherwise. Define a function that computes f by an iterative process, so that f(40) is quick. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["f"],
+    [
+      "=",
+      ["array/map", ["quote", [0, 1, 2, 3, 4, 10, 25, 40]], "f"],
+      ["quote", [0, 1, 2, 4, 11, 1892, 812934961, 349485574054925]]
+    ]
+  ],
+  "tags": ["iteration", "tail-calls"],
+  "origin": "SICP Exercise 1.11"
+}
