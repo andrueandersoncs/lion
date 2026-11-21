@@ -1,4 +1,5 @@
 import { Effect, Schema, String as Str } from "effect";
+import { atLeast } from "@/errors/evaluation";
 import { numbersIn } from "@/modules/lib/numerals";
 import { combining, over, slicing } from "@/modules/lib/shared";
 
@@ -17,8 +18,13 @@ export const module = {
 
   "equals?": onTwo((a, b) => a === b),
   length: over([Schema.String], Str.length),
-  /** One or more strings, joined in order. */
-  concat: combining(Schema.String, (texts) => Effect.succeed(texts.join(""))),
+  /** Zero or more strings, joined in order: none is "", as `(string-append)` is in Scheme. */
+  concat: combining(
+    Schema.String,
+    (texts) => Effect.succeed(texts.join("")),
+    atLeast(0),
+    ""
+  ),
   startsWith: onTwo((text, search) => text.startsWith(search)),
   endsWith: onTwo((text, search) => text.endsWith(search)),
   includes: onTwo((text, search) => text.includes(search)),

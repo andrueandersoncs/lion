@@ -1,0 +1,101 @@
+{
+  "id": "lion-careful-withdrawal-never-overdraws",
+  "pillar": "proofs",
+  "statement": "An account is a record {\"balance\"} of a whole number. Define a function of a withdrawal function w, which takes an account and a whole amount and gives the account after, that gives true when, for every account whose balance is at least 0 and every amount above 0, the balance of w's account is at least 0, and false when some account and amount break that. It must decide for every balance and amount, however large. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["proves"],
+    [
+      "and",
+      [
+        "proves",
+        [
+          "lambda",
+          ["account", "amount"],
+          [
+            "cond",
+            [
+              [
+                "number/lessThan",
+                ["object/get", "account", "balance"],
+                "amount"
+              ],
+              "account"
+            ],
+            [
+              "else",
+              {
+                "balance": [
+                  "number/subtract",
+                  ["object/get", "account", "balance"],
+                  "amount"
+                ]
+              }
+            ]
+          ]
+        ]
+      ],
+      [
+        "not",
+        [
+          "proves",
+          [
+            "lambda",
+            ["account", "amount"],
+            {
+              "balance": [
+                "number/subtract",
+                ["object/get", "account", "balance"],
+                "amount"
+              ]
+            }
+          ]
+        ]
+      ],
+      [
+        "not",
+        [
+          "proves",
+          [
+            "lambda",
+            ["account", "amount"],
+            [
+              "cond",
+              [
+                ["number/greaterThan", "amount", 1000000],
+                {
+                  "balance": [
+                    "number/subtract",
+                    ["object/get", "account", "balance"],
+                    "amount"
+                  ]
+                }
+              ],
+              [
+                [
+                  "number/lessThan",
+                  ["object/get", "account", "balance"],
+                  "amount"
+                ],
+                "account"
+              ],
+              [
+                "else",
+                {
+                  "balance": [
+                    "number/subtract",
+                    ["object/get", "account", "balance"],
+                    "amount"
+                  ]
+                }
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["solver", "schemas", "exists", "not"],
+  "origin": "Lion README, Solving for values: the careful withdrawal that never overdraws"
+}

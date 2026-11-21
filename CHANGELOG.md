@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+### Breaking
+
+- `["func/apply", f, null, 1, ["array/make", 2, 3]]` calls `f` with 1, 2, and 3 (`r7rs-6.10-apply-spreads-last-argument` is `spread`, was `error`)
+- an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].` (`r7rs-6.4-car-of-empty-list` is `error`, was `null`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`r7rs-6.4-cdr-of-empty-list` is `error`, was `empty-list`)
+
 ### Added
 
 - `bun run history check` counts the rules in force that no probe of Lion checks, beside what the model holds, and `["untested", "?rule"]` lists them (`untested-rules` added)
@@ -14,11 +20,27 @@
 - Experiments on Lion are recorded in `improvement/` (`improvement-record` added)
 - `bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word (`loop-command` added)
 - The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met (`loop-fail-fast` added)
+- `array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list. (`array/zip` added)
+- `bun run capability` grades the corpus and prints how many of each pillar's tasks are passed, and `--solutions` grades a folder of programs in place of the reference programs (`capability` added)
+- `packages/metrics/corpus/` holds Lion's public capability corpus: tasks of general computation, logic programming, and formal proofs, each a JSON record {id, pillar, statement, inputs, check, tags, origin} whose check is a Lion lambda that judges what a program gives, with a reference program for each task Lion can do (`capability-corpus` added)
+- `LION_HELD_OUT` names a folder outside the repository with the corpus's layout, whose tasks are graded beside the public ones; a folder inside the repository is refused (`held-out-corpus` added)
+- give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI (`words/first` added)
 
 ### Changed
 
 - The skill's versions now leave out a task folder's own files wherever the folder is, as they always left out `.lion/` (`reasoning-task-folder-in-versions` is `left-out`)
 - the commit hook builds the workspace and runs `bun run affected --run`: the test files and checks the change since HEAD can reach (`pre-commit-hook-agent-branch` is `picked-tests`)
+- A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`r7rs-4.1.4-lambda-rest-parameter` is `list`, was `error`)
+- so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f (`r7rs-4.2.1-and-gives-last-value` is `error`; `r7rs-4.2.1-or-gives-first-true-value` is `error`; `r7rs-6.3-not-of-non-boolean` is `error`)
+- `and` of no goals holds and `or` of no goals does not (`r7rs-4.2.1-and-no-arguments` is `true`, was `error`; `r7rs-4.2.1-or-no-arguments` is `false`, was `error`)
+- A `cond` case is a condition and one result (`r7rs-4.2.1-cond-clause-sequence` is `error`)
+- Forcing a promise while it is being forced fails (`r7rs-4.2.5-force-reentrant` is `error`)
+- `func/catch` gives its handler a record of the failure (`r7rs-4.2.7-raise-handler-gets-raised-object` is `record`)
+- `object/set` gives a new one (`r7rs-5.5-record-modifier-mutates` is `unchanged`)
+- A continuation resumes once (`r7rs-6.10-continuation-resumed-twice` is `error`)
+- `array/map` takes one list and the function (`r7rs-6.10-map-several-lists` is `error`)
+- none gives what combining nothing gives: 0, 1, "", and [] (`r7rs-6.2.6-add-no-arguments` is `zero`, was `error`; `r7rs-6.2.6-multiply-no-arguments` is `one`, was `error`; `r7rs-6.4-append-no-arguments` is `empty-list`, was `error`; `r7rs-6.7-string-append-no-arguments` is `empty-string`, was `error`)
+- A string's positions and length count UTF-16 code units (`r7rs-6.7-string-length-counts-characters` is `two`)
 
 ### Decided
 
@@ -36,6 +58,18 @@
 - Experiments on Lion are recorded in `improvement/`, a lion-reasoning task folder committed with the repository. (`improvement-record`: `lion-reasoning-folder` over `project-record`, `research-model`)
 - On a branch whose name starts with `claude/`, the branch of an agent's worktree, the commit hook builds the workspace and runs `bun run affected --run` (`commit-hook-tests`: `picked-on-agent-branches` over `every-test-every-commit`, `picked-on-every-branch`)
 - The improvement loop measures itself by the predictions it resolves per hour of checks (`loop-meta-score`: `predictions-resolved-per-hour` over `capability-per-hour-only`, `observations-per-hour`)
+- `func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way (`catch-handler-argument`: `failure-record` over `raised-object`)
+- `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []. (`combining-function-arity`: `zero-or-more` over `one-or-more`, was `one-or-more`)
+- A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair. (`cond-case-shape`: `one-result` over `sequence`)
+- A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again. (`continuation-shots`: `one-shot` over `multi-shot`)
+- `and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`. (`empty-and-or`: `true-and-false` over `not-well-formed`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`empty-list-head`: `fails` over `null`)
+- `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list (`func-apply-arguments`: `spread-last-list` over `pass-as-given`)
+- A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`lambda-rest-parameter`: `one-name-for-all` over `dotted-list`, `fixed-only`)
+- `array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several. (`map-arguments`: `one-list` over `several-lists`)
+- A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does (`record-mutability`: `immutable` over `mutable-records`)
+- Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed. (`reentrant-force`: `fails` over `first-value`)
+- A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together. (`string-positions`: `utf16-code-units` over `characters`)
 
 ### Rules
 
@@ -46,6 +80,8 @@
 - `bun run affected --check` treats each listed mutation as a change to its file, and lists every test the mutation names that picking would skip (rule `picked-checks-catch-what-full-catches`)
 - a probe whose answer differs from Scheme's, in a case no decision excepts, is a finding that fails `bun run history check` (rule `scheme-departures-are-decided`)
 - so no figure in the record is typed in (rule `loop-figures-observed`)
+- A task Lion cannot express yet is a gap: it stays in the corpus and counts as not passed, `gaps.json` says what Lion lacks, and it has no reference program (rule `capability-gaps-recorded`)
+- Every public task that has a reference program passes its check, and a property in `packages/metrics` fails when one stops passing, so capability cannot drop without a test failing (rule `capability-references-pass`)
 
 ## 2026-11-20 — @lionlang/core 0.15.0, @lionlang/cli 0.14.0
 
@@ -205,7 +241,7 @@ A string is read by scope: it is a name where a scope declares it and data other
 - How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`. (`engine-mechanics-docs`: `engine-md` over `readme-guarantees`)
 - The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (`record-pages-and-their-commit`: `pages-from-the-record-alone` over `second-pages-commit`, `pages-built-in-ci`)
 - A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing. (`reworded-doc-sentence`: `claim-left-out` over `check-fails`)
-- A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (`condition-truth`: `true-or-false` over `javascript-truthiness`, `scheme-truth`)
+- A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter (`condition-truth`: `true-or-false` over `scheme-truth`)
 - A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (`define-scope`: `body` over `global`)
 - A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (`form-name-bindings`: `shadow-in-scope` over `refused`)
 - A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name. (`unbound-string-semantics`: `settled-by-scope` over `keep-string-fallback`, `ref-form`, `call-form`, was `keep-string-fallback`)
@@ -987,7 +1023,7 @@ Three surprises found while writing Lion programs for a research skill, each rem
 
 ### Rules
 
-- A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses (rule `arity-rule`)
+- `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []. (rule `arity-rule`)
 - Every new function declares what it takes, with `takes` or `over`, and has a row in the table of `arity.test.ts`. (rule `new-functions-declare-arity`)
 
 ## 2026-11-13 — lionlang.dev
@@ -1156,7 +1192,7 @@ Schemas say what a value must be, and one rule says what fits: whatever checks a
 - Pay for it in the same change: find the rule that makes special cases redundant, and delete them. (rule `pay-for-what-you-add`)
 - Leave Lion simpler than you found it, in its code and in its semantics, without removing a feature. (rule `reduce-complexity`)
 - Each core commit since states its numbers, including the ones that grew (rule `report-what-measured`)
-- an expression gives in a rule head, a filter, a `find`, or a reloaded snapshot what it gives in plain code (rule `same-as-plain-code`)
+- Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place. (rule `same-as-plain-code`)
 - A generator can carry its own model (rule `generators-carry-models`)
 - Patterns. A logic variable in a schema is its value once it is bound, and until then takes the value it meets. `schema/fits?`, the arguments of a relation call, both sides of `=`, and the element of `in` bind the variables of a record, a list, or a schema built by the `schema` functions: `["inbox", ["schema/open", {"type": "order", "id": "?id"}]]`, `["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]`. `?_` fits any value and binds nothing. The goals of a rule give the same answers in any order. (rule `goal-order-independent`)
 - An unbound string of the form `module/name` is an `UnboundNameError` when it can only have been meant as a name (rule `misspelled-names-are-errors`)
@@ -1833,6 +1869,8 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 
 - Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError` (`division-by-zero` is `error`)
 - Every function of the standard library takes a set number of arguments, and a call with any other number fails (`library-function-missing-arguments` is `error`, was `null`)
+- an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].` (`array-head-empty-list` is `error`, was `null`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`array-tail-empty-list` is `error`, was `empty-list`)
 - Every function of the standard library takes a set number of arguments, and a call with any other number fails: `"number/subtract" takes 2 arguments but got 3.` (`library-function-extra-arguments` is `error`, was `ignored`)
 
 ### Added
@@ -2094,7 +2132,6 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - expect(Effect.runSync(list.tail(Schema.Number)([12, 34, 56]))).toEqual(Option.some([34, 56])); (`array-tail-result` is `option`)
 - head: <T>(s: Schema.Schema<T>) => (`list-function-element-schema-argument` is `required`)
 - Tooling and tests for the repository: Effect's language service, the compiler settings, relative imports, and tests for the list module. (`relative-import-extension` is `ts`)
-- Effect.map(Option.getOrThrow) (`array-head-empty-list` is `error`; `array-tail-empty-list` is `error`)
 - expect(Effect.runSync(list.head([12, 34, 56]))).toEqual(12); (`array-head-result` is `element`, was `option`)
 - expect(Effect.runSync(list.tail([12, 34, 56]))).toEqual([34, 56]); (`array-tail-result` is `list`, was `option`)
 - export type EvaluateResult = Effect.Effect<unknown, EvaluateError, LionEnvironment>; (`evaluate-result-type` is `unknown`)
@@ -2104,7 +2141,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - "exactOptionalPropertyTypes": true, (`tsconfig-exact-optional-property-types` is `true`)
 - "module": "NodeNext", (`tsconfig-module` is `nodenext`)
 - combine one or more arguments from left to right, as their Scheme counterparts do (`add-more-than-two-arguments` is `sum`)
-- Effect.map(Array.reduce(0, add)) (`add-no-arguments` is `zero`)
+- none gives what combining nothing gives: 0, 1, "", and [] (`add-no-arguments` is `zero`, was `error`)
 - export * from "./src/modules/math.ts"; (`core-exports-library-modules` is `exported`)
 - It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (`object-get-missing-key` is `error`, was `null`)
 - Schema.decodeUnknown(Schema.Record({ key: Schema.String, value: Schema.Unknown })), (`object-keys-non-object` is `error`)
@@ -2271,7 +2308,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - An array is always a special form or a call, never a list that evaluates to itself (rule `arrays-are-never-data`)
 - // Automatic currying (rule `automatic-currying`)
 - The evaluator is written with Effect, and evaluating a program gives an Effect (rule `evaluate-with-effect`)
-- It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (rule `values-are-json`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`, in plain code, in a call that waits, and in the solver's step (rule `values-are-json`)
 - Library functions are named `module/name`, with modules named for the kind of value they work on, such as `number/add` (rule `library-names-module-slash-name`)
 - breaks every form case out into its own testable unit (rule `unit-per-form`)
 - moved tests into dedicated folders (rule `tests-in-tests-folders`)
@@ -2304,5 +2341,5 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - The auto-quoting of lists was removed. (rule `non-call-arrays-are-lists` withdrawn)
 - A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (rule `special-forms-plain-names`)
 - A record pattern in `match` fits any record that has the pattern's keys with values that fit (rule `record-patterns-by-keys`)
-- An unbound string is the first: it evaluates to itself, because a string is data unless a scope declares it, so the text of a JSON program reads as itself. (rule `scheme-racket-semantics`)
+- R7RS-small 4.2.7: the handler of guard is given the object that was raised, so (guard (e (#t e)) (raise 'boom)) is boom (rule `scheme-racket-semantics`)
 - All code is valid JSON. All JSON is valid code. (rule `all-json-is-code` withdrawn)

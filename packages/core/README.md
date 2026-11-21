@@ -248,7 +248,9 @@ Calls nest as deep as memory allows. A call in tail position keeps nothing of th
   ["count", 100000, 0]]
 ```
 
-A call gives a lambda one argument for each parameter, as it gives every function as many as it takes, and any other number fails in the same form of message: `[["lambda", ["a"], "a"], 1, 2]` fails with `["lambda",["a"],"a"] takes 1 argument but got 2.`, and a lambda a `define` bound is named by it, as `"next" takes 1 argument but got 2.` Host code that passes more arguments than a function can name, as `Array.prototype.map` does, calls it through `func/callback`, which gives it as many as it takes.
+Written with one name in place of its list of parameters, a lambda takes any number of arguments and binds the name to the list of them, as `(lambda args body)` does in Scheme: `[["lambda", "args", ["array/length", "args"]], 1, 2, 3]` is `3`, and `["func/apply", f, null, list]` hands such a lambda the items of `list`. Where an argument waits for a logic variable, the list waits with it, as one written with `array/make` does.
+
+A call gives a lambda with a list of parameters one argument for each, as it gives every function as many as it takes, and any other number fails in the same form of message: `[["lambda", ["a"], "a"], 1, 2]` fails with `["lambda",["a"],"a"] takes 1 argument but got 2.`, and a lambda a `define` bound is named by it, as `"next" takes 1 argument but got 2.` Host code that passes more arguments than a function can name, as `Array.prototype.map` does, calls it through `func/callback`, which gives it as many as it takes.
 
 ### `cond`
 
@@ -340,7 +342,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["find", template, goal]` | Returns the template's value for every match of the goal, as a sorted list. See [Asking](#asking). |
 | `["assuming", change, ..., expression]` | What the expression gives in the database as it would be after the changes, each a `fact`, `retract`, or `rule` form. The database does not change. See [Asking what would hold](#asking-what-would-hold). |
 | `["why", goal]` | Explains a fact as a tree: the rules and facts that derived it, or, when it does not hold, each rule that could have given it and what stopped it. |
-| `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. |
+| `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. With no goals, `["and"]` holds and `["or"]` does not, as `(and)` is `#t` and `(or)` is `#f` in Scheme. |
 | `["not", goal]` | Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Either side can be a record or list with variables in it, which takes the other side apart. Without logic variables it is plain equality. |
 | `["invariant", goal, {"assert": "none"}]` | Keeps a query assertion: the goal must have no answers, or with `"some"` at least one, now and after every later change. See [Invariants](#invariants). |
@@ -1256,7 +1258,7 @@ stop();
 
 The default environment exported as `stdlib` namespaces entries as `<module>/<name>`.
 
-Every function says how many arguments it takes: most take a set number, and the ones at the end of this section take one or more, or any number after the ones they need. A call with any other number fails and says how many the function takes, so no argument is dropped and none is missing:
+Every function says how many arguments it takes: most take a set number, and the ones at the end of this section take any number, one or more, or any number after the ones they need. A call with any other number fails and says how many the function takes, so no argument is dropped and none is missing:
 
 ```json
 ["number/subtract", 10, 3, 1]
@@ -1264,7 +1266,7 @@ Every function says how many arguments it takes: most take a set number, and the
 
 Fails with `"number/subtract" takes 2 arguments but got 3.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. A relation, a schema, and a graph algorithm say the same of their own arguments, as in `"edge" takes 2 arguments (from, to) but got 3.`
 
-Six functions combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme: `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat`. They work from left to right, so `["number/add", 1, 2, 3]` is `["number/add", ["number/add", 1, 2], 3]`. The functions that pass arguments on take any number after the ones they need: `array/make`, `func/partial`, `func/bind`, `func/apply`, `object/new`, `object/call-method`, `object/call-method-path`, `schema/allOf`, and `schema/anyOf`.
+Six functions combine their arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. Four take any number, and none gives what combining nothing gives, as `(+)` is 0 in Scheme: `number/add` gives 0, `number/multiply` 1, `string/concat` `""`, and `array/concat` `[]`. `number/min` and `number/max` take one or more, since nothing is the smallest of no numbers. They work from left to right, so `["number/add", 1, 2, 3]` is `["number/add", ["number/add", 1, 2], 3]`, and `["number/add", 1]` is 1. The functions that pass arguments on take any number after the ones they need: `array/make`, `func/partial`, `func/bind`, `func/apply`, `object/new`, `object/call-method`, `object/call-method-path`, `schema/allOf`, and `schema/anyOf`.
 
 ### `number`
 
@@ -1343,6 +1345,7 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["array/length", ["array/make", 1, 2, 3]]
 ["array/concat", ["array/make", 1, 2], ["array/make", 3, 4]]
 ["array/concat", ["array/make", 1], ["array/make", 2], ["array/make", 3]]
+["array/zip", ["array/make", 1, 2, 3], ["array/make", "a", "b"]]
 ["array/includes?", ["array/make", 1, 2, 3], 2]
 ["array/range", 0, 5]
 ["array/map", ["array/make", 1, 2, 3], ["lambda", ["x"], ["number/add", "x", 1]]]
@@ -1438,7 +1441,7 @@ Evaluates to `{"speed": {"value": 15, "unit": {"m": 1, "s": -1}}, "no unit left"
 
 ```json
 ["func/bind", "fn", "obj"]
-["func/apply", "fn", "obj", 1, 2]
+["func/apply", "fn", "obj", 1, ["array/make", 2, 3]]
 ["func/callback", ["lambda", ["x"], ["number/add", "x", 1]]]
 ["func/partial", "fn", 1, 2]
 ["func/catch", ["lambda", [], ["number/divide", 1, 0]], ["lambda", ["failure"], "failure"]]
@@ -1449,6 +1452,8 @@ Evaluates to `{"speed": {"value": 15, "unit": {"m": 1, "s": -1}}, "no unit left"
 `func/catch` calls a function of no arguments and gives its value; when it fails, it calls the handler with the failure as data and gives that, as Racket's `with-handlers` does: `["func/catch", ["lambda", [], ["number/divide", 1, 0]], ["lambda", ["failure"], "failure"]]` is `{"failure": "ArithmeticError", "message": "number/divide: 1 ÷ 0 has no finite result."}`. `func/raise` fails with any value, as Racket's `raise` does: its message is the value, a string as it is, and a catch gives back the `value`, with `"failure": "raised"`. A call that waits for a logic variable is not a failure, so a catch in a rule or a `find` gives for each value what plain code gives with the value in place.
 
 `func/reset` and `func/shift` are delimited continuations, as Racket's `reset` and `shift` are: `func/reset` runs a function of no arguments, the delimited part, and `func/shift`, inside it, stops the delimited part where it stands and has the reset give what its handler gives, called with `k`, the rest of the delimited part. A call of `k` with a value resumes it there, as the value of the shift, and gives what the rest gives: the example above is `60`, ten times one more than 5. Generators, coroutines, and early exits are each one use of the two. Unlike Racket's, a continuation resumes once: a second call of one `k` fails, `A continuation was resumed a second time: …`, since the delimited part runs in a fiber of its own that can only go on once.
+
+`func/apply` calls a function with `obj` as `this`, the arguments given, and then the items of its last argument, a list, as Scheme's `apply` and JavaScript's `Function.prototype.apply` spread it: `["func/apply", "number/add", null, 1, ["array/make", 2, 3]]` is `6`, as `["number/add", 1, 2, 3]` is. A last argument that is not a list fails, as in `"func/apply" takes a list as argument 4 but got 3.`
 
 `func/callback` is especially useful for turning Lion lambdas into JavaScript callbacks while preserving access to the Lion environment.
 

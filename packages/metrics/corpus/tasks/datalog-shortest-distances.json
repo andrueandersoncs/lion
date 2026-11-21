@@ -1,0 +1,39 @@
+{
+  "id": "datalog-shortest-distances",
+  "pillar": "logic",
+  "statement": "The input roads lists [from, to, km] triples, each a one-way road. The program's value is one record {\"place\", \"km\"} for every place reachable from \"home\" by one or more roads, with the length of its shortest route, in any order.",
+  "inputs": {
+    "roads": [
+      ["home", "mill", 7],
+      ["home", "ford", 2],
+      ["ford", "mill", 3],
+      ["mill", "inn", 1],
+      ["ford", "inn", 9],
+      ["inn", "port", 4],
+      ["port", "home", 1]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["found"],
+    [
+      "=",
+      ["aggregate/unique", "found"],
+      [
+        "aggregate/unique",
+        [
+          "quote",
+          [
+            { "place": "ford", "km": 2 },
+            { "place": "mill", "km": 5 },
+            { "place": "inn", "km": 6 },
+            { "place": "port", "km": 10 },
+            { "place": "home", "km": 11 }
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["rules", "recursion", "aggregates"],
+  "origin": "Single-source shortest paths by recursion through min, as in Datalog with lattices"
+}

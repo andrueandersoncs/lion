@@ -1,0 +1,98 @@
+[
+  "begin",
+  [
+    "define",
+    "=number?",
+    [
+      "lambda",
+      ["e", "n"],
+      ["and", ["value/number?", "e"], ["number/equals?", "e", "n"]]
+    ]
+  ],
+  [
+    "define",
+    "make-sum",
+    [
+      "lambda",
+      ["a1", "a2"],
+      [
+        "cond",
+        [["=number?", "a1", 0], "a2"],
+        [["=number?", "a2", 0], "a1"],
+        [
+          ["and", ["value/number?", "a1"], ["value/number?", "a2"]],
+          ["number/add", "a1", "a2"]
+        ],
+        ["else", ["array/make", "+", "a1", "a2"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "make-product",
+    [
+      "lambda",
+      ["m1", "m2"],
+      [
+        "cond",
+        [["or", ["=number?", "m1", 0], ["=number?", "m2", 0]], 0],
+        [["=number?", "m1", 1], "m2"],
+        [["=number?", "m2", 1], "m1"],
+        [
+          ["and", ["value/number?", "m1"], ["value/number?", "m2"]],
+          ["number/multiply", "m1", "m2"]
+        ],
+        ["else", ["array/make", "*", "m1", "m2"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "operation?",
+    [
+      "lambda",
+      ["e", "op"],
+      ["and", ["value/array?", "e"], ["=", ["array/head", "e"], "op"]]
+    ]
+  ],
+  ["define", "second", ["lambda", ["e"], ["array/head", ["array/tail", "e"]]]],
+  [
+    "define",
+    "third",
+    ["lambda", ["e"], ["array/head", ["array/tail", ["array/tail", "e"]]]]
+  ],
+  [
+    "define",
+    "deriv",
+    [
+      "lambda",
+      ["e", "var"],
+      [
+        "cond",
+        [["value/number?", "e"], 0],
+        [
+          ["value/string?", "e"],
+          ["cond", [["string/equals?", "e", "var"], 1], ["else", 0]]
+        ],
+        [
+          ["operation?", "e", "+"],
+          [
+            "make-sum",
+            ["deriv", ["second", "e"], "var"],
+            ["deriv", ["third", "e"], "var"]
+          ]
+        ],
+        [
+          ["operation?", "e", "*"],
+          [
+            "make-sum",
+            ["make-product", ["second", "e"], ["deriv", ["third", "e"], "var"]],
+            ["make-product", ["deriv", ["second", "e"], "var"], ["third", "e"]]
+          ]
+        ],
+        ["else", ["func/raise", "unknown expression type"]]
+      ]
+    ]
+  ],
+  "deriv"
+]

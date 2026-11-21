@@ -1,0 +1,9 @@
+[
+  "find",
+  [
+    "array/make",
+    ["array/slice", "items", 0, "?i"],
+    ["array/slice", "items", "?i"]
+  ],
+  ["in", "?i", ["array/range", 0, ["number/add", ["array/length", "items"], 1]]]
+]

@@ -367,6 +367,34 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
     boolean: true,
   },
+  {
+    name: "and and or of nothing",
+    form: ["and", ["or", ["number/greaterThan", X, 0], ["or"]], ["and"]],
+    boolean: true,
+  },
+  {
+    name: "calls that combine nothing",
+    form: [
+      "number/add",
+      X,
+      ["number/add"],
+      ["number/multiply"],
+      ["array/length", ["array/concat"]],
+    ],
+  },
+  {
+    name: "lambda that takes its arguments as a list",
+    form: [
+      ["lambda", "args", ["array/reduce", "args", 0, "number/add"]],
+      X,
+      1,
+      X,
+    ],
+  },
+  {
+    name: "lists zipped",
+    form: ["array/zip", ["array/make", X, 1], ["array/make", 2]],
+  },
   { name: "equality", form: ["=", X, 2], boolean: true },
   { name: "membership", form: ["in", X, ["array/make", 1, 3]], boolean: true },
   { name: "host function", form: ["host/double", X] },

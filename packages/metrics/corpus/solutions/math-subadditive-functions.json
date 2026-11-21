@@ -1,0 +1,24 @@
+[
+  "lambda",
+  ["f"],
+  [
+    "value/identity",
+    [
+      "not",
+      [
+        "exists",
+        ["?a", "?b"],
+        [
+          "and",
+          ["schema/fits?", "?a", "value/integer?"],
+          ["schema/fits?", "?b", "value/integer?"],
+          [
+            "number/greaterThan",
+            ["f", ["number/add", "?a", "?b"]],
+            ["number/add", ["f", "?a"], ["f", "?b"]]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

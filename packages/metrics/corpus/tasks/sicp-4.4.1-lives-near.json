@@ -1,0 +1,29 @@
+{
+  "id": "sicp-4.4.1-lives-near",
+  "pillar": "logic",
+  "statement": "The input addresses lists [person, address] pairs, where an address is a list that starts with the town. Two different people live near each other when they live in the same town. The program's value is the people who live near \"Bitdiddle Ben\", in any order.",
+  "inputs": {
+    "addresses": [
+      ["Bitdiddle Ben", ["Slumerville", "Ridge Road", 10]],
+      ["Hacker Alyssa P", ["Cambridge", "Mass Ave", 78]],
+      ["Fect Cy D", ["Cambridge", "Ames Street", 3]],
+      ["Tweakit Lem E", ["Boston", "Bay State Road", 22]],
+      ["Reasoner Louis", ["Slumerville", "Pine Tree Road", 80]],
+      ["Warbucks Oliver", ["Swellesley", "Top Heap Road"]],
+      ["Scrooge Eben", ["Weston", "Shady Lane", 10]],
+      ["Cratchet Robert", ["Allston", "N Harvard Street", 16]],
+      ["Aull DeWitt", ["Slumerville", "Onion Square", 5]]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["people"],
+    [
+      "=",
+      ["aggregate/collect", "people"],
+      ["quote", ["Aull DeWitt", "Reasoner Louis"]]
+    ]
+  ],
+  "tags": ["rules", "patterns", "negation"],
+  "origin": "SICP 4.4.1, Deductive Information Retrieval: the rule lives-near"
+}

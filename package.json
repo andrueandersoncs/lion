@@ -16,6 +16,7 @@
     "scale": "bun run --cwd packages/metrics scale",
     "mutate": "bun run --cwd packages/metrics mutate",
     "skill-eval": "bun run --cwd packages/metrics skill-eval",
+    "capability": "bun run --cwd packages/metrics capability",
     "compare": "bun run --cwd packages/metrics compare",
     "affected": "bun run --cwd packages/metrics affected",
     "loop": "bun run --cwd packages/metrics loop",

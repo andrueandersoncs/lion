@@ -1,0 +1,20 @@
+{
+  "id": "datalog-connected-components",
+  "pillar": "logic",
+  "statement": "The inputs nodes and links are an undirected graph's nodes and its [a, b] links. The program's value is its connected components, each the list of its nodes, in any order.",
+  "inputs": {
+    "nodes": [1, 2, 3, 4, 5, 6, 7],
+    "links": [[1, 2], [3, 2], [4, 5], [6, 6]]
+  },
+  "check": [
+    "lambda",
+    ["found"],
+    [
+      "=",
+      ["aggregate/unique", ["array/map", "found", "aggregate/unique"]],
+      ["aggregate/unique", ["quote", [[1, 2, 3], [4, 5], [6], [7]]]]
+    ]
+  ],
+  "tags": ["rules", "recursion", "aggregates", "find"],
+  "origin": "Connected components of an undirected graph, a standard Datalog query"
+}

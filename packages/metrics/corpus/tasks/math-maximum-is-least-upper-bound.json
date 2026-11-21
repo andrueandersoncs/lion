@@ -1,0 +1,42 @@
+{
+  "id": "math-maximum-is-least-upper-bound",
+  "pillar": "proofs",
+  "statement": "Define a function of a function m of two whole numbers that gives true when, for all whole numbers a and b, m(a, b) is at least a, at least b, and equal to a or to b, and false when some a and b break that. It must decide for all whole numbers, however large. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["proves"],
+    [
+      "and",
+      ["proves", "number/max"],
+      [
+        "proves",
+        [
+          "lambda",
+          ["a", "b"],
+          ["cond", [["number/greaterThan", "a", "b"], "a"], ["else", "b"]]
+        ]
+      ],
+      ["not", ["proves", ["lambda", ["a", "b"], "a"]]],
+      ["not", ["proves", ["lambda", ["a", "b"], ["number/add", "a", "b"]]]],
+      [
+        "not",
+        [
+          "proves",
+          [
+            "lambda",
+            ["a", "b"],
+            [
+              "cond",
+              [["number/greaterThan", "a", 1000000], "b"],
+              [["number/greaterThan", "a", "b"], "a"],
+              ["else", "b"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["solver", "exists", "not"],
+  "origin": "The specification of max, a first exercise in program verification"
+}

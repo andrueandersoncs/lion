@@ -1,0 +1,22 @@
+[
+  "begin",
+  ["relation", "road", ["from", "to", "km"]],
+  ["relation", "distance", ["place", "km"]],
+  [
+    "rule",
+    ["road", "?a", "?b", "?k"],
+    ["in", ["array/make", "?a", "?b", "?k"], "roads"]
+  ],
+  [
+    "rule",
+    ["distance", "?to", ["aggregate/min", "?k"]],
+    ["road", "home", "?to", "?k"]
+  ],
+  [
+    "rule",
+    ["distance", "?to", ["aggregate/min", ["number/add", "?d", "?k"]]],
+    ["distance", "?via", "?d"],
+    ["road", "?via", "?to", "?k"]
+  ],
+  ["query", ["distance", "?place", "?km"]]
+]

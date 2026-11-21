@@ -78,16 +78,18 @@ const formula = (depth: number): Arbitrary.Arbitrary<Case> => {
     return leaf;
   }
   const part = formula(depth - 1);
-  const pair = Arbitrary.all([part, part]);
+  // Any number of goals, none among them: an and of none holds, and an or
+  // of none does not, as (and) is #t and (or) is #f in Scheme.
+  const parts = Arbitrary.array(part, { maxLength: 3 });
   return oneOf<Case>(
     leaf,
-    Arbitrary.map(pair, ([a, b]) => ({
-      goal: ["and", a.goal, b.goal],
-      holds: (facts, x) => a.holds(facts, x) && b.holds(facts, x),
+    Arbitrary.map(parts, (all) => ({
+      goal: ["and", ...all.map((a) => a.goal)],
+      holds: (facts, x) => all.every((a) => a.holds(facts, x)),
     })),
-    Arbitrary.map(pair, ([a, b]) => ({
-      goal: ["or", a.goal, b.goal],
-      holds: (facts, x) => a.holds(facts, x) || b.holds(facts, x),
+    Arbitrary.map(parts, (all) => ({
+      goal: ["or", ...all.map((a) => a.goal)],
+      holds: (facts, x) => all.some((a) => a.holds(facts, x)),
     })),
     Arbitrary.map(part, (a) => ({
       goal: ["not", a.goal],
@@ -204,12 +206,13 @@ const operands = Arbitrary.array(
       fails,
     })
   ),
-  { minLength: 1, maxLength: 5 }
+  // None among them too: (and) is true and (or) is false.
+  { maxLength: 5 }
 );
 
 describe("and and or on plain values", () => {
   it.effect.prop(
-    "stop at the first value that decides the result, as in Scheme",
+    "stop at the first value that decides the result, and give true and false of none, as in Scheme",
     { operands, form: element(["and", "or"] as const) },
     ({ form, operands: items }) =>
       Effect.gen(function* () {

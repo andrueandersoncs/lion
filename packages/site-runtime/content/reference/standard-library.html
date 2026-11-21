@@ -7,9 +7,9 @@
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
-    <tr data-entry="number/add"><td><code>["number/add", a, b, ...]</code></td><td><code>a + b</code>, and so on for one or more numbers</td></tr>
+    <tr data-entry="number/add"><td><code>["number/add", a, b, ...]</code></td><td><code>a + b</code>, and so on for any number of numbers; <code>0</code> for none</td></tr>
     <tr data-entry="number/subtract"><td><code>["number/subtract", a, b]</code></td><td><code>a - b</code></td></tr>
-    <tr data-entry="number/multiply"><td><code>["number/multiply", a, b, ...]</code></td><td><code>a × b</code>, and so on for one or more numbers</td></tr>
+    <tr data-entry="number/multiply"><td><code>["number/multiply", a, b, ...]</code></td><td><code>a × b</code>, and so on for any number of numbers; <code>1</code> for none</td></tr>
     <tr data-entry="number/divide"><td><code>["number/divide", a, b]</code></td><td><code>a ÷ b</code>. Dividing by 0 fails with <code>ArithmeticError</code>.</td></tr>
     <tr data-entry="number/remainder"><td><code>["number/remainder", a, b]</code></td><td>What is left of <code>a</code> after dividing by <code>b</code>, with the sign of <code>a</code>. A remainder by 0 fails with <code>ArithmeticError</code>.</td></tr>
     <tr data-entry="number/power"><td><code>["number/power", a, b]</code></td><td><code>a</code> to the power of <code>b</code></td></tr>
@@ -31,6 +31,7 @@
 <lion-example name="number">
 {"add": ["number/add", 7, 3],
  "add-three": ["number/add", 7, 3, 1],
+ "add-none": ["number/add"],
  "subtract": ["number/subtract", 7, 3],
  "multiply": ["number/multiply", 7, 3],
  "divide": ["number/divide", 7, 2],
@@ -86,7 +87,7 @@
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
     <tr data-entry="string/length"><td><code>["string/length", text]</code></td><td>The length of <code>text</code></td></tr>
-    <tr data-entry="string/concat"><td><code>["string/concat", a, b, ...]</code></td><td><code>a</code> followed by <code>b</code>, and so on for one or more strings</td></tr>
+    <tr data-entry="string/concat"><td><code>["string/concat", a, b, ...]</code></td><td><code>a</code> followed by <code>b</code>, and so on for any number of strings; <code>""</code> for none</td></tr>
     <tr data-entry="string/startsWith"><td><code>["string/startsWith", text, prefix]</code></td><td>Whether <code>text</code> starts with <code>prefix</code></td></tr>
     <tr data-entry="string/endsWith"><td><code>["string/endsWith", text, suffix]</code></td><td>Whether <code>text</code> ends with <code>suffix</code></td></tr>
     <tr data-entry="string/includes"><td><code>["string/includes", text, search]</code></td><td>Whether <code>text</code> contains <code>search</code></td></tr>
@@ -127,10 +128,11 @@
     <tr data-entry="array/make"><td><code>["array/make", item, ...]</code></td><td>A list of the evaluated items</td></tr>
     <tr data-entry="array/range"><td><code>["array/range", start, end]</code></td><td>Whole numbers from <code>start</code> up to, but not including, <code>end</code>; at most 1,000,000 of them. Both must be whole numbers.</td></tr>
     <tr data-entry="array/length"><td><code>["array/length", list]</code></td><td>The number of items</td></tr>
-    <tr data-entry="array/head"><td><code>["array/head", list]</code></td><td>The first item, or <code>null</code> for an empty list</td></tr>
-    <tr data-entry="array/tail"><td><code>["array/tail", list]</code></td><td>Every item after the first; <code>[]</code> for an empty list</td></tr>
+    <tr data-entry="array/head"><td><code>["array/head", list]</code></td><td>The first item. An empty list has none, and fails, as Scheme's <code>car</code> does</td></tr>
+    <tr data-entry="array/tail"><td><code>["array/tail", list]</code></td><td>Every item after the first. An empty list fails, as Scheme's <code>cdr</code> does</td></tr>
     <tr data-entry="array/slice"><td><code>["array/slice", list, start]</code><br><code>["array/slice", list, start, end]</code></td><td>The items from <code>start</code> up to, but not including, <code>end</code>, or to the end without it, counting a negative position from the end, as <code>string/slice</code> cuts text</td></tr>
-    <tr data-entry="array/concat"><td><code>["array/concat", a, b, ...]</code></td><td>The items of <code>a</code> followed by those of <code>b</code>, and so on for one or more lists</td></tr>
+    <tr data-entry="array/concat"><td><code>["array/concat", a, b, ...]</code></td><td>The items of <code>a</code> followed by those of <code>b</code>, and so on for any number of lists; <code>[]</code> for none</td></tr>
+    <tr data-entry="array/zip"><td><code>["array/zip", a, b, ...]</code></td><td>The items of one or more lists paired up: a list of the first items, then of the second, up to the end of the shortest list, as Scheme's <code>map</code> goes over several lists</td></tr>
     <tr data-entry="array/includes?"><td><code>["array/includes?", list, item]</code></td><td>Whether the list holds a value equal to <code>item</code>, comparing lists and records by structure</td></tr>
     <tr data-entry="array/map"><td><code>["array/map", list, function]</code></td><td>The list of <code>function</code>'s results for each item</td></tr>
     <tr data-entry="array/flat-map"><td><code>["array/flat-map", list, function]</code></td><td>The concatenation of the lists <code>function</code> returns for each item</td></tr>
@@ -149,6 +151,8 @@
  "slice": ["array/slice", ["array/make", 1, 2, 3, 4], 1, 3],
  "lastTwo": ["array/slice", ["array/make", 1, 2, 3, 4], -2],
  "concat": ["array/concat", ["array/make", 1], ["array/make", 2, 3]],
+ "zip": ["array/zip", ["array/make", 1, 2, 3], ["array/make", "a", "b"]],
+ "sums of pairs": ["array/map", ["array/zip", ["array/make", 1, 2, 3], ["array/make", 10, 20, 30]], ["lambda", ["pair"], ["aggregate/sum", "pair"]]],
  "includes?": ["array/includes?", ["quote", [1, {"a": 2}]], {"a": 2}],
  "map": ["array/map", ["array/make", 1, 2], ["lambda", ["x"], ["number/add", "x", 1]]],
  "flat-map": ["array/flat-map", ["array/make", 1, 2], ["lambda", ["x"], ["array/make", "x", "x"]]],
@@ -342,14 +346,15 @@
     <tr data-entry="func/raise"><td><code>["func/raise", value]</code></td><td>Fails with <code>value</code>, as Racket's <code>raise</code>: its message is the value, a string as it is, and <code>func/catch</code> gives back the value</td></tr>
     <tr data-entry="func/reset"><td><code>["func/reset", thunk]</code></td><td>What <code>thunk</code>, a function of no arguments, gives, or what the handler of a <code>func/shift</code> inside it gives: the delimited part of a continuation, as Racket's <code>reset</code></td></tr>
     <tr data-entry="func/shift"><td><code>["func/shift", handler]</code></td><td>Stops the delimited part where it stands; its <code>func/reset</code> gives what <code>handler</code> gives for <code>k</code>, the rest of the delimited part. A call of <code>k</code> with a value resumes it there, once, and gives what the rest gives, as Racket's <code>shift</code>, but resumed once</td></tr>
-    <tr data-entry="func/apply"><td><code>["func/apply", function, this, argument, ...]</code></td><td>What calling <code>function</code> with <code>this</code> and the arguments returns</td></tr>
+    <tr data-entry="func/apply"><td><code>["func/apply", function, this, argument, ..., list]</code></td><td>What calling <code>function</code> with <code>this</code>, the arguments, and then the items of <code>list</code> returns, as Scheme's <code>apply</code> spreads its last argument</td></tr>
     <tr data-entry="func/bind"><td><code>["func/bind", function, this, argument, ...]</code></td><td><code>function</code> with <code>this</code> and leading arguments fixed</td></tr>
     <tr data-entry="func/callback"><td><code>["func/callback", function]</code></td><td>A JavaScript function that calls <code>function</code> with as many of the arguments it is given as <code>function</code> takes, and returns its result, or a Promise of it when the work is asynchronous. The callback keeps the environment and database it was created in.</td></tr>
   </tbody>
 </table>
 <lion-example name="func">
 {"partial": [["func/partial", "number/add", 10], 5],
- "apply": ["func/apply", "number/subtract", null, 10, 4],
+ "apply": ["func/apply", "number/subtract", null, ["array/make", 10, 4]],
+ "apply after one": ["func/apply", "number/add", null, 1, ["array/make", 2, 3]],
  "bind": [["func/bind", "number/multiply", null, 3], 7],
  "callback": ["value/function?", ["func/callback", "number/add"]]}
 </lion-example>

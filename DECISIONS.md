@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 217 questions have been decided, 98 records explain them, and of what the records assert, 643 hold when Lion is run, 2 are broken, 372 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 228 questions have been decided, 102 records explain them, and of what the records assert, 671 hold when Lion is run, 2 are broken, 385 are stated but not checked by running Lion, and 30 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -97,7 +97,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-11 | [`docs-organization`](#docs-organization) | `diataxis` |  |
 | 2026-11-12 | [`aggregate-representation`](#aggregate-representation) | `waiting-call` |  |
 | 2026-11-12 | [`and-or-evaluation`](#and-or-evaluation) | `short-circuit` | [Where the behavior of a base form is unclear, Lion does what Scheme does](#scheme-where-unclear) |
-| 2026-11-12 | [`combining-function-arity`](#combining-function-arity) | `one-or-more` | [Where the behavior of a base form is unclear, Lion does what Scheme does](#scheme-where-unclear) |
+| 2026-11-12 | [`combining-function-arity`](#combining-function-arity) | `zero-or-more` | [Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments](#scheme-identities-and-zip), [Where the behavior of a base form is unclear, Lion does what Scheme does](#scheme-where-unclear) |
 | 2026-11-12 | [`filter-truthiness`](#filter-truthiness) | `strict-boolean` |  |
 | 2026-11-12 | [`logic-form-classes`](#logic-form-classes) | `one-logic-form-class` |  |
 | 2026-11-12 | [`special-form-table`](#special-form-table) | `entry-calls-evaluator` |  |
@@ -185,7 +185,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`engine-mechanics-docs`](#engine-mechanics-docs) | `engine-md` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
 | 2026-11-19 | [`record-pages-and-their-commit`](#record-pages-and-their-commit) | `pages-from-the-record-alone` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
 | 2026-11-19 | [`reworded-doc-sentence`](#reworded-doc-sentence) | `claim-left-out` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
-| 2026-11-19 | [`condition-truth`](#condition-truth) | `true-or-false` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
+| 2026-11-19 | [`condition-truth`](#condition-truth) | `true-or-false` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope), [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-19 | [`define-scope`](#define-scope) | `body` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
 | 2026-11-19 | [`form-name-bindings`](#form-name-bindings) | `shadow-in-scope` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
 | 2026-11-19 | [`aggregated-relation-candidates`](#aggregated-relation-candidates) | `merge-from-rules` | [A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back](#one-relation-model) |
@@ -223,6 +223,17 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`improvement-record`](#improvement-record) | `lion-reasoning-folder` | [Every experiment on Lion is recorded in `improvement/`, a lion-reasoning record judged by the published Lion](#improvement-record) |
 | 2026-11-21 | [`commit-hook-tests`](#commit-hook-tests) | `picked-on-agent-branches` | [A commit on an agent's branch runs the tests the change can reach, and every other commit runs them all](#hook-runs-picked-tests) |
 | 2026-11-21 | [`loop-meta-score`](#loop-meta-score) | `predictions-resolved-per-hour` | [The improvement loop measures itself by the predictions it resolves per hour of checks, and its scoreboard runs the cheapest tools first](#loop-information-rate) |
+| 2026-11-21 | [`catch-handler-argument`](#catch-handler-argument) | `failure-record` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`cond-case-shape`](#cond-case-shape) | `one-result` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`continuation-shots`](#continuation-shots) | `one-shot` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`empty-and-or`](#empty-and-or) | `true-and-false` | [Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments](#scheme-identities-and-zip) |
+| 2026-11-21 | [`empty-list-head`](#empty-list-head) | `fails` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
+| 2026-11-21 | [`func-apply-arguments`](#func-apply-arguments) | `spread-last-list` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
+| 2026-11-21 | [`lambda-rest-parameter`](#lambda-rest-parameter) | `one-name-for-all` | [A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme](#lambda-rest-parameter) |
+| 2026-11-21 | [`map-arguments`](#map-arguments) | `one-list` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`record-mutability`](#record-mutability) | `immutable` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`reentrant-force`](#reentrant-force) | `fails` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`string-positions`](#string-positions) | `utf16-code-units` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 
 <a id="program-representation"></a>
 
@@ -544,7 +555,7 @@ Recorded 2026-11-11 in `history/notes/values-are-json.json`.
 **What it asserts, checked.**
 
 - Stated, not checked by running Lion: decided `javascript-json-disagreement`: `follow-json`. "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up."
-- Holds when Lion is run: `array-head-empty-list` is `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
+- Replaced by a later word: `array-head-empty-list` is `null`. "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list."
 - Holds when Lion is run: `value-object-list` is `false`. "`value/object?` is true for records and not for lists."
 - Holds when Lion is run: `query-answer-non-json` is `error`. "Query answers and the rows rules derive must be JSON data"
 - Holds when Lion is run: `derived-row-non-json` is `error`. "Query answers and the rows rules derive must be JSON data"
@@ -2027,7 +2038,7 @@ Recorded 2026-11-12 in `history/notes/scheme-where-unclear.json`.
 - Holds when Lion is run: `add-more-than-two-arguments` is `sum`. "combine one or more arguments from left to right, as their Scheme counterparts do"
 - Stated, not checked by running Lion: decided `unclear-base-form-behavior`: `follow-scheme-racket`. "Where a base form's behavior is unclear, Lion follows Scheme and Racket"
 - Stated, not checked by running Lion: decided `and-or-evaluation`: `short-circuit`. "`and` and `or` stop at the first argument that decides them, as in Scheme, so `["and", false, ["number/divide", 1, 0]]` is `false`."
-- Stated, not checked by running Lion: decided `combining-function-arity`: `one-or-more`. "combine one or more arguments from left to right, as their Scheme counterparts do"
+- Replaced by a later word: decided `combining-function-arity`: `one-or-more`. "combine one or more arguments from left to right, as their Scheme counterparts do"
 - Holds when Lion is run: `or-after-true` is `not-evaluated`. "`and` and `or` stop at the first argument that decides them, as in Scheme"
 - Holds when Lion is run: `and-after-false` is `not-evaluated`. "`and` and `or` no longer evaluate the arguments after the one that decides them, which changes a program that relied on an error or a side effect there."
 - Holds when Lion is run: `or-after-true` is `not-evaluated`. "`and` and `or` no longer evaluate the arguments after the one that decides them, which changes a program that relied on an error or a side effect there."
@@ -2036,9 +2047,41 @@ Recorded 2026-11-12 in `history/notes/scheme-where-unclear.json`.
 
 ## combining-function-arity
 
-Now: `one-or-more`.
+Now: `zero-or-more`.
 
 - 2026-11-12 `combining-function-arity`: `one-or-more`: "combine one or more arguments from left to right, as their Scheme counterparts do" (`scheme-where-unclear.json`)
+- 2026-11-21 `combining-function-arity`: `zero-or-more` over `one-or-more`, was `one-or-more`: "`number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []." (`scheme-identities-and-zip.json`)
+
+<a id="scheme-identities-and-zip"></a>
+
+### Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments
+
+Recorded 2026-11-21 in `history/notes/scheme-identities-and-zip.json`.
+
+**Context.** The probes of the cases R7RS-small settles found that `["and"]` and `["or"]` were refused as not well-formed, and that `number/add`, `number/multiply`, `array/concat`, and `string/concat` failed with no arguments, where Scheme's `(and)` is #t, `(or)` is #f, `(+)` is 0, `(*)` is 1, `(append)` is (), and `(string-append)` is "". The README said these functions combine one or more arguments "as +, *, min, max, string-append, and append do in Scheme", which held of `min` and `max` only, and the decision `combining-function-arity` had chosen one or more. On 2026-11-21 the user chose to fix the six cases. The record `r7rs-departures-decided` also chose `array/zip` to serve where Scheme's `map` takes several lists.
+
+**Decision.** `and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`. `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []. `quantity/add` and `quantity/multiply` follow `number/add` and `number/multiply`, since a plain number is a quantity with no unit. `number/min` and `number/max` still take one or more, as Scheme's do, since no number is the smallest of none. `array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list.
+
+**Consequences.** The six cases leave `known.json`, since their probes now give what Scheme gives. A program that relied on one of these calls failing with no arguments now gets the identity instead; no program in the repository did. `["array/map", ["array/zip", xs, ys], f]` does what `(map f xs ys)` does, with f given each pair as a list.
+
+**Alternatives considered.**
+
+- Keep one or more, and say in the README that Scheme's take zero. A call with nothing to combine has an answer every Scheme programmer expects, and failing on it is a departure with no reason of Lion's own.
+- Let array/map take several lists, as Scheme's map does. The record r7rs-departures-decided keeps array/map's arguments as they are, data first, and a function that pairs lists up composes with every function that takes one list.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `combining-function-arity`: `zero-or-more`. "`number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []."
+- Holds when Lion is run: `r7rs-4.2.1-or-no-arguments` is `false`. "`and` of no goals holds and `or` of no goals does not"
+- Holds when Lion is run: `array/zip` exists. "`array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list."
+- Stated, not checked by running Lion: decided `empty-and-or`: `true-and-false`. "`and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`."
+- Holds when Lion is run: rule `arity-rule` holds. "`number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []."
+- Holds when Lion is run: `add-no-arguments` is `zero`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-6.2.6-add-no-arguments` is `zero`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-6.2.6-multiply-no-arguments` is `one`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-6.7-string-append-no-arguments` is `empty-string`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-6.4-append-no-arguments` is `empty-list`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-4.2.1-and-no-arguments` is `true`. "`and` of no goals holds and `or` of no goals does not"
 
 <a id="filter-truthiness"></a>
 
@@ -4116,7 +4159,47 @@ Now: `claim-left-out`.
 
 Now: `true-or-false`.
 
-- 2026-11-19 `condition-truth`: `true-or-false` over `javascript-truthiness`, `scheme-truth`: "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it." (`names-by-scope.json`)
+- 2026-11-19 `condition-truth`: `true-or-false` over `scheme-truth`: "A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter" (`names-by-scope.json`, `r7rs-departures-decided.json`)
+
+<a id="r7rs-departures-decided"></a>
+
+### Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has
+
+Recorded 2026-11-21 in `history/notes/r7rs-departures-decided.json`.
+
+**Context.** The probes `r7rs-<section>-<what>` run 36 cases that R7RS-small settles, and in 20 of them Lion gave something else than Scheme. The rule `scheme-racket-semantics` names a departure as an exception in a decision, so each difference was a finding in `known.json` until it was decided. On 2026-11-21 the user chose, for each, the recommendation it was listed with: ten are fixed, so that Lion gives what Scheme gives, in the changes that follow this one, and the ten this record names are departures.
+
+**Decision.** Ten cases stay as they are, as departures from Scheme. A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter, so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f. A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair. Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed. `func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way, where Scheme's `guard` gives the raised object. A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does, where an R7RS record's modifier changes it. A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together. `array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several. A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again.
+
+**Consequences.** The ten cases leave `known.json`: the rule `scheme-racket-semantics` excepts them, and what this record asserts of each is what its probe gives. The other ten wait in `known.json` until the change that fixes each. Lion's list of departures from Scheme grows from one to eleven.
+
+**Alternatives considered.**
+
+- Give what Scheme gives in all twenty cases. Six of the ten would undo a rule Lion keeps on purpose: that conditions are booleans, that values are immutable data facts can hold, that a catch handler reads every failure the same way, and that a continuation's fiber goes on once.
+- Except all twenty. In the other ten Lion fails or gives a value Scheme does not for no reason of its own, as `(+)` failing while the README says `number/add` works as `+` does.
+- Count string positions in characters now. Every string function counts code units, so changing `string/length` alone would make its positions disagree with `string/slice`, `string/indexOf`, and `string/split`; that is a decision for all of them at once.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `condition-truth`: `true-or-false`. "A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter"
+- Holds when Lion is run: `r7rs-4.2.1-and-gives-last-value` is `error`. "so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f"
+- Holds when Lion is run: `r7rs-4.2.1-or-gives-first-true-value` is `error`. "so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f"
+- Holds when Lion is run: `r7rs-6.3-not-of-non-boolean` is `error`. "so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f"
+- Holds when Lion is run: `r7rs-4.2.1-cond-clause-sequence` is `error`. "A `cond` case is a condition and one result"
+- Holds when Lion is run: `r7rs-4.2.5-force-reentrant` is `error`. "Forcing a promise while it is being forced fails"
+- Holds when Lion is run: `r7rs-4.2.7-raise-handler-gets-raised-object` is `record`. "`func/catch` gives its handler a record of the failure"
+- Holds when Lion is run: `r7rs-5.5-record-modifier-mutates` is `unchanged`. "`object/set` gives a new one"
+- Holds when Lion is run: `r7rs-6.7-string-length-counts-characters` is `two`. "A string's positions and length count UTF-16 code units"
+- Holds when Lion is run: `r7rs-6.10-map-several-lists` is `error`. "`array/map` takes one list and the function"
+- Holds when Lion is run: `r7rs-6.10-continuation-resumed-twice` is `error`. "A continuation resumes once"
+- Stated, not checked by running Lion: decided `cond-case-shape`: `one-result`. "A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair."
+- Stated, not checked by running Lion: decided `reentrant-force`: `fails`. "Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed."
+- Stated, not checked by running Lion: decided `catch-handler-argument`: `failure-record`. "`func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way"
+- Stated, not checked by running Lion: decided `record-mutability`: `immutable`. "A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does"
+- Stated, not checked by running Lion: decided `string-positions`: `utf16-code-units`. "A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together."
+- Stated, not checked by running Lion: decided `map-arguments`: `one-list`. "`array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several."
+- Stated, not checked by running Lion: decided `continuation-shots`: `one-shot`. "A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again."
+- Holds when Lion is run: rule `scheme-racket-semantics` holds. "Ten cases stay as they are, as departures from Scheme."
 
 <a id="define-scope"></a>
 
@@ -4969,3 +5052,144 @@ Recorded 2026-11-21 in `history/notes/loop-information-rate.json`.
 
 - Stated, not checked by running Lion: decided `loop-meta-score`: `predictions-resolved-per-hour`. "The improvement loop measures itself by the predictions it resolves per hour of checks"
 - Stated, not checked by running Lion: `loop-fail-fast` exists. "The scoreboard runs its tools cheapest first, and with `--fail-fast` stops at the first requirement that is not met"
+
+<a id="catch-handler-argument"></a>
+
+## catch-handler-argument
+
+Now: `failure-record`.
+
+- 2026-11-21 `catch-handler-argument`: `failure-record` over `raised-object`: "`func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way" (`r7rs-departures-decided.json`)
+
+<a id="cond-case-shape"></a>
+
+## cond-case-shape
+
+Now: `one-result`.
+
+- 2026-11-21 `cond-case-shape`: `one-result` over `sequence`: "A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair." (`r7rs-departures-decided.json`)
+
+<a id="continuation-shots"></a>
+
+## continuation-shots
+
+Now: `one-shot`.
+
+- 2026-11-21 `continuation-shots`: `one-shot` over `multi-shot`: "A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again." (`r7rs-departures-decided.json`)
+
+<a id="empty-and-or"></a>
+
+## empty-and-or
+
+Now: `true-and-false`.
+
+- 2026-11-21 `empty-and-or`: `true-and-false` over `not-well-formed`: "`and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`." (`scheme-identities-and-zip.json`)
+
+<a id="empty-list-head"></a>
+
+## empty-list-head
+
+Now: `fails`.
+
+- 2026-11-21 `empty-list-head`: `fails` over `null`: "`array/head` and `array/tail` take a list with an item in it, and an empty list fails" (`empty-list-head-and-apply.json`)
+
+<a id="empty-list-head-and-apply"></a>
+
+### array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do
+
+Recorded 2026-11-21 in `history/notes/empty-list-head-and-apply.json`.
+
+**Context.** The probes of the cases R7RS-small settles found that `array/head` of an empty list gave null and `array/tail` gave [], where taking the car or the cdr of the empty list is an error in Scheme and Racket signals it, and that `func/apply` passed its arguments as they were given, as JavaScript's `call` does, where Scheme's `apply`, and JavaScript's own `Function.prototype.apply`, spread the last argument, a list. On 2026-11-21 the user chose to fix both. A null for the head of an empty list cannot be told from the head of a list that starts with null, and `object/get` already fails for a key a record does not have, unless it is given a value for that.
+
+**Decision.** `array/head` and `array/tail` take a list with an item in it, and an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`, in plain code, in a call that waits, and in the solver's step, which runs them on the lists a schema stands for. `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list: `["func/apply", f, null, 1, ["array/make", 2, 3]]` calls `f` with 1, 2, and 3.
+
+**Consequences.** Both are breaking changes. A program that took the head or the tail of an empty list now fails where it got null or []; one that asks for the length first, or uses `array/slice`, is unchanged. A program that passed `func/apply` its arguments one by one now writes them as a list. The page writer of the project record, `history/outputs.json`, took the head of lists that can be empty in three places, a find of the next draft release among them; its helper `one` now gives null for an empty list, and those places use it. The research skill taught `["array/head", ["find", ...]]` for a figure the model may lack, which its pages write as `nothing`; the user chose on 2026-11-21 to keep `array/head` failing and give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI. Its SKILL.md, its eval's reference page, and the pages of seven research runs use it. No other program in the repository did either. The three cases leave `known.json`.
+
+**Alternatives considered.**
+
+- Keep null and [] for an empty list. A null head cannot be told from a list's first item that is null, and Lion already fails rather than give null for a key a record does not have.
+- Keep func/apply as JavaScript's call, and add an apply of Scheme's beside it. Two functions would differ only in whether the last argument is spread, and the one named apply would be the one that does not, unlike Scheme's apply and JavaScript's apply alike.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `empty-list-head`: `fails`. "`array/head` and `array/tail` take a list with an item in it, and an empty list fails"
+- Stated, not checked by running Lion: decided `func-apply-arguments`: `spread-last-list`. "`func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list"
+- Holds when Lion is run: rule `values-are-json` holds. "`array/head` and `array/tail` take a list with an item in it, and an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`, in plain code, in a call that waits, and in the solver's step"
+- Holds when Lion is run: `array-head-empty-list` is `error`. "an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`"
+- Holds when Lion is run: `r7rs-6.4-car-of-empty-list` is `error`. "an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`"
+- Holds when Lion is run: `r7rs-6.4-cdr-of-empty-list` is `error`. "`array/head` and `array/tail` take a list with an item in it, and an empty list fails"
+- Holds when Lion is run: `array-tail-empty-list` is `error`. "`array/head` and `array/tail` take a list with an item in it, and an empty list fails"
+- Holds when Lion is run: `r7rs-6.10-apply-spreads-last-argument` is `spread`. "`["func/apply", f, null, 1, ["array/make", 2, 3]]` calls `f` with 1, 2, and 3"
+- Holds when Lion is run: `words/first` exists. "give the skill `words/first`, the first item of a list or null, written in plain Lion so that it works on every published CLI"
+
+<a id="func-apply-arguments"></a>
+
+## func-apply-arguments
+
+Now: `spread-last-list`.
+
+- 2026-11-21 `func-apply-arguments`: `spread-last-list` over `pass-as-given`: "`func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list" (`empty-list-head-and-apply.json`)
+
+<a id="lambda-rest-parameter"></a>
+
+## lambda-rest-parameter
+
+Now: `one-name-for-all`.
+
+- 2026-11-21 `lambda-rest-parameter`: `one-name-for-all` over `dotted-list`, `fixed-only`: "A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them." (`lambda-rest-parameter.json`)
+
+<a id="lambda-rest-parameter"></a>
+
+### A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme
+
+Recorded 2026-11-21 in `history/notes/lambda-rest-parameter.json`.
+
+**Context.** The probe of R7RS-small 4.1.4 found that `["lambda", "args", "args"]` was refused as not well-formed, where Scheme's `(lambda args args)` takes any number of arguments and binds `args` to the list of them. Library functions already take any number after the ones they need, as `array/make` and `func/partial` do, but a Lion function could not. On 2026-11-21 the user chose to build it.
+
+**Decision.** A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place. The solver's step works it out by its body as it does any lambda, with the name standing for the list of the arguments it is given. A snapshot writes it as its form. `func/callback` gives it every argument the host passes, and `func/apply` the items of its list.
+
+**Consequences.** The case leaves `known.json`, and with it the last of the twenty differences from Scheme the R7RS-small probes found: ten are departures a decision names, and ten give what Scheme gives, so of the 36 cases probed, 26 give what Scheme gives and 10 differ, each as a decision names. A lambda with a list of parameters still takes exactly one argument for each. A lambda that takes some named arguments and then the rest, Scheme's `(lambda (a b . rest) body)`, is not built; its body can take the first items of its list.
+
+**Alternatives considered.**
+
+- A dotted list of parameters, such as ["a", ".", "rest"]. A string "." among the parameters would be a name everywhere else, and JSON has no pairs to make a dotted list of; one name in place of the list is the one form Scheme's own syntax maps to without a new marker.
+- Leave lambdas to a fixed number of arguments. A function of any number of arguments is ordinary in Scheme, and Lion's own library has them, so a program could not write one of its own.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `lambda-rest-parameter`: `one-name-for-all`. "A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them."
+- Holds when Lion is run: `r7rs-4.1.4-lambda-rest-parameter` is `list`. "A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them."
+- Holds when Lion is run: rule `same-as-plain-code` holds. "Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place."
+- Stated, not checked by running Lion: `r7rs-cases-differing` is 10. "of the 36 cases probed, 26 give what Scheme gives and 10 differ, each as a decision names"
+
+<a id="map-arguments"></a>
+
+## map-arguments
+
+Now: `one-list`.
+
+- 2026-11-21 `map-arguments`: `one-list` over `several-lists`: "`array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several." (`r7rs-departures-decided.json`)
+
+<a id="record-mutability"></a>
+
+## record-mutability
+
+Now: `immutable`.
+
+- 2026-11-21 `record-mutability`: `immutable` over `mutable-records`: "A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does" (`r7rs-departures-decided.json`)
+
+<a id="reentrant-force"></a>
+
+## reentrant-force
+
+Now: `fails`.
+
+- 2026-11-21 `reentrant-force`: `fails` over `first-value`: "Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed." (`r7rs-departures-decided.json`)
+
+<a id="string-positions"></a>
+
+## string-positions
+
+Now: `utf16-code-units`.
+
+- 2026-11-21 `string-positions`: `utf16-code-units` over `characters`: "A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together." (`r7rs-departures-decided.json`)

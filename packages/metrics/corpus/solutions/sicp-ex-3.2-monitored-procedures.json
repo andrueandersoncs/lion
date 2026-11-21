@@ -1,0 +1,21 @@
+[
+  "lambda",
+  ["f"],
+  [
+    "begin",
+    ["define", "calls", 0],
+    [
+      "lambda",
+      ["x"],
+      [
+        "cond",
+        [["=", "x", "how-many-calls?"], "calls"],
+        [["=", "x", "reset-count"], ["set!", "calls", 0]],
+        [
+          "else",
+          ["begin", ["set!", "calls", ["number/add", "calls", 1]], ["f", "x"]]
+        ]
+      ]
+    ]
+  ]
+]

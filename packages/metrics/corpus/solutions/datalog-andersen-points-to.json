@@ -1,0 +1,38 @@
+[
+  "begin",
+  ["relation", "address", ["x", "y"]],
+  ["relation", "copy", ["x", "y"]],
+  ["relation", "load", ["x", "y"]],
+  ["relation", "store", ["x", "y"]],
+  ["relation", "points_to", ["variable", "object"]],
+  [
+    "rule",
+    ["address", "?x", "?y"],
+    ["in", ["array/make", "?x", "?y"], "addresses"]
+  ],
+  ["rule", ["copy", "?x", "?y"], ["in", ["array/make", "?x", "?y"], "copies"]],
+  ["rule", ["load", "?x", "?y"], ["in", ["array/make", "?x", "?y"], "loads"]],
+  ["rule", ["store", "?x", "?y"], ["in", ["array/make", "?x", "?y"], "stores"]],
+  ["rule", ["points_to", "?x", "?o"], ["address", "?x", "?o"]],
+  [
+    "rule",
+    ["points_to", "?x", "?o"],
+    ["copy", "?x", "?y"],
+    ["points_to", "?y", "?o"]
+  ],
+  [
+    "rule",
+    ["points_to", "?x", "?o"],
+    ["load", "?x", "?y"],
+    ["points_to", "?y", "?p"],
+    ["points_to", "?p", "?o"]
+  ],
+  [
+    "rule",
+    ["points_to", "?p", "?o"],
+    ["store", "?x", "?y"],
+    ["points_to", "?x", "?p"],
+    ["points_to", "?y", "?o"]
+  ],
+  ["find", ["array/make", "?v", "?o"], ["points_to", "?v", "?o"]]
+]

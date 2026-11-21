@@ -1,0 +1,17 @@
+{
+  "id": "sicp-1.2.2-fibonacci-iterative",
+  "pillar": "computation",
+  "statement": "Define a function of n that gives the nth Fibonacci number, with fib(0) = 0 and fib(1) = 1, by an iterative process, so that fib(50) is quick. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["fib"],
+    [
+      "=",
+      ["array/map", ["quote", [0, 1, 2, 10, 50]], "fib"],
+      ["quote", [0, 1, 1, 55, 12586269025]]
+    ]
+  ],
+  "tags": ["iteration", "tail-calls"],
+  "origin": "SICP 1.2.2, Tree Recursion: the iterative Fibonacci"
+}

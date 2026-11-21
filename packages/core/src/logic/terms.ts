@@ -592,8 +592,12 @@ export interface LambdaInfo {
   /** The scope the lambda closes over; undefined when it closes over none. */
   readonly environment: Environment | undefined;
   readonly parameters: readonly string[];
-  /** The parameters as written, when some have contracts: names with schemas. */
-  readonly written?: readonly unknown[];
+  /**
+   * The parameters as written, when some have contracts: names with
+   * schemas; or the one name of a lambda that takes any number of
+   * arguments, bound to the list of them.
+   */
+  readonly written?: readonly unknown[] | string;
 }
 
 const LAMBDAS = new WeakMap<object, LambdaInfo>();

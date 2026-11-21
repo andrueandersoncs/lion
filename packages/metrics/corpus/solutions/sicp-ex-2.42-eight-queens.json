@@ -1,0 +1,107 @@
+[
+  "begin",
+  [
+    "define",
+    "safe?",
+    [
+      "lambda",
+      ["positions"],
+      [
+        "begin",
+        ["define", "new", ["array/head", "positions"]],
+        [
+          "define",
+          "ok",
+          [
+            "lambda",
+            ["rest", "distance"],
+            [
+              "cond",
+              [["=", "rest", ["quote", []]], true],
+              [
+                [
+                  "or",
+                  ["number/equals?", ["array/head", "rest"], "new"],
+                  [
+                    "number/equals?",
+                    [
+                      "number/absolute",
+                      ["number/subtract", ["array/head", "rest"], "new"]
+                    ],
+                    "distance"
+                  ]
+                ],
+                false
+              ],
+              [
+                "else",
+                ["ok", ["array/tail", "rest"], ["number/add", "distance", 1]]
+              ]
+            ]
+          ]
+        ],
+        ["ok", ["array/tail", "positions"], 1]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "queens",
+    [
+      "lambda",
+      ["size"],
+      [
+        "begin",
+        [
+          "define",
+          "cols",
+          [
+            "lambda",
+            ["k"],
+            [
+              "cond",
+              [["number/equals?", "k", 0], ["quote", [[]]]],
+              [
+                "else",
+                [
+                  "array/flat-map",
+                  ["cols", ["number/subtract", "k", 1]],
+                  [
+                    "lambda",
+                    ["rest"],
+                    [
+                      "array/flat-map",
+                      ["array/range", 1, ["number/add", "size", 1]],
+                      [
+                        "lambda",
+                        ["row"],
+                        [
+                          "begin",
+                          [
+                            "define",
+                            "positions",
+                            ["array/concat", ["array/make", "row"], "rest"]
+                          ],
+                          [
+                            "cond",
+                            [
+                              ["safe?", "positions"],
+                              ["array/make", "positions"]
+                            ],
+                            ["else", ["quote", []]]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["cols", "size"]
+      ]
+    ]
+  ],
+  "queens"
+]

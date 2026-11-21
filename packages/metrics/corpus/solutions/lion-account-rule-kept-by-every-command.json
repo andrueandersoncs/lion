@@ -1,0 +1,88 @@
+[
+  "begin",
+  [
+    "schema",
+    "Account",
+    { "balance": "value/integer?", "limit": "value/integer?" }
+  ],
+  [
+    "schema",
+    "Amount",
+    [
+      "schema/allOf",
+      "value/integer?",
+      ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+    ]
+  ],
+  [
+    "schema",
+    "Command",
+    ["schema/anyOf", { "deposit": "Amount" }, { "withdraw": "Amount" }]
+  ],
+  [
+    "define",
+    "step",
+    [
+      "lambda",
+      ["a", "c"],
+      [
+        "cond",
+        [
+          ["object/has?", "c", "deposit"],
+          {
+            "balance": [
+              "number/add",
+              ["object/get", "a", "balance"],
+              ["object/get", "c", "deposit"]
+            ],
+            "limit": ["object/get", "a", "limit"]
+          }
+        ],
+        [
+          [
+            "number/lessThan",
+            [
+              "number/add",
+              ["object/get", "a", "balance"],
+              ["object/get", "a", "limit"]
+            ],
+            ["object/get", "c", "withdraw"]
+          ],
+          "a"
+        ],
+        [
+          "else",
+          {
+            "balance": [
+              "number/subtract",
+              ["object/get", "a", "balance"],
+              ["object/get", "c", "withdraw"]
+            ],
+            "limit": ["object/get", "a", "limit"]
+          }
+        ]
+      ]
+    ]
+  ],
+  [
+    "lambda",
+    ["rule"],
+    [
+      "value/identity",
+      [
+        "not",
+        [
+          "exists",
+          ["?a", "?c"],
+          [
+            "and",
+            ["schema/fits?", "?a", "Account"],
+            ["rule", "?a"],
+            ["schema/fits?", "?c", "Command"],
+            ["not", ["rule", ["step", "?a", "?c"]]]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

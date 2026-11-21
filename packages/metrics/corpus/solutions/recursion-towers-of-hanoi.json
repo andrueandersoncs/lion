@@ -1,0 +1,25 @@
+[
+  "begin",
+  [
+    "define",
+    "move",
+    [
+      "lambda",
+      ["n", "from", "to", "via"],
+      [
+        "cond",
+        [["number/equals?", "n", 0], ["quote", []]],
+        [
+          "else",
+          [
+            "array/concat",
+            ["move", ["number/subtract", "n", 1], "from", "via", "to"],
+            ["array/make", ["array/make", "from", "to"]],
+            ["move", ["number/subtract", "n", 1], "via", "to", "from"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["lambda", ["n"], ["move", "n", "a", "c", "b"]]
+]

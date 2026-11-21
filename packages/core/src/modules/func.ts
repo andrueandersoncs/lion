@@ -7,6 +7,7 @@ import {
   isCatchable,
   raised,
   takes,
+  wrongArgument,
 } from "@/errors/evaluation";
 import { apply, call } from "@/evaluation/special-forms/function";
 import { builtBy, type LionFunction, logicFunction } from "@/logic/terms";
@@ -19,6 +20,35 @@ import { reset, shift } from "@/modules/lib/continuations";
  * it either waits for logic variables or takes them as they are. It
  * remembers the call that built it, so it is written as that call.
  */
+/**
+ * Calls a function with `obj` as `this`, and with the arguments given and
+ * then the items of the last, a list, as Scheme's `apply` and JavaScript's
+ * `Function.prototype.apply` spread it: `["func/apply", f, null, 1,
+ * ["array/make", 2, 3]]` is `[f, 1, 2, 3]`. A Lion function returns an
+ * Effect, which runs, so the result is what calling the function directly
+ * returns.
+ */
+const applying: LionFunction = takes(
+  atLeast(3),
+  (fn: unknown, obj: unknown, ...args: unknown[]) => {
+    const last = args.at(-1);
+    if (!Array.isArray(last)) {
+      return Effect.fail(
+        wrongArgument(applying, args.length + 1, "a list", last)
+      );
+    }
+    return Effect.suspend(() => {
+      const result = (fn as (...given: unknown[]) => unknown).apply(obj, [
+        ...args.slice(0, -1),
+        ...last,
+      ]);
+      return Effect.isEffect(result)
+        ? (result as Effect.Effect<unknown, unknown>)
+        : Effect.succeed(result);
+    });
+  }
+);
+
 const partial: LionFunction = logicFunction(
   takes(atLeast(1), (fn: unknown, ...args: unknown[]) => {
     const made = builtBy(
@@ -48,20 +78,7 @@ export const module = {
       Effect.succeed(fn.bind(obj, ...args))
   ),
 
-  /**
-   * Calls a function with `obj` as `this`. A Lion function returns an Effect,
-   * which runs, so the result is what calling the function directly returns.
-   */
-  apply: takes(
-    atLeast(2),
-    (fn: (...args: unknown[]) => unknown, obj: unknown, ...args: unknown[]) =>
-      Effect.suspend(() => {
-        const result = fn.apply(obj, args);
-        return Effect.isEffect(result)
-          ? (result as Effect.Effect<unknown, unknown>)
-          : Effect.succeed(result);
-      })
-  ),
+  apply: applying,
 
   /**
    * A function host code can call later: it calls `fn` with as many of the

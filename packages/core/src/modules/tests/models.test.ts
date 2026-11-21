@@ -83,39 +83,134 @@ describe("string functions agree with JavaScript, text first", () => {
   );
 });
 
+/** What a program gave, or the message of how it failed. */
+const outcome = (program: unknown) =>
+  evaluate(program).pipe(
+    Effect.map((value) => ({ value })),
+    Effect.catch((error) =>
+      Effect.succeed({ failed: String((error as Error).message) })
+    )
+  );
+
 describe("array/head and array/tail", () => {
   it.effect.prop(
-    "split any list into its first item, or null, and the rest",
+    "split a list into its first item and the rest, which make it again, and fail on an empty list as car and cdr do",
     { list: json },
     ({ list }) =>
       Effect.gen(function* () {
-        const [head, tail] = (yield* evaluate([
-          "array/make",
-          ["array/head", quote(list)],
-          ["array/tail", quote(list)],
-        ])) as [unknown, unknown[]];
-        expect(head).toEqual(list.length > 0 ? list[0] : null);
-        expect(tail).toEqual(list.slice(1));
-        if (list.length > 0) {
-          expect([head, ...tail]).toEqual(list);
+        for (const fn of ["array/head", "array/tail"]) {
+          const plain = yield* outcome([fn, quote(list)]);
+          // A call that waits for the list gives what plain code gives.
+          const found = yield* outcome([
+            "find",
+            [fn, "?xs"],
+            ["=", "?xs", quote(list)],
+          ]);
+          if (list.length === 0) {
+            const failed = `"${fn}" takes a list that is not empty as argument 1 but got [].`;
+            expect(plain).toEqual({ failed });
+            expect(found).toEqual({ failed });
+          } else {
+            const expected = fn === "array/head" ? list[0] : list.slice(1);
+            expect(plain).toEqual({ value: expected });
+            expect(found).toEqual({ value: [expected] });
+          }
         }
+        if (list.length > 0) {
+          expect(
+            yield* evaluate([
+              "array/concat",
+              ["array/make", ["array/head", quote(list)]],
+              ["array/tail", quote(list)],
+            ])
+          ).toEqual(list);
+        }
+      })
+  );
+
+  it.effect.prop(
+    "fail on an empty list the solver stands for as plain code does, and give what a guard lets through",
+    {
+      most: Arbitrary.schema(
+        // A run of at most 0 items is refused as unsafe, though it is [].
+        Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 3 }))
+      ),
+      k: small,
+    },
+    ({ most, k }) =>
+      Effect.gen(function* () {
+        const lists = ["schema/arrayOf", "value/integer?", most];
+        const asked = (test: unknown) => [
+          "query",
+          ["exists", ["?xs"], ["and", ["schema/fits?", "?xs", lists], test]],
+        ];
+        // Every run of at most `most` items includes the empty list.
+        expect(
+          yield* outcome(asked(["number/equals?", ["array/head", "?xs"], k]))
+        ).toEqual({
+          failed: `"array/head" takes a list that is not empty as argument 1 but got [].`,
+        });
+        const guarded = asked([
+          "cond",
+          [["number/equals?", ["array/length", "?xs"], 0], false],
+          ["else", ["number/equals?", ["array/head", "?xs"], k]],
+        ]);
+        expect(yield* outcome(guarded)).toEqual({
+          value: [{}],
+        });
       })
   );
 });
 
 describe("func/apply", () => {
   it.effect.prop(
-    "returns what calling the function returns",
-    { a: small, b: small },
-    ({ a, b }) =>
+    "calls the function with the arguments given, then the items of the last, as Scheme's apply does",
+    {
+      given: Arbitrary.array(small, { maxLength: 2 }),
+      spread: Arbitrary.array(small, { maxLength: 3 }),
+    },
+    ({ given, spread }) =>
       Effect.gen(function* () {
-        const subtract = ["lambda", ["x", "y"], ["number/subtract", "x", "y"]];
+        const all = [...given, ...spread];
         expect(
-          yield* evaluate(["func/apply", "number/add", null, a, b])
-        ).toEqual(yield* evaluate(["number/add", a, b]));
-        expect(yield* evaluate(["func/apply", subtract, null, a, b])).toEqual(
-          a - b
-        );
+          yield* evaluate([
+            "func/apply",
+            "number/add",
+            null,
+            ...given,
+            quote(spread),
+          ])
+        ).toEqual(yield* evaluate(["number/add", ...all]));
+        if (all.length === 2) {
+          const subtract = [
+            "lambda",
+            ["x", "y"],
+            ["number/subtract", "x", "y"],
+          ];
+          expect(
+            yield* evaluate([
+              "func/apply",
+              subtract,
+              null,
+              ...given,
+              quote(spread),
+            ])
+          ).toEqual((all[0] as number) - (all[1] as number));
+        }
+      })
+  );
+
+  it.effect.prop(
+    "fails when its last argument is not a list, saying which argument",
+    { given: Arbitrary.array(small, { minLength: 1, maxLength: 3 }) },
+    ({ given }) =>
+      Effect.gen(function* () {
+        const last = given.at(-1);
+        expect(
+          yield* outcome(["func/apply", "number/add", null, ...given])
+        ).toEqual({
+          failed: `"func/apply" takes a list as argument ${given.length + 2} but got ${last}.`,
+        });
       })
   );
 });

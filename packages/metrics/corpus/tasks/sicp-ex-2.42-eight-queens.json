@@ -1,0 +1,100 @@
+{
+  "id": "sicp-ex-2.42-eight-queens",
+  "pillar": "computation",
+  "statement": "Define a function of a board size n that gives every way to place n queens on an n by n board so that no two attack each other. A placement is a list of the queens' rows, numbered from 1, one for each column. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["queens"],
+    [
+      "begin",
+      [
+        "define",
+        "nth",
+        ["lambda", ["xs", "i"], ["array/head", ["array/slice", "xs", "i"]]]
+      ],
+      [
+        "define",
+        "safe",
+        [
+          "lambda",
+          ["p"],
+          [
+            "array/every?",
+            ["array/range", 0, ["array/length", "p"]],
+            [
+              "lambda",
+              ["i"],
+              [
+                "array/every?",
+                ["array/range", 0, "i"],
+                [
+                  "lambda",
+                  ["j"],
+                  [
+                    "and",
+                    [
+                      "not",
+                      ["number/equals?", ["nth", "p", "i"], ["nth", "p", "j"]]
+                    ],
+                    [
+                      "not",
+                      [
+                        "number/equals?",
+                        [
+                          "number/absolute",
+                          [
+                            "number/subtract",
+                            ["nth", "p", "i"],
+                            ["nth", "p", "j"]
+                          ]
+                        ],
+                        ["number/subtract", "i", "j"]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ],
+      ["define", "six", ["queens", 6]],
+      [
+        "and",
+        ["=", ["array/length", ["queens", 4]], 2],
+        ["=", ["array/length", "six"], 4],
+        ["=", ["aggregate/countUnique", "six"], 4],
+        [
+          "array/every?",
+          "six",
+          [
+            "lambda",
+            ["p"],
+            [
+              "and",
+              ["=", ["array/length", "p"], 6],
+              ["safe", "p"],
+              [
+                "array/every?",
+                "p",
+                [
+                  "lambda",
+                  ["row"],
+                  [
+                    "and",
+                    ["number/greaterThanOrEqualTo", "row", 1],
+                    ["number/lessThanOrEqualTo", "row", 6]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["=", ["array/length", ["queens", 8]], 92]
+      ]
+    ]
+  ],
+  "tags": ["lists", "search", "higher-order"],
+  "origin": "SICP Exercise 2.42"
+}

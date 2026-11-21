@@ -4,9 +4,10 @@
  * takes. No argument is dropped. The table below is the model: how many
  * arguments each function takes, written down apart from the library.
  *
- * `number/add`, `number/multiply`, `number/min`, `number/max`,
- * `string/concat`, and `array/concat` combine one or more arguments, as the
- * same function of two would, applied from left to right.
+ * `number/add`, `number/multiply`, `string/concat`, and `array/concat`
+ * combine zero or more arguments, and `number/min` and `number/max` one or
+ * more, as the same function of two would, applied from left to right. None
+ * gives what combining nothing gives: 0, 1, "", and [].
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
@@ -30,7 +31,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "aggregate/sum": [1, 1],
   "aggregate/union": [1, 1],
   "aggregate/unique": [1, 1],
-  "array/concat": [1, ANY],
+  "array/concat": [0, ANY],
   "array/flat-map": [2, 2],
   "array/head": [1, 1],
   "array/includes?": [2, 2],
@@ -45,6 +46,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "schema/includes?": [2, 2],
   "array/slice": [2, 3],
   "array/tail": [1, 1],
+  "array/zip": [1, ANY],
   "boolean/and": [2, 2],
   "boolean/equals?": [2, 2],
   "boolean/nand": [2, 2],
@@ -54,7 +56,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "boolean/xor": [2, 2],
   "console/log": [1, 1],
   "console/log-json": [1, 1],
-  "func/apply": [2, ANY],
+  "func/apply": [3, ANY],
   "func/bind": [2, ANY],
   "func/callback": [1, 1],
   "func/catch": [2, 2],
@@ -68,7 +70,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "graph/stronglyConnected": [3, 3],
   "graph/topologicalOrder": [3, 3],
   "number/absolute": [1, 1],
-  "number/add": [1, ANY],
+  "number/add": [0, ANY],
   "number/ceiling": [1, 1],
   "number/divide": [2, 2],
   "number/equals?": [2, 2],
@@ -79,7 +81,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "number/lessThanOrEqualTo": [2, 2],
   "number/max": [1, ANY],
   "number/min": [1, ANY],
-  "number/multiply": [1, ANY],
+  "number/multiply": [0, ANY],
   "number/power": [2, 2],
   "number/remainder": [2, 2],
   "number/round": [1, 1],
@@ -97,10 +99,10 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "object/keys": [1, 1],
   "object/new": [1, ANY],
   "object/remove": [2, 2],
-  "quantity/add": [1, ANY],
+  "quantity/add": [0, ANY],
   "quantity/divide": [2, 2],
   "quantity/in": [2, 2],
-  "quantity/multiply": [1, ANY],
+  "quantity/multiply": [0, ANY],
   "quantity/power": [2, 2],
   "quantity/subtract": [2, 2],
   "object/set": [3, 3],
@@ -114,7 +116,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "schema/optional": [1, 1],
   "schema/problems": [2, 2],
   "schema/recordOf": [1, 1],
-  "string/concat": [1, ANY],
+  "string/concat": [0, ANY],
   "string/endsWith": [2, 2],
   "string/equals?": [2, 2],
   "string/includes": [2, 2],
@@ -293,7 +295,61 @@ const COMBINES = {
   "number/max": (values: number[]) => Math.max(...values),
 };
 
+/** What combining nothing gives, for each function that takes zero or more. */
+const NONE: Record<string, unknown> = {
+  "array/concat": [],
+  "number/add": 0,
+  "number/multiply": 1,
+  "quantity/add": 0,
+  "quantity/multiply": 1,
+  "string/concat": "",
+};
+
+/** An argument of each function that combines, as a generated value. */
+const argumentOf = (fn: string, at: number) => {
+  if (fn === "string/concat") {
+    return ["a", "b", "c"][at % 3];
+  }
+  if (fn === "array/concat") {
+    return ["quote", [at]];
+  }
+  return at - 2;
+};
+
 describe("functions that combine their arguments", () => {
+  it.effect.prop(
+    "give what combining nothing gives for none, which combined with any arguments changes nothing",
+    {
+      count: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 4 }))
+      ),
+    },
+    ({ count }) =>
+      Effect.gen(function* () {
+        for (const [fn, none] of Object.entries(NONE)) {
+          expect(yield* run([fn], stdlib), fn).toEqual(none);
+          const args = Array.from({ length: count }, (_, at) =>
+            argumentOf(fn, at)
+          );
+          const quoted = Array.isArray(none) ? ["quote", none] : none;
+          expect(yield* run([fn, quoted, ...args], stdlib), fn).toEqual(
+            yield* run([fn, ...args], stdlib)
+          );
+          expect(yield* run([fn, ...args, quoted], stdlib), fn).toEqual(
+            yield* run([fn, ...args], stdlib)
+          );
+        }
+        // min and max still take one or more, as Scheme's do.
+        for (const fn of ["number/min", "number/max"]) {
+          const failed = yield* Effect.flip(run([fn], stdlib));
+          expect(String((failed as Error).message), fn).toBe(
+            `"${fn}" takes 1 or more arguments but got 0.`
+          );
+        }
+      }),
+    OPTIONS
+  );
+
   it.effect.prop(
     "combine any number of numbers, as the function of two does one by one",
     { values: numbers },

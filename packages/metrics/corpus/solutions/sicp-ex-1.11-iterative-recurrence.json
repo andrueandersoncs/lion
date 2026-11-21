@@ -1,0 +1,39 @@
+[
+  "begin",
+  [
+    "define",
+    "iter",
+    [
+      "lambda",
+      ["a", "b", "c", "count"],
+      [
+        "cond",
+        [["number/equals?", "count", 0], "a"],
+        [
+          "else",
+          [
+            "iter",
+            [
+              "number/add",
+              "a",
+              ["number/multiply", 2, "b"],
+              ["number/multiply", 3, "c"]
+            ],
+            "a",
+            "b",
+            ["number/subtract", "count", 1]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "lambda",
+    ["n"],
+    [
+      "cond",
+      [["number/lessThan", "n", 3], "n"],
+      ["else", ["iter", 2, 1, 0, ["number/subtract", "n", 2]]]
+    ]
+  ]
+]

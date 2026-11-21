@@ -98,7 +98,9 @@ const sameUnits = (name: string, fn: (...args: unknown[]) => unknown) =>
             })
           );
     },
-    name === "add" ? atLeast(1) : 2
+    name === "add" ? atLeast(0) : 2,
+    // Adding no quantities gives 0, a plain number, as number/add does.
+    name === "add" ? 0 : undefined
   );
 
 export const module = {
@@ -124,7 +126,9 @@ export const module = {
         (value) => given(value, unit)
       );
     },
-    atLeast(1)
+    atLeast(0),
+    // Multiplying no quantities gives 1, a plain number, as number/multiply does.
+    1
   ),
 
   /** The quotient: the values divided, the divisor's exponents taken away. */

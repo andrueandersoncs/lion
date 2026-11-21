@@ -1,0 +1,72 @@
+{
+  "id": "induction-sorting-every-length",
+  "pillar": "proofs",
+  "statement": "Define a function of a sort function that gives true when, for every list of whole numbers, of any length, the sort gives a list of the same length whose items are in ascending order, and false when some list shows it does not. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["proves"],
+    [
+      "begin",
+      [
+        "define",
+        "insert",
+        [
+          "lambda",
+          ["x", "sorted"],
+          [
+            "cond",
+            [["=", "sorted", ["quote", []]], ["array/make", "x"]],
+            [
+              ["number/lessThanOrEqualTo", "x", ["array/head", "sorted"]],
+              ["array/concat", ["array/make", "x"], "sorted"]
+            ],
+            [
+              "else",
+              [
+                "array/concat",
+                ["array/make", ["array/head", "sorted"]],
+                ["insert", "x", ["array/tail", "sorted"]]
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "insertion-sort",
+        [
+          "lambda",
+          ["xs"],
+          [
+            "array/reduce",
+            "xs",
+            ["quote", []],
+            ["lambda", ["done", "x"], ["insert", "x", "done"]]
+          ]
+        ]
+      ],
+      [
+        "and",
+        ["proves", "insertion-sort"],
+        [
+          "not",
+          [
+            "proves",
+            [
+              "lambda",
+              ["xs"],
+              [
+                "cond",
+                [["number/greaterThan", ["array/length", "xs"], 5], "xs"],
+                ["else", ["insertion-sort", "xs"]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["solver", "induction", "lists"],
+  "origin": "Verified sorting, a standard exercise of program verifiers (e.g. the Why3 gallery)"
+}

@@ -13,19 +13,19 @@
     "name": [
       "lambda",
       ["d"],
-      ["array/head", ["find", "?t", ["short_title", "d", "?t"]]]
+      ["words/first", ["find", "?t", ["short_title", "d", "?t"]]]
     ],
     "at": [
       "lambda",
       ["place"],
-      ["array/head", ["find", "?d", ["net_rank", "?d", "place"]]]
+      ["words/first", ["find", "?d", ["net_rank", "?d", "place"]]]
     ],
     "details": [
       "lambda",
       ["d", "kind"],
       [
         "words/listed",
-        ["array/head", ["find", "?x", ["reasons_of", "d", "kind", "?x"]]]
+        ["words/first", ["find", "?x", ["reasons_of", "d", "kind", "?x"]]]
       ]
     ],
     "case": [
@@ -92,7 +92,7 @@
         [
           "words/count",
           [
-            "array/head",
+            "words/first",
             ["find", "?n", ["tally", "d", "?_", "?_", "?_", "?n"]]
           ],
           "independent research group",
@@ -102,7 +102,7 @@
       ]
     ],
     "third_tie": [
-      "array/head",
+      "words/first",
       ["find", "?others", ["tied", ["at", 3], "?others"]]
     ]
   },
@@ -146,7 +146,7 @@
     [
       "words/number",
       [
-        "array/head",
+        "words/first",
         [
           "find",
           "?us",
@@ -158,7 +158,7 @@
     [
       "words/number",
       [
-        "array/head",
+        "words/first",
         [
           "find",
           "?p",
@@ -251,7 +251,7 @@
               "value": [
                 "words/number",
                 [
-                  "array/head",
+                  "words/first",
                   [
                     "find",
                     "?us",
@@ -270,7 +270,7 @@
               "value": [
                 "words/number",
                 [
-                  "array/head",
+                  "words/first",
                   [
                     "find",
                     "?ms",
@@ -291,7 +291,7 @@
               "value": [
                 "words/number",
                 [
-                  "array/head",
+                  "words/first",
                   [
                     "find",
                     "?p",
@@ -312,7 +312,7 @@
                 [
                   "words/number",
                   [
-                    "array/head",
+                    "words/first",
                     [
                       "find",
                       "?p",
@@ -337,7 +337,7 @@
                 [
                   "words/number",
                   [
-                    "array/head",
+                    "words/first",
                     [
                       "find",
                       "?x",
@@ -545,7 +545,7 @@
             [
               "words/number",
               [
-                "array/head",
+                "words/first",
                 [
                   "find",
                   "?n",
@@ -566,7 +566,7 @@
             [
               "words/number",
               [
-                "array/head",
+                "words/first",
                 [
                   "find",
                   "?n",

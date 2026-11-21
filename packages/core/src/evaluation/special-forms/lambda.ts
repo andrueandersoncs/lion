@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import {
+  atLeast,
   counted,
   leaving,
   type UnboundNameError,
@@ -63,7 +64,11 @@ const collect = (form: unknown, quoted: boolean, into: References) => {
     return;
   }
   const [head, parameters, body] = Array.isArray(form) ? form : [];
-  if (!quoted && head === "lambda" && Array.isArray(parameters)) {
+  if (
+    !quoted &&
+    head === "lambda" &&
+    (Array.isArray(parameters) || typeof parameters === "string")
+  ) {
     // A lambda's parameters shadow the names around it in its body; the
     // schemas of its contracts are read where the lambda is written.
     const names = parameterNames(parameters);
@@ -111,6 +116,8 @@ interface Lambda {
   /** The name the `define` that bound it gave it, for its failures. */
   name: string | undefined;
   readonly parameters: readonly string[];
+  /** Whether its one parameter is bound to the list of every argument. */
+  readonly rest: boolean;
   /** The scope its form is written in, which settles what its strings mean. */
   readonly scope: Scope | undefined;
 }
@@ -230,8 +237,8 @@ export const enter = (
   if (depth >= DEEPEST) {
     return new Called(Effect.suspend(() => toEffect(enter(lambda, args, 0))));
   }
-  const { contract, parameters } = lambda;
-  if (args.length !== parameters.length) {
+  const { contract, parameters, rest } = lambda;
+  if (!rest && args.length !== parameters.length) {
     return new Pending(Effect.fail(refused(lambda, args.length)));
   }
   if (contract !== undefined) {
@@ -250,10 +257,14 @@ const run = (
   args: readonly unknown[],
   depth: number
 ): unknown => {
-  const { parameters } = lambda;
+  const { parameters, rest } = lambda;
   const bindings = new Map<string, unknown>();
-  for (const [at, parameter] of parameters.entries()) {
-    bindings.set(parameter, args[at]);
+  if (rest) {
+    bindings.set(parameters[0] as string, argumentList(args));
+  } else {
+    for (const [at, parameter] of parameters.entries()) {
+      bindings.set(parameter, args[at]);
+    }
   }
   predeclare(bindings, lambda.defined);
   const scope: Environment = {
@@ -280,7 +291,8 @@ const run = (
  * its body sees only its parameters. Host code that calls it gets an Effect,
  * which runs the body when it runs. `scope` is the scope the lambda form is
  * written in, which the environment declares unless code `eval` ran has
- * bound more since.
+ * bound more since. With `rest`, its one parameter is bound to the list of
+ * every argument, so it takes any number of them.
  */
 export const makeLambda = (
   parameters: readonly string[],
@@ -288,7 +300,8 @@ export const makeLambda = (
   environment?: Environment,
   compiled?: Compiled,
   scope: Scope | undefined = environment,
-  contract?: Contract
+  contract?: Contract,
+  rest = false
 ) => {
   const defined = bodyNames(parameters, body, scope).filter(
     (name) => !parameters.includes(name)
@@ -301,6 +314,7 @@ export const makeLambda = (
     environment,
     name: undefined,
     parameters,
+    rest,
     scope,
   };
   const fn = registerLambda(
@@ -310,11 +324,12 @@ export const makeLambda = (
       parameters,
       body,
       environment,
+      ...(rest ? { written: parameters[0] as string } : {}),
       ...(contract === undefined ? {} : { written: contract.written }),
     }
   );
   LAMBDAS.set(fn, lambda);
-  return counted(fn, parameters.length);
+  return counted(fn, rest ? atLeast(0) : parameters.length);
 };
 
 /**
@@ -331,6 +346,10 @@ export const compileLambda = (
     body,
     scopeWith(bodyNames(names, body, scope), scope)
   );
+  if (typeof parameters === "string") {
+    return (environment) =>
+      makeLambda(names, body, environment, compiled, scope, undefined, true);
+  }
   const schemas = parameterSchemas(parameters);
   if (schemas.every((schema) => schema === undefined)) {
     return (environment) =>
@@ -358,6 +377,17 @@ const makeList = listMaker((...items: unknown[]) => items);
 // A list that waits is written as the call that makes it again.
 nameFunctions({ "array/make": makeList });
 readsOnlyArguments({ makeList });
+
+/**
+ * The list of a call's arguments, which a lambda with one name for its
+ * parameters is given: a list, or, when an argument waits for a logic
+ * variable, the call of `array/make` that makes it once the variable is
+ * bound, as a list written with the arguments would be.
+ */
+export const argumentList = (args: readonly unknown[]): unknown =>
+  args.some((arg) => arg instanceof LogicValue)
+    ? new DeferredCall(makeList, "array/make", [...args])
+    : [...args];
 
 /**
  * A value that holds lambdas, with those lambdas closed: the parts of a list
@@ -433,7 +463,9 @@ const close = (
         environment,
         lambda?.compiled,
         environment,
-        lambda?.contract
+        lambda?.contract,
+        // One name written for the parameters takes every argument.
+        typeof info.written === "string"
       ),
     lambda?.scope
   ).pipe(Effect.tap((copy) => Effect.sync(() => closed.set(value, copy))));

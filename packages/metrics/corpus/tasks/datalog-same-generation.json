@@ -1,0 +1,44 @@
+{
+  "id": "datalog-same-generation",
+  "pillar": "logic",
+  "statement": "The input parents is a list of [child, parent] pairs; each person has at most one parent here. Two different people are of the same generation when they have the same parent, or when their parents are of the same generation. The program's value is every pair [a, b] of the same generation, in any order.",
+  "inputs": {
+    "parents": [
+      ["bob", "ann"],
+      ["cal", "ann"],
+      ["dee", "bob"],
+      ["eve", "bob"],
+      ["fay", "cal"],
+      ["gus", "dee"],
+      ["hal", "fay"]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["pairs"],
+    [
+      "=",
+      ["aggregate/unique", "pairs"],
+      [
+        "aggregate/unique",
+        [
+          "quote",
+          [
+            ["bob", "cal"],
+            ["cal", "bob"],
+            ["dee", "eve"],
+            ["eve", "dee"],
+            ["dee", "fay"],
+            ["fay", "dee"],
+            ["eve", "fay"],
+            ["fay", "eve"],
+            ["gus", "hal"],
+            ["hal", "gus"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["rules", "recursion", "negation"],
+  "origin": "Same generation, a classic recursive Datalog query (Bancilhon and Ramakrishnan, 1986)"
+}

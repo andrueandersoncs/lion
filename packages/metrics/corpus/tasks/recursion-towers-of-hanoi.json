@@ -1,0 +1,98 @@
+{
+  "id": "recursion-towers-of-hanoi",
+  "pillar": "computation",
+  "statement": "Define a function of a number of disks n that gives the moves that take n disks from peg \"a\" to peg \"c\", using peg \"b\", never putting a disk on a smaller one. A move is a list [from, to] of pegs. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["hanoi"],
+    [
+      "begin",
+      [
+        "define",
+        "last",
+        ["lambda", ["xs"], ["array/head", ["array/slice", "xs", -1]]]
+      ],
+      [
+        "define",
+        "step",
+        [
+          "lambda",
+          ["pegs", "move"],
+          [
+            "cond",
+            [["value/null?", "pegs"], null],
+            [
+              "else",
+              [
+                "begin",
+                [
+                  "define",
+                  "source",
+                  ["object/get", "pegs", ["array/head", "move"]]
+                ],
+                [
+                  "define",
+                  "target",
+                  ["object/get", "pegs", ["array/head", ["array/tail", "move"]]]
+                ],
+                [
+                  "cond",
+                  [["=", "source", ["quote", []]], null],
+                  [
+                    [
+                      "and",
+                      ["not", ["=", "target", ["quote", []]]],
+                      [
+                        "number/lessThan",
+                        ["last", "target"],
+                        ["last", "source"]
+                      ]
+                    ],
+                    null
+                  ],
+                  [
+                    "else",
+                    [
+                      "object/set",
+                      [
+                        "object/set",
+                        "pegs",
+                        ["array/head", "move"],
+                        ["array/slice", "source", 0, -1]
+                      ],
+                      ["array/head", ["array/tail", "move"]],
+                      [
+                        "array/concat",
+                        "target",
+                        ["array/make", ["last", "source"]]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ],
+      ["define", "moves", ["hanoi", 4]],
+      [
+        "and",
+        ["=", ["array/length", "moves"], 15],
+        [
+          "=",
+          [
+            "array/reduce",
+            "moves",
+            ["quote", { "a": [4, 3, 2, 1], "b": [], "c": [] }],
+            "step"
+          ],
+          ["quote", { "a": [], "b": [], "c": [4, 3, 2, 1] }]
+        ],
+        ["=", ["hanoi", 0], ["quote", []]]
+      ]
+    ]
+  ],
+  "tags": ["recursion", "lists"],
+  "origin": "Towers of Hanoi, a classic recursion exercise"
+}

@@ -1,0 +1,75 @@
+[
+  "begin",
+  ["define", "stream-car", "array/head"],
+  [
+    "define",
+    "stream-cdr",
+    ["lambda", ["s"], ["value/force", ["array/head", ["array/tail", "s"]]]]
+  ],
+  [
+    "define",
+    "integers-from",
+    [
+      "lambda",
+      ["n"],
+      ["array/make", "n", ["delay", ["integers-from", ["number/add", "n", 1]]]]
+    ]
+  ],
+  [
+    "define",
+    "divisible?",
+    [
+      "lambda",
+      ["x", "y"],
+      ["number/equals?", ["number/remainder", "x", "y"], 0]
+    ]
+  ],
+  [
+    "define",
+    "stream-filter",
+    [
+      "lambda",
+      ["keep?", "s"],
+      [
+        "cond",
+        [
+          ["keep?", ["stream-car", "s"]],
+          [
+            "array/make",
+            ["stream-car", "s"],
+            ["delay", ["stream-filter", "keep?", ["stream-cdr", "s"]]]
+          ]
+        ],
+        ["else", ["stream-filter", "keep?", ["stream-cdr", "s"]]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "sieve",
+    [
+      "lambda",
+      ["s"],
+      [
+        "array/make",
+        ["stream-car", "s"],
+        [
+          "delay",
+          [
+            "sieve",
+            [
+              "stream-filter",
+              [
+                "lambda",
+                ["x"],
+                ["not", ["divisible?", "x", ["stream-car", "s"]]]
+              ],
+              ["stream-cdr", "s"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["sieve", ["integers-from", 2]]
+]

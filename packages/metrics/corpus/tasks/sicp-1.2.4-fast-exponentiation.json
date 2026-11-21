@@ -1,0 +1,23 @@
+{
+  "id": "sicp-1.2.4-fast-exponentiation",
+  "pillar": "computation",
+  "statement": "Define a function of a base b and a whole exponent n that gives b to the power n by successive squaring: b^n is (b^(n/2))^2 when n is even and b * b^(n - 1) when it is odd. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["expt"],
+    [
+      "=",
+      [
+        "array/make",
+        ["expt", 2, 10],
+        ["expt", 3, 0],
+        ["expt", 7, 13],
+        ["expt", 2, 52]
+      ],
+      ["quote", [1024, 1, 96889010407, 4503599627370496]]
+    ]
+  ],
+  "tags": ["recursion", "numbers"],
+  "origin": "SICP 1.2.4, Exponentiation"
+}

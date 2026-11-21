@@ -69,6 +69,225 @@ const REASONING_TESTS = {
 /** The properties of `lion worker`, checked against the lion command. */
 const WORKER_TESTS = "src/tests/worker.test.ts";
 
+/** The properties of the capability corpus, its grader, and its loader. */
+const CAPABILITY_TESTS = {
+  package: "metrics",
+  tests: ["src/tests/capability.test.ts"],
+};
+const CAPABILITY = "packages/metrics/src/capability.ts";
+const corpus = (file: string) => `packages/metrics/corpus/${file}`;
+
+/** Breaks in the cases R7RS-small settles that Lion gives as Scheme does. */
+const SCHEME_CASE_MUTATIONS: readonly Mutation[] = [
+  {
+    name: "an and of no goals is not well-formed",
+    file: core("schemas/evaluation.ts"),
+    find: 'export const AndFormSchema = formWithMore("and");',
+    replace: 'export const AndFormSchema = formWithMore("and", Expression);',
+    tests: ["src/logic/tests/connectives.test.ts"],
+  },
+  {
+    name: "an or of no goals is not well-formed",
+    file: core("schemas/evaluation.ts"),
+    find: 'export const OrFormSchema = formWithMore("or");',
+    replace: 'export const OrFormSchema = formWithMore("or", Expression);',
+    tests: ["src/logic/tests/connectives.test.ts"],
+  },
+  {
+    name: "a function that combines nothing combines an empty list",
+    file: core("modules/lib/shared.ts"),
+    find: "none !== undefined && args.length === 0 ? Effect.succeed(none) : run(args)",
+    replace: "run(args)",
+    tests: ["src/modules/tests/arity.test.ts"],
+  },
+  {
+    name: "number/add of no numbers is 1",
+    file: core("modules/number.ts"),
+    find: "(a, b) => a + b,\n    0\n  ),",
+    replace: "(a, b) => a + b,\n    1\n  ),",
+    tests: ["src/modules/tests/arity.test.ts"],
+  },
+  {
+    name: "array/zip goes on past the end of its shortest list",
+    file: core("modules/array.ts"),
+    find: "{ length: Math.min(...lists.map((list) => list.length)) },",
+    replace: "{ length: Math.max(...lists.map((list) => list.length)) },",
+    tests: ["src/modules/tests/array.test.ts"],
+  },
+  {
+    name: "array/head of an empty list gives null",
+    file: core("modules/array.ts"),
+    find: "  head: over([Filled], (list) => list[0]),",
+    replace: "  head: over([List], (list) => list[0] ?? null),",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "array/tail of an empty list gives an empty list",
+    file: core("modules/array.ts"),
+    find: "  tail: over([Filled], (list): unknown[] => list.slice(1)),",
+    replace: "  tail: over([List], (list): unknown[] => list.slice(1)),",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "a lambda with one name for its parameters gets its first argument",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "    bindings.set(parameters[0] as string, argumentList(args));",
+    replace: "    bindings.set(parameters[0] as string, args[0]);",
+    tests: ["src/evaluation/tests/rest-parameter.test.ts"],
+  },
+  {
+    name: "a lambda with one name for its parameters takes one argument",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "  if (!rest && args.length !== parameters.length) {",
+    replace: "  if (args.length !== parameters.length) {",
+    tests: ["src/evaluation/tests/rest-parameter.test.ts"],
+  },
+  {
+    name: "a list of arguments that holds a logic variable does not wait",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: '  args.some((arg) => arg instanceof LogicValue)\n    ? new DeferredCall(makeList, "array/make", [...args])\n    : [...args];',
+    replace: "  [...args];",
+    tests: ["src/evaluation/tests/rest-parameter.test.ts"],
+  },
+  {
+    name: "a lambda that waits is made again with a list of parameters",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: '        typeof info.written === "string"\n      ),',
+    replace: "        false\n      ),",
+    tests: [
+      "src/evaluation/tests/rest-parameter.test.ts",
+      "src/evaluation/tests/compiled.test.ts",
+    ],
+  },
+  {
+    name: "the solver binds one name for the parameters to the first argument",
+    file: core("logic/symbolic.ts"),
+    find: "    ? [[parameters, one(listSym(args))]]",
+    replace: "    ? [[parameters, one(args[0] ?? fromValue(null))]]",
+    tests: ["src/evaluation/tests/rest-parameter.test.ts"],
+  },
+  {
+    name: "the research skill's first item of an empty list fails",
+    file: "skills/lion-research/assets/words.json",
+    find: '          [["number/equals?", ["array/length", "items"], 0], null],\n',
+    replace: "",
+    package: "metrics",
+    tests: ["src/tests/research-skill.test.ts"],
+  },
+  {
+    name: "func/apply passes its last argument as it is",
+    file: core("modules/func.ts"),
+    find: "        ...args.slice(0, -1),\n        ...last,\n",
+    replace: "        ...args.slice(0, -1),\n        last,\n",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "func/apply takes a last argument that is not a list",
+    file: core("modules/func.ts"),
+    find: "    if (!Array.isArray(last)) {",
+    replace: "    if (false) {",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+];
+
+/** Breaks in grading the capability corpus, and in its tasks. */
+const CAPABILITY_MUTATIONS: readonly Mutation[] = [
+  {
+    name: "a program that fails passes its task",
+    file: CAPABILITY,
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    find: "return failed(`the program failed: ${solved.error}`);",
+    replace: "return { passed: true };",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a check that gives a value other than true passes its task",
+    file: CAPABILITY,
+    find: "return judged.value === true",
+    replace: "return judged.value !== false",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a program runs without its task's inputs",
+    file: CAPABILITY,
+    find: "      database,\n      environment: task.inputs,\n    });",
+    replace: "      database,\n    });",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a check is made where the program's relations are names",
+    file: CAPABILITY,
+    find: "const made = yield* evaluate(lion, task.check, {\n      environment: task.inputs,",
+    replace:
+      "const made = yield* evaluate(lion, task.check, {\n      database,\n      environment: task.inputs,",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a check is called outside the program's database",
+    file: CAPABILITY,
+    find: 'evaluate(lion, ["check", "result"], {\n      database,',
+    replace: 'evaluate(lion, ["check", "result"], {',
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "tally counts a task that failed as passed",
+    file: CAPABILITY,
+    find: "mine.filter((each) => each.verdict?.passed === true).length",
+    replace: "mine.filter((each) => each.verdict !== undefined).length",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a task whose id is not its file's name is loaded",
+    file: CAPABILITY,
+    find: 'if (task.id !== basename(name, ".json")) {',
+    replace: "if (false) {",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a gap is kept for a task that has a solution",
+    file: CAPABILITY,
+    find: "} else if (solutions.has(id)) {",
+    replace: "} else if (false) {",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a solution that is not JSON is a program that gives null",
+    file: CAPABILITY,
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    find: '? ["func/raise", `${name} is not JSON: ${file.error}`]',
+    replace: "? null",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a held-out folder inside the repository is taken",
+    file: CAPABILITY,
+    find: "  return outside\n",
+    replace: "  return true\n",
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a reference program stops solving its task",
+    file: corpus("solutions/sicp-ex-2.18-reverse.json"),
+    find: '["array/make", ["array/head", "items"]]',
+    replace: '["array/make", ["array/tail", "items"]]',
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a reference program of a logic task stops solving it",
+    file: corpus("solutions/datalog-transitive-closure.json"),
+    find: '["reach", "?x", "?y"], ["edge", "?y", "?z"]',
+    replace: '["edge", "?x", "?y"], ["edge", "?y", "?z"]',
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a task's check passes every value",
+    file: corpus("tasks/sicp-ex-2.18-reverse.json"),
+    find: '["and",',
+    replace: '["or", true,',
+    ...CAPABILITY_TESTS,
+  },
+];
+
 /** A break in the research skill's core program, caught by the skill's properties. */
 const research = (
   name: string,
@@ -2489,7 +2708,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "number/add takes two numbers and no more",
     file: core("modules/number.ts"),
-    find: '    "+",\n    (a, b) => a + b,\n    SOME,',
+    find: '    "+",\n    (a, b) => a + b,\n    ANY,',
     replace: '    "+",\n    (a, b) => a + b,\n    2,',
     tests: ["src/modules/tests/arity.test.ts"],
   },
@@ -2856,6 +3075,8 @@ export const MUTATIONS: readonly Mutation[] = [
     package: "metrics",
     tests: ["src/tests/skill-eval.test.ts"],
   },
+  ...CAPABILITY_MUTATIONS,
+  ...SCHEME_CASE_MUTATIONS,
   {
     name: "a folder's hash ignores what its files hold",
     file: reasoning("scripts/lib.mjs"),
@@ -4003,8 +4224,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a lambda ignores arguments past its parameters",
     file: core("evaluation/special-forms/lambda.ts"),
-    find: "  if (args.length !== parameters.length) {",
-    replace: "  if (args.length < parameters.length) {",
+    find: "  if (!rest && args.length !== parameters.length) {",
+    replace: "  if (!rest && args.length < parameters.length) {",
     tests: ["src/evaluation/tests/special-forms/lambda.test.ts"],
   },
   {

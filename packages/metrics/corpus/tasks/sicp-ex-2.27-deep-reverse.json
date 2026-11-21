@@ -1,0 +1,25 @@
+{
+  "id": "sicp-ex-2.27-deep-reverse",
+  "pillar": "computation",
+  "statement": "Define a function of a tree, a list whose items are lists or leaves, that reverses it and every list inside it. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["deep-reverse"],
+    [
+      "and",
+      [
+        "=",
+        ["deep-reverse", ["quote", [[1, 2], [3, 4]]]],
+        ["quote", [[4, 3], [2, 1]]]
+      ],
+      [
+        "=",
+        ["deep-reverse", ["quote", [1, [2, [3, 4]], 5]]],
+        ["quote", [5, [[4, 3], 2], 1]]
+      ]
+    ]
+  ],
+  "tags": ["lists", "trees", "recursion"],
+  "origin": "SICP Exercise 2.27"
+}

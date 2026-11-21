@@ -1,0 +1,28 @@
+{
+  "id": "datalog-bill-of-materials",
+  "pillar": "logic",
+  "statement": "The input bom lists [assembly, part, quantity] triples: each assembly is made of that many of each of its parts. A base part is one made of no other parts. The program's value is a record from each base part to how many of it one \"bike\" needs.",
+  "inputs": {
+    "bom": [
+      ["bike", "wheel", 2],
+      ["bike", "frame", 1],
+      ["wheel", "spoke", 36],
+      ["wheel", "rim", 1],
+      ["wheel", "hub", 1],
+      ["hub", "bearing", 2],
+      ["hub", "axle", 1],
+      ["frame", "tube", 3]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["needs"],
+    [
+      "=",
+      "needs",
+      ["quote", { "spoke": 72, "rim": 2, "bearing": 4, "axle": 2, "tube": 3 }]
+    ]
+  ],
+  "tags": ["relations", "recursion", "find", "records"],
+  "origin": "Bill of materials (parts explosion), the classic recursive query of SQL:1999's WITH RECURSIVE"
+}

@@ -1,0 +1,13 @@
+[
+  "array/map",
+  "pairs",
+  [
+    "lambda",
+    ["pair"],
+    [
+      "schema/includes?",
+      ["eval", ["array/head", "pair"]],
+      ["eval", ["array/head", ["array/tail", "pair"]]]
+    ]
+  ]
+]

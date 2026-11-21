@@ -1,6 +1,18 @@
 [
   "begin",
-  ["define", "one", ["lambda", ["xs"], ["array/head", "xs"]]],
+  [
+    "define",
+    "one",
+    [
+      "lambda",
+      ["xs"],
+      [
+        "cond",
+        [["number/equals?", ["array/length", "xs"], 0], null],
+        ["else", ["array/head", "xs"]]
+      ]
+    ]
+  ],
   [
     "define",
     "filled?",
@@ -793,7 +805,7 @@
       "lambda",
       ["r"],
       [
-        "array/head",
+        "one",
         [
           "find",
           "?t",
@@ -857,7 +869,7 @@
       ]
     ]
   ],
-  ["define", "nextDraft", ["array/head", ["find", "?r", ["draft", "?r"]]]],
+  ["define", "nextDraft", ["one", ["find", "?r", ["draft", "?r"]]]],
   [
     "define",
     "firstReleaseDate",
@@ -3521,7 +3533,7 @@
       "lambda",
       ["id"],
       [
-        "array/head",
+        "one",
         [
           "array/flat-map",
           "TOPIC_ORDER",

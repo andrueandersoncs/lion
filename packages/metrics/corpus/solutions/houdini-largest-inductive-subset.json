@@ -1,0 +1,169 @@
+[
+  "begin",
+  [
+    "schema",
+    "Account",
+    { "balance": "value/integer?", "limit": "value/integer?" }
+  ],
+  [
+    "schema",
+    "Amount",
+    [
+      "schema/allOf",
+      "value/integer?",
+      ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+    ]
+  ],
+  [
+    "schema",
+    "Command",
+    ["schema/anyOf", { "deposit": "Amount" }, { "withdraw": "Amount" }]
+  ],
+  [
+    "define",
+    "step",
+    [
+      "lambda",
+      ["a", "c"],
+      [
+        "cond",
+        [
+          ["object/has?", "c", "deposit"],
+          {
+            "balance": [
+              "number/add",
+              ["object/get", "a", "balance"],
+              ["object/get", "c", "deposit"]
+            ],
+            "limit": ["object/get", "a", "limit"]
+          }
+        ],
+        [
+          [
+            "number/lessThan",
+            [
+              "number/add",
+              ["object/get", "a", "balance"],
+              ["object/get", "a", "limit"]
+            ],
+            ["object/get", "c", "withdraw"]
+          ],
+          "a"
+        ],
+        [
+          "else",
+          {
+            "balance": [
+              "number/subtract",
+              ["object/get", "a", "balance"],
+              ["object/get", "c", "withdraw"]
+            ],
+            "limit": ["object/get", "a", "limit"]
+          }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "all",
+    [
+      "lambda",
+      ["kept", "a"],
+      [
+        "array/every?",
+        "kept",
+        ["lambda", ["r"], [["object/get", "r", "holds"], "a"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "kept-by",
+    [
+      "lambda",
+      ["kept", "r"],
+      [
+        "value/identity",
+        [
+          "not",
+          [
+            "exists",
+            ["?a", "?c"],
+            [
+              "and",
+              ["schema/fits?", "?a", "Account"],
+              ["all", "kept", "?a"],
+              ["schema/fits?", "?c", "Command"],
+              ["not", [["object/get", "r", "holds"], ["step", "?a", "?c"]]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "houdini",
+    [
+      "lambda",
+      ["kept"],
+      [
+        "begin",
+        [
+          "define",
+          "next",
+          [
+            "array/flat-map",
+            "kept",
+            [
+              "lambda",
+              ["r"],
+              [
+                "cond",
+                [["kept-by", "kept", "r"], ["array/make", "r"]],
+                ["else", ["quote", []]]
+              ]
+            ]
+          ]
+        ],
+        [
+          "cond",
+          [
+            [
+              "number/equals?",
+              ["array/length", "next"],
+              ["array/length", "kept"]
+            ],
+            "kept"
+          ],
+          ["else", ["houdini", "next"]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "all-candidates",
+    [
+      "array/map",
+      ["object/keys", "candidates"],
+      [
+        "lambda",
+        ["name"],
+        {
+          "name": "name",
+          "holds": ["eval", ["object/get", "candidates", "name"]]
+        }
+      ]
+    ]
+  ],
+  [
+    "aggregate/collect",
+    [
+      "array/map",
+      ["houdini", "all-candidates"],
+      ["lambda", ["r"], ["object/get", "r", "name"]]
+    ]
+  ]
+]

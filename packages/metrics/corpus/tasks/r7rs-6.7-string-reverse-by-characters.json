@@ -1,0 +1,18 @@
+{
+  "id": "r7rs-6.7-string-reverse-by-characters",
+  "pillar": "computation",
+  "statement": "Define a function of a string that gives its characters in reverse order, keeping each character whole, also one outside the Basic Multilingual Plane such as \"𝄞\". The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["reverse"],
+    [
+      "and",
+      ["=", ["reverse", "lion"], "noil"],
+      ["=", ["reverse", ""], ""],
+      ["=", ["reverse", "a𝄞b"], "b𝄞a"]
+    ]
+  ],
+  "tags": ["strings", "unicode"],
+  "origin": "R7RS-small 6.7, Strings: a string is a sequence of characters"
+}

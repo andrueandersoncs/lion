@@ -66,13 +66,21 @@ const constant = (value: Expression): Arbitrary.Arbitrary<Expression> =>
  * number: a call of something that is not a function, a lambda given too
  * few arguments, a misspelled name, a form given what it does not take, a
  * name defined and read back, an empty `begin`, quoted code run by `eval`,
- * and a library function that writes a schema with the names bound where
- * it is called, in a lambda's scope and in one a lambda calls.
+ * a library function that writes a schema with the names bound where it is
+ * called, in a lambda's scope and in one a lambda calls, and a lambda with
+ * one name for the list of its arguments.
  */
 const oddities = (n: Arbitrary.Arbitrary<Expression>) =>
   oneOf<Expression>(
     Arbitrary.map(n, (value) => [value, 1]),
     Arbitrary.map(n, (value) => [["lambda", ["a", "b"], "a"], value]),
+    Arbitrary.map(n, (value) => [
+      ["lambda", "args", ["array/reduce", "args", 0, "number/add"]],
+      value,
+      1,
+      value,
+    ]),
+    Arbitrary.map(n, (value) => [["lambda", "args", "args"], value]),
     Arbitrary.map(n, (value) => ["number/ad", value, 1]),
     Arbitrary.map(n, (value) => ["and", value, true]),
     Arbitrary.map(n, (value) => ["not", value]),

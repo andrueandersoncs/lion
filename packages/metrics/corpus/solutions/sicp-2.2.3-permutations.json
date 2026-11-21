@@ -1,0 +1,53 @@
+[
+  "begin",
+  [
+    "define",
+    "remove",
+    [
+      "lambda",
+      ["item", "items"],
+      [
+        "array/flat-map",
+        "items",
+        [
+          "lambda",
+          ["x"],
+          [
+            "cond",
+            [["=", "x", "item"], ["quote", []]],
+            ["else", ["array/make", "x"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "permutations",
+    [
+      "lambda",
+      ["s"],
+      [
+        "cond",
+        [["=", "s", ["quote", []]], ["quote", [[]]]],
+        [
+          "else",
+          [
+            "array/flat-map",
+            "s",
+            [
+              "lambda",
+              ["x"],
+              [
+                "array/map",
+                ["permutations", ["remove", "x", "s"]],
+                ["lambda", ["p"], ["array/concat", ["array/make", "x"], "p"]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "permutations"
+]

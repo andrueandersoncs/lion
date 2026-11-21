@@ -1,0 +1,29 @@
+{
+  "id": "sicp-4.4.1-append-to-form",
+  "pillar": "logic",
+  "statement": "The program's value is every pair [x, y] of lists such that x followed by y is the input list items, in any order.",
+  "inputs": { "items": ["a", "b", "c", "d"] },
+  "check": [
+    "lambda",
+    ["found"],
+    [
+      "=",
+      ["aggregate/unique", "found"],
+      [
+        "aggregate/unique",
+        [
+          "quote",
+          [
+            [[], ["a", "b", "c", "d"]],
+            [["a"], ["b", "c", "d"]],
+            [["a", "b"], ["c", "d"]],
+            [["a", "b", "c"], ["d"]],
+            [["a", "b", "c", "d"], []]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["lists", "find", "patterns"],
+  "origin": "SICP 4.4.1, Logic as programs: append-to-form run backwards"
+}

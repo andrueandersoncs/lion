@@ -109,28 +109,39 @@ export const ParameterSchema = Schema.Union([
   Schema.Tuple([NameSchema, Expression]),
 ]);
 
-export const LambdaFormSchema = form(
-  "lambda",
-  Schema.Array(ParameterSchema),
-  Expression
-);
+/**
+ * ["lambda", [<parameter>, ...], <body>], or ["lambda", <name>, <body>],
+ * whose one name is bound to the list of every argument, as
+ * `(lambda args body)` takes any number of them in Scheme.
+ */
+export const LambdaFormSchema = Schema.Union([
+  form("lambda", Schema.Array(ParameterSchema), Expression),
+  form("lambda", NameSchema, Expression),
+]);
 
-/** A lambda form's parameters, as written: names, or names with schemas. */
+/**
+ * A lambda form's parameters, as written: names, or names with schemas, or
+ * one name for all its arguments.
+ */
 export type Parameters = (typeof LambdaFormSchema.Type)[1];
 
-/** The names a lambda's parameters bind. */
-export const parameterNames = (parameters: readonly unknown[]) =>
-  parameters.map((parameter) =>
-    typeof parameter === "string" ? parameter : (parameter as [string])[0]
-  );
+/** The names a lambda's parameters bind: one, for a lambda that takes any number. */
+export const parameterNames = (parameters: readonly unknown[] | string) =>
+  typeof parameters === "string"
+    ? [parameters]
+    : parameters.map((parameter) =>
+        typeof parameter === "string" ? parameter : (parameter as [string])[0]
+      );
 
 /** The schema each parameter's argument must fit, where it has one. */
-export const parameterSchemas = (parameters: readonly unknown[]) =>
-  parameters.map((parameter) =>
-    typeof parameter === "string"
-      ? undefined
-      : (parameter as [string, unknown])[1]
-  );
+export const parameterSchemas = (parameters: readonly unknown[] | string) =>
+  typeof parameters === "string"
+    ? [undefined]
+    : parameters.map((parameter) =>
+        typeof parameter === "string"
+          ? undefined
+          : (parameter as [string, unknown])[1]
+      );
 export const CondFormSchema = Schema.TupleWithRest(form("cond", Pair), [Pair]);
 // ["match", <value>, [<schema>, <fn>], ..., <fallback-fn>], where the
 // fallback may be left out: a last part that is a pair is a case.
@@ -192,8 +203,9 @@ export const ExistsFormSchema = form(
 export const SomeFormSchema = form("some", Schema.String, Expression);
 export const WhyFormSchema = form("why", Expression);
 export const NotFormSchema = form("not", Expression);
-export const AndFormSchema = formWithMore("and", Expression);
-export const OrFormSchema = formWithMore("or", Expression);
+// ["and", <goal>, ...] and ["or", <goal>, ...]: with none, true and false
+export const AndFormSchema = formWithMore("and");
+export const OrFormSchema = formWithMore("or");
 export const UnifyFormSchema = form("=", Expression, Expression);
 // ["in", <element>, <list>]
 export const InFormSchema = form("in", Expression, Expression);
@@ -240,7 +252,7 @@ export const USAGE: Record<SpecialFormName, string> = {
   eval: 'eval takes one expression, whose value it evaluates, as in ["eval", ["quote", ["number/add", 1, 2]]].',
   quote: 'quote takes one value, as in ["quote", ["a", "b"]].',
   lambda:
-    'lambda takes a list of parameters, each a name or a name and a schema, and a body, as in ["lambda", ["x", ["y", "value/number?"]], ["number/add", "x", "y"]].',
+    'lambda takes a list of parameters, each a name or a name and a schema, or one name for the list of all its arguments, and a body, as in ["lambda", ["x", ["y", "value/number?"]], ["number/add", "x", "y"]] or ["lambda", "args", ["array/length", "args"]].',
   cond: 'cond takes one or more cases, each a condition and a result, as in ["cond", [["number/greaterThan", "x", 0], "positive"], ["else", "other"]].',
   match:
     'match takes a value, one or more cases of a schema and a function, and maybe a fallback function, as in ["match", "x", ["value/number?", "value/identity"], ["lambda", ["v"], null]].',

@@ -1,0 +1,52 @@
+[
+  "begin",
+  [
+    "define",
+    "first-denomination",
+    [
+      "lambda",
+      ["kinds"],
+      [
+        "cond",
+        [["number/equals?", "kinds", 1], 1],
+        [["number/equals?", "kinds", 2], 5],
+        [["number/equals?", "kinds", 3], 10],
+        [["number/equals?", "kinds", 4], 25],
+        ["else", 50]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "cc",
+    [
+      "lambda",
+      ["amount", "kinds"],
+      [
+        "cond",
+        [["number/equals?", "amount", 0], 1],
+        [
+          [
+            "or",
+            ["number/lessThan", "amount", 0],
+            ["number/equals?", "kinds", 0]
+          ],
+          0
+        ],
+        [
+          "else",
+          [
+            "number/add",
+            ["cc", "amount", ["number/subtract", "kinds", 1]],
+            [
+              "cc",
+              ["number/subtract", "amount", ["first-denomination", "kinds"]],
+              "kinds"
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["lambda", ["amount"], ["cc", "amount", 5]]
+]

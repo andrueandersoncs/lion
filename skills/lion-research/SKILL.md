@@ -480,7 +480,7 @@ Whatever the shape, keep two views for trust unless the goal makes them pointles
   "title": "Acme in 2024",
   "summary": ["string/concat",
     "Acme's 2024 revenue was ",
-    ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+    ["words/listed", ["words/first", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
     " million dollars",
     ["cond",
       [["restated", {"revenue": "acme", "year": 2024}, "?_", "?_", "?_"],
@@ -489,18 +489,18 @@ Whatever the shape, keep two views for trust unless the goal makes them pointles
          " million it first reported"]],
       ["else", ""]],
     ". It has ",
-    ["words/number", ["array/head", ["find", "?people", ["corroborated", {"headcount": "acme", "year": 2024}, "?people"]]]],
+    ["words/number", ["words/first", ["find", "?people", ["corroborated", {"headcount": "acme", "year": 2024}, "?people"]]]],
     " staff, which an independent source confirms."],
   "names": {"acme": "Acme Corp"},
   "views": [
     {"name": "The numbers", "blocks": [
       {"type": "figures", "items": [
         {"label": "Staff, 2024",
-         "value": ["words/number", ["array/head", ["find", "?people", ["corroborated", {"headcount": "acme", "year": 2024}, "?people"]]]],
+         "value": ["words/number", ["words/first", ["find", "?people", ["corroborated", {"headcount": "acme", "year": 2024}, "?people"]]]],
          "note": ["string/concat", "confirmed by ",
-           ["words/listed", ["array/head", ["find", "?publishers", ["backing", {"headcount": "acme", "year": 2024}, "?_", "?publishers"]]]]]},
+           ["words/listed", ["words/first", ["find", "?publishers", ["backing", {"headcount": "acme", "year": 2024}, "?_", "?publishers"]]]]]},
         {"label": "Revenue, 2024, in millions",
-         "value": ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+         "value": ["words/listed", ["words/first", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
          "note": ["cond",
            [["disputed", {"revenue": "acme", "year": 2024}, "?_"], "sources disagree"],
            [["restated", {"revenue": "acme", "year": 2024}, "?_", "?_", "?_"],
@@ -512,20 +512,20 @@ Whatever the shape, keep two views for trust unless the goal makes them pointles
        "answer": ["cond",
          [["disputed", {"revenue": "acme", "year": 2024}, "?_"],
           ["string/concat", "Its sources give different figures: ",
-            ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+            ["words/listed", ["words/first", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
             " million dollars. ",
             ["cond",
               [["corroborated", {"revenue": "acme", "year": 2024}, "?_"], "One of them is confirmed independently."],
               ["else", "No independent publisher gives a figure."]]]],
          [["restated", {"revenue": "acme", "year": 2024}, "?_", "?_", "?_"],
           ["string/concat",
-            ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+            ["words/listed", ["words/first", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
             " million dollars. Acme first reported ",
             ["words/listed", ["find", "?before", ["restated", {"revenue": "acme", "year": 2024}, "?_", "?before", "?_"]]],
             " million and later corrected it, so sources that repeat the first figure are out of date."]],
          ["else",
           ["string/concat",
-            ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+            ["words/listed", ["words/first", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
             " million dollars."]]],
        "evidence": ["query", ["and",
          ["answer", {"revenue": "acme", "year": 2024}, "?usd_m", "?statement"],
@@ -554,7 +554,7 @@ The page binds these before any expression runs, for turning values into words:
 | `["words/listed", list]` | the items as a sentence lists them: `a`, `a and b`, `a, b and c`. These functions never fail: given what is not a list or a number, they write it as `words/text` does |
 | `["words/number", n]` | a number with separators: `130,000`, `1,234.5`. Anything else, as `words/text` writes it, so a figure the model lacks reads `nothing` and does not fail |
 | `["words/count", n, "source", "sources"]` | `1 source`, `2,400 sources` |
-| `["array/head", list]` | from the standard library: the first item of a list, or `null` when it is empty; a `find` gives a list even when one thing matches |
+| `["words/first", list]` | the first item of a list, or `null` when it is empty, so a figure the model lacks reads `nothing`; a `find` gives a list even when one thing matches. The library's `array/head` fails on an empty list |
 | `["words/text", value]` | any value as text: a number as its digits, `true` as `yes` |
 
 `string/concat` joins any number of strings, and `number/toString` writes a number that needs no separators, such as a year.
@@ -598,7 +598,7 @@ Every block can have a `title` and a `note` of plain words under it.
 - **Answer in plain words, in a few sentences.** Say the answer first, then how sure it is and what it rests on. No ids, no relation names, no JSON. Where sources disagree or the evidence is thin, the answer says so, by a `cond` on the relation that shows it.
 - **Read what each expression gives.** `page-check.json` runs every text and every query of the plan, so its output is the page's wording as the reader will see it. Read it as prose: an empty list reads as nothing, and a `null` as "nothing".
 - **Reach a question that has senses through `meant`.** `["meant", {"revenue": "acme"}, "?q"]` gives the questions the reader means by revenue: every sense the sources answer until the reader chooses, and then only the one they chose. A plan that names `{"revenue": "acme", "basis": "reported"}` itself has made the choice for the reader, and the page check lists it. When the reader has not chosen, the wording says the answer depends on it, with a `cond` on `ambiguous`.
-- **Show a computed figure's arithmetic.** Give an answer about a ratio, a margin, or a total the evidence `["why", [relation, …, figure]]`, with the figure itself an expression such as `["array/head", ["find", "?p", [relation, …, "?p"]]]`, and the page shows "Worked out as …" with the values the rule used, above the statements they came from.
+- **Show a computed figure's arithmetic.** Give an answer about a ratio, a margin, or a total the evidence `["why", [relation, …, figure]]`, with the figure itself an expression such as `["words/first", ["find", "?p", [relation, …, "?p"]]]`, and the page shows "Worked out as …" with the values the rule used, above the statements they came from.
 - **Shape each query for a reader.** Its variable names become the column headings, so name them in plain words: `?publishers`, `?minutes_apart`, `?when`. Leave out with `"?_"` whatever is only for the engine, such as a count of minutes beside a time as text. A variable named `?statement` or `?claim` that holds a claim's id is shown as that claim's quote, and `?source` as the source's title. A record of queries is shown as parts, each under its key.
 - **Give times as text.** A time the reader sees is a column a rule computed with `utc-text`. Text of that form sorts in time order, so `{"order": "when"}` works.
 - **The same answer can stand in two views** when the reader would look for it in both.

@@ -1693,7 +1693,7 @@ const listedPlainly = (names: readonly string[]) =>
 
 describe("the research skill's wording", () => {
   it.effect.prop(
-    "lists names as a sentence does, and writes whole numbers with separators",
+    "lists names as a sentence does, writes whole numbers with separators, and takes a first item that may not be there",
     {
       count: between(-2_000_000_000, 2_000_000_000),
       names: Arbitrary.array(word, { maxLength: 5 }),
@@ -1705,8 +1705,9 @@ describe("the research skill's wording", () => {
             withWords({
               counted: ["words/count", count, "source", "sources"],
               listed: ["words/listed", ["quote", names]],
-              missing: ["words/number", ["array/head", ["quote", []]]],
-              nobody: ["words/listed", ["array/head", ["quote", []]]],
+              first: ["words/first", ["quote", names]],
+              missing: ["words/number", ["words/first", ["quote", []]]],
+              nobody: ["words/listed", ["words/first", ["quote", []]]],
               number: ["words/number", count],
             })
           )
@@ -1714,6 +1715,7 @@ describe("the research skill's wording", () => {
           ok: true,
           value: {
             counted: `${count.toLocaleString("en-US")} ${count === 1 ? "source" : "sources"}`,
+            first: names[0] ?? null,
             listed: listedPlainly(names),
             // A figure the model does not have is words, never a failure.
             missing: "nothing",

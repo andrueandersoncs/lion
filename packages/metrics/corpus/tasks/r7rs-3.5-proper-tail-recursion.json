@@ -1,0 +1,17 @@
+{
+  "id": "r7rs-3.5-proper-tail-recursion",
+  "pillar": "computation",
+  "statement": "Define a function of a whole number n that gives 1 + 2 + ... + n with a loop of tail calls, one call for each number, so that n = 1,000,000 finishes and holds no memory for the calls behind it. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["sum"],
+    [
+      "=",
+      ["array/make", ["sum", 0], ["sum", 10], ["sum", 1000000]],
+      ["quote", [0, 55, 500000500000]]
+    ]
+  ],
+  "tags": ["tail-calls", "iteration"],
+  "origin": "R7RS-small 3.5, Proper tail recursion"
+}

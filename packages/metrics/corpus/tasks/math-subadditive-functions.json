@@ -1,0 +1,19 @@
+{
+  "id": "math-subadditive-functions",
+  "pillar": "proofs",
+  "statement": "A function f of whole numbers is subadditive when f(a + b) is at most f(a) + f(b) for all whole numbers a and b. Define a function of such an f that gives true when f is subadditive and false when some a and b show it is not. It must decide for all whole numbers, however large. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["proves"],
+    [
+      "and",
+      ["proves", "number/absolute"],
+      ["proves", ["lambda", ["x"], ["number/max", "x", 0]]],
+      ["not", ["proves", ["lambda", ["x"], ["number/subtract", "x", 1]]]],
+      ["not", ["proves", ["lambda", ["x"], ["number/min", "x", 0]]]]
+    ]
+  ],
+  "tags": ["solver", "exists", "not"],
+  "origin": "The triangle inequality |a + b| <= |a| + |b|, as subadditivity"
+}

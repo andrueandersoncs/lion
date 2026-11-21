@@ -1,0 +1,5 @@
+[
+  "lambda",
+  ["sum"],
+  ["lambda", ["amount"], ["set!", "sum", ["number/add", "sum", "amount"]]]
+]

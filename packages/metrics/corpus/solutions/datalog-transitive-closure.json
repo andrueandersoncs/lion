@@ -1,0 +1,9 @@
+[
+  "begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "reach", ["from", "to"]],
+  ["rule", ["edge", "?x", "?y"], ["in", ["array/make", "?x", "?y"], "edges"]],
+  ["rule", ["reach", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["reach", "?x", "?z"], ["reach", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["find", ["array/make", "?x", "?y"], ["reach", "?x", "?y"]]
+]

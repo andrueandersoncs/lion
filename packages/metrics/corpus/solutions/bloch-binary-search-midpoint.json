@@ -1,0 +1,30 @@
+[
+  "lambda",
+  ["m"],
+  [
+    "value/identity",
+    [
+      "not",
+      [
+        "exists",
+        ["?lo", "?hi"],
+        [
+          "and",
+          ["schema/fits?", "?lo", "value/integer?"],
+          ["schema/fits?", "?hi", "value/integer?"],
+          ["number/lessThanOrEqualTo", 0, "?lo"],
+          ["number/lessThanOrEqualTo", "?lo", "?hi"],
+          ["number/lessThanOrEqualTo", "?hi", 2147483647],
+          [
+            "not",
+            [
+              "and",
+              ["number/lessThanOrEqualTo", "?lo", ["m", "?lo", "?hi"]],
+              ["number/lessThanOrEqualTo", ["m", "?lo", "?hi"], "?hi"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

@@ -1,0 +1,203 @@
+{
+  "title": "Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has",
+  "context": "The probes `r7rs-<section>-<what>` run 36 cases that R7RS-small settles, and in 20 of them Lion gave something else than Scheme. The rule `scheme-racket-semantics` names a departure as an exception in a decision, so each difference was a finding in `known.json` until it was decided. On 2026-11-21 the user chose, for each, the recommendation it was listed with: ten are fixed, so that Lion gives what Scheme gives, in the changes that follow this one, and the ten this record names are departures.",
+  "decision": "Ten cases stay as they are, as departures from Scheme. A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter, so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f. A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair. Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed. `func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way, where Scheme's `guard` gives the raised object. A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does, where an R7RS record's modifier changes it. A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together. `array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several. A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again.",
+  "consequences": "The ten cases leave `known.json`: the rule `scheme-racket-semantics` excepts them, and what this record asserts of each is what its probe gives. The other ten wait in `known.json` until the change that fixes each. Lion's list of departures from Scheme grows from one to eleven.",
+  "alternatives": [
+    {
+      "option": "Give what Scheme gives in all twenty cases",
+      "rejected": "Six of the ten would undo a rule Lion keeps on purpose: that conditions are booleans, that values are immutable data facts can hold, that a catch handler reads every failure the same way, and that a continuation's fiber goes on once."
+    },
+    {
+      "option": "Except all twenty",
+      "rejected": "In the other ten Lion fails or gives a value Scheme does not for no reason of its own, as `(+)` failing while the README says `number/add` works as `+` does."
+    },
+    {
+      "option": "Count string positions in characters now",
+      "rejected": "Every string function counts code units, so changing `string/length` alone would make its positions disagree with `string/slice`, `string/indexOf`, and `string/split`; that is a decision for all of them at once."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A condition is a boolean in `and`, `or`, `not`, and `boolean/not` as it is in `cond` and in a rule's filter",
+      "says": {
+        "decision": "condition-truth",
+        "chose": "true-or-false",
+        "over": ["scheme-truth"],
+        "area": "forms",
+        "because": "a condition is a boolean in every form alike, as a filter in a rule must be"
+      }
+    },
+    {
+      "quote": "A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair.",
+      "says": {
+        "decision": "cond-case-shape",
+        "chose": "one-result",
+        "over": ["sequence"],
+        "area": "forms",
+        "because": "a result written with begin does the same, and a case that is a pair is what the analysis and the editor read"
+      }
+    },
+    {
+      "quote": "Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed.",
+      "says": {
+        "decision": "reentrant-force",
+        "chose": "fails",
+        "over": ["first-value"],
+        "area": "evaluation",
+        "because": "Lion's delay is Racket's, and a promise that forces itself would otherwise loop"
+      }
+    },
+    {
+      "quote": "`func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way",
+      "says": {
+        "decision": "catch-handler-argument",
+        "chose": "failure-record",
+        "over": ["raised-object"],
+        "area": "library",
+        "because": "one handler reads a raised value and a failure of Lion's own the same way"
+      }
+    },
+    {
+      "quote": "A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does",
+      "says": {
+        "decision": "record-mutability",
+        "chose": "immutable",
+        "over": ["mutable-records"],
+        "area": "library",
+        "because": "a value is data that facts and answers can hold, and a fact must not change under its relation"
+      }
+    },
+    {
+      "quote": "A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together.",
+      "says": {
+        "decision": "string-positions",
+        "chose": "utf16-code-units",
+        "over": ["characters"],
+        "area": "library",
+        "because": "every string function counts the same units, and changing one alone would make their positions disagree"
+      }
+    },
+    {
+      "quote": "`array/map` takes one list and the function, data first, and a function that pairs up lists, `array/zip`, serves where Scheme's `map` takes several.",
+      "says": {
+        "decision": "map-arguments",
+        "chose": "one-list",
+        "over": ["several-lists"],
+        "area": "library",
+        "because": "a function that pairs up lists serves the same need and leaves array/map's arguments as they are"
+      }
+    },
+    {
+      "quote": "A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again.",
+      "says": {
+        "decision": "continuation-shots",
+        "chose": "one-shot",
+        "over": ["multi-shot"],
+        "area": "evaluation",
+        "because": "the delimited part runs in a fiber of its own, which can only go on once"
+      }
+    },
+    {
+      "quote": "Ten cases stay as they are, as departures from Scheme.",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Lion's semantics are approximately those of Scheme and Racket, plus the logic layer; each departure is a case a decision names as an exception",
+        "area": "evaluation",
+        "except": [
+          "r7rs-4.2.1-and-gives-last-value",
+          "r7rs-4.2.1-or-gives-first-true-value",
+          "r7rs-6.3-not-of-non-boolean",
+          "r7rs-4.2.1-cond-clause-sequence",
+          "r7rs-4.2.5-force-reentrant",
+          "r7rs-4.2.7-raise-handler-gets-raised-object",
+          "r7rs-5.5-record-modifier-mutates",
+          "r7rs-6.7-string-length-counts-characters",
+          "r7rs-6.10-map-several-lists",
+          "r7rs-6.10-continuation-resumed-twice"
+        ]
+      }
+    },
+    {
+      "quote": "so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f",
+      "says": {
+        "behavior": "r7rs-4.2.1-and-gives-last-value",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f",
+      "says": {
+        "behavior": "r7rs-4.2.1-or-gives-first-true-value",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f",
+      "says": {
+        "behavior": "r7rs-6.3-not-of-non-boolean",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "A `cond` case is a condition and one result",
+      "says": {
+        "behavior": "r7rs-4.2.1-cond-clause-sequence",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "Forcing a promise while it is being forced fails",
+      "says": {
+        "behavior": "r7rs-4.2.5-force-reentrant",
+        "is": "error",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "`func/catch` gives its handler a record of the failure",
+      "says": {
+        "behavior": "r7rs-4.2.7-raise-handler-gets-raised-object",
+        "is": "record",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "`object/set` gives a new one",
+      "says": {
+        "behavior": "r7rs-5.5-record-modifier-mutates",
+        "is": "unchanged",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "A string's positions and length count UTF-16 code units",
+      "says": {
+        "behavior": "r7rs-6.7-string-length-counts-characters",
+        "is": "two",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "`array/map` takes one list and the function",
+      "says": {
+        "behavior": "r7rs-6.10-map-several-lists",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "A continuation resumes once",
+      "says": {
+        "behavior": "r7rs-6.10-continuation-resumed-twice",
+        "is": "error",
+        "area": "library"
+      }
+    }
+  ]
+}

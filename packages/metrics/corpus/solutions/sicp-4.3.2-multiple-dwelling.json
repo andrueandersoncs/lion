@@ -1,0 +1,39 @@
+[
+  "begin",
+  ["define", "floors", ["array/range", 1, 6]],
+  [
+    "define",
+    "apart",
+    ["lambda", ["a", "b"], ["number/absolute", ["number/subtract", "a", "b"]]]
+  ],
+  [
+    "find",
+    {
+      "baker": "?b",
+      "cooper": "?c",
+      "fletcher": "?f",
+      "miller": "?m",
+      "smith": "?s"
+    },
+    [
+      "and",
+      ["in", "?b", "floors"],
+      ["in", "?c", "floors"],
+      ["in", "?f", "floors"],
+      ["in", "?m", "floors"],
+      ["in", "?s", "floors"],
+      [
+        "number/equals?",
+        ["aggregate/countUnique", ["array/make", "?b", "?c", "?f", "?m", "?s"]],
+        5
+      ],
+      ["not", ["number/equals?", "?b", 5]],
+      ["not", ["number/equals?", "?c", 1]],
+      ["not", ["number/equals?", "?f", 5]],
+      ["not", ["number/equals?", "?f", 1]],
+      ["number/greaterThan", "?m", "?c"],
+      ["not", ["number/equals?", ["apart", "?s", "?f"], 1]],
+      ["not", ["number/equals?", ["apart", "?f", "?c"], 1]]
+    ]
+  ]
+]

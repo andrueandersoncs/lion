@@ -1,0 +1,25 @@
+[
+  "begin",
+  ["relation", "parent", ["child", "parent"]],
+  ["relation", "sg", ["a", "b"]],
+  [
+    "rule",
+    ["parent", "?c", "?p"],
+    ["in", ["array/make", "?c", "?p"], "parents"]
+  ],
+  [
+    "rule",
+    ["sg", "?x", "?y"],
+    ["parent", "?x", "?p"],
+    ["parent", "?y", "?p"],
+    ["not", ["=", "?x", "?y"]]
+  ],
+  [
+    "rule",
+    ["sg", "?x", "?y"],
+    ["parent", "?x", "?p"],
+    ["parent", "?y", "?q"],
+    ["sg", "?p", "?q"]
+  ],
+  ["find", ["array/make", "?x", "?y"], ["sg", "?x", "?y"]]
+]

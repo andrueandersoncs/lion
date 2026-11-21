@@ -1,0 +1,24 @@
+[
+  "begin",
+  [
+    "define",
+    "reverse",
+    [
+      "lambda",
+      ["items"],
+      [
+        "cond",
+        [["=", "items", ["quote", []]], ["quote", []]],
+        [
+          "else",
+          [
+            "array/concat",
+            ["reverse", ["array/tail", "items"]],
+            ["array/make", ["array/head", "items"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "reverse"
+]

@@ -1,0 +1,21 @@
+{
+  "id": "sicp-1.2.1-factorial-exact",
+  "pillar": "computation",
+  "statement": "Define a function of a whole number n that gives n factorial exactly, also when it is larger than 2^53. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["factorial"],
+    [
+      "and",
+      ["=", ["factorial", 10], 3628800],
+      [
+        "=",
+        ["number/toString", ["factorial", 25]],
+        "15511210043330985984000000"
+      ]
+    ]
+  ],
+  "tags": ["recursion", "numbers", "exact-integers"],
+  "origin": "SICP 1.2.1, Linear Recursion and Iteration"
+}

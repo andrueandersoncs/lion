@@ -93,7 +93,7 @@
     "title": [
       "lambda",
       ["c"],
-      ["array/head", ["find", "?t", ["candidate", "c", "?t"]]]
+      ["words/first", ["find", "?t", ["candidate", "c", "?t"]]]
     ],
     "runsOf": [
       "lambda",
@@ -253,7 +253,7 @@
     [
       "label",
       [
-        "array/head",
+        "words/first",
         ["find", "?c", ["and", ["rank", "?c", 1], ["stage", "?c", 1]]]
       ]
     ],
@@ -791,7 +791,7 @@
                   [
                     "string/concat",
                     "Confirmed: ",
-                    ["array/head", ["find", "?s", ["assumption", "a", "?s"]]],
+                    ["words/first", ["find", "?s", ["assumption", "a", "?s"]]],
                     "."
                   ]
                 ]
@@ -804,7 +804,7 @@
               ["label", "held-out-eval"],
               ", which the model finds ",
               [
-                "array/head",
+                "words/first",
                 ["find", "?v", ["verdict", "held-out-eval", "?v"]]
               ],
               "."
@@ -836,7 +836,7 @@
                 [
                   "words/number",
                   [
-                    "array/head",
+                    "words/first",
                     [
                       "find",
                       "?n",
@@ -854,7 +854,7 @@
                 [
                   "words/number",
                   [
-                    "array/head",
+                    "words/first",
                     [
                       "find",
                       "?n",
@@ -879,7 +879,7 @@
                 [
                   "words/number",
                   [
-                    "array/head",
+                    "words/first",
                     [
                       "find",
                       "?n",
@@ -897,7 +897,7 @@
                 [
                   "words/number",
                   [
-                    "array/head",
+                    "words/first",
                     [
                       "find",
                       "?x",

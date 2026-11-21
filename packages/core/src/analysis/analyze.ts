@@ -520,6 +520,10 @@ const formPart = (
   if (role === "binding") {
     return binding(form, value as string, at, context);
   }
+  if (role === "parameters" && typeof value === "string") {
+    // One name for the list of every argument binds where it stands.
+    return site(value, at, context.scope.bindings.get(value));
+  }
   if (role === "parameters" || role === "variables") {
     const parameter = (name: string, place: StructuralPath) =>
       site(name, place, context.scope.bindings.get(name));

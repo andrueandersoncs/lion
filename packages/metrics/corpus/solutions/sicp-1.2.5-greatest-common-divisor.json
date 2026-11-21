@@ -1,0 +1,17 @@
+[
+  "begin",
+  [
+    "define",
+    "gcd",
+    [
+      "lambda",
+      ["a", "b"],
+      [
+        "cond",
+        [["number/equals?", "b", 0], "a"],
+        ["else", ["gcd", "b", ["number/remainder", "a", "b"]]]
+      ]
+    ]
+  ],
+  "gcd"
+]

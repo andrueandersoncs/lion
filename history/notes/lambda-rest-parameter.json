@@ -1,0 +1,55 @@
+{
+  "title": "A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme",
+  "context": "The probe of R7RS-small 4.1.4 found that `[\"lambda\", \"args\", \"args\"]` was refused as not well-formed, where Scheme's `(lambda args args)` takes any number of arguments and binds `args` to the list of them. Library functions already take any number after the ones they need, as `array/make` and `func/partial` do, but a Lion function could not. On 2026-11-21 the user chose to build it.",
+  "decision": "A lambda written with one name in place of its list of parameters, `[\"lambda\", \"args\", body]`, takes any number of arguments and binds the name to the list of them. Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place. The solver's step works it out by its body as it does any lambda, with the name standing for the list of the arguments it is given. A snapshot writes it as its form. `func/callback` gives it every argument the host passes, and `func/apply` the items of its list.",
+  "consequences": "The case leaves `known.json`, and with it the last of the twenty differences from Scheme the R7RS-small probes found: ten are departures a decision names, and ten give what Scheme gives, so of the 36 cases probed, 26 give what Scheme gives and 10 differ, each as a decision names. A lambda with a list of parameters still takes exactly one argument for each. A lambda that takes some named arguments and then the rest, Scheme's `(lambda (a b . rest) body)`, is not built; its body can take the first items of its list.",
+  "alternatives": [
+    {
+      "option": "A dotted list of parameters, such as [\"a\", \".\", \"rest\"]",
+      "rejected": "A string \".\" among the parameters would be a name everywhere else, and JSON has no pairs to make a dotted list of; one name in place of the list is the one form Scheme's own syntax maps to without a new marker."
+    },
+    {
+      "option": "Leave lambdas to a fixed number of arguments",
+      "rejected": "A function of any number of arguments is ordinary in Scheme, and Lion's own library has them, so a program could not write one of its own."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A lambda written with one name in place of its list of parameters, `[\"lambda\", \"args\", body]`, takes any number of arguments and binds the name to the list of them.",
+      "says": {
+        "decision": "lambda-rest-parameter",
+        "chose": "one-name-for-all",
+        "over": ["dotted-list", "fixed-only"],
+        "area": "forms",
+        "because": "(lambda args body) is how Scheme writes a function of any number of arguments, and one name in place of the list needs no new marker"
+      }
+    },
+    {
+      "quote": "A lambda written with one name in place of its list of parameters, `[\"lambda\", \"args\", body]`, takes any number of arguments and binds the name to the list of them.",
+      "says": {
+        "behavior": "r7rs-4.1.4-lambda-rest-parameter",
+        "is": "list",
+        "area": "forms",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "Where an argument waits for a logic variable, the list waits with it, as a list written with `array/make` does, so the lambda gives in a rule, a query, or a `find` what it gives in plain code with the values in place.",
+      "says": {
+        "rule": "same-as-plain-code",
+        "holds": true,
+        "statement": "An expression gives in a rule, a query, a find, or a reloaded snapshot what it gives in plain code",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "of the 36 cases probed, 26 give what Scheme gives and 10 differ, each as a decision names",
+      "says": {
+        "measured": "r7rs-cases-differing",
+        "before": 20,
+        "after": 10,
+        "area": "record"
+      }
+    }
+  ]
+}

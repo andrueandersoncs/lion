@@ -40,10 +40,21 @@
  "rest": ["array/tail", ["array/make", "a", "b", "c"]],
  "length": ["array/length", ["array/make", "a", "b", "c"]],
  "hasB": ["array/includes?", ["array/make", "a", "b", "c"], "b"],
- "joined": ["array/concat", ["array/make", 1], ["array/make", 2, 3]],
- "emptyFirst": ["array/head", ["array/make"]]}
+ "joined": ["array/concat", ["array/make", 1], ["array/make", 2, 3]]}
 </lion-example>
-<p>The first item of an empty list is <code>null</code>, and the rest of it is an empty list.</p>
+<p>An empty list has no first item and no rest, so <code>array/head</code> and <code>array/tail</code> fail on one, as Scheme's <code>car</code> and <code>cdr</code> do. Ask for its length first, or use <code>array/slice</code>, which gives what part there is:</p>
+<lion-example name="An empty list has no first item" expect="error">
+["array/head", ["array/make"]]
+</lion-example>
+<lion-example name="Taking the first item only when there is one">
+["begin",
+  ["define", "first", ["lambda", ["items", "otherwise"],
+    ["cond", [["number/equals?", ["array/length", "items"], 0], "otherwise"],
+             ["else", ["array/head", "items"]]]]],
+  {"of a list": ["first", ["array/make", "a", "b"], "none"],
+   "of an empty one": ["first", ["array/make"], "none"],
+   "a slice": ["array/slice", ["array/make"], 0, 1]}]
+</lion-example>
 
 <h2>Related</h2>
 <ul>

@@ -1,0 +1,36 @@
+{
+  "id": "datalog-transitive-closure",
+  "pillar": "logic",
+  "statement": "The input edges is a list of [from, to] pairs. The program's value is every pair [from, to], in any order, such that to can be reached from from by following one or more edges.",
+  "inputs": { "edges": [["a", "b"], ["b", "c"], ["c", "a"], ["c", "d"]] },
+  "check": [
+    "lambda",
+    ["pairs"],
+    [
+      "=",
+      ["aggregate/unique", "pairs"],
+      [
+        "aggregate/unique",
+        [
+          "quote",
+          [
+            ["a", "a"],
+            ["a", "b"],
+            ["a", "c"],
+            ["a", "d"],
+            ["b", "a"],
+            ["b", "b"],
+            ["b", "c"],
+            ["b", "d"],
+            ["c", "a"],
+            ["c", "b"],
+            ["c", "c"],
+            ["c", "d"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["rules", "recursion", "relations"],
+  "origin": "Transitive closure, the first example of recursive Datalog (Abiteboul, Hull, and Vianu, Foundations of Databases, ch. 12)"
+}

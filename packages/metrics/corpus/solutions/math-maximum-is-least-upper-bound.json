@@ -1,0 +1,29 @@
+[
+  "lambda",
+  ["m"],
+  [
+    "value/identity",
+    [
+      "not",
+      [
+        "exists",
+        ["?a", "?b"],
+        [
+          "and",
+          ["schema/fits?", "?a", "value/integer?"],
+          ["schema/fits?", "?b", "value/integer?"],
+          [
+            "or",
+            ["number/lessThan", ["m", "?a", "?b"], "?a"],
+            ["number/lessThan", ["m", "?a", "?b"], "?b"],
+            [
+              "and",
+              ["not", ["number/equals?", ["m", "?a", "?b"], "?a"]],
+              ["not", ["number/equals?", ["m", "?a", "?b"], "?b"]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

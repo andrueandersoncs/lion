@@ -531,18 +531,19 @@
 <code-block lang="json">
 ["and", goal, ...]
 </code-block>
-<p>Holds when every goal holds, sharing variables between them. On booleans it is the boolean operator: it reads its arguments in order and stops at the first that is <code>false</code>, so later arguments are not evaluated.</p>
+<p>Holds when every goal holds, sharing variables between them. On booleans it is the boolean operator: it reads its arguments in order and stops at the first that is <code>false</code>, so later arguments are not evaluated. With no goals it holds: <code>["and"]</code> is <code>true</code>, as <code>(and)</code> is in Scheme.</p>
 
 <h2 id="form-or"><code>or</code></h2>
 <code-block lang="json">
 ["or", goal, ...]
 </code-block>
-<p>Holds when any goal holds. On booleans it is the boolean operator, and stops at the first argument that is <code>true</code>. An answer leaves out a variable that the alternative it came from does not bind. A choice between filters is one test; goals that combine <code>and</code> and <code>or</code> over relations may expand to at most 64 alternatives.</p>
+<p>Holds when any goal holds. On booleans it is the boolean operator, and stops at the first argument that is <code>true</code>. With no goals it does not hold: <code>["or"]</code> is <code>false</code>. An answer leaves out a variable that the alternative it came from does not bind. A choice between filters is one test; goals that combine <code>and</code> and <code>or</code> over relations may expand to at most 64 alternatives.</p>
 <lion-example name="Booleans">
 {"and": ["and", true, false],
  "or": ["or", false, true],
  "not": ["not", true],
- "stops early": ["and", false, ["number/divide", 1, 0]]}
+ "stops early": ["and", false, ["number/divide", 1, 0]],
+ "of none": ["array/make", ["and"], ["or"]]}
 </lion-example>
 
 <h2 id="form-unify"><code>=</code></h2>

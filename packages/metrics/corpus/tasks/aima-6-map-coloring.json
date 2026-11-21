@@ -1,0 +1,23 @@
+{
+  "id": "aima-6-map-coloring",
+  "pillar": "logic",
+  "statement": "Color each region of the map with one of the colors so that no two regions that share a border have the same color. The inputs are the regions, the colors, and the borders as [a, b] pairs. The program's value is the number of ways to color the map.",
+  "inputs": {
+    "regions": ["WA", "NT", "SA", "Q", "NSW", "V", "T"],
+    "colors": ["red", "green", "blue"],
+    "borders": [
+      ["WA", "NT"],
+      ["WA", "SA"],
+      ["NT", "SA"],
+      ["NT", "Q"],
+      ["SA", "Q"],
+      ["SA", "NSW"],
+      ["SA", "V"],
+      ["Q", "NSW"],
+      ["NSW", "V"]
+    ]
+  },
+  "check": ["lambda", ["count"], ["=", "count", 18]],
+  "tags": ["search", "constraints"],
+  "origin": "Russell and Norvig, Artificial Intelligence: A Modern Approach, ch. 6: coloring the map of Australia"
+}

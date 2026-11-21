@@ -1,0 +1,26 @@
+[
+  "begin",
+  [
+    "define",
+    "A",
+    [
+      "lambda",
+      ["x", "y"],
+      [
+        "cond",
+        [["number/equals?", "y", 0], 0],
+        [["number/equals?", "x", 0], ["number/multiply", 2, "y"]],
+        [["number/equals?", "y", 1], 2],
+        [
+          "else",
+          [
+            "A",
+            ["number/subtract", "x", 1],
+            ["A", "x", ["number/subtract", "y", 1]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "A"
+]

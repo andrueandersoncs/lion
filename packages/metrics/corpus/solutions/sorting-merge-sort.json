@@ -1,0 +1,65 @@
+[
+  "begin",
+  [
+    "define",
+    "merge",
+    [
+      "lambda",
+      ["a", "b"],
+      [
+        "cond",
+        [["=", "a", ["quote", []]], "b"],
+        [["=", "b", ["quote", []]], "a"],
+        [
+          [
+            "number/lessThanOrEqualTo",
+            ["array/head", "a"],
+            ["array/head", "b"]
+          ],
+          [
+            "array/concat",
+            ["array/make", ["array/head", "a"]],
+            ["merge", ["array/tail", "a"], "b"]
+          ]
+        ],
+        [
+          "else",
+          [
+            "array/concat",
+            ["array/make", ["array/head", "b"]],
+            ["merge", "a", ["array/tail", "b"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "sort",
+    [
+      "lambda",
+      ["xs"],
+      [
+        "cond",
+        [["number/lessThan", ["array/length", "xs"], 2], "xs"],
+        [
+          "else",
+          [
+            "begin",
+            [
+              "define",
+              "half",
+              ["number/floor", ["number/divide", ["array/length", "xs"], 2]]
+            ],
+            [
+              "merge",
+              ["sort", ["array/slice", "xs", 0, "half"]],
+              ["sort", ["array/slice", "xs", "half"]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "sort"
+]

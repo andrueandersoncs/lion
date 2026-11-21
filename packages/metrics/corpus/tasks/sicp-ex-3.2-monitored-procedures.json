@@ -1,0 +1,33 @@
+{
+  "id": "sicp-ex-3.2-monitored-procedures",
+  "pillar": "computation",
+  "statement": "Define make-monitored: a function of a function f of one argument that gives a function mf counting its calls. mf called with \"how-many-calls?\" gives the count, with \"reset-count\" sets the count to 0 and gives 0, and with anything else adds one to the count and gives f of it. The program's value is make-monitored.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["make-monitored"],
+    [
+      "begin",
+      [
+        "define",
+        "s",
+        ["make-monitored", ["lambda", ["n"], ["number/multiply", "n", "n"]]]
+      ],
+      ["define", "t", ["make-monitored", ["lambda", ["n"], "n"]]],
+      ["define", "a", ["s", 10]],
+      ["define", "b", ["s", 3]],
+      ["define", "c", ["t", 1]],
+      ["define", "count", ["s", "how-many-calls?"]],
+      ["define", "zero", ["s", "reset-count"]],
+      ["define", "after", ["s", "how-many-calls?"]],
+      ["define", "others", ["t", "how-many-calls?"]],
+      [
+        "=",
+        ["array/make", "a", "b", "c", "count", "zero", "after", "others"],
+        ["quote", [100, 9, 1, 2, 0, 0, 1]]
+      ]
+    ]
+  ],
+  "tags": ["closures", "assignment", "message-passing"],
+  "origin": "SICP Exercise 3.2"
+}

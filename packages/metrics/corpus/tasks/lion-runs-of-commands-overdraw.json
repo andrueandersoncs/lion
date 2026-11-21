@@ -1,0 +1,84 @@
+{
+  "id": "lion-runs-of-commands-overdraw",
+  "pillar": "proofs",
+  "statement": "A command is {\"deposit\": n} or {\"withdraw\": n}, with n a whole number above 0. Define a function of a step function, which takes a whole balance and a command and gives the balance after, that gives true when some run of at most three commands, with any amounts, takes a balance of 0 below 0 at some point, and false when none does. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["overdraws"],
+    [
+      "and",
+      [
+        "not",
+        [
+          "overdraws",
+          [
+            "lambda",
+            ["balance", "c"],
+            [
+              "cond",
+              [
+                ["object/has?", "c", "deposit"],
+                ["number/add", "balance", ["object/get", "c", "deposit"]]
+              ],
+              [
+                ["number/lessThan", "balance", ["object/get", "c", "withdraw"]],
+                "balance"
+              ],
+              [
+                "else",
+                ["number/subtract", "balance", ["object/get", "c", "withdraw"]]
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "overdraws",
+        [
+          "lambda",
+          ["balance", "c"],
+          [
+            "cond",
+            [
+              ["object/has?", "c", "deposit"],
+              ["number/add", "balance", ["object/get", "c", "deposit"]]
+            ],
+            [
+              "else",
+              ["number/subtract", "balance", ["object/get", "c", "withdraw"]]
+            ]
+          ]
+        ]
+      ],
+      [
+        "overdraws",
+        [
+          "lambda",
+          ["balance", "c"],
+          [
+            "cond",
+            [
+              ["object/has?", "c", "deposit"],
+              ["number/add", "balance", ["object/get", "c", "deposit"]]
+            ],
+            [
+              ["number/equals?", "balance", 1000000],
+              ["number/subtract", "balance", ["object/get", "c", "withdraw"]]
+            ],
+            [
+              ["number/lessThan", "balance", ["object/get", "c", "withdraw"]],
+              "balance"
+            ],
+            [
+              "else",
+              ["number/subtract", "balance", ["object/get", "c", "withdraw"]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["solver", "schemas", "bounded-model-checking"],
+  "origin": "Lion README, Checking every run of commands"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "sicp-4.3.2-multiple-dwelling",
+  "pillar": "logic",
+  "statement": "Baker, Cooper, Fletcher, Miller, and Smith live on different floors of a building of five floors, numbered 1 to 5. Baker does not live on the top floor. Cooper does not live on the bottom floor. Fletcher lives on neither the top nor the bottom floor. Miller lives on a higher floor than Cooper. Smith does not live on a floor next to Fletcher's, and Fletcher does not live on a floor next to Cooper's. The program's value is the list of every assignment that meets these conditions, each a record {\"baker\", \"cooper\", \"fletcher\", \"miller\", \"smith\"} of floors.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["found"],
+    [
+      "=",
+      "found",
+      [
+        "quote",
+        [{ "baker": 3, "cooper": 2, "fletcher": 4, "miller": 5, "smith": 1 }]
+      ]
+    ]
+  ],
+  "tags": ["search", "constraints", "find"],
+  "origin": "SICP 4.3.2, Examples of Nondeterministic Programs: the multiple-dwelling puzzle"
+}
