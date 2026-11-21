@@ -132,7 +132,7 @@ const ANY = Number.POSITIVE_INFINITY;
  * says: a call with any other number is not run on symbolic values.
  */
 const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
-  "array/concat": [1, ANY],
+  "array/concat": [0, ANY],
   "array/every?": [2, 2],
   "array/flat-map": [2, 2],
   "array/head": [1, 1],
@@ -147,7 +147,7 @@ const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "boolean/not": [1, 1],
   "boolean/or": [2, 2],
   "number/absolute": [1, 1],
-  "number/add": [1, ANY],
+  "number/add": [0, ANY],
   "number/divide": [2, 2],
   "number/equals?": [2, 2],
   "number/greaterThan": [2, 2],
@@ -156,7 +156,7 @@ const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "number/lessThanOrEqualTo": [2, 2],
   "number/max": [1, ANY],
   "number/min": [1, ANY],
-  "number/multiply": [1, ANY],
+  "number/multiply": [0, ANY],
   "number/subtract": [2, 2],
   "object/get": [2, 3],
   "object/has?": [2, 2],

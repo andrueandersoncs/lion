@@ -24098,6 +24098,11 @@
     ]
   },
   {
+    "feature": "array/zip",
+    "kind": "function",
+    "program": ["value/function?", "array/zip"]
+  },
+  {
     "case": "capability-reference-failures",
     "area": "metrics",
     "program": [

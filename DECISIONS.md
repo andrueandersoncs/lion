@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 220 questions have been decided, 96 records explain them, and of what the records assert, 644 hold when Lion is run, 7 are broken, 374 are stated but not checked by running Lion, and 28 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 221 questions have been decided, 97 records explain them, and of what the records assert, 653 hold when Lion is run, 7 are broken, 375 are stated but not checked by running Lion, and 29 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -97,7 +97,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-11 | [`docs-organization`](#docs-organization) | `diataxis` |  |
 | 2026-11-12 | [`aggregate-representation`](#aggregate-representation) | `waiting-call` |  |
 | 2026-11-12 | [`and-or-evaluation`](#and-or-evaluation) | `short-circuit` | [Where the behavior of a base form is unclear, Lion does what Scheme does](#scheme-where-unclear) |
-| 2026-11-12 | [`combining-function-arity`](#combining-function-arity) | `one-or-more` | [Where the behavior of a base form is unclear, Lion does what Scheme does](#scheme-where-unclear) |
+| 2026-11-12 | [`combining-function-arity`](#combining-function-arity) | `zero-or-more` | [Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments](#scheme-identities-and-zip), [Where the behavior of a base form is unclear, Lion does what Scheme does](#scheme-where-unclear) |
 | 2026-11-12 | [`filter-truthiness`](#filter-truthiness) | `strict-boolean` |  |
 | 2026-11-12 | [`logic-form-classes`](#logic-form-classes) | `one-logic-form-class` |  |
 | 2026-11-12 | [`special-form-table`](#special-form-table) | `entry-calls-evaluator` |  |
@@ -226,6 +226,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`record-mutability`](#record-mutability) | `immutable` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`reentrant-force`](#reentrant-force) | `fails` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`string-positions`](#string-positions) | `utf16-code-units` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
+| 2026-11-21 | [`empty-and-or`](#empty-and-or) | `true-and-false` | [Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments](#scheme-identities-and-zip) |
 
 <a id="program-representation"></a>
 
@@ -2030,7 +2031,7 @@ Recorded 2026-11-12 in `history/notes/scheme-where-unclear.json`.
 - Holds when Lion is run: `add-more-than-two-arguments` is `sum`. "combine one or more arguments from left to right, as their Scheme counterparts do"
 - Stated, not checked by running Lion: decided `unclear-base-form-behavior`: `follow-scheme-racket`. "Where a base form's behavior is unclear, Lion follows Scheme and Racket"
 - Stated, not checked by running Lion: decided `and-or-evaluation`: `short-circuit`. "`and` and `or` stop at the first argument that decides them, as in Scheme, so `["and", false, ["number/divide", 1, 0]]` is `false`."
-- Stated, not checked by running Lion: decided `combining-function-arity`: `one-or-more`. "combine one or more arguments from left to right, as their Scheme counterparts do"
+- Replaced by a later word: decided `combining-function-arity`: `one-or-more`. "combine one or more arguments from left to right, as their Scheme counterparts do"
 - Holds when Lion is run: `or-after-true` is `not-evaluated`. "`and` and `or` stop at the first argument that decides them, as in Scheme"
 - Holds when Lion is run: `and-after-false` is `not-evaluated`. "`and` and `or` no longer evaluate the arguments after the one that decides them, which changes a program that relied on an error or a side effect there."
 - Holds when Lion is run: `or-after-true` is `not-evaluated`. "`and` and `or` no longer evaluate the arguments after the one that decides them, which changes a program that relied on an error or a side effect there."
@@ -2039,9 +2040,41 @@ Recorded 2026-11-12 in `history/notes/scheme-where-unclear.json`.
 
 ## combining-function-arity
 
-Now: `one-or-more`.
+Now: `zero-or-more`.
 
 - 2026-11-12 `combining-function-arity`: `one-or-more`: "combine one or more arguments from left to right, as their Scheme counterparts do" (`scheme-where-unclear.json`)
+- 2026-11-21 `combining-function-arity`: `zero-or-more` over `one-or-more`, was `one-or-more`: "`number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []." (`scheme-identities-and-zip.json`)
+
+<a id="scheme-identities-and-zip"></a>
+
+### Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments
+
+Recorded 2026-11-21 in `history/notes/scheme-identities-and-zip.json`.
+
+**Context.** The probes of the cases R7RS-small settles found that `["and"]` and `["or"]` were refused as not well-formed, and that `number/add`, `number/multiply`, `array/concat`, and `string/concat` failed with no arguments, where Scheme's `(and)` is #t, `(or)` is #f, `(+)` is 0, `(*)` is 1, `(append)` is (), and `(string-append)` is "". The README said these functions combine one or more arguments "as +, *, min, max, string-append, and append do in Scheme", which held of `min` and `max` only, and the decision `combining-function-arity` had chosen one or more. On 2026-11-21 the user chose to fix the six cases. The record `r7rs-departures-decided` also chose `array/zip` to serve where Scheme's `map` takes several lists.
+
+**Decision.** `and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`. `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []. `quantity/add` and `quantity/multiply` follow `number/add` and `number/multiply`, since a plain number is a quantity with no unit. `number/min` and `number/max` still take one or more, as Scheme's do, since no number is the smallest of none. `array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list.
+
+**Consequences.** The six cases leave `known.json`, since their probes now give what Scheme gives. A program that relied on one of these calls failing with no arguments now gets the identity instead; no program in the repository did. `["array/map", ["array/zip", xs, ys], f]` does what `(map f xs ys)` does, with f given each pair as a list.
+
+**Alternatives considered.**
+
+- Keep one or more, and say in the README that Scheme's take zero. A call with nothing to combine has an answer every Scheme programmer expects, and failing on it is a departure with no reason of Lion's own.
+- Let array/map take several lists, as Scheme's map does. The record r7rs-departures-decided keeps array/map's arguments as they are, data first, and a function that pairs lists up composes with every function that takes one list.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `combining-function-arity`: `zero-or-more`. "`number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []."
+- Holds when Lion is run: `r7rs-4.2.1-or-no-arguments` is `false`. "`and` of no goals holds and `or` of no goals does not"
+- Holds when Lion is run: `array/zip` exists. "`array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list."
+- Stated, not checked by running Lion: decided `empty-and-or`: `true-and-false`. "`and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`."
+- Holds when Lion is run: rule `arity-rule` holds. "`number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []."
+- Holds when Lion is run: `add-no-arguments` is `zero`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-6.2.6-add-no-arguments` is `zero`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-6.2.6-multiply-no-arguments` is `one`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-6.7-string-append-no-arguments` is `empty-string`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-6.4-append-no-arguments` is `empty-list`. "none gives what combining nothing gives: 0, 1, "", and []"
+- Holds when Lion is run: `r7rs-4.2.1-and-no-arguments` is `true`. "`and` of no goals holds and `or` of no goals does not"
 
 <a id="filter-truthiness"></a>
 
@@ -4964,3 +4997,11 @@ Now: `fails`.
 Now: `utf16-code-units`.
 
 - 2026-11-21 `string-positions`: `utf16-code-units` over `characters`: "A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together." (`r7rs-departures-decided.json`)
+
+<a id="empty-and-or"></a>
+
+## empty-and-or
+
+Now: `true-and-false`.
+
+- 2026-11-21 `empty-and-or`: `true-and-false` over `not-well-formed`: "`and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`." (`scheme-identities-and-zip.json`)

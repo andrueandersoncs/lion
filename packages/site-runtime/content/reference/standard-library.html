@@ -7,9 +7,9 @@
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
-    <tr data-entry="number/add"><td><code>["number/add", a, b, ...]</code></td><td><code>a + b</code>, and so on for one or more numbers</td></tr>
+    <tr data-entry="number/add"><td><code>["number/add", a, b, ...]</code></td><td><code>a + b</code>, and so on for any number of numbers; <code>0</code> for none</td></tr>
     <tr data-entry="number/subtract"><td><code>["number/subtract", a, b]</code></td><td><code>a - b</code></td></tr>
-    <tr data-entry="number/multiply"><td><code>["number/multiply", a, b, ...]</code></td><td><code>a × b</code>, and so on for one or more numbers</td></tr>
+    <tr data-entry="number/multiply"><td><code>["number/multiply", a, b, ...]</code></td><td><code>a × b</code>, and so on for any number of numbers; <code>1</code> for none</td></tr>
     <tr data-entry="number/divide"><td><code>["number/divide", a, b]</code></td><td><code>a ÷ b</code>. Dividing by 0 fails with <code>ArithmeticError</code>.</td></tr>
     <tr data-entry="number/remainder"><td><code>["number/remainder", a, b]</code></td><td>What is left of <code>a</code> after dividing by <code>b</code>, with the sign of <code>a</code>. A remainder by 0 fails with <code>ArithmeticError</code>.</td></tr>
     <tr data-entry="number/power"><td><code>["number/power", a, b]</code></td><td><code>a</code> to the power of <code>b</code></td></tr>
@@ -31,6 +31,7 @@
 <lion-example name="number">
 {"add": ["number/add", 7, 3],
  "add-three": ["number/add", 7, 3, 1],
+ "add-none": ["number/add"],
  "subtract": ["number/subtract", 7, 3],
  "multiply": ["number/multiply", 7, 3],
  "divide": ["number/divide", 7, 2],
@@ -86,7 +87,7 @@
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
     <tr data-entry="string/length"><td><code>["string/length", text]</code></td><td>The length of <code>text</code></td></tr>
-    <tr data-entry="string/concat"><td><code>["string/concat", a, b, ...]</code></td><td><code>a</code> followed by <code>b</code>, and so on for one or more strings</td></tr>
+    <tr data-entry="string/concat"><td><code>["string/concat", a, b, ...]</code></td><td><code>a</code> followed by <code>b</code>, and so on for any number of strings; <code>""</code> for none</td></tr>
     <tr data-entry="string/startsWith"><td><code>["string/startsWith", text, prefix]</code></td><td>Whether <code>text</code> starts with <code>prefix</code></td></tr>
     <tr data-entry="string/endsWith"><td><code>["string/endsWith", text, suffix]</code></td><td>Whether <code>text</code> ends with <code>suffix</code></td></tr>
     <tr data-entry="string/includes"><td><code>["string/includes", text, search]</code></td><td>Whether <code>text</code> contains <code>search</code></td></tr>
@@ -130,7 +131,8 @@
     <tr data-entry="array/head"><td><code>["array/head", list]</code></td><td>The first item, or <code>null</code> for an empty list</td></tr>
     <tr data-entry="array/tail"><td><code>["array/tail", list]</code></td><td>Every item after the first; <code>[]</code> for an empty list</td></tr>
     <tr data-entry="array/slice"><td><code>["array/slice", list, start]</code><br><code>["array/slice", list, start, end]</code></td><td>The items from <code>start</code> up to, but not including, <code>end</code>, or to the end without it, counting a negative position from the end, as <code>string/slice</code> cuts text</td></tr>
-    <tr data-entry="array/concat"><td><code>["array/concat", a, b, ...]</code></td><td>The items of <code>a</code> followed by those of <code>b</code>, and so on for one or more lists</td></tr>
+    <tr data-entry="array/concat"><td><code>["array/concat", a, b, ...]</code></td><td>The items of <code>a</code> followed by those of <code>b</code>, and so on for any number of lists; <code>[]</code> for none</td></tr>
+    <tr data-entry="array/zip"><td><code>["array/zip", a, b, ...]</code></td><td>The items of one or more lists paired up: a list of the first items, then of the second, up to the end of the shortest list, as Scheme's <code>map</code> goes over several lists</td></tr>
     <tr data-entry="array/includes?"><td><code>["array/includes?", list, item]</code></td><td>Whether the list holds a value equal to <code>item</code>, comparing lists and records by structure</td></tr>
     <tr data-entry="array/map"><td><code>["array/map", list, function]</code></td><td>The list of <code>function</code>'s results for each item</td></tr>
     <tr data-entry="array/flat-map"><td><code>["array/flat-map", list, function]</code></td><td>The concatenation of the lists <code>function</code> returns for each item</td></tr>
@@ -149,6 +151,8 @@
  "slice": ["array/slice", ["array/make", 1, 2, 3, 4], 1, 3],
  "lastTwo": ["array/slice", ["array/make", 1, 2, 3, 4], -2],
  "concat": ["array/concat", ["array/make", 1], ["array/make", 2, 3]],
+ "zip": ["array/zip", ["array/make", 1, 2, 3], ["array/make", "a", "b"]],
+ "sums of pairs": ["array/map", ["array/zip", ["array/make", 1, 2, 3], ["array/make", 10, 20, 30]], ["lambda", ["pair"], ["aggregate/sum", "pair"]]],
  "includes?": ["array/includes?", ["quote", [1, {"a": 2}]], {"a": 2}],
  "map": ["array/map", ["array/make", 1, 2], ["lambda", ["x"], ["number/add", "x", 1]]],
  "flat-map": ["array/flat-map", ["array/make", 1, 2], ["lambda", ["x"], ["array/make", "x", "x"]]],

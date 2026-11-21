@@ -192,8 +192,9 @@ export const ExistsFormSchema = form(
 export const SomeFormSchema = form("some", Schema.String, Expression);
 export const WhyFormSchema = form("why", Expression);
 export const NotFormSchema = form("not", Expression);
-export const AndFormSchema = formWithMore("and", Expression);
-export const OrFormSchema = formWithMore("or", Expression);
+// ["and", <goal>, ...] and ["or", <goal>, ...]: with none, true and false
+export const AndFormSchema = formWithMore("and");
+export const OrFormSchema = formWithMore("or");
 export const UnifyFormSchema = form("=", Expression, Expression);
 // ["in", <element>, <list>]
 export const InFormSchema = form("in", Expression, Expression);

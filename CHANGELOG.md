@@ -10,6 +10,7 @@
 - `bun run capability` grades the corpus and prints how many of each pillar's tasks are passed, and `--solutions` grades a folder of programs in place of the reference programs (`capability` added)
 - `packages/metrics/corpus/` holds Lion's public capability corpus: tasks of general computation, logic programming, and formal proofs, each a JSON record {id, pillar, statement, inputs, check, tags, origin} whose check is a Lion lambda that judges what a program gives, with a reference program for each task Lion can do (`capability-corpus` added)
 - `LION_HELD_OUT` names a folder outside the repository with the corpus's layout, whose tasks are graded beside the public ones; a folder inside the repository is refused (`held-out-corpus` added)
+- `array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list. (`array/zip` added)
 
 ### Changed
 
@@ -21,6 +22,8 @@
 - A continuation resumes once (`r7rs-6.10-continuation-resumed-twice` is `error`)
 - `array/map` takes one list and the function (`r7rs-6.10-map-several-lists` is `error`)
 - A string's positions and length count UTF-16 code units (`r7rs-6.7-string-length-counts-characters` is `two`)
+- `and` of no goals holds and `or` of no goals does not (`r7rs-4.2.1-and-no-arguments` is `true`, was `error`; `r7rs-4.2.1-or-no-arguments` is `false`, was `error`)
+- none gives what combining nothing gives: 0, 1, "", and [] (`r7rs-6.2.6-add-no-arguments` is `zero`, was `error`; `r7rs-6.2.6-multiply-no-arguments` is `one`, was `error`; `r7rs-6.4-append-no-arguments` is `empty-list`, was `error`; `r7rs-6.7-string-append-no-arguments` is `empty-string`, was `error`)
 
 ### Decided
 
@@ -41,6 +44,8 @@
 - A record is a JSON value that never changes: `object/set` gives a new one, as Racket's immutable `hash-set` does (`record-mutability`: `immutable` over `mutable-records`)
 - Forcing a promise while it is being forced fails, as Racket's `force` does, where R7RS gives the first value computed. (`reentrant-force`: `fails` over `first-value`)
 - A string's positions and length count UTF-16 code units, as JavaScript's do, for every string function alike, until a decision moves them all to characters together. (`string-positions`: `utf16-code-units` over `characters`)
+- `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []. (`combining-function-arity`: `zero-or-more` over `one-or-more`, was `one-or-more`)
+- `and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`. (`empty-and-or`: `true-and-false` over `not-well-formed`)
 
 ### Rules
 
@@ -993,7 +998,7 @@ Three surprises found while writing Lion programs for a research skill, each rem
 
 ### Rules
 
-- A lambda takes as many arguments as it has parameters, and a call with any other number fails in the one form of message every function uses (rule `arity-rule`)
+- `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, "", and []. (rule `arity-rule`)
 - Every new function declares what it takes, with `takes` or `over`, and has a row in the table of `arity.test.ts`. (rule `new-functions-declare-arity`)
 
 ## 2026-11-13 — lionlang.dev
@@ -2110,7 +2115,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - "exactOptionalPropertyTypes": true, (`tsconfig-exact-optional-property-types` is `true`)
 - "module": "NodeNext", (`tsconfig-module` is `nodenext`)
 - combine one or more arguments from left to right, as their Scheme counterparts do (`add-more-than-two-arguments` is `sum`)
-- Effect.map(Array.reduce(0, add)) (`add-no-arguments` is `zero`)
+- none gives what combining nothing gives: 0, 1, "", and [] (`add-no-arguments` is `zero`, was `error`)
 - export * from "./src/modules/math.ts"; (`core-exports-library-modules` is `exported`)
 - It gives the value under a key the record has, `null` among them, and, for a key it does not have, the value given, or fails with `KeyNotFoundError`, as `object/get-path` does. (`object-get-missing-key` is `error`, was `null`)
 - Schema.decodeUnknown(Schema.Record({ key: Schema.String, value: Schema.Unknown })), (`object-keys-non-object` is `error`)

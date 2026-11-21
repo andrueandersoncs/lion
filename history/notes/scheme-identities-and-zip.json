@@ -1,0 +1,115 @@
+{
+  "title": "Combining nothing gives what Scheme gives: and and or of no goals, and sums, products, and joins of no arguments",
+  "context": "The probes of the cases R7RS-small settles found that `[\"and\"]` and `[\"or\"]` were refused as not well-formed, and that `number/add`, `number/multiply`, `array/concat`, and `string/concat` failed with no arguments, where Scheme's `(and)` is #t, `(or)` is #f, `(+)` is 0, `(*)` is 1, `(append)` is (), and `(string-append)` is \"\". The README said these functions combine one or more arguments \"as +, *, min, max, string-append, and append do in Scheme\", which held of `min` and `max` only, and the decision `combining-function-arity` had chosen one or more. On 2026-11-21 the user chose to fix the six cases. The record `r7rs-departures-decided` also chose `array/zip` to serve where Scheme's `map` takes several lists.",
+  "decision": "`and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`. `number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, \"\", and []. `quantity/add` and `quantity/multiply` follow `number/add` and `number/multiply`, since a plain number is a quantity with no unit. `number/min` and `number/max` still take one or more, as Scheme's do, since no number is the smallest of none. `array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list.",
+  "consequences": "The six cases leave `known.json`, since their probes now give what Scheme gives. A program that relied on one of these calls failing with no arguments now gets the identity instead; no program in the repository did. `[\"array/map\", [\"array/zip\", xs, ys], f]` does what `(map f xs ys)` does, with f given each pair as a list.",
+  "alternatives": [
+    {
+      "option": "Keep one or more, and say in the README that Scheme's take zero",
+      "rejected": "A call with nothing to combine has an answer every Scheme programmer expects, and failing on it is a departure with no reason of Lion's own."
+    },
+    {
+      "option": "Let array/map take several lists, as Scheme's map does",
+      "rejected": "The record r7rs-departures-decided keeps array/map's arguments as they are, data first, and a function that pairs lists up composes with every function that takes one list."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, \"\", and [].",
+      "says": {
+        "decision": "combining-function-arity",
+        "chose": "zero-or-more",
+        "over": ["one-or-more"],
+        "area": "library",
+        "because": "Scheme's +, *, string-append, and append take zero arguments and give what combining nothing gives"
+      }
+    },
+    {
+      "quote": "`and` of no goals holds and `or` of no goals does not, in plain code and as goals in a rule, a query, or a `find`.",
+      "says": {
+        "decision": "empty-and-or",
+        "chose": "true-and-false",
+        "over": ["not-well-formed"],
+        "area": "forms",
+        "because": "(and) is #t and (or) is #f in Scheme, as an empty conjunction holds and an empty disjunction does not"
+      }
+    },
+    {
+      "quote": "`number/add`, `number/multiply`, `string/concat`, and `array/concat` take any number of arguments, and none gives what combining nothing gives: 0, 1, \"\", and [].",
+      "says": {
+        "rule": "arity-rule",
+        "holds": true,
+        "statement": "A call gives a function as many arguments as it takes, and any other number fails with one form of message; some functions take any number",
+        "area": "library",
+        "predicts": [{ "behavior": "add-no-arguments", "is": "zero" }]
+      }
+    },
+    {
+      "quote": "none gives what combining nothing gives: 0, 1, \"\", and []",
+      "says": {
+        "behavior": "add-no-arguments",
+        "is": "zero",
+        "area": "library",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "none gives what combining nothing gives: 0, 1, \"\", and []",
+      "says": {
+        "behavior": "r7rs-6.2.6-add-no-arguments",
+        "is": "zero",
+        "area": "library",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "none gives what combining nothing gives: 0, 1, \"\", and []",
+      "says": {
+        "behavior": "r7rs-6.2.6-multiply-no-arguments",
+        "is": "one",
+        "area": "library",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "none gives what combining nothing gives: 0, 1, \"\", and []",
+      "says": {
+        "behavior": "r7rs-6.7-string-append-no-arguments",
+        "is": "empty-string",
+        "area": "library",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "none gives what combining nothing gives: 0, 1, \"\", and []",
+      "says": {
+        "behavior": "r7rs-6.4-append-no-arguments",
+        "is": "empty-list",
+        "area": "library",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "`and` of no goals holds and `or` of no goals does not",
+      "says": {
+        "behavior": "r7rs-4.2.1-and-no-arguments",
+        "is": "true",
+        "area": "forms",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "`and` of no goals holds and `or` of no goals does not",
+      "says": {
+        "behavior": "r7rs-4.2.1-or-no-arguments",
+        "is": "false",
+        "area": "forms",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "`array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list.",
+      "says": { "feature": "array/zip", "kind": "function", "present": true }
+    }
+  ]
+}

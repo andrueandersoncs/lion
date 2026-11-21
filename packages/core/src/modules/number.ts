@@ -21,7 +21,8 @@ const arithmetic = (
   operator: string,
   operate: (a: number, b: number) => number,
   count: Count = 2,
-  exact?: (a: bigint, b: bigint) => bigint
+  exact?: (a: bigint, b: bigint) => bigint,
+  none?: number
 ) =>
   combining(
     Schema.Number,
@@ -55,11 +56,15 @@ const arithmetic = (
         })
       );
     },
-    count
+    count,
+    none
   );
 
 /** One or more numbers, combined as the function of two combines a pair. */
 const SOME = atLeast(1);
+
+/** Any number of numbers: none gives what combining nothing gives. */
+const ANY = atLeast(0);
 
 /** Arithmetic on one number. */
 const rounding = (operate: (a: number) => number) =>
@@ -80,12 +85,14 @@ export const module = {
   lessThanOrEqualTo: compare((a, b) => a <= b),
   greaterThanOrEqualTo: compare((a, b) => a >= b),
 
+  /** Zero or more numbers' sum: none is 0, as `(+)` is in Scheme. */
   add: arithmetic(
     "add",
     "+",
     (a, b) => a + b,
-    SOME,
-    (a, b) => a + b
+    ANY,
+    (a, b) => a + b,
+    0
   ),
   subtract: arithmetic(
     "subtract",
@@ -94,12 +101,14 @@ export const module = {
     2,
     (a, b) => a - b
   ),
+  /** Zero or more numbers' product: none is 1, as `(*)` is in Scheme. */
   multiply: arithmetic(
     "multiply",
     "×",
     (a, b) => a * b,
-    SOME,
-    (a, b) => a * b
+    ANY,
+    (a, b) => a * b,
+    1
   ),
   // A quotient of such integers is exact whenever it is an integer.
   divide: arithmetic("divide", "÷", (a, b) => a / b),

@@ -131,13 +131,15 @@ export const slicing = <A extends string | readonly unknown[]>(
 
 /**
  * A library function that combines arguments of one kind: one or more of
- * them unless `count` says otherwise, as `+` and `string-append` take any
- * number in Scheme.
+ * them unless `count` says otherwise, as `min` and `max` take one or more in
+ * Scheme. A function that takes none gives `none` for none, what combining
+ * nothing gives, as `(+)` is 0 and `(string-append)` is "" in Scheme.
  */
 export const combining = <A, B, E = never>(
   item: Schema.Decoder<A>,
   combine: (items: readonly A[]) => Effect.Effect<B, E>,
-  count: Count = atLeast(1)
+  count: Count = atLeast(1),
+  none?: B
 ) => {
   const named: { fn?: unknown } = {};
   const run = decode(
@@ -148,7 +150,9 @@ export const combining = <A, B, E = never>(
       () => item.ast
     )
   );
-  const self = takes(count, (...args: unknown[]) => run(args));
+  const self = takes(count, (...args: unknown[]) =>
+    none !== undefined && args.length === 0 ? Effect.succeed(none) : run(args)
+  );
   named.fn = self;
   return self;
 };

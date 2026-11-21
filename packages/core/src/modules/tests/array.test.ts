@@ -181,3 +181,73 @@ describe("array/some? and array/every?", () => {
       })
   );
 });
+
+const zipItem = Arbitrary.schema(
+  Schema.Int.check(Schema.isBetween({ minimum: -9, maximum: 9 }))
+);
+
+describe("array/zip", () => {
+  it.effect.prop(
+    "pairs up the items of its lists up to the end of the shortest, and the pairs give the lists back",
+    {
+      lists: Arbitrary.array(Arbitrary.array(zipItem, { maxLength: 4 }), {
+        minLength: 1,
+        maxLength: 4,
+      }),
+    },
+    ({ lists }) =>
+      Effect.gen(function* () {
+        const shortest = Math.min(...lists.map((list) => list.length));
+        const zipped = yield* run(
+          ["array/zip", ...lists.map((list) => ["quote", list])],
+          stdlib
+        );
+        // The model: the items at each place, from every list, in order.
+        expect(zipped).toEqual(
+          Array.from({ length: shortest }, (_, at) =>
+            lists.map((list) => list[at])
+          )
+        );
+        // Each list, cut to the shortest, is the items at its place in the pairs.
+        for (const [which, list] of lists.entries()) {
+          const back = yield* run(
+            [
+              "array/map",
+              ["quote", zipped],
+              [
+                "lambda",
+                ["pair"],
+                ["array/head", ["array/slice", "pair", which]],
+              ],
+            ],
+            stdlib
+          );
+          expect(back).toEqual(list.slice(0, shortest));
+        }
+      })
+  );
+
+  it.effect.prop(
+    "waits in a find for the lists a rule binds, and gives what plain code gives",
+    {
+      a: Arbitrary.array(zipItem, { maxLength: 4 }),
+      b: Arbitrary.array(zipItem, { maxLength: 4 }),
+    },
+    ({ a, b }) =>
+      Effect.gen(function* () {
+        const plain = yield* run(
+          ["array/zip", ["quote", a], ["quote", b]],
+          stdlib
+        );
+        const found = yield* run(
+          [
+            "find",
+            ["array/zip", "?a", "?b"],
+            ["and", ["=", "?a", ["quote", a]], ["=", "?b", ["quote", b]]],
+          ],
+          stdlib
+        );
+        expect(found).toEqual([plain]);
+      })
+  );
+});

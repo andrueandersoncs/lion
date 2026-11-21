@@ -77,6 +77,45 @@ const CAPABILITY_TESTS = {
 const CAPABILITY = "packages/metrics/src/capability.ts";
 const corpus = (file: string) => `packages/metrics/corpus/${file}`;
 
+/** Breaks in the cases R7RS-small settles that Lion gives as Scheme does. */
+const SCHEME_CASE_MUTATIONS: readonly Mutation[] = [
+  {
+    name: "an and of no goals is not well-formed",
+    file: core("schemas/evaluation.ts"),
+    find: 'export const AndFormSchema = formWithMore("and");',
+    replace: 'export const AndFormSchema = formWithMore("and", Expression);',
+    tests: ["src/logic/tests/connectives.test.ts"],
+  },
+  {
+    name: "an or of no goals is not well-formed",
+    file: core("schemas/evaluation.ts"),
+    find: 'export const OrFormSchema = formWithMore("or");',
+    replace: 'export const OrFormSchema = formWithMore("or", Expression);',
+    tests: ["src/logic/tests/connectives.test.ts"],
+  },
+  {
+    name: "a function that combines nothing combines an empty list",
+    file: core("modules/lib/shared.ts"),
+    find: "none !== undefined && args.length === 0 ? Effect.succeed(none) : run(args)",
+    replace: "run(args)",
+    tests: ["src/modules/tests/arity.test.ts"],
+  },
+  {
+    name: "number/add of no numbers is 1",
+    file: core("modules/number.ts"),
+    find: "(a, b) => a + b,\n    0\n  ),",
+    replace: "(a, b) => a + b,\n    1\n  ),",
+    tests: ["src/modules/tests/arity.test.ts"],
+  },
+  {
+    name: "array/zip goes on past the end of its shortest list",
+    file: core("modules/array.ts"),
+    find: "{ length: Math.min(...lists.map((list) => list.length)) },",
+    replace: "{ length: Math.max(...lists.map((list) => list.length)) },",
+    tests: ["src/modules/tests/array.test.ts"],
+  },
+];
+
 /** Breaks in grading the capability corpus, and in its tasks. */
 const CAPABILITY_MUTATIONS: readonly Mutation[] = [
   {
@@ -2595,7 +2634,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "number/add takes two numbers and no more",
     file: core("modules/number.ts"),
-    find: '    "+",\n    (a, b) => a + b,\n    SOME,',
+    find: '    "+",\n    (a, b) => a + b,\n    ANY,',
     replace: '    "+",\n    (a, b) => a + b,\n    2,',
     tests: ["src/modules/tests/arity.test.ts"],
   },
@@ -2963,6 +3002,7 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/tests/skill-eval.test.ts"],
   },
   ...CAPABILITY_MUTATIONS,
+  ...SCHEME_CASE_MUTATIONS,
   {
     name: "a folder's hash ignores what its files hold",
     file: reasoning("scripts/lib.mjs"),

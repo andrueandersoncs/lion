@@ -483,7 +483,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["find", template, goal]` | Returns the template's value for every match of the goal, as a sorted list. See [Asking](#asking). |
 | `["assuming", change, ..., expression]` | What the expression gives in the database as it would be after the changes, each a `fact`, `retract`, or `rule` form. The database does not change. See [Asking what would hold](#asking-what-would-hold). |
 | `["why", goal]` | Explains a fact as a tree: the rules and facts that derived it, or, when it does not hold, each rule that could have given it and what stopped it. |
-| `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. |
+| `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. With no goals, `["and"]` holds and `["or"]` does not, as `(and)` is `#t` and `(or)` is `#f` in Scheme. |
 | `["not", goal]` | Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Either side can be a record or list with variables in it, which takes the other side apart. Without logic variables it is plain equality. |
 | `["invariant", goal, {"assert": "none"}]` | Keeps a query assertion: the goal must have no answers, or with `"some"` at least one, now and after every later change. See [Invariants](#invariants). |
@@ -1399,7 +1399,7 @@ stop();
 
 The default environment exported as `stdlib` namespaces entries as `<module>/<name>`.
 
-Every function says how many arguments it takes: most take a set number, and the ones at the end of this section take one or more, or any number after the ones they need. A call with any other number fails and says how many the function takes, so no argument is dropped and none is missing:
+Every function says how many arguments it takes: most take a set number, and the ones at the end of this section take any number, one or more, or any number after the ones they need. A call with any other number fails and says how many the function takes, so no argument is dropped and none is missing:
 
 ```json
 ["number/subtract", 10, 3, 1]
@@ -1407,7 +1407,7 @@ Every function says how many arguments it takes: most take a set number, and the
 
 Fails with `"number/subtract" takes 2 arguments but got 3.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. A relation, a schema, and a graph algorithm say the same of their own arguments, as in `"edge" takes 2 arguments (from, to) but got 3.`
 
-Six functions combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme: `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat`. They work from left to right, so `["number/add", 1, 2, 3]` is `["number/add", ["number/add", 1, 2], 3]`. The functions that pass arguments on take any number after the ones they need: `array/make`, `func/partial`, `func/bind`, `func/apply`, `object/new`, `object/call-method`, `object/call-method-path`, `schema/allOf`, and `schema/anyOf`.
+Six functions combine their arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. Four take any number, and none gives what combining nothing gives, as `(+)` is 0 in Scheme: `number/add` gives 0, `number/multiply` 1, `string/concat` `""`, and `array/concat` `[]`. `number/min` and `number/max` take one or more, since nothing is the smallest of no numbers. They work from left to right, so `["number/add", 1, 2, 3]` is `["number/add", ["number/add", 1, 2], 3]`, and `["number/add", 1]` is 1. The functions that pass arguments on take any number after the ones they need: `array/make`, `func/partial`, `func/bind`, `func/apply`, `object/new`, `object/call-method`, `object/call-method-path`, `schema/allOf`, and `schema/anyOf`.
 
 ### `number`
 
@@ -1486,6 +1486,7 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["array/length", ["array/make", 1, 2, 3]]
 ["array/concat", ["array/make", 1, 2], ["array/make", 3, 4]]
 ["array/concat", ["array/make", 1], ["array/make", 2], ["array/make", 3]]
+["array/zip", ["array/make", 1, 2, 3], ["array/make", "a", "b"]]
 ["array/includes?", ["array/make", 1, 2, 3], 2]
 ["array/range", 0, 5]
 ["array/map", ["array/make", 1, 2, 3], ["lambda", ["x"], ["number/add", "x", 1]]]

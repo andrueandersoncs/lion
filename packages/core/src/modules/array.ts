@@ -1,5 +1,5 @@
 import { Array as Arr, Effect, Option, Schema } from "effect";
-import { logicError } from "@/errors/evaluation";
+import { atLeast, logicError } from "@/errors/evaluation";
 import { call } from "@/evaluation/special-forms/function";
 import { listMaker, show } from "@/logic/terms";
 import { combining, over, overEffect, slicing } from "@/modules/lib/shared";
@@ -52,8 +52,27 @@ export const module = {
 
   length: over([List], Arr.length),
 
-  /** One or more lists, joined in order. */
-  concat: combining(List, (lists) => Effect.succeed(Arr.flatten(lists))),
+  /** Zero or more lists, joined in order: none is [], as `(append)` is in Scheme. */
+  concat: combining(
+    List,
+    (lists) => Effect.succeed(Arr.flatten(lists)),
+    atLeast(0),
+    []
+  ),
+
+  /**
+   * One or more lists, paired up item by item: the first items, then the
+   * second, up to the end of the shortest list, as Scheme's `map` goes over
+   * several lists at once.
+   */
+  zip: combining(List, (lists) =>
+    Effect.succeed(
+      Array.from(
+        { length: Math.min(...lists.map((list) => list.length)) },
+        (_, at) => lists.map((list) => list[at])
+      )
+    )
+  ),
 
   "includes?": over([List, Schema.Any], (list, item) =>
     Arr.contains(list, item)
