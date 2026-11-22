@@ -78,6 +78,15 @@ Each figure is a claim quoting a tool's output, saved by `probes/si-built/run.mj
   The check catches such a map. The commit hook runs `affected --run` without the check, so it would not, and would skip those tests on an agent's branch. The model lists "a reach map refused when a test it traces fails" as something `impact-model` lacks. No technique in the model gives it, so it does not change the verdict.
 - **Every belief the run wrote down holds.** The nine beliefs, `si-built` to `si-pairs`, are all confirmed by the evidence.
 
+## After the build
+
+Two later steps record Lion as the branch left it.
+
+- **`55-si-exact`**, after the exact-numbers work was merged: the probe `si-number-gap`, run again as `lion-probes-si-exact`, finds plain code agreeing with the solver. (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53. So the condition the solver check needed holds.
+- **`57-si-built-after`**, after the branch built the rest of the plan: the probe `si-built-after`, run as `lion-host-si-built-after`, shows the solver checked against plain code (`solver disagreements, oracle: 0`), tests picked by the functions a change touches, the agents' run of the corpus graded with its failed tries counted by cause (`failed tries, list-pattern-as-call: 10 in 4 tasks`), and the commit hook's checks logged (`lines that log a check: 2 lines`).
+
+The model now calls the solver check, telemetry, the improvement record, and pair coverage things Lion does already, and picking tests by function has left what is to build. Still to build: the capability corpus's held-out tasks, a rule-engine benchmark suite, and verification tasks; a lint that finds a known mistake again in other programs (error mining); the constraints a change puts at risk (the constraint ledger); and stale evidence listed (keeping the record current).
+
 ## Limits
 
 - **These ideas are about how Lion is developed, not about the language.** The shared frame says "Lion has" a feature; for this run it reads "the repository has": a command, a rule, or a record.

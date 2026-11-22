@@ -1,0 +1,89 @@
+Lion's own tools and searches of the repository, run for the self-improvement research run with @lionlang/cli 0.14.0 built at commit 35ad04d (core 0.15.0), 2026-11-22.
+
+$ bun run oracle   (the solver checked against plain code at decimals, a fraction, and past 2^53 (M5))
+Solver against plain code: 720 cases
+  agree       720
+  undecided   0
+solver disagreements, oracle: 0
+
+$ bun run affected --replay 30   (what picking tests by the functions a change touches would have run for the last 30 commits (M3))
+commit   files  tests picked  seconds picked  mutations picked  in its files
+35ad04d      9      6 of 114     279 of 1249         59 of 689             0
+66748d2     16    114 of 114    1249 of 1249        653 of 689             5
+c78e0ee     43    110 of 114    1249 of 1249        670 of 689           223
+2173fe9     44     87 of 114    1245 of 1249        619 of 689            52
+e4af012    169    113 of 114    1249 of 1249        673 of 689           243
+2bf1bc6      2      6 of 114     279 of 1249         59 of 689             0
+edbdedd     23     85 of 114    1244 of 1249        607 of 689            14
+c9fe8f4      7     22 of 114     516 of 1249        141 of 689             0
+d055e3d     11     93 of 114    1245 of 1249        613 of 689            18
+bcfb961     34      6 of 114     279 of 1249         59 of 689             0
+a8dc971     22     30 of 114     775 of 1249        212 of 689            13
+c85f03c     18     22 of 114     516 of 1249        141 of 689             0
+f92ef5e     13     22 of 114     516 of 1249        141 of 689             3
+09feaeb     21     22 of 114     516 of 1249        141 of 689             7
+7d623a7     29    114 of 114    1249 of 1249        651 of 689            45
+82957e2     14     33 of 114     768 of 1249        186 of 689             0
+ad80648     14      6 of 114     279 of 1249         59 of 689             0
+51c0830     13     22 of 114     516 of 1249        141 of 689             0
+83c5adf      8     14 of 114     538 of 1249        116 of 689             0
+82e91cd     17      6 of 114     279 of 1249         59 of 689             0
+6c5374e      5      6 of 114     279 of 1249         59 of 689             0
+d0cfd5c     12     22 of 114     516 of 1249        141 of 689             3
+50a42e4    170    114 of 114    1249 of 1249        654 of 689           110
+cdd4b3c     26     22 of 114     516 of 1249        141 of 689             3
+81120a4      1      6 of 114     279 of 1249         59 of 689             0
+307dda8      9      7 of 114     370 of 1249         72 of 689             0
+36b993b     59    114 of 114    1249 of 1249        651 of 689            10
+303321f      1      6 of 114     279 of 1249         59 of 689             0
+06c885e     18    114 of 114    1249 of 1249        651 of 689             9
+9d59e05     21     24 of 114     753 of 1249        174 of 689            20
+
+Median over 30 commits: 41% of the tests' time, 141 of 689 mutations.
+The map is of f92ef5e, so an older commit is judged by what its files reach now.
+
+$ bun run capability --graded out/capability/agents/2026-11-21T22-59-43-613Z   (the agents' run of the corpus on 2026-11-21, graded again, with its failed tries counted by cause (M4, M6))
+Capability: public by sonnet agents tasks, graded by the programs sonnet agents wrote
+  computation    24 of  26 passed
+  logic          13 of  15 passed
+  proofs          9 of  14 passed
+  all            46 of  55 passed
+
+models: claude-sonnet-5-5
+cost usd: 10.28
+first tries that ran: 39 of 48
+failed tries, list-pattern-as-call: 10 in 4 tasks
+failed tries, unsafe-goal: 10 in 4 tasks
+failed tries, not-json: 2 in 1 task
+failed tries, unbound-name: 2 in 1 task
+failed tries, argument-type: 1 in 1 task
+failed tries, not-a-call: 1 in 1 task
+failed tries, not-a-function: 1 in 1 task
+failed tries, rule-head-computes: 1 in 1 task
+transcripts: /Users/andrueanderson/Workspace/lion/.claude/worktrees/silly-wing-7052d9/out/capability/agents/2026-11-21T22-59-43-613Z
+
+Gaps: 6 tasks Lion cannot express yet
+  r7rs-6.7-string-reverse-by-characters: Lion's strings count and split UTF-16 code units, as JavaScript does, and Lion has no function on characters: string/split with "" breaks "𝄞" into two halves, so its characters cannot be reversed without telling surrogates apart through a side channel such as object/json-stringify, which would be bending the task.
+  datalog-win-move-well-founded: Lion's rules allow only stratified negation: a rule cannot ask a question about a relation that depends on its own head, so win(x) :- move(x, y), not win(y) is refused, and the well-founded semantics that tells won, lost, and drawn positions apart is not built. Computing it by hand with an alternating fixpoint in plain code would be bending the task.
+  lion-schema-inclusion-across-kinds: schema/includes? fails instead of giving false when the first schema allows values the solver cannot stand for: value/number? in value/integer? fails with "The solver cannot reason about value/integer?", value/string? in value/number? because value/string? says no kind, and a schema/open record in an exact one because the open rest allows any other keys.
+  bounded-sorting-correct: Lion's solver works a lambda out by its body, but not a lambda that calls itself, so it cannot follow a recursive sort such as insertion sort over a list that schema/arrayOf stands for; the goal fails with "?xs stands for infinitely many values".
+  induction-sum-of-odd-numbers: Lion's solver decides linear arithmetic over numbers and whole numbers, and reasons about lists of bounded length. A claim about every n needs induction over an unbounded sum, and n * n multiplies two unknowns, so neither is decided.
+  induction-sorting-every-length: Lion proves claims about lists of bounded length, which schema/arrayOf with a most stands for; a claim about lists of every length needs induction, which the solver does not do.
+
+Failed: 2
+  datalog-magic-sets-ancestors: the check gave false
+  math-subadditive-functions: the check gave false
+
+No program: 1
+  sicp-1.2.1-factorial-exact
+
+$ grep -rcE 'logCheck\(' packages/metrics/affected.ts packages/metrics/loop.ts   (a line of the metrics that writes down a check the commit hook ran, its time, and its outcome (M8); built code, dependencies, and tests left out)
+lines that log a check: 2 lines
+  packages/metrics/affected.ts: 1
+  packages/metrics/loop.ts: 1
+
+$ grep -rcE 'at_risk|atRisk' history/research/steps packages/metrics/src improvement/notes   (a rule that names the constraints a change puts at risk (M2); built code, dependencies, and tests left out)
+lines that name a constraint at risk: 0 lines
+
+$ grep -rcE '\["relation",\s*"(stale|out_of_date)"' research/steps   (a relation of the research model that lists a probe's evidence as out of date (M9); built code, dependencies, and tests left out)
+lines that declare a relation of stale evidence: 0 lines

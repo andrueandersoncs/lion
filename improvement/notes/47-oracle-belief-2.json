@@ -1,0 +1,46 @@
+{
+  "beliefs": [
+    {
+      "id": "oracle-2",
+      "statement": "With the pages written after the oracle's commit, the solver and plain code agree on all 720 cases, and every requirement holds",
+      "predicts": [
+        {
+          "question": {
+            "solver disagreements": "oracle"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}

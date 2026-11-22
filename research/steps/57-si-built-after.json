@@ -1,0 +1,199 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-host-si-built-after"
+   ],
+   [
+    "quote",
+    "research/probes/si-built-after/run.mjs"
+   ],
+   [
+    "quote",
+    "What the self-improvement branch built after the research run weighed it, run again with the searches for what is still missing"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261122090000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-a1"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-after"
+   ],
+   [
+    "quote",
+    "solver disagreements, oracle: 0"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a solver's answers checked against plain code",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-a1"
+   ],
+   [
+    "quote",
+    "bun run oracle: the solver and plain code agree on all 720 cases"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-a2"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-after"
+   ],
+   [
+    "quote",
+    "Median over 30 commits: 41% of the tests' time, 141 of 689 mutations."
+   ],
+   [
+    "quote",
+    {
+     "lion": "tests picked by the functions a change touched",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-a2"
+   ],
+   [
+    "quote",
+    "bun run affected --replay 30, reading each change by the functions it touches"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-a3"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-after"
+   ],
+   [
+    "quote",
+    "Capability: public by sonnet agents tasks, graded by the programs sonnet agents wrote"
+   ],
+   [
+    "quote",
+    {
+     "lion": "agents' attempts at each task, graded by running checks",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-a3"
+   ],
+   [
+    "quote",
+    "bun run capability --graded: the agents' run of the corpus, graded by its tasks' checks"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-a4"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-after"
+   ],
+   [
+    "quote",
+    "failed tries, list-pattern-as-call: 10 in 4 tasks"
+   ],
+   [
+    "quote",
+    {
+     "lion": "failures counted by cause, to choose what to fix",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-a4"
+   ],
+   [
+    "quote",
+    "the agents' failed tries, counted by the cause rules of agent-errors.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-a5"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-after"
+   ],
+   [
+    "quote",
+    "lines that log a check: 2 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the outcome and time of every check run, kept as data",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-a5"
+   ],
+   [
+    "quote",
+    "the lines of the metrics that log each check the commit hook runs to out/telemetry.jsonl"
+   ]
+  ]
+ ],
+ "recorded"
+]
