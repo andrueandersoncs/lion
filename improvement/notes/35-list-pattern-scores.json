@@ -1,0 +1,120 @@
+{
+  "scores": [
+    {
+      "question": {
+        "capability passed": "public by sonnet agents (4 chosen tasks)",
+        "pillar": "all"
+      },
+      "better": "higher",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "list-pattern-as-call"
+      },
+      "better": "lower",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "agents' first tries that ran": "public by sonnet agents (4 chosen tasks)"
+      },
+      "better": "higher",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}

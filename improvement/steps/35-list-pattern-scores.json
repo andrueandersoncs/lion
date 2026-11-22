@@ -1,0 +1,343 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents (4 chosen tasks)",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    "higher"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents (4 chosen tasks)",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents (4 chosen tasks)",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents (4 chosen tasks)",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents (4 chosen tasks)",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "public by sonnet agents (4 chosen tasks)",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+     "cause": "list-pattern-as-call"
+    }
+   ],
+   [
+    "quote",
+    "lower"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+     "cause": "list-pattern-as-call"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+     "cause": "list-pattern-as-call"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+     "cause": "list-pattern-as-call"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+     "cause": "list-pattern-as-call"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+     "cause": "list-pattern-as-call"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents (4 chosen tasks)"
+    }
+   ],
+   [
+    "quote",
+    "higher"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents (4 chosen tasks)"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents (4 chosen tasks)"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents (4 chosen tasks)"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents (4 chosen tasks)"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "agents' first tries that ran": "public by sonnet agents (4 chosen tasks)"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ]
+ ],
+ "recorded"
+]

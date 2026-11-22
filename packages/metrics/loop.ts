@@ -24,7 +24,8 @@
 //   --fail-fast         stop at the first requirement that is not met
 //   --agents            also have agents write a program for each corpus
 //                       task, and grade them, which costs money: at most
-//                       --budget US dollars, 25 unless given
+//                       --budget US dollars, 25 unless given; --tasks a,b
+//                       works only those, as a suite of its own
 //
 // The tools run cheapest first. Each prints how long it took, which the
 // record keeps too, so it can say how many predictions the loop resolves per
@@ -41,6 +42,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import { errorWords } from "./src/corpus-agents.ts";
 import {
   agentsCauseQuestion,
   agentsQuestion,
@@ -98,6 +100,7 @@ const args = readArguments(process.argv.slice(2), [
   "mutations",
   "repeat",
   "skip",
+  "tasks",
   "tries",
 ]);
 const skipped = new Set(args.option("skip")?.split(",") ?? []);
@@ -167,7 +170,7 @@ const capabilityTool = (measured: Measure | undefined) => {
  * Agents write a program for each task; what they wrote is graded as a
  * suite of its own. It costs money, so it runs only when asked for.
  */
-const agentsTool = (budget: string | undefined) => {
+const agentsTool = (budget: string | undefined, tasks: string | undefined) => {
   const { text } = run("agents", [
     "bun",
     "run",
@@ -175,6 +178,7 @@ const agentsTool = (budget: string | undefined) => {
     "--agents",
     "--json",
     ...(budget === undefined ? [] : ["--budget", budget]),
+    ...(tasks === undefined ? [] : ["--tasks", tasks]),
   ]);
   for (const [suite, passed] of Object.entries(readCapability(text))) {
     if (suite.includes(" agents")) {
@@ -186,8 +190,18 @@ const agentsTool = (budget: string | undefined) => {
   for (const [suite, agents] of Object.entries(readAgents(text))) {
     print(agentsQuestion(suite, "cost usd"), agents.costUsd.toFixed(2));
     print(agentsQuestion(suite, "first tries that ran"), agents.firstRan);
-    for (const { cause, tries } of agents.causes) {
-      print(agentsCauseQuestion(suite, cause), tries);
+    // Every cause the rules know is printed, 0 where no try failed so, so
+    // a cause that went away answers its question.
+    const counted = new Map(
+      agents.causes.map(({ cause, tries }) => [cause, tries] as const)
+    );
+    const causes = new Set([
+      ...errorWords().map(([, cause]) => cause),
+      "other",
+      ...counted.keys(),
+    ]);
+    for (const cause of causes) {
+      print(agentsCauseQuestion(suite, cause), counted.get(cause) ?? 0);
     }
   }
 };
@@ -382,7 +396,7 @@ const scores = () => {
     [
       "agents",
       args.flag("agents"),
-      always(() => agentsTool(args.option("budget"))),
+      always(() => agentsTool(args.option("budget"), args.option("tasks"))),
     ],
   ];
   let stopped = false;

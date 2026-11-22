@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "--tasks a,b works only those, as a suite of its own",
+      "says": {
+        "feature": "loop-agents-tasks",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "Every cause the rules know is printed, 0 where no try failed so, so a cause that went away answers its question.",
+      "says": {
+        "behavior": "loop-agent-cause-absent",
+        "is": "zero",
+        "area": "metrics"
+      }
+    }
+  ]
+}
