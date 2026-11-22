@@ -23,91 +23,42 @@
  * that the rest can still be met.
  */
 import { LogicError } from "@/errors/evaluation";
+import {
+  add,
+  ceiling,
+  compare,
+  divide,
+  floor,
+  fromRational,
+  gcd,
+  isNumber,
+  isZero,
+  type LionNumber,
+  multiply,
+  negate,
+  ONE,
+  type Rational,
+  ratio,
+  subtract,
+  toRational,
+  ZERO,
+} from "@/numbers/exact";
 
-/** An exact number: a numerator and a positive denominator with no common factor. */
-export interface Rational {
-  readonly d: bigint;
-  readonly n: bigint;
-}
+/**
+ * A Lion number as the rational it stands for: a JavaScript number is the
+ * decimal its shortest digits write, so 0.1 is one tenth.
+ */
+export const fromNumber = (value: LionNumber): Rational => {
+  if (!isNumber(value)) {
+    throw new RangeError(`${value} is not a finite number`);
+  }
+  return toRational(value);
+};
 
 const abs = (a: bigint) => (a < 0n ? -a : a);
 
-export const gcd = (a: bigint, b: bigint): bigint => {
-  let [x, y] = [abs(a), abs(b)];
-  while (y !== 0n) {
-    [x, y] = [y, x % y];
-  }
-  return x;
-};
-
-/** The rational n / d, in lowest terms. */
-export const ratio = (n: bigint, d = 1n): Rational => {
-  if (d === 0n) {
-    throw new RangeError("A rational's denominator cannot be 0");
-  }
-  const g = gcd(n, d) || 1n;
-  const sign = d < 0n ? -1n : 1n;
-  return { d: (sign * d) / g, n: (sign * n) / g };
-};
-
-export const ZERO = ratio(0n);
-export const ONE = ratio(1n);
-
-export const add = (a: Rational, b: Rational) =>
-  ratio(a.n * b.d + b.n * a.d, a.d * b.d);
-export const negate = (a: Rational): Rational => ({ d: a.d, n: -a.n });
-export const subtract = (a: Rational, b: Rational) => add(a, negate(b));
-export const multiply = (a: Rational, b: Rational) =>
-  ratio(a.n * b.n, a.d * b.d);
-export const divide = (a: Rational, b: Rational) => ratio(a.n * b.d, a.d * b.n);
-export const compare = (a: Rational, b: Rational) => {
-  const difference = a.n * b.d - b.n * a.d;
-  if (difference === 0n) {
-    return 0;
-  }
-  return difference < 0n ? -1 : 1;
-};
-export const isZero = (a: Rational) => a.n === 0n;
-export const isWhole = (a: Rational) => a.d === 1n;
-
-/** The greatest whole number at most `a`. */
-export const floor = (a: Rational): bigint => {
-  const q = a.n / a.d;
-  return a.n < 0n && q * a.d !== a.n ? q - 1n : q;
-};
-
-/** The least whole number at least `a`. */
-export const ceiling = (a: Rational): bigint => -floor(negate(a));
-
-/** A JSON number as the exact rational it stands for. */
-export const fromNumber = (value: number): Rational => {
-  if (!Number.isFinite(value)) {
-    throw new RangeError(`${value} is not a finite number`);
-  }
-  if (Number.isInteger(value)) {
-    return ratio(BigInt(value));
-  }
-  // A double is a whole number times a power of two: find them exactly.
-  let scale = 1n;
-  let scaled = value;
-  while (!Number.isInteger(scaled)) {
-    scaled *= 2;
-    scale *= 2n;
-  }
-  return ratio(BigInt(scaled), scale);
-};
-
-/**
- * A rational as the nearest JSON number: written out in decimal digits,
- * enough of them for any denominator, and read back.
- */
-export const toNumber = (a: Rational): number => {
-  if (isWhole(a)) {
-    return Number(a.n);
-  }
-  const exponent = BigInt(a.d.toString().length + 20);
-  return Number(`${(a.n * 10n ** exponent) / a.d}e-${exponent}`);
-};
+/** A rational as the Lion number it is, in its one form. */
+export const toNumber = (a: Rational): LionNumber => fromRational(a);
 
 /** A sum of variables times numbers, plus a number. */
 export interface Linear {

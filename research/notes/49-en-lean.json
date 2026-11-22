@@ -1,0 +1,615 @@
+{
+  "sources": [
+    {
+      "id": "lean-nat",
+      "url": "https://lean-lang.org/doc/reference/latest/Basic-Types/Natural-Numbers/",
+      "title": "The Lean Language Reference: 21.1. Natural Numbers",
+      "publisher": "the Lean developers (Lean FRO)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "lean-int",
+      "url": "https://lean-lang.org/doc/reference/latest/Basic-Types/Integers/",
+      "title": "The Lean Language Reference: 21.2. Integers",
+      "publisher": "the Lean developers (Lean FRO)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "lean-float",
+      "url": "https://lean-lang.org/doc/reference/latest/Basic-Types/Floating-Point-Numbers/",
+      "title": "The Lean Language Reference: 21.6. Floating-Point Numbers",
+      "publisher": "the Lean developers (Lean FRO)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "lean-rat",
+      "url": "https://leanprover-community.github.io/mathlib4_docs/Init/Data/Rat/Basic.html",
+      "title": "Init.Data.Rat.Basic: Basics for the Rational Numbers",
+      "publisher": "the Lean developers (Lean FRO)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "lean-kernel",
+      "url": "https://lean-lang.org/doc/reference/latest/Elaboration-and-Compilation/",
+      "title": "The Lean Language Reference: 2. Elaboration and Compilation",
+      "publisher": "the Lean developers (Lean FRO)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "lean-axioms",
+      "url": "https://lean-lang.org/doc/reference/latest/Axioms/",
+      "title": "The Lean Language Reference: 8. Axioms",
+      "publisher": "the Lean developers (Lean FRO)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "lean-validating-proofs",
+      "url": "https://lean-lang.org/doc/reference/latest/ValidatingProofs/",
+      "title": "The Lean Language Reference: Validating a Lean Proof",
+      "publisher": "the Lean developers (Lean FRO)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "lean-tactic-reference",
+      "url": "https://lean-lang.org/doc/reference/latest/Tactic-Proofs/Tactic-Reference/",
+      "title": "The Lean Language Reference: 14.5. Tactic Reference",
+      "publisher": "the Lean developers (Lean FRO)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "mathlib-linarith",
+      "url": "https://leanprover-community.github.io/mathlib4_docs/Mathlib/Tactic/Linarith/Frontend.html",
+      "title": "Mathlib.Tactic.Linarith.Frontend",
+      "publisher": "the Mathlib community",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "mathlib-ring",
+      "url": "https://leanprover-community.github.io/mathlib4_docs/Mathlib/Tactic/Ring/Basic.html",
+      "title": "Mathlib.Tactic.Ring.Basic",
+      "publisher": "the Mathlib community",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "mathlib-polyrith",
+      "url": "https://leanprover-community.github.io/mathlib4_docs/Mathlib/Tactic/Polyrith.html",
+      "title": "Mathlib.Tactic.Polyrith",
+      "publisher": "the Mathlib community",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "mathlib-linear-combination",
+      "url": "https://leanprover-community.github.io/mathlib4_docs/Mathlib/Tactic/LinearCombination.html",
+      "title": "Mathlib.Tactic.LinearCombination",
+      "publisher": "the Mathlib community",
+      "kind": "primary",
+      "published": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "en-b1",
+      "source": "lean-nat",
+      "quote": "Lean imposes no upper bound on the representation of natural numbers other than physical constraints imposed by the available memory of the computer.",
+      "says": {
+        "covers": "integers kept exact past two to the 53rd",
+        "by": "arbitrary-precision integers",
+        "is": true
+      },
+      "where": "21.1. Natural Numbers"
+    },
+    {
+      "id": "en-b2",
+      "source": "lean-nat",
+      "quote": "In Lean's kernel, the interpreter, and compiled code, closed natural numbers are represented as efficient arbitrary-precision integers.",
+      "says": {
+        "adopted": "arbitrary-precision integers",
+        "in": "Lean"
+      },
+      "where": "21.1. Natural Numbers"
+    },
+    {
+      "id": "en-b3",
+      "source": "lean-nat",
+      "quote": "Because they are part of the kernel, if these primitives did not correspond to their definitions as Lean functions, it could undermine soundness.",
+      "says": {
+        "needs": "arithmetic primitives that agree with their logical definitions",
+        "by": "proof checking by a small kernel"
+      },
+      "where": "21.1.2. Run-Time Representation"
+    },
+    {
+      "id": "en-b4",
+      "source": "lean-nat",
+      "quote": "In compiled code, sufficiently-small natural numbers are represented without pointer indirections",
+      "says": {
+        "adopted": "small integers unboxed, large ones as bignums",
+        "in": "Lean"
+      },
+      "where": "21.1.2. Run-Time Representation"
+    },
+    {
+      "id": "en-b5",
+      "source": "lean-nat",
+      "quote": "The natural numbers are an inductive type , so the induction tactic can be used to prove universally-quantified statements.",
+      "says": {
+        "covers": "proofs about arithmetic the solver cannot decide",
+        "by": "induction over recursive definitions",
+        "is": true
+      },
+      "where": "21.1.1. Logical Model"
+    },
+    {
+      "id": "en-b6",
+      "source": "lean-int",
+      "quote": "Integers are arbitrary-precision, limited only by the capability of the hardware on which Lean is running",
+      "says": {
+        "covers": "integers kept exact past two to the 53rd",
+        "by": "arbitrary-precision integers",
+        "is": true
+      },
+      "where": "21.2. Integers"
+    },
+    {
+      "id": "en-b7",
+      "source": "lean-int",
+      "quote": "In all integer division conventions, division by 0 is defined to be 0",
+      "says": {
+        "adopted": "division by zero defined as zero",
+        "in": "Lean"
+      },
+      "where": "21.2.4.3.1. Division"
+    },
+    {
+      "id": "en-b8",
+      "source": "lean-rat",
+      "quote": "Rational numbers, implemented as a pair of integers num / den such that the denominator is positive and the numerator and denominator are coprime.",
+      "says": {
+        "covers": "fractions kept exact",
+        "by": "exact rational arithmetic",
+        "is": true
+      },
+      "where": "structure Rat"
+    },
+    {
+      "id": "en-b9",
+      "source": "lean-rat",
+      "quote": "This is a \"smart constructor\" that divides the numerator and denominator by the gcd to ensure that the resulting rational number is normalized",
+      "says": {
+        "adopted": "exact rational arithmetic",
+        "in": "Lean"
+      },
+      "where": "mkRat"
+    },
+    {
+      "id": "en-b10",
+      "source": "lean-float",
+      "quote": "To enable reasoning about floating-point numbers, Lean exposes a logical model of Float that is used in proofs.",
+      "says": {
+        "adopted": "a logical model of floating point",
+        "in": "Lean"
+      },
+      "where": "21.6. Floating-Point Numbers"
+    },
+    {
+      "id": "en-b11",
+      "source": "lean-float",
+      "quote": "Other operations, such as trigonometric functions, are represented as opaque functions in Lean's logic.",
+      "says": {
+        "adopted": "opaque floating point",
+        "in": "Lean"
+      },
+      "where": "21.6. Floating-Point Numbers"
+    },
+    {
+      "id": "en-b12",
+      "source": "lean-float",
+      "quote": "The logical model is extensively empirically tested against the floating-point operations on all supported platforms.",
+      "says": {
+        "needs": "trust that compiled code agrees with the logic",
+        "by": "a logical model of floating point"
+      },
+      "where": "21.6. Floating-Point Numbers"
+    },
+    {
+      "id": "en-b13",
+      "source": "lean-float",
+      "quote": "As long as FFI code does not modify the floating-point environment, Lean's runtime floating-point primitives match the model's specification.",
+      "says": {
+        "covers": "proofs that hold of the code's own arithmetic",
+        "by": "a logical model of floating point",
+        "is": true
+      },
+      "where": "21.6. Floating-Point Numbers"
+    },
+    {
+      "id": "en-b14",
+      "source": "lean-float",
+      "quote": "Not all operations are defined; some are instead opaque functions whose behavior cannot be reasoned about in Lean's logic.",
+      "says": {
+        "covers": "proofs that hold of the code's own arithmetic",
+        "by": "opaque floating point",
+        "is": false
+      },
+      "where": "21.6.1.1. Model Details"
+    },
+    {
+      "id": "en-b15",
+      "source": "lean-float",
+      "quote": "Additionally, terms that require reduction to become syntactically equal can be checked by the kernel when they use only operations that are modeled in Lean's logic",
+      "says": {
+        "needs": "operations modeled in the logic",
+        "by": "decision by evaluation"
+      },
+      "where": "Kernel Reasoning"
+    },
+    {
+      "id": "en-b16",
+      "source": "lean-float",
+      "quote": "However, the native_decide tactic can invoke the underlying platform's floating-point primitives that are used by Lean for run-time programs",
+      "says": {
+        "covers": "proofs that hold of the code's own arithmetic",
+        "by": "decision by compiled evaluation",
+        "is": true
+      },
+      "where": "Kernel Reasoning"
+    },
+    {
+      "id": "en-b17",
+      "source": "lean-float",
+      "quote": "This requires trusting the Lean compiler, interpreter and the low-level implementations of built-in operators in addition to the kernel.",
+      "says": {
+        "needs": "trust that compiled code agrees with the logic",
+        "by": "decision by compiled evaluation"
+      },
+      "where": "Kernel Reasoning"
+    },
+    {
+      "id": "en-b18",
+      "source": "lean-float",
+      "quote": "Computations that use floating-point numbers are very efficient; however, the nature of the way that they approximate the real numbers is complex, with many corner cases.",
+      "says": {
+        "covers": "arithmetic as fast as a double's",
+        "by": "binary64 floating point",
+        "is": true
+      },
+      "where": "21.6. Floating-Point Numbers"
+    },
+    {
+      "id": "en-b19",
+      "source": "lean-float",
+      "quote": "Differences between platforms are resolved by choosing specific representations (for example, all NaN values are replaced by a single canonical NaN when any operation requests a bit representation) and by modeling only the subset of floating-point operations that are implemented identically on all supported platforms.",
+      "says": {
+        "needs": "only operations every platform implements identically",
+        "by": "a logical model of floating point"
+      },
+      "where": "21.6. Floating-Point Numbers"
+    },
+    {
+      "id": "en-b20",
+      "source": "lean-kernel",
+      "quote": "Lean's trusted kernel is a small, robust implementation of a type checker for the core type theory.",
+      "says": {
+        "adopted": "proof checking by a small kernel",
+        "in": "Lean"
+      },
+      "where": "2.3. The Kernel"
+    },
+    {
+      "id": "en-b21",
+      "source": "lean-kernel",
+      "quote": "The presence of explicit proof terms makes it feasible to implement independent proof checkers, increasing our confidence.",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "proof checking by a small kernel",
+        "is": true
+      },
+      "where": "2.3. The Kernel"
+    },
+    {
+      "id": "en-b22",
+      "source": "lean-kernel",
+      "quote": "The compiler can compile partial functions that the kernel treats as opaque constants for the purposes of reasoning.",
+      "says": {
+        "needs": "a proof that the function ends",
+        "by": "induction over recursive definitions"
+      },
+      "where": "2.4. Elaboration Results"
+    },
+    {
+      "id": "en-b23",
+      "source": "lean-tactic-reference",
+      "quote": "The fun_induction tactic is a convenience wrapper around the induction tactic to use the functional induction principle.",
+      "says": {
+        "covers": "proofs about functions that call themselves",
+        "by": "induction over recursive definitions",
+        "is": true
+      },
+      "where": "fun_induction"
+    },
+    {
+      "id": "en-b24",
+      "source": "lean-tactic-reference",
+      "quote": "decide attempts to prove the main goal (with target type p ) by synthesizing an instance of Decidable p and then reducing that instance to evaluate the truth value of p .",
+      "says": {
+        "adopted": "decision by evaluation",
+        "in": "Lean"
+      },
+      "where": "decide"
+    },
+    {
+      "id": "en-b25",
+      "source": "lean-tactic-reference",
+      "quote": "The target is not allowed to contain local variables or metavariables.",
+      "says": {
+        "needs": "a closed goal with no variables",
+        "by": "decision by evaluation"
+      },
+      "where": "decide"
+    },
+    {
+      "id": "en-b26",
+      "source": "lean-tactic-reference",
+      "quote": "native_decide is a synonym for decide + native .",
+      "says": {
+        "adopted": "decision by compiled evaluation",
+        "in": "Lean"
+      },
+      "where": "native_decide"
+    },
+    {
+      "id": "en-b27",
+      "source": "lean-validating-proofs",
+      "quote": "can be used to create invalid proofs whenever the native evaluation of a term disagrees with the kernel's evaluation.",
+      "says": {
+        "needs": "trust that compiled code agrees with the logic",
+        "by": "decision by compiled evaluation"
+      },
+      "where": "On Lean.trustCompiler (up to Lean 4.28.0)"
+    },
+    {
+      "id": "en-b28",
+      "source": "lean-validating-proofs",
+      "quote": "External checkers ( lean4checker , comparator ) cannot check such proofs, as they do not have access to the Lean compiler.",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "decision by compiled evaluation",
+        "is": false
+      },
+      "where": "On Lean.trustCompiler (up to Lean 4.28.0)"
+    },
+    {
+      "id": "en-b29",
+      "source": "lean-axioms",
+      "quote": "In addition to the standard axioms, proofs by native evaluation introduce a dedicated axiom for each computation that is asserted by the compiled code.",
+      "says": {
+        "adopted": "an axiom recorded for each trusted computation",
+        "in": "Lean"
+      },
+      "where": "8. Axioms"
+    },
+    {
+      "id": "en-b30",
+      "source": "lean-tactic-reference",
+      "quote": "In particular, they do not require trust in the correctness of the code generator, unlike native_decide .",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "proof-producing call-by-value evaluation",
+        "is": true
+      },
+      "where": "Call-by-Value Evaluation"
+    },
+    {
+      "id": "en-b31",
+      "source": "lean-tactic-reference",
+      "quote": "The omega tactic, for resolving integer and natural linear arithmetic problems.",
+      "says": {
+        "adopted": "the omega test without dark and grey shadows",
+        "in": "Lean"
+      },
+      "where": "omega"
+    },
+    {
+      "id": "en-b32",
+      "source": "lean-tactic-reference",
+      "quote": "It is not yet a full decision procedure (no \"dark\" or \"grey\" shadows), but should be effective on many problems.",
+      "says": {
+        "covers": "a decision procedure for linear integer arithmetic",
+        "by": "the omega test without dark and grey shadows",
+        "is": false
+      },
+      "where": "omega"
+    },
+    {
+      "id": "en-b33",
+      "source": "lean-tactic-reference",
+      "quote": "If we encounter x / k or x % k for literal integers k we introduce new auxiliary variables and the relevant inequalities.",
+      "says": {
+        "needs": "division and remainder only by literal numbers",
+        "by": "the omega test without dark and grey shadows"
+      },
+      "where": "omega"
+    },
+    {
+      "id": "en-b34",
+      "source": "lean-tactic-reference",
+      "quote": "This model-based search is complete for LIA .",
+      "says": {
+        "covers": "a decision procedure for linear integer arithmetic",
+        "by": "model-based integer search",
+        "is": true
+      },
+      "where": "grind: Linear integer arithmetic (lia)"
+    },
+    {
+      "id": "en-b35",
+      "source": "lean-tactic-reference",
+      "quote": "grobner solves goals that can be phrased as polynomial equations (with further polynomial equations as hypotheses) over commutative (semi)rings, using the Grobner basis algorithm.",
+      "says": {
+        "covers": "polynomial identities decided exactly",
+        "by": "the gröbner basis algorithm",
+        "is": true
+      },
+      "where": "grobner"
+    },
+    {
+      "id": "en-b36",
+      "source": "mathlib-linarith",
+      "quote": "When the inequalities are over a dense linear order, linarith is a decision procedure: it will prove False if and only if the inequalities are unsatisfiable.",
+      "says": {
+        "covers": "a decision procedure for linear real arithmetic",
+        "by": "farkas certificates",
+        "is": true
+      },
+      "where": "linarith: solving linear arithmetic goals"
+    },
+    {
+      "id": "en-b37",
+      "source": "mathlib-linarith",
+      "quote": "While there is some special handling for non-dense orders like Nat and Int , this tactic is not complete for these theories and will not prove every true goal.",
+      "says": {
+        "covers": "a decision procedure for linear integer arithmetic",
+        "by": "farkas certificates",
+        "is": false
+      },
+      "where": "linarith"
+    },
+    {
+      "id": "en-b38",
+      "source": "mathlib-linarith",
+      "quote": "linarith uses an untrusted oracle to search for a certificate of unsatisfiability.",
+      "says": {
+        "adopted": "farkas certificates",
+        "in": "Mathlib"
+      },
+      "where": "Algorithm sketch"
+    },
+    {
+      "id": "en-b39",
+      "source": "mathlib-linarith",
+      "quote": "Given a list of such coefficients, linarith verifies that ∑ kᵢtᵢ = 0 using a normalization tactic such as ring .",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "farkas certificates",
+        "is": true
+      },
+      "where": "Algorithm sketch"
+    },
+    {
+      "id": "en-b40",
+      "source": "mathlib-linarith",
+      "quote": "An extension of linarith with some preprocessing to allow it to solve some nonlinear arithmetic problems.",
+      "says": {
+        "covers": "proofs about arithmetic the solver cannot decide",
+        "by": "nonlinear preprocessing by products of hypotheses",
+        "is": true
+      },
+      "where": "nlinarith"
+    },
+    {
+      "id": "en-b41",
+      "source": "mathlib-linarith",
+      "quote": "the assumption 0 R' (b1 - a1) * (b2 - a2) is added to the context (non-recursively)",
+      "says": {
+        "defines": "nonlinear preprocessing by products of hypotheses"
+      },
+      "where": "nlinarith"
+    },
+    {
+      "id": "en-b42",
+      "source": "mathlib-ring",
+      "quote": "A tactic for solving equations in commutative (semi)rings, where the exponents can also contain variables.",
+      "says": {
+        "covers": "polynomial identities decided exactly",
+        "by": "commutative ring normalization",
+        "is": true
+      },
+      "where": "ring tactic"
+    },
+    {
+      "id": "en-b43",
+      "source": "mathlib-ring",
+      "quote": "The basic approach to prove equalities is to normalise both sides and check for equality.",
+      "says": {
+        "adopted": "commutative ring normalization",
+        "in": "Mathlib"
+      },
+      "where": "Implementation notes"
+    },
+    {
+      "id": "en-b44",
+      "source": "mathlib-ring",
+      "quote": "coefficients (any rational number, embedded into the (semi)ring)",
+      "says": {
+        "adopted": "exact rational arithmetic",
+        "in": "Mathlib"
+      },
+      "where": "ring tactic"
+    },
+    {
+      "id": "en-b45",
+      "source": "mathlib-ring",
+      "quote": "Note that 0 / 0 is generally defined to be 0 , so division cancelling out is not true in general.",
+      "says": {
+        "covers": "identities that cancel division",
+        "by": "commutative ring normalization",
+        "is": false
+      },
+      "where": "Caveats and future work"
+    },
+    {
+      "id": "en-b46",
+      "source": "mathlib-linear-combination",
+      "quote": "The linear_combination tactic attempts to prove an (in)equality goal by exhibiting it as a specified linear combination of (in)equality hypotheses, or other (in)equality proof terms",
+      "says": {
+        "covers": "proofs written by hand and checked by machine",
+        "by": "certificates written by hand",
+        "is": true
+      },
+      "where": "linear_combination"
+    },
+    {
+      "id": "en-b47",
+      "source": "mathlib-linear-combination",
+      "quote": "The coefficients may be arbitrary expressions (with nonnegativity constraints in the case of inequalities).",
+      "says": {
+        "covers": "proofs about arithmetic the solver cannot decide",
+        "by": "certificates written by hand",
+        "is": true
+      },
+      "where": "linear_combination"
+    },
+    {
+      "id": "en-b48",
+      "source": "mathlib-polyrith",
+      "quote": "It proves the goal by generating an appropriate call to the tactic linear_combination .",
+      "says": {
+        "covers": "a proof a small checker can recheck",
+        "by": "gröbner basis certificates",
+        "is": true
+      },
+      "where": "polyrith"
+    },
+    {
+      "id": "en-b49",
+      "source": "mathlib-polyrith",
+      "quote": "The polyrith tactic relied on an external Sage server which has been shut down.",
+      "says": {
+        "needs": "an external computer algebra service",
+        "by": "gröbner basis certificates"
+      },
+      "where": "polyrith Tactic"
+    }
+  ]
+}

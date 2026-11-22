@@ -1,0 +1,283 @@
+Lion programs run for research with @lionlang/cli 0.14.0 built at commit 4e8e625 (core 0.15.0), 2026-11-21.
+
+== program en-fraction-proof.json
+{
+  "the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away": [
+    "query",
+    [
+      "not",
+      [
+        "exists",
+        ["?x"],
+        [
+          "and",
+          ["schema/fits?", "?x", "value/number?"],
+          ["number/greaterThan", "?x", 0],
+          ["number/lessThan", "?x", 1],
+          [
+            "not",
+            [
+              "number/equals?",
+              ["number/subtract", ["number/add", "?x", 0.2], 0.2],
+              "?x"
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "plain code: 0.1 with 0.2 added and taken away": [
+    "number/subtract",
+    ["number/add", 0.1, 0.2],
+    0.2
+  ],
+  "plain code: that equals 0.1": [
+    "number/equals?",
+    ["number/subtract", ["number/add", 0.1, 0.2], 0.2],
+    0.1
+  ]
+}
+== gives
+{
+  "the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away": [
+    {}
+  ],
+  "plain code: 0.1 with 0.2 added and taken away": 0.10000000000000003,
+  "plain code: that equals 0.1": false
+}
+
+== program en-big-integer-proof.json
+{
+  "the solver proves that no integer from two to the 53rd up is unchanged by adding 1": [
+    "query",
+    [
+      "not",
+      [
+        "exists",
+        ["?n"],
+        [
+          "and",
+          ["schema/fits?", "?n", "value/integer?"],
+          ["number/greaterThanOrEqualTo", "?n", 9007199254740992],
+          ["=", ["number/add", "?n", 1], "?n"]
+        ]
+      ]
+    ]
+  ],
+  "the solver finds an integer past 9007199254740991": [
+    "query",
+    [
+      "exists",
+      ["?n"],
+      [
+        "and",
+        ["schema/fits?", "?n", "value/integer?"],
+        ["number/greaterThan", "?n", 9007199254740991]
+      ]
+    ]
+  ],
+  "plain code: two to the 53rd is an integer": [
+    "value/integer?",
+    9007199254740992
+  ],
+  "plain code: two to the 53rd plus 1": ["number/add", 9007199254740992, 1],
+  "plain code: two to the 53rd plus 1 equals two to the 53rd": [
+    "number/equals?",
+    ["number/add", 9007199254740992, 1],
+    9007199254740992
+  ]
+}
+== gives
+{
+  "the solver proves that no integer from two to the 53rd up is unchanged by adding 1": [
+    {}
+  ],
+  "the solver finds an integer past 9007199254740991": [
+    {}
+  ],
+  "plain code: two to the 53rd is an integer": true,
+  "plain code: two to the 53rd plus 1": 9007199254740992,
+  "plain code: two to the 53rd plus 1 equals two to the 53rd": true
+}
+
+== program en-integer-refused.json
+["number/add", 9007199254740991, 2]
+== gives
+
+ERROR
+  number/add: 9007199254740991 + 2 is 9007199254740993, but a JSON number would hold it as 9007199254740992: it holds every integer only from -9007199254740991 to 9007199254740991.
+
+== program en-decimals.json
+{
+  "0.1 plus 0.2": ["number/add", 0.1, 0.2],
+  "0.1 plus 0.2 equals 0.3": ["number/equals?", ["number/add", 0.1, 0.2], 0.3],
+  "1 divided by 3": ["number/divide", 1, 3],
+  "1 divided by 3, times 3, equals 1": [
+    "number/equals?",
+    ["number/multiply", ["number/divide", 1, 3], 3],
+    1
+  ],
+  "1 divided by 49, times 49, equals 1": [
+    "number/equals?",
+    ["number/multiply", ["number/divide", 1, 49], 49],
+    1
+  ],
+  "a sum of ten tenths": [
+    "array/reduce",
+    ["quote", [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]],
+    0,
+    "number/add"
+  ],
+  "a number written with 21 decimal places, 0.100000000000000000001": 0.100000000000000000001,
+  "it equals 0.1": ["number/equals?", 0.100000000000000000001, 0.1]
+}
+== gives
+{
+  "0.1 plus 0.2": 0.30000000000000004,
+  "0.1 plus 0.2 equals 0.3": false,
+  "1 divided by 3": 0.3333333333333333,
+  "1 divided by 3, times 3, equals 1": true,
+  "1 divided by 49, times 49, equals 1": false,
+  "a sum of ten tenths": 0.9999999999999999,
+  "a number written with 21 decimal places, 0.100000000000000000001": 0.1,
+  "it equals 0.1": true
+}
+
+== program en-polynomial.json
+[
+  "query",
+  [
+    "not",
+    [
+      "exists",
+      ["?x"],
+      [
+        "and",
+        ["schema/fits?", "?x", "value/integer?"],
+        [
+          "not",
+          [
+            "number/equals?",
+            [
+              "number/multiply",
+              ["number/add", "?x", 1],
+              ["number/add", "?x", 1]
+            ],
+            [
+              "number/add",
+              ["number/multiply", "?x", "?x"],
+              ["number/multiply", 2, "?x"],
+              1
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]
+== gives
+
+ERROR
+  ?x stands for infinitely many values that meet ["and",["schema/fits?","?x","value/integer?"],["not",["number/equals?",["number/multiply",["number/add","?x",1],["number/add","?x",1]],["number/add",["number/multiply","?x","?x"],["number/multiply",2,"?x"],1]]]], and ["not",["number/equals?",["number/multiply",["number/add","?x",1],["number/add","?x",1]],["number/add",["number/multiply","?x","?x"],["number/multiply",2,"?x"],1]]] waits for its value. The solver cannot reason about number/multiply of two unknowns: it decides sums of numbers times known numbers, comparisons of them, and equality of values. Bound ?x on both sides, or bind it with a relation goal.
+
+== program en-square.json
+[
+  "query",
+  [
+    "not",
+    [
+      "exists",
+      ["?x"],
+      [
+        "and",
+        ["schema/fits?", "?x", "value/integer?"],
+        ["number/lessThan", ["number/multiply", "?x", "?x"], 0]
+      ]
+    ]
+  ]
+]
+== gives
+
+ERROR
+  ?x stands for infinitely many values that meet ["and",["schema/fits?","?x","value/integer?"],["number/lessThan",["number/multiply","?x","?x"],0]], and ["number/lessThan",["number/multiply","?x","?x"],0] waits for its value. The solver cannot reason about number/multiply of two unknowns: it decides sums of numbers times known numbers, comparisons of them, and equality of values. Bound ?x on both sides, or bind it with a relation goal.
+
+== program en-recursion.json
+[
+  "begin",
+  [
+    "define",
+    "sum to",
+    [
+      "lambda",
+      ["n"],
+      [
+        "cond",
+        [["number/lessThanOrEqualTo", "n", 0], 0],
+        ["else", ["number/add", "n", ["sum to", ["number/subtract", "n", 1]]]]
+      ]
+    ]
+  ],
+  [
+    "query",
+    [
+      "not",
+      [
+        "exists",
+        ["?n"],
+        [
+          "and",
+          ["schema/fits?", "?n", "value/integer?"],
+          ["number/greaterThanOrEqualTo", "?n", 0],
+          ["number/lessThan", ["sum to", "?n"], 0]
+        ]
+      ]
+    ]
+  ]
+]
+== gives
+
+ERROR
+  ?n stands for infinitely many values that meet ["and",["schema/fits?","?n","value/integer?"],["number/greaterThanOrEqualTo","?n",0],["number/lessThan",[["lambda",["n","sum to"],["cond",[["number/lessThanOrEqualTo","n",0],0],["else",["number/add","n",["sum to",["number/subtract","n",1]]]]]],"?n",[["lambda",["sum to"],["lambda",["n"],["cond",[["number/lessThanOrEqualTo","n",0],0],["else",["number/add","n",["sum to",["number/subtract","n",1]]]]]]],["lambda",["n"],["cond",[["number/lessThanOrEqualTo","n",0],0],["else",["number/add","n",["sum to",["number/subtract","n",1]]]]]]]],0]], and ["number/lessThan",[["lambda",["n","sum to"],["cond",[["number/lessThanOrEqualTo","n",0],0],["else",["number/add","n",["sum to",["number/subtract","n",1]]]]]],"?n",[["lambda",["sum to"],["lambda",["n"],["cond",[["number/lessThanOrEqualTo","n",0],0],["else",["number/add","n",["sum to",["number/subtract","n",1]]]]]]],["lambda",["n"],["cond",[["number/lessThanOrEqualTo","n",0],0],["else",["number/add","n",["sum to",["number/subtract","n",1]]]]]]]],0] waits for its value. The solver cannot reason about a function that calls itself: it decides sums of numbers times known numbers, comparisons of them, and equality of values. Bound ?n on both sides, or bind it with a relation goal.
+
+== program en-bounded-recursion.json
+[
+  "begin",
+  [
+    "define",
+    "sum to",
+    [
+      "lambda",
+      ["n"],
+      [
+        "cond",
+        [["number/lessThanOrEqualTo", "n", 0], 0],
+        ["else", ["number/add", "n", ["sum to", ["number/subtract", "n", 1]]]]
+      ]
+    ]
+  ],
+  {
+    "no n from 0 to 50 sums to less than 0": [
+      "query",
+      [
+        "not",
+        [
+          "exists",
+          ["?n"],
+          [
+            "and",
+            ["schema/fits?", "?n", "value/integer?"],
+            ["number/greaterThanOrEqualTo", "?n", 0],
+            ["number/lessThanOrEqualTo", "?n", 50],
+            ["number/lessThan", ["sum to", "?n"], 0]
+          ]
+        ]
+      ]
+    ]
+  }
+]
+== gives
+{
+  "no n from 0 to 50 sums to less than 0": [
+    {}
+  ]
+}

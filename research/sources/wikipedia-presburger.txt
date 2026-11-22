@@ -1,0 +1,273 @@
+Jump to content
+Main menu
+Main menu
+move to sidebar
+hide
+Navigation
+Main page
+Contents
+Current events
+Random article
+About Wikipedia
+Contact us
+Contribute
+Help
+Learn to edit
+Community portal
+Recent changes
+Upload file
+Special pages
+Search
+Search
+Appearance
+Donate
+Create account
+Log in
+Personal tools
+Donate
+Create account
+Log in
+Contents
+move to sidebar
+hide
+(Top)
+1
+Overview
+2
+Properties
+Toggle Properties subsection
+2.1
+Computational complexity
+3
+Applications
+4
+Presburger-definable integer relation
+Toggle Presburger-definable integer relation subsection
+4.1
+Muchnik's characterization
+5
+See also
+6
+Notes
+7
+References
+8
+Bibliography
+9
+External links
+Toggle the table of contents
+Presburger arithmetic
+10 languages
+Čeština
+Deutsch
+Français
+Italiano
+日本語
+Mirandés
+Polski
+Português
+Русский
+Українська
+Edit links
+Article
+Talk
+English
+Read
+Edit
+View history
+Save
+Tools
+Tools
+move to sidebar
+hide
+Actions
+Read
+Edit
+View history
+Save
+General
+What links here
+Related changes
+Upload file
+Permanent link
+Page information
+Cite this page
+Get shortened URL
+Switch to legacy parser
+Print/export
+Download as PDF
+Printable version
+In other projects
+Wikidata item
+Appearance
+move to sidebar
+hide
+From Wikipedia, the free encyclopedia
+Decidable first-order theory of the natural numbers with addition
+Presburger arithmetic is the first-order theory of the natural numbers with addition , named in honor of Mojżesz Presburger , who introduced it in 1929. The signature of Presburger arithmetic contains only the addition operation and equality , omitting the multiplication operation entirely. The theory is computably axiomatizable; the axioms include a schema of induction .
+Presburger arithmetic is much weaker than Peano arithmetic , which includes both addition and multiplication operations. Unlike Peano arithmetic, Presburger arithmetic is a decidable theory . This means it is possible to algorithmically determine, for any sentence in the language of Presburger arithmetic, whether that sentence is provable from the axioms of Presburger arithmetic. The asymptotic running-time computational complexity of this algorithm is at least doubly exponential , however, as shown by Fischer & Rabin (1974) .
+Overview
+[ edit ]
+The language of Presburger arithmetic contains constants 0 and 1 and a binary function + , interpreted as addition.
+In this language, the axioms of Presburger arithmetic are the universal closures of the following: [ 1 ]
+¬ ( 0 = x + 1 ) [ n 1 ]
+x + 1 = y + 1 → x = y
+x + 0 = x
+x + ( y + 1 ) = ( x + y ) + 1
+Let P ( x ) be a first-order formula in the language of Presburger arithmetic with a free variable x (and possibly other free variables). Then the following formula is an axiom:
+( P ( 0 ) ∧ ∀ x ( P ( x ) → P ( x + 1 ) ) ) → ∀ y P ( y ) .
+(5) is an axiom schema of induction , representing infinitely many axioms. These cannot be replaced by any finite number of axioms, that is, Presburger arithmetic is not finitely axiomatizable in first-order logic. [ 2 ]
+Presburger arithmetic can be viewed as a first-order theory with equality containing precisely all consequences of the above axioms. Alternatively, it can be defined as the set of those sentences that are true in the intended interpretation : the structure of non-negative integers with constants 0 , 1 , and the addition of non-negative integers.
+Presburger arithmetic is designed to be complete and decidable. Therefore, it cannot formalize concepts such as divisibility or primality , or, more generally, any number concept leading to multiplication of variables. However, it can formulate individual instances of divisibility; for example, it proves ∀ x ∃ y ( ( y + y = x ) ∨ ( y + y + 1 = x ) ) . This states that every number is either even or odd.
+Properties
+[ edit ]
+Presburger (1929) proved Presburger arithmetic to be:
+consistent : There is no statement in Presburger arithmetic that can be deduced from the axioms such that its negation can also be deduced.
+complete : For each statement in the language of Presburger arithmetic, either it is possible to deduce it from the axioms or it is possible to deduce its negation.
+decidable : There exists an algorithm that decides whether any given statement in Presburger arithmetic is a theorem or a nontheorem - note that a "nontheorem" is a formula that cannot be proved, not in general necessarily one whose negation can be proved, but in the case of a complete theory like here the two definitions are equivalent.
+The decidability of Presburger arithmetic can be shown using quantifier elimination , supplemented by reasoning about arithmetical congruence . [ 3 ] [ 4 ] [ 5 ] [ 6 ] [ 7 ] [ 8 ] The steps used to justify a quantifier elimination algorithm can be used to define computable axiomatizations that do not necessarily contain the axiom schema of induction. [ 3 ] [ 9 ]
+In contrast, Peano arithmetic , which is Presburger arithmetic augmented with multiplication, is not decidable, as proved by Church alongside the negative answer to the Entscheidungsproblem . By Gödel's incompleteness theorem , Peano arithmetic is incomplete and its consistency is not internally provable (but see Gentzen's consistency proof ).
+Computational complexity
+[ edit ]
+The decision problem for Presburger arithmetic is an interesting example in computational complexity theory and computation . Let n be the length of a statement in Presburger arithmetic. Then Fischer & Rabin (1974) proved that, in the worst case, the proof of the statement in first-order logic has length at least 2 2 c n , for some constant c >0. Hence, their decision algorithm for Presburger arithmetic has runtime at least exponential. Fischer and Rabin also proved that for any reasonable axiomatization (defined precisely in their paper), there exist theorems of length n that have doubly exponential length proofs. Fischer and Rabin's work also implies that Presburger arithmetic can be used to define formulas that correctly calculate any algorithm as long as the inputs are less than relatively large bounds. The bounds can be increased, but only by using new formulas.
+Recent work has also considered functional synthesis problems over Presburger arithmetic, including the identification of restricted fragments with more efficient solution procedures. [ 10 ]
+On the other hand, a triply exponential upper bound on a decision procedure for Presburger arithmetic was proved by Oppen. [ 11 ] [ n 2 ]
+A more tight complexity bound was shown using alternating complexity classes by Berman (1980) . The set of true statements in Presburger arithmetic (PA) is shown complete for TimeAlternations (2 2 n O(1) , n). Thus, its complexity is between double exponential nondeterministic time (2-NEXP) and double exponential space (2-EXPSPACE). Completeness is under Karp reductions . (Also, note that while Presburger arithmetic is commonly abbreviated PA, in mathematics in general PA usually means Peano arithmetic .)
+For a more fine-grained result, let PA(i) be the set of true Σ i PA statements, and PA(i, j) the set of true Σ i PA statements with each quantifier block limited to j variables. '<' is considered to be quantifier-free; here, bounded quantifiers are counted as quantifiers.
+PA(1, j) is in P, while PA(1) is NP-complete. [ 12 ]
+For i > 0 and j > 2, PA(i + 1, j) is Σ i P -complete . The hardness result only needs j>2 (as opposed to j=1) in the last quantifier block.
+For i>0, PA(i+1) is Σ i EXP -complete . [ 13 ]
+Short Σ n Presburger Arithmetic ( 2"}}'> n > 2 ) is Σ n − 2 P complete (and thus NP complete for n = 3 ). Here, 'short' requires bounded (i.e. O ( 1 ) ) sentence size except that integer constants are unbounded (but their number of bits in binary counts against input size). Also, Σ 2 two variable PA (without the restriction of being 'short') is NP-complete. [ 14 ] Short Π 2 (and thus Σ 2 ) PA is in P, and this extends to fixed-dimensional parametric integer linear programming. [ 15 ]
+Applications
+[ edit ]
+Because Presburger arithmetic is decidable, automatic theorem provers for Presburger arithmetic exist. For example, the Rocq and Lean proof assistant systems feature the tactic omega for Presburger arithmetic and the Isabelle proof assistant contains a verified quantifier elimination procedure by Nipkow (2010) . The double exponential complexity of the theory makes it infeasible to use the theorem provers on complicated formulas, but this behavior occurs only in the presence of nested quantifiers: Nelson & Oppen (1978) describe an automatic theorem prover that uses the simplex algorithm on an extended Presburger arithmetic without nested quantifiers to prove some of the instances of quantifier-free Presburger arithmetic formulas. More recent satisfiability modulo theories solvers use complete integer programming techniques to handle quantifier-free fragment of Presburger arithmetic theory. [ 16 ]
+Presburger arithmetic can express multiplication by constants, as an abbreviation for iterated addition: c x = x + x + ⋯ + x ⏟ c times . Most array subscript calculations then fall within the region of decidable problems. [ n 3 ] This approach is the basis of several proof-of- correctness systems for computer programs , beginning with the Stanford Pascal Verifier in the late 1970s and continuing through to Microsoft's Spec# system of 2005. Languages influenced include Rocq and Lean (proof assistant) .
+Presburger-definable integer relation
+[ edit ]
+Some properties are now given about integer relations definable in Presburger Arithmetic. For the sake of simplicity, all relations considered in this section are over non-negative integers.
+A relation is Presburger-definable if and only if it is a semilinear set . [ 17 ]
+A unary integer relation R , that is, a set of non-negative integers, is Presburger-definable if and only if it is ultimately periodic. That is, if there exists a threshold t ∈ ℕ and a positive period 0}"}}'> p ∈ ℕ > 0 such that, for all integer n such that | n | ≥ t , n ∈ R if and only if n + p ∈ R .
+By the Cobham–Semenov theorem , a relation is Presburger-definable if and only if it is definable in Büchi arithmetic of base k for all k ≥ 2 . [ 18 ] [ 19 ] A relation definable in Büchi arithmetic of base k and k ′ for k and k ′ being multiplicatively independent integers is Presburger definable.
+An integer relation R is Presburger-definable if and only if all sets of integers that are definable in first-order logic with addition and R (that is, Presburger arithmetic plus a predicate for R ) are Presburger-definable. [ 20 ] Equivalently, for each relation R that is not Presburger-definable, there exists a first-order formula with addition and R that defines a set of integers that is not definable using only addition.
+An integer function is Presburger-definable if and only if it is piecewise linear on a semilinear partition of its domain, with each linear piece having a periodic component. [ 21 ]
+Muchnik's characterization
+[ edit ]
+Presburger-definable relations admit another characterization: by Muchnik's theorem. [ 22 ] It is more complicated to state, but led to the proof of the two former characterizations. Before Muchnik's theorem can be stated, some additional definitions must be introduced.
+Let R ⊆ ℕ d be a set, the section x i = j of R , for i < d and j ∈ ℕ is defined as
+{ ( x 0 , … , x i − 1 , x i + 1 , … , x d − 1 ) ∈ ℕ d − 1 ∣ ( x 0 , … , x i − 1 , j , x i + 1 , … , x d − 1 ) ∈ R } .
+Given two sets R , S ⊆ ℕ d and a d</math>-tuple"}},"i":0}}]}'> d -tuple of integers ( p 0 , … , p d − 1 ) ∈ ℕ d , the set R is called ( p 0 , … , p d − 1 ) -periodic in S if, for all ( x 0 , … , x d − 1 ) ∈ S such that ( x 0 + p 0 , … , x d − 1 + p d − 1 ) ∈ S , then ( x 0 , … , x d − 1 ) ∈ R if and only if ( x 0 + p 0 , … , x d − 1 + p d − 1 ) ∈ R . For s ∈ ℕ , the set R is said to be s</math>-periodic"}},"i":0}}]}'> s -periodic in S if it is (p_0,\\ldots,p_{d-1})</math>-periodic"}},"i":0}}]}'> ( p 0 , … , p d − 1 ) -periodic for some ( p 0 , … , p d − 1 ) ∈ ℤ d such that
+∑ i = 0 d − 1 | p i | < s .
+Finally, for k , x 0 , … , x d − 1 ∈ ℕ let
+C ( k , ( x 0 , … , x d − 1 ) ) = { ( x 0 + c 0 , … , x d − 1 + c d − 1 ) ∣ 0 ≤ c i < k }
+denote the cube of size k whose lesser corner is ( x 0 , … , x d − 1 ) .
+R\\subseteq\\N^d</math> is Presburger-definable if and only if:\n* if <math>d > 1</math> then all sections of <math>R</math> are Presburger-definable and \n* there exists <math>s\\in\\N</math> such that, for every <math>k\\in\\N</math>, there exists <math>t\\in\\N</math> such that for all <math>(x_0,\\dots,x_{d-1})\\in\\N^d</math> with <math display=\"block\">\\sum_{i=0}^{d-1}x_i>t,</math> <math>R</math> is {{nowrap|<math>s</math>-periodic}} in <math>C(k,(x_0,\\dots,x_{d-1}))</math>."}},"i":0}}]}'>
+Muchnik's Theorem — R ⊆ ℕ d is Presburger-definable if and only if:
+if 1"}}'> d > 1 then all sections of R are Presburger-definable and
+there exists s ∈ ℕ such that, for every k ∈ ℕ , there exists t ∈ ℕ such that for all ( x 0 , … , x d − 1 ) ∈ ℕ d with t,"}}'> ∑ i = 0 d − 1 x i > t , R is s -periodic in C ( k , ( x 0 , … , x d − 1 ) ) .
+Intuitively, the integer s represents the length of a shift, the integer k is the size of the cubes and t is the threshold before the periodicity. This result remains true when the condition
+t"}}'> ∑ i = 0 d − 1 x i > t
+is replaced either by t"}}'> min ⁡ ( x 0 , … , x d − 1 ) > t or by t"}}'> max ⁡ ( x 0 , … , x d − 1 ) > t .
+This characterization led to the so-called "definable criterion for definability in Presburger arithmetic", that is: there exists a first-order formula with addition and a d</math>-ary"}},"i":0}}]}'> d -ary predicate R that holds if and only if R is interpreted by a Presburger-definable relation. Muchnik's theorem also allows one to prove that it is decidable whether an automatic sequence accepts a Presburger-definable set.
+See also
+[ edit ]
+Robinson arithmetic
+Skolem arithmetic
+Elementary recursive function
+Notes
+[ edit ]
+↑ There is no number which, when added by 1 , results in 0 ; i.e., the system contains no negative numbers.
+↑ Oppen (1978) extends Oppen (1973) by making the analysis precise and showing exactly how the bound depends on the length of formulas.
+↑ For example, in the C programming language , if a is an array of 4 bytes element size, the expression a[i] can be translated to a baseadr +i+i+i+i , which fits the restrictions of Presburger arithmetic.
+References
+[ edit ]
+↑ Podnieks 2015 , pp. 97–98.
+↑ Zoethout 2015 , p. 8, Theorem 1.2.4..
+1 2 Presburger 1929 .
+↑ Büchi 1962 .
+↑ Cooper 1972 .
+↑ Enderton 2001 , p. 188.
+↑ Nipkow 2010 .
+↑ Monk 2012 , p. 240.
+↑ Stansifer 1984 .
+↑ Akshay et al. 2025 .
+↑ Oppen 1978 .
+↑ Nguyen Luu 2018 , chapter 3.
+↑ Haase 2014 , pp. 47:1-47:10.
+↑ Nguyen & Pak 2017 .
+↑ Eisenbrand & Shmonin 2008 .
+↑ King, Barrett & Tinelli 2014 .
+↑ Ginsburg & Spanier 1966 ; Haase 2018 , §4.
+↑ Cobham 1969 , pp. 186–192.
+↑ Semenov 1977 , pp. 403–418.
+↑ Michaux & Villemaire 1996 , pp. 251–277.
+↑ Finkel & Leroux 2008 .
+↑ Muchnik 2003 , pp. 1433–1444.
+Bibliography
+[ edit ]
+2<sup>2<sup>''pn''</sup></sup></sup> Upper Bound on the Complexity of Presburger Arithmetic"},"journal":{"wt":"[[J. Comput. Syst. Sci.]]"},"volume":{"wt":"16"},"issue":{"wt":"3"},"pages":{"wt":"323–332"},"doi":{"wt":"10.1016/0022-0000(78)90021-1"},"doi-access":{"wt":"free"}},"i":24}},"\n\n*",{"template":{"target":{"wt":"cite book\n ","href":"./Template:Cite_book"},"params":{"last":{"wt":"Podnieks"},"first":{"wt":"Kārlis"},"title":{"wt":"What is Mathematics: Gödel's Theorem and Around"},"date":{"wt":"2015-01-25"},"publisher":{"wt":"[[University of Latvia]]"},"doi":{"wt":"10.13140/RG.2.2.24155.77609"},"doi-access":{"wt":"free"},"quote":{"wt":"Hyper-textbook for students"}},"i":25}},"\n\n*",{"template":{"target":{"wt":"cite journal\n ","href":"./Template:Cite_journal"},"params":{"last":{"wt":"Presburger"},"first":{"wt":"Mojżesz"},"author-link":{"wt":"Mojżesz Presburger"},"date":{"wt":"1929"},"title":{"wt":"Über die Vollständigkeit eines gewissen Systems der Arithmetik ganzer Zahlen, in welchem die Addition als einzige Operation hervortritt"},"journal":{"wt":"Comptes Rendus du I congrès de Mathématiciens des Pays Slaves, Warszawa"},"pages":{"wt":"92–101"}},"i":26}},", see ",{"template":{"target":{"wt":"harvtxt","href":"./Template:Harvtxt"},"params":{"1":{"wt":"Stansifer"},"2":{"wt":"1984"}},"i":27}}," for an English translation\n\n*",{"template":{"target":{"wt":"cite conference\n ","href":"./Template:Cite_conference"},"params":{"last":{"wt":"Pugh"},"first":{"wt":"William"},"author-link":{"wt":"William Pugh (computer scientist)"},"title":{"wt":"Proceedings of the 1991 ACM/IEEE conference on Supercomputing - Supercomputing '91"},"chapter":{"wt":"The Omega test: A fast and practical integer programming algorithm for dependence analysis"},"year":{"wt":"1991"},"pages":{"wt":"4–13"},"publisher":{"wt":"Association for Computing Machinery"},"publication-place":{"wt":"New York, NY, USA"},"doi":{"wt":"10.1145/125826.125848"},"isbn":{"wt":"0897914597"},"s2cid":{"wt":"3174094"}},"i":28}},"\n\n*",{"template":{"target":{"wt":"cite conference\n ","href":"./Template:Cite_conference"},"params":{"last1":{"wt":"Reddy"},"first1":{"wt":"C.R."},"last2":{"wt":"Loveland"},"first2":{"wt":"D.W."},"title":{"wt":"Proceedings of the tenth annual ACM symposium on Theory of computing - STOC '78"},"chapter":{"wt":"Presburger arithmetic with bounded quantifier alternation"},"year":{"wt":"1978"},"pages":{"wt":"320–325"},"doi":{"wt":"10.1145/800133.804361"},"s2cid":{"wt":"13966721"}},"i":29}},"\n\n*",{"template":{"target":{"wt":"cite journal\n ","href":"./Template:Cite_journal"},"params":{"first":{"wt":"A.L."},"last":{"wt":"Semenov"},"year":{"wt":"1977"},"title":{"wt":"Presburgerness of predicates regular in two number systems"},"language":{"wt":"ru"},"journal":{"wt":"[[Sibirsk. Mat. Zh.]]"},"volume":{"wt":"18"},"issue":{"wt":"2"},"pages":{"wt":"403–418"},"doi":{"wt":"10.1007/BF00967164"},"bibcode":{"wt":"1977SibMJ..18..289S"}},"i":30}},"\n\n*",{"template":{"target":{"wt":"cite report\n ","href":"./Template:Cite_report"},"params":{"last":{"wt":"Stansifer"},"first":{"wt":"Ryan"},"date":{"wt":"Sep 1984"},"title":{"wt":"Presburger's Article on Integer Arithmetic: Remarks and Translation"},"type":{"wt":"Technical Report"},"location":{"wt":"Ithaca/NY"},"publisher":{"wt":"Dept. of Computer Science, Cornell University"},"volume":{"wt":"TR84-639"},"url":{"wt":"http://cs.fit.edu/~ryan/papers/presburger.pdf"}},"i":31}},"\n\n*",{"template":{"target":{"wt":"cite book\n ","href":"./Template:Cite_book"},"params":{"last":{"wt":"Young"},"first":{"wt":"P."},"year":{"wt":"1985"},"contribution":{"wt":"Gödel theorems, exponential difficulty and undecidability of arithmetic theories: an exposition"},"title":{"wt":"Recursion Theory, American Mathematical Society"},"editor":{"wt":"A. Nerode and R. Shore"},"pages":{"wt":"503–522"}},"i":32}},"\n\n*",{"template":{"target":{"wt":"cite thesis\n ","href":"./Template:Cite_thesis"},"params":{"last":{"wt":"Zoethout"},"first":{"wt":"Jetze"},"date":{"wt":"February 1, 2015"},"title":{"wt":"Interpretations in Presburger Arithmetic (Bachelor Thesis)"},"url":{"wt":"https://studenttheses.uu.nl/bitstream/handle/20.500.12932/20281/Thesis.pdf"},"access-date":{"wt":"2023-08-25"}},"i":33}},"\n\n",{"template":{"target":{"wt":"Refend","href":"./Template:Refend"},"params":{},"i":34}}]}'>
+Akshay, S.; Balasubramanian, A. R.; Chakraborty, S.; Zetzsche, G. (2025). "Presburger Functional Synthesis: Complexity and Tractable Normal Forms" (PDF) . Proceedings of the 22nd International Conference on Principles of Knowledge Representation and Reasoning (KR 2025) .
+Berman, L. (1980). "The Complexity of Logical Theories" . Theoretical Computer Science . 11 (1): 71– 77. doi : 10.1016/0304-3975(80)90037-7 .
+Büchi, J. Richard (1962). "On a Decision Method in Restricted Second Order Arithmetic". In Nagel, Ernest ; Suppes, Patrick ; Tarski, Alfred (eds.). Logic, methodology and philosophy of science . Proceedings of the International Congress for Logic. Stanford: Stanford University Press . pp. 1– 11.
+Cobham, Alan (1969). "On the base-dependence of sets of numbers recognizable by finite automata". Math. Systems Theory . 3 (2): 186– 192. doi : 10.1007/BF01746527 . S2CID 19792434 .
+Cooper, D.C. (1972). Meltzer, Bernard ; Michie, Donald (eds.). "Theorem Proving in Arithmetic without Multiplication" (PDF) . Machine Intelligence . 7 . Edinburgh: Edinburgh University Press : 91– 99 . Retrieved 17 March 2026 .
+Eisenbrand, Friedrich ; Shmonin, Gennady (2008). "Parametric Integer Programming in Fixed Dimension". Mathematics of Operations Research . 33 (4): 839– 850. arXiv : 0801.4336 . doi : 10.1287/moor.1080.0320 . S2CID 15698556 .
+Enderton, Herbert (2001). A mathematical introduction to logic (2nd ed.). Boston, MA: Academic Press . ISBN 978-0-12-238452-3 .
+Ferrante, Jeanne ; Rackoff, Charles W. (1979). The Computational Complexity of Logical Theories . Lecture Notes in Mathematics. Vol. 718. Springer-Verlag . doi : 10.1007/BFb0062837 . ISBN 978-3-540-09501-9 . MR 0537764 .
+Finkel, Alain; Leroux, Jérôme (March 2008). Presburger Functions are Piecewise Linear (PDF) (Research report). Laboratoire Spécification et Vérification, ENS Cachan. LSV-08-08.
+Fischer, Michael J. ; Rabin, Michael O. (1974). "Super-Exponential Complexity of Presburger Arithmetic" . In Karp, Richard M. (ed.). Complexity of computation . SIAM-AMS Proceedings. Vol. 7. American Mathematical Society . pp. 27– 41. ISBN 978-0-8218-1327-0 . OCLC 1205569621 . Archived from the original on 15 September 2006 . Retrieved 11 June 2006 .
+Ginsburg, Seymour ; Spanier, Edwin Henry (1966). "Semigroups, Presburger Formulas, and Languages" (PDF) . Pacific Journal of Mathematics . 16 (2): 285– 296. doi : 10.2140/pjm.1966.16.285 .
+Haase, Christoph (2014). "Subclasses of Presburger Arithmetic and the Weak EXP Hierarchy". Proceedings CSL- LICS . ACM. pp. 47:1–47:10. arXiv : 1401.5266 . doi : 10.1145/2603088.2603092 .
+Haase, Christoph (2018). "A Survival Guide to Presburger Arithmetic" (PDF) . ACM SIGLOG News . 5 (3): 67– 82. doi : 10.1145/3242953.3242964 . S2CID 51847374 .
+Hoang, Nhat Minh. "Presburger Arithmetic" (PDF) . Technische Universität München . Retrieved 22 March 2024 . In this paper a procedure for constructing an automaton that decides Presburger arithmetic is explained.
+King, Tim; Barrett, Clark W.; Tinelli, Cesare (2014). "Leveraging linear and mixed integer programming for SMT". 2014 Formal Methods in Computer-Aided Design (FMCAD) . Vol. 2014. pp. 139– 146. doi : 10.1109/FMCAD.2014.6987606 . ISBN 978-0-9835-6784-4 . S2CID 5542629 .
+Michaux, Christian; Villemaire, Roger (1996). "Presburger Arithmetic and Recognizability of Sets of Natural Numbers by Automata: New Proofs of Cobham's and Semenov's Theorems". Annals of Pure and Applied Logic . 77 (3): 251– 277. doi : 10.1016/0168-0072(95)00022-4 .
+Monk, J. Donald (2012). Mathematical Logic (Graduate Texts in Mathematics (37)) (Softcover reprint of the original 1st ed. 1976 ed.). Springer. ISBN 9781468494549 .
+Muchnik, Andrey A. (2003). "The definable criterion for definability in Presburger arithmetic and its applications" . Theor. Comput. Sci . 290 (3): 1433– 1444. doi : 10.1016/S0304-3975(02)00047-6 .
+Nelson, Greg; Oppen, Derek C. (April 1978). "A simplifier based on efficient decision algorithms". Proceedings of the 5th ACM SIGACT-SIGPLAN symposium on Principles of programming languages - POPL '78 . pp. 141– 150. doi : 10.1145/512760.512775 . S2CID 6342372 .
+Nguyen, Danny; Pak, Igor (2017). "Short Presburger Arithmetic is Hard" (PDF) . 2017 IEEE 58th Annual Symposium on Foundations of Computer Science (FOCS) . pp. 37– 48. arXiv : 1708.08179 . doi : 10.1109/FOCS.2017.13 . ISBN 978-1-5386-3464-6 . S2CID 3425421 . Retrieved 4 September 2022 .
+Nguyen Luu, Dahn (2018). The Computational Complexity of Presburger Arithmetic (Thesis). Los Angeles: UCLA Electronic Theses and Dissertations . Retrieved 8 September 2022 .
+Nipkow, T (2010). "Linear Quantifier Elimination" (PDF) . Journal of Automated Reasoning . 45 (2): 189– 212. doi : 10.1007/s10817-010-9183-0 . S2CID 14279141 .
+Oppen, Derek C. (1973). "Elementary Bounds for Presburger Arithmetic". Proceedings of the Fifth Annual ACM Symposium on Theory of Computing (STOC ’73) . pp. 34– 37. doi : 10.1145/800125.804033 .
+Oppen, Derek C. (1978). "A 2 2 2 pn Upper Bound on the Complexity of Presburger Arithmetic" . J. Comput. Syst. Sci. 16 (3): 323– 332. doi : 10.1016/0022-0000(78)90021-1 .
+Podnieks, Kārlis (25 January 2015). What is Mathematics: Gödel's Theorem and Around . University of Latvia . doi : 10.13140/RG.2.2.24155.77609 . Hyper-textbook for students
+Presburger, Mojżesz (1929). "Über die Vollständigkeit eines gewissen Systems der Arithmetik ganzer Zahlen, in welchem die Addition als einzige Operation hervortritt". Comptes Rendus du I congrès de Mathématiciens des Pays Slaves, Warszawa : 92– 101. , see Stansifer (1984) for an English translation
+Pugh, William (1991). "The Omega test: A fast and practical integer programming algorithm for dependence analysis". Proceedings of the 1991 ACM/IEEE conference on Supercomputing - Supercomputing '91 . New York, NY, USA: Association for Computing Machinery. pp. 4– 13. doi : 10.1145/125826.125848 . ISBN 0897914597 . S2CID 3174094 .
+Reddy, C.R.; Loveland, D.W. (1978). "Presburger arithmetic with bounded quantifier alternation". Proceedings of the tenth annual ACM symposium on Theory of computing - STOC '78 . pp. 320– 325. doi : 10.1145/800133.804361 . S2CID 13966721 .
+Semenov, A.L. (1977). "Presburgerness of predicates regular in two number systems". Sibirsk. Mat. Zh. (in Russian). 18 (2): 403– 418. Bibcode : 1977SibMJ..18..289S . doi : 10.1007/BF00967164 .
+Stansifer, Ryan (September 1984). Presburger's Article on Integer Arithmetic: Remarks and Translation (PDF) (Technical Report). Vol. TR84-639. Ithaca/NY: Dept. of Computer Science, Cornell University.
+Young, P. (1985). "Gödel theorems, exponential difficulty and undecidability of arithmetic theories: an exposition". In A. Nerode and R. Shore (ed.). Recursion Theory, American Mathematical Society . pp. 503– 522.
+Zoethout, Jetze (1 February 2015). Interpretations in Presburger Arithmetic (Bachelor Thesis) (PDF) (Thesis) . Retrieved 25 August 2023 .
+External links
+[ edit ]
+A complete Theorem Prover for Presburger Arithmetic by Philipp Rümmer
+Retrieved from " https://en.wikipedia.org/w/index.php?title=Presburger_arithmetic&oldid=1382617724 "
+Categories : 1929 introductions
+Formal theories of arithmetic
+Logic in computer science
+Proof theory
+Model theory
+Hidden categories: Articles with short description
+Short description is different from Wikidata
+Use dmy dates from January 2026
+CS1 Russian-language sources (ru)
+CS1: long volume value
+This page was last edited on 29 October 2026, at 14:03 (UTC) .
+Page was rendered with Parsoid .
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License ;
+additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy . Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc. , a non-profit organization.
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Legal & safety contacts
+Code of Conduct
+Developers
+Statistics
+Cookie statement
+Mobile view
+Search
+Search
+Toggle the table of contents
+Presburger arithmetic
+10 languages
+Add topic

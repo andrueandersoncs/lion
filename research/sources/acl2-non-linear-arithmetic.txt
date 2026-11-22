@@ -1,0 +1,229 @@
+(defxdoc non-linear-arithmetic
+  :parents (linear)
+  :short "Non-linear Arithmetic"
+  :long "<p>This documentation topic is divided into two parts.  We first
+ discuss the practical aspect of how to use the non-linear arithmetic extension
+ to ACL2, and then the theory behind it.  We assume that the reader is familiar
+ with the material in @(tsee linear-arithmetic) and that on @(':')@(tsee
+ linear) rules.</p>
+
+ <p>We begin our discussion of how to use non-linear arithmetic with a simple
+ example.  Assume that we wish to prove:</p>
+
+ @({
+  (thm
+   (implies (and (rationalp x)
+                 (rationalp y)
+                 (rationalp z)
+                 (< 0 y)
+                 (< x (* y z)))
+            (< (floor x y) z)))
+ })
+
+ <p>Note that @('(floor x y) <= (/ x y)').  Note also that if we divide both
+ sides of @('x < (* y z)') by @('y'), since @('0 < y'), we obtain @('(/ x y) <
+ z').  By chaining these two inequalities together, we get the inequality we
+ desired to prove.</p>
+
+ <p>We now proceed with our example session:</p>
+
+ <code>
+ (skip-proofs
+  (progn
+
+ ; Since the truth of this theorem depends on the linear properties
+ ; of floor, we will need the linear lemma:
+
+    (defthm floor-bounds-1
+        (implies (and (rationalp x)
+                      (rationalp y))
+                 (and (&lt; (+ (/ x y) -1)
+                         (floor x y))
+                      (&lt;= (floor x y)
+                          (/ x y))))
+        :rule-classes ((:linear :trigger-terms ((floor x y)))))
+
+ ; We now disable floor, so that the linear lemma will be used.
+
+    (in-theory (disable floor))
+
+ ; We create five rewrite rules which we will use during non-linear
+ ; arithmetic.  The necessity for these is due to one of the differences in
+ ; ACL2's behavior when non-linear arithmetic is turned on.  Although
+ ; the conclusions of linear lemmas have always been rewritten before
+ ; they are used, now, when non-linear arithmetic is turned on, the
+ ; conclusions are rewritten under a different theory than under ``normal''
+ ; rewriting.  This theory is also used in other, similar, circumstances
+ ; described below.
+
+    (defthm |arith (* -1 x)|
+        (equal (* -1 x)
+               (- x)))
+
+    (defthm |arith (* 1 x)|
+        (equal (* 1 x)
+               (fix x)))
+
+    (defthm |arith (* x (/ x) y)|
+        (equal (* x (/ x) y)
+               (if (equal (fix x) 0)
+                   0
+                   (fix y))))
+
+    (defthm |arith (* y x)|
+        (equal (* y x)
+               (* x y)))
+
+    (defthm |arith (fix x)|
+        (implies (acl2-numberp x)
+                 (equal (fix x)
+                        x))))
+  )  ; End skip-proofs.
+
+ ; We disable the above rewrite rules from normal use.
+
+ (in-theory (disable |arith (* -1 x)|
+                     |arith (* 1 x)|
+                     |arith (* x (/ x) y)|
+                     |arith (* y x)|
+                     |arith (fix x)|))
+
+ ; We create an arithmetic-theory.  Note that we must give a quoted
+ ; constant for the theory &mdash; none of the normal @(tsee theory-functions)
+ ; are applicable to in-arithmetic-theory.
+
+ (in-arithmetic-theory '(|arith (* -1 x)|
+                         |arith (* 1 x)|
+                         |arith (* x (/ x) y)|
+                         |arith (* y x)|
+                         |arith (fix x)|))
+
+ ; We turn non-linear arithmetic on.
+
+ (set-non-linearp t)
+
+ ; We can now go ahead and prove our theorem.
+
+ (thm
+  (implies (and (rationalp x)
+                (rationalp y)
+                (rationalp z)
+                (&lt; 0 y)
+                (&lt; x (* y z)))
+           (&lt; (floor x y) z)))
+ </code>
+
+ <p>The above example illustrates the two practical requirements for using
+ non-linear arithmetic in ACL2.  First, one must set up an arithmetic-theory.
+ Usually, one would not set up an arithmetic-theory on one's own but would
+ instead load a library book or books which do so.  Second, one must turn the
+ non-linear arithmetic extension on.  This one must do explicitly &mdash; no
+ book can do this for you.</p>
+
+ <p>For a brief discussion of why this is so, even though @('(set-non-linearp
+ t)') is an embeddable event, see @(see acl2-defaults-table) (in particular,
+ the final paragraph).  (Note that @('(set-non-linearp t)') modifies the
+ @('acl2-defaults-table').)  Also see @(see set-non-linearp), see @(see
+ embedded-event-form), and see @(see events).</p>
+
+ <p>You can also enable non-linear arithmetic with the hint @(':nonlinearp t').
+ See @(see hints).  We, in fact, recommend the use of a hint which will enable
+ nonlinear arithmetic only when the goal has stabilized under rewriting.  Using
+ @(tsee default-hints) can make this easier.</p>
+
+ @({
+  (defun nonlinearp-default-hint (stable-under-simplificationp hist pspv)
+    (cond (stable-under-simplificationp
+           (if (not (access rewrite-constant
+                            (access prove-spec-var pspv :rewrite-constant)
+                            :nonlinearp))
+               '(:computed-hint-replacement t :nonlinearp t)
+             nil))
+          ((access rewrite-constant
+                   (access prove-spec-var pspv :rewrite-constant)
+                   :nonlinearp)
+           (if (not (equal (caar hist) 'SETTLED-DOWN-CLAUSE))
+               '(:computed-hint-replacement t :nonlinearp nil)
+             nil))
+          (t nil)))
+
+  (set-default-hints '((nonlinearp-default-hint stable-under-simplificationp
+                                                hist pspv)))
+ })
+
+ <p>This has proven to be a helpful strategy which allows faster proof
+ times.</p>
+
+ <p>We now proceed to briefly describe the theory behind the non-linear
+ extension to ACL2.  In @(tsee linear-arithmetic) it was stated that,
+ ``[L]inear polynomial inequalities can be combined by cross-multiplication and
+ addition to permit the deduction of a third inequality....''  That is, if</p>
+
+ @({
+  0 < poly1,
+  0 < poly2,
+ })
+
+ <p>and @('c') and @('d') are positive rational constants, then</p>
+
+ @({
+  0 < c*poly1 + d*poly2.
+ })
+
+ <p>Similarly, given the above,</p>
+
+ @({
+  0 < poly1*poly2.
+ })
+
+ <p>In the linear arithmetic case, we are taking advantage of the facts that
+ multiplication by a positive rational constant does not change the sign of a
+ polynomial and that the sum of two positive polynomials is itself positive.
+ In the non-linear arithmetic case, we are using the fact that the product of
+ two positive polynomials is itself positive.</p>
+
+ <p>For example, suppose we have the three assumptions:</p>
+
+ @({
+  p1:  3*x*y + 7*a < 4
+  p2:            3 < 2*x  or p2': 0 < -3 + 2*x
+  p3:            1 < y    or p3': 0 < -1 + y,
+ })
+
+ <p>and we wish to prove that @('a < 0').  As described elsewhere (see @(see
+ linear-arithmetic)), we proceed by assuming the negation of our goal:</p>
+
+ @({
+  p4:            0 <= a,
+ })
+
+ <p>and looking for a contradiction.</p>
+
+ <p>There are no cancellations which can be performed by linear arithmetic in
+ the above situation.  (Recall that two polynomials are canceled against each
+ other only when they have the same largest unknown.)  However, @('p1') has a
+ product as its largest unknown, and for each of the factors of that product
+ there is a poly that has that factor as a largest unknown.  When non-linear
+ arithmetic is enabled, ACL2 will therefore multiply @('p1'') and @('p2'')
+ obtaining</p>
+
+ @({
+  p5:            0 < 3 + -2*x + -3*y + 2*x*y.
+ })
+
+ <p>The addition of this polynomial will allow cancellation to continue and, in
+ this case, we will prove our goal.  Thus, just as ACL2 adds two polynomials
+ together when they have the same largest unknown of opposite signs in order to
+ create a new ``smaller'' polynomial; so ACL2 multiplies polynomials together
+ when the product of their largest unknowns is itself the largest unknown of
+ another polynomial.  As the use of @(':')@(tsee linear) lemmas to further seed
+ the arithmetic database may allow cancellation to proceed, so may the use of
+ non-linear arithmetic.</p>
+
+ <p>This multiplication of polynomials is the motivation for an
+ arithmetic-theory distinct from the normal one.  Because this may be done so
+ often, and because the individual factors have presumably already been
+ rewritten, it is important that this be done in an efficient way.  The use of
+ a small, specialized, theory helps avoid the repeated application of rewrite
+ rules to already stabilized terms.</p>")
+

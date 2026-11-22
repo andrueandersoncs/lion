@@ -35,7 +35,8 @@ describe("func/reset and func/shift", () => {
           "func/reset",
           ["lambda", [], ["number/add", a, ["func/shift", handler]]],
         ]);
-        expect(result).toEqual({ value: resumes ? b * (a + v) : b });
+        // Lion has no -0: an exact product of 0 is 0.
+        expect(result).toEqual({ value: (resumes ? b * (a + v) : b) + 0 });
         expect(
           yield* outcome(["func/reset", ["lambda", [], ["number/add", a, v]]])
         ).toEqual({ value: a + v });

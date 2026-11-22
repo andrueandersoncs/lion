@@ -1,0 +1,308 @@
+Flocq in a Nutshell
+This page presents the major concepts of Flocq through the lens of
+a selection of representative theorems. It contains the following
+sections:
+Formats
+Rounding (as well as some exactness properties)
+Rounding to nearest (as well as ulp and rounding errors)
+Effective operators (including IEEE-754 formalization)
+About formats
+Generic formats
+Flocq formalizes various formats, be they floating- or fixed-point formats. They are all encompassed in a single formalization, which we illustrate with the example of the so-called Sterbenz' lemma.
+Theorem sterbenz states that the difference of two floating-point numbers x and y whose ratio does not exceed 2 can be represented in the same format as these numbers. In other words, the floating-point subtraction would not produce any rounding error.
+Theorem sterbenz :
+∀ ( beta : radix ) ( fexp : Z → Z ),
+Valid_exp fexp → Monotone_exp fexp →
+∀ x y : R ,
+generic_format beta fexp x → generic_format beta fexp y →
+( y / 2 ≤ x ≤ 2 × y )% R →
+generic_format beta fexp ( x - y ).
+Let us analyze the various parts of this theorem. As can be seen from the last three lines of the statement, a format is a predicate on real numbers produced by applying generic_format to a radix and to a function over the integers.
+A radix is just a record with two components. The first component is an integer, while the second one is a proof that this integer is more than or equal to 2, so as to eliminate degenerate cases.
+Record radix : Set := Build_radix
+{ radix_val : Z ;
+radix_prop : Z.leb 2 radix_val = true }.
+An important function is bpow , which turns an integer exponent e into the corresponding real number &beta; e , according to the radix &beta; . Conversely, the mag function turns a real number x into the exponent e of the power of the radix just above it: &beta; e-1 &le; |x| < &beta; e .
+As mentioned above, a format is described by a function over the integers. This function tells what the canonical exponent of a real number is for a given format. It is given by function cexp . As for the significand of the real number with respect to this canonical exponent, it is given by function scaled_mantissa .
+Definition cexp ( beta : radix ) ( fexp : Z → Z ) ( x : R ) : Z :=
+fexp ( mag beta x ).
+Definition scaled_mantissa ( beta : radix ) ( fexp : Z → Z ) ( x : R ) : R :=
+( x × bpow beta ( - cexp beta fexp x ))% R .
+Once we have a radix, we can express what a floating-point number is, using type float . This is another record with two components, one being the integer significand and the other being the exponent of the number with respect to the radix.
+Record float ( beta : radix ) : Set := Float
+{ Fnum : Z ; Fexp : Z }.
+To interpret such a floating-point number as a real number, we can use the F2R function.
+Definition F2R ( beta : radix ) ( f : float beta ) : R :=
+( IZR ( Fnum f ) × bpow beta ( Fexp f ))% R .
+The last ingredient we need is the Ztrunc function, which truncates a real number to an integer. We can now say that a real number is part of a given format when it is left unchanged by truncating the significand associated to its canonical exponent.
+Definition generic_format ( beta : radix ) ( fexp : Z → Z ) ( x : R ) : Prop :=
+x = F2R ( Float beta
+( Ztrunc ( scaled_mantissa beta fexp x ))
+( cexp beta fexp x )).
+Some functions over the integers do not describe meaningful formats. Typeclass Valid_exp excludes them. Still, some of the accepted functions define some really exotic formats, for which Sterbenz' lemma might not hold. Thus, the theorem does not just require the format to be valid, it also requires its describing function to be monotone, by using typeclass Monotone_exp . Note that the standard floating-point formats (see below) provide instances of this typeclass.
+Standard formats
+The generic_format predicate does not tell us about the properties of a real number that is part of it. So, Flocq defines several other predicates for the standard formats. One of them is FLT_format , which characterizes the real numbers x that can be represented by a floating-point number whose integer significand is less than &beta; prec and its exponent is more than or equal to emin .
+Inductive FLT_format ( beta : radix ) ( emin prec : Z ) ( x : R ) : Prop :=
+FLT_spec : ∀ f : float beta ,
+x = F2R f → ( Z.abs ( Fnum f ) < beta ^ prec )% Z → ( emin ≤ Fexp f )% Z →
+FLT_format beta emin prec x .
+The above format is the closest to the standard ones defined by IEEE-754, but note that it does not put an upper bound on the exponent. Numbers can be arbitrarily large in Flocq, as it is often much simpler to consider separately the accuracy issues and the overflow issues, rather than trying to handle them both at once. In case the underflow issues should also be considered separately, Flocq also provides a FLX_format predicate. Fixed-point formats are also supported, through the use of the FIX_format predicate.
+Flocq also provides some theorems to go from the specific predicates to the generic version, and vice versa. For example, the FLT_exp function describes formats that are equivalent to those of the FLT_format family.
+Definition FLT_exp ( emin prec e : Z ) : Z :=
+Z.max ( e - prec ) emin .
+Theorem generic_format_FLT :
+∀ ( beta : radix ) ( emin prec : Z ) ( x : R ),
+FLT_format beta emin prec x →
+generic_format beta ( FLT_exp emin prec ) x .
+The converse theorem is FLT_format_generic .
+About rounding operators
+Definition
+As mentioned above, a real number is representable in a given format when, with respect to its canonical exponent, its significand is an integer. When it is not, it has to be rounded toward some close representable number. This is the purpose of the round function. In addition to the radix and the integer function describing the format, this rounding function is also parametrized by rnd . This parameter tells toward which integer the significand should be rounded.
+Definition round ( beta : radix ) ( fexp : Z → Z ) ( rnd : R → Z ) ( x : R ) : R :=
+F2R ( Float beta
+( rnd ( scaled_mantissa beta fexp x ))
+( cexp beta fexp x )).
+The choice of the rnd depends on the expected rounding direction. When rounding toward zero, the Ztrunc function should be chosen. Zfloor , respectively Zceil , are used when rounding toward -&infin; , respectively +&infin; . Finally the ZnearestE notation can be used when one wants to round toward the nearest floating-point number, breaking ties toward even significands.
+Notation ZnearestE :=
+( Znearest ( fun x ⇒ negb ( Z.even x ))).
+Similarly to formats before, only part of the functions from real numbers to integers define suitable rounding operators. These functions are recognized by the Valid_rnd typeclass. Instances of this typeclass are defined for the previously mentioned rounding directions.
+Theorem round_generic states that a number representable in a given format is left unchanged by rounding to the same format, whatever the rounding direction.
+Theorem round_generic :
+∀ ( beta : radix ) ( fexp : Z → Z ) ( rnd : R → Z ),
+Valid_rnd rnd →
+∀ x : R , generic_format beta fexp x →
+round beta fexp rnd x = x .
+Conversely, theorem generic_format_round states that any real number, once rounded to a given format, fits in that format.
+Theorem generic_format_round :
+∀ ( beta : radix ) ( fexp : Z → Z ), Valid_exp fexp →
+∀ rnd : R → Z , Valid_rnd rnd →
+∀ x : R ,
+generic_format beta fexp ( round beta fexp rnd x ).
+Monotony
+Flocq also contains theorems that hold whatever the rounding mode, so this includes rounding down, to zero, to nearest with any tie, and so on. An example is theorem round_le , which states the monotony of a rounding mode:
+Theorem round_le :
+∀ ( beta : radix ) ( fexp : Z → Z ), Valid_exp fexp →
+∀ rnd : R → Z , Valid_rnd rnd →
+∀ x y : R , ( x ≤ y )% R →
+( round beta fexp rnd x ≤ round beta fexp rnd y )% R .
+A similar theorem, but probably more useful is the following
+one. It states a similar inequality, but also involving an
+absolute value and a floating-point number in the format.
+Theorem abs_round_le_generic :
+∀ ( beta : radix ) ( fexp : Z → Z ), Valid_exp fexp →
+∀ rnd : R → Z , Valid_rnd rnd →
+∀ x y : R ,
+generic_format beta fexp y →
+( Rabs x ≤ y )% R →
+( Rabs ( round beta fexp rnd x ) ≤ y )% R .
+Rounding mode
+Now let us focus on a specific rounding mode: rounding down, i.e. ,
+toward -&infin;. As explained, the corresponding rnd
+function is then Zfloor , which rounds a real number to the less or equal integer:
+Zfloor
+x = &lfloor; x &rfloor;.
+But we also want to link this definition with the
+mathematical specification of rounding down: it returns the largest
+number in the format that is less or equal to the input value.
+That is what theorem round_DN_pt states.
+Definition Rnd_DN_pt ( F : R → Prop ) ( x f : R ) :=
+F f ∧ ( f ≤ x )% R ∧
+∀ g : R , F g → ( g ≤ x )% R → ( g ≤ f )% R .
+Theorem round_DN_pt :
+∀ ( beta : radix ) ( fexp : Z → Z ), Valid_exp fexp →
+∀ x : R ,
+Rnd_DN_pt ( generic_format beta fexp ) x ( round beta fexp Zfloor x ).
+Some advanced properties
+Let us now focus on some more advanced properties about rounding modes. The first one is
+theorem round_plus_neq_0 .
+As its name somehow implies, it is related to a rounded addition whose result is
+non-zero. More precisely, it states that any non-zero addition is
+rounded into a non-zero value, whatever the rounding mode. This holds for
+IEEE-754 formats, but not for all possible formats. In particular, let
+us consider an IEEE-754 format with flush-to zero, that is without
+subnormals. Then the two smallest positive numbers are x=2 E
+and y=2 E + 2 E-p+1 . If you subtract x and y, you
+get the non-zero value 2 E-p+1 , which is rounded to zero in
+flush-to-zero mode. This is why we assume the format is not a
+flush-to-zero format.
+Theorem round_plus_neq_0 :
+∀ ( beta : radix ) ( fexp : Z → Z ),
+Valid_exp fexp → Exp_not_FTZ fexp →
+∀ rnd : R → Z , Valid_rnd rnd →
+∀ x y : R ,
+generic_format beta fexp x →
+generic_format beta fexp y →
+( x + y )% R ≠ 0% R →
+round beta fexp rnd ( x + y ) ≠ 0% R .
+Flocq also offers some theorems that mix several formats at once. One such theorem is generic_round_generic . It states that, if a real number x is representable in a format described by function fexp1 , then rounding it to the format described by fexp2 gives a number that may be different from x but that is nonetheless in the format described by fexp1 , even if the formats are completely unrelated.
+Theorem generic_round_generic :
+∀ ( beta : radix ) ( fexp1 fexp2 : Z → Z ),
+Valid_exp fexp1 → Valid_exp fexp2 →
+∀ rnd : R → Z , Valid_rnd rnd →
+∀ x : R , generic_format beta fexp1 x →
+generic_format beta fexp1 ( round beta fexp2 rnd x ).
+Rounding to nearest
+Ulp and errors
+A very common and very useful theorem is that the error of an
+operation is bounded by an ulp (or half an ulp in the case of rounding
+to nearest) of the exact value. To state this theorem, we first need
+to define the ulp of a real number. Given the chosen genericity of
+formats, we need a generic
+ulp .
+There are in fact two cases. In the first case, there is no minimal
+exponent, such as in the
+FLX_format .
+Then, the ulp of a real number x is
+simply the radix to the power of the canonical exponent
+of x , except for 0 as we
+define ulp(0) to be 0 (this is a design choice that greatly simplifies
+many theorems). In the second case, there is a minimal
+exponent n . This is the case
+for example in the
+FLT_format
+where emin is this minimal
+exponent. The ulp of a real number is the same in both formats for non-zero values, but the
+ulp of zero depends on this minimal exponent, to have some
+"continuity" of the ulp.
+Definition ulp ( beta : radix ) ( fexp : Z → Z ) ( x : R ) :=
+match Req_bool x 0 with
+| true ⇒ match negligible_exp fexp with
+| Some n ⇒ bpow beta ( fexp n )
+| None ⇒ 0% R
+end
+| false ⇒ bpow beta ( cexp beta fexp x )
+end .
+Then, theorem error_le_half_ulp states that, when
+rounding to nearest with any tie-breaking rule, the
+relative error bound is bounded by half an ulp:
+Theorem error_le_half_ulp :
+∀ ( beta : radix ) ( fexp : Z → Z ), Valid_exp fexp →
+∀ ( choice : Z → bool ) ( x : R ),
+( Rabs ( round beta fexp ( Znearest choice ) x - x ) ≤ / 2 × ulp beta fexp x )% R .
+There are two interesting points. The first one is the tie-breaking
+rule choice : it may be to even,
+away from zero, or any function that chooses where the midpoint of two
+floating-point numbers is rounded to. The second one lies in the genericity of the result. It
+applies to any format, including fixed-point and floating-point with or
+without gradual underflow. This of course relies on the genericity of
+the definition of the ulp explained above.
+Tie breaking to even
+The default tie-breaking rule is to even: it means that, when in
+the middle of two consecutive numbers, the one with the even mantissa is
+chosen. This implicitly requires that, among two successive numbers in
+the format, one is even and one is not. That is formally required by
+the DN_UP_parity_prop
+property. In particular, an IEEE-754 format with flush-to-zero does
+not have this property as both 0 and its successor have even
+mantissas. Now if we consider formats defined by an fexp function, a
+property on fexp is proved to be sufficient to guarantee this parity property.
+See the class Exist_NE and
+lemma DN_UP_parity_generic ).
+Now we consider the FLT format and we want to ensure that
+tie-breaking to even exists. We proved that, when either the radix is
+odd, or the precision is greater than 1, then the parity property
+holds, and therefore the tie-breaking rule to even is
+sensible. Indeed, with radix-2 and a precision of only 1 bit, the
+smallest positive floating-point numbers are 2 emin , 2 emin+1 ,
+2 emin+2 , and so on. All their mantissas are equal to 1, and thus are odd.
+Such a generic formalization
+allows us to point some formats where basic properties do not hold
+anymore. These are not formats used in practice, thankfully, but
+flush-to-zero formats have proved less serviceable than expected.
+Instance exists_NE_FLT :
+∀ ( beta : radix ) ( emin prec : Z ),
+Z.even beta = false ∨ (1 < prec )% Z →
+Exists_NE beta ( FLT_exp emin prec ).
+Double rounding
+Double rounding consists in two successive roundings, the latest being
+less precise than the first. A real number is first rounded in an
+extended format, and then in the working format. It is known that, if
+you use twice rounding to nearest, then the result may not be the
+rounding to nearest of the initial real value.
+One way to avoid this issue is to use, for the first rounding, another rounding
+mode called rounding to odd. A non-representable real number is rounded to the surrounding floating-point number with an odd mantissa is returned.
+Definition Zrnd_odd ( x : R ) :=
+match Req_EM_T x ( IZR ( Zfloor x )) with
+| left _ ⇒ Zfloor x
+| right _ ⇒
+match Z.even ( Zfloor x ) with
+| true ⇒ Zceil x
+| false ⇒ Zfloor x
+end
+end .
+Lemma valid_rnd_odd proves that this definition is a valid rounding operator.
+Now, if we first round to odd in extended precision (with at least two
+more digits), and then round to nearest in the working
+precision, the result is guaranteed to be the
+same as if rounding to nearest in the working precision had been
+done in the first place.
+Theorem round_N_odd :
+∀ beta : radix , Z.even beta = true →
+∀ ( fexp fexpe : Z → Z ) ( choice : Z → bool ),
+Valid_exp fexp → Exists_NE beta fexp →
+Valid_exp fexpe → Exists_NE beta fexpe →
+( ∀ e : Z , ( fexpe e ≤ fexp e - 2)% Z ) →
+∀ x : R ,
+round beta fexp ( Znearest choice ) ( round beta fexpe Zrnd_odd x ) = round beta fexp ( Znearest choice ) x .
+There are a few additional assumptions. First, the radix must be even. Second,
+both formats must be valid and such that the tie-to-even rule may be
+used.
+Effective operators
+Up to now, most functions operated on real numbers and thus were not usable for effective computations. But Flocq also provides functions that effectively compute over type float , as well as over type binary_float , which represents IEEE-754-compliant binary floating-point numbers. Let us illustrate these effective operators by the division.
+Effective rounding
+Function Fdiv_core takes a radix, two positive floating-point numbers represented by their integer significands and exponents, and a target exponent, as arguments. It returns the integer significand that corresponds to the target exponent and the location of the infinitely-precise quotient with respect to this floating-point number.
+Definition Fdiv_core ( beta : radix ) ( m1 e1 m2 e2 e : Z ) : Z × location :=
+let ( m1' , m2' ) :=
+if ( e <=? e1 - e2 )% Z
+then ( ( m1 × beta ^ ( e1 - e2 - e ) )% Z , m2 )
+else ( m1 , ( m2 × beta ^ ( e - ( e1 - e2 ) ) )% Z ) in
+let ( q , r ) := Z.div_eucl m1' m2' in
+( q , new_location m2' r loc_Exact ) .
+Enumeration location tells whether some exact result is represented by a given number or where it is located with respect to the midpoint between this number and another given number (usually its successor).
+Inductive location : Set :=
+| loc_Exact : location
+| loc_Inexact : comparison → location .
+This property is encoded by the inbetween predicate and its inbetween_float specialization to consecutive floating-point numbers.
+Inductive inbetween ( d u x : R ) : location → Prop :=
+| inbetween_Exact : x = d → inbetween d u x loc_Exact
+| inbetween_Inexact : ∀ l : comparison ,
+( d < x < u )% R → Rcompare x ( ( d + u ) / 2) = l → inbetween d u x ( loc_Inexact l ).
+Definition inbetween_float ( beta : radix ) ( m e : Z ) ( x : R ) ( l : location ) : Prop :=
+inbetween ( F2R ( Float beta m e )) ( F2R ( Float beta ( m + 1) e )) x l .
+Finally, theorem Fdiv_core_correct states that Fdiv_core computes the quotient rounded toward zero for the given target exponent as well as the location of the exact result with respect to it.
+Theorem Fdiv_core_correct :
+∀ ( beta : radix ) ( m1 e1 m2 e2 e : Z ),
+(0 < m1 )% Z → (0 < m2 )% Z →
+let ( m , l ) := Fdiv_core beta m1 e1 m2 e2 e in
+inbetween_float beta m e ( F2R ( Float beta m1 e1 ) / F2R ( Float beta m2 e2 )) l .
+The choice of the target exponent depends on the format and on the inputs. For a FIX_format , it will be constant. For other formats, it will depend on the difference between the exponents of the input numbers, as well as the target precision. Function Fdiv and theorem Fdiv_correct provide specific instances when the target exponent is given by an integer function.
+IEEE-754 operators
+Flocq also provides a formalization of IEEE-754 binary floating-point formats, as well as some effective operations on them. The numbers are represented by the binary_float inductive type. It is parametrized by the precision (including the implicit one, e.g. , 53 for binary64 ) and by the exponent of the first overflowing non-representable power of 2 ( e.g. , 1024 for binary64 ). The constructors of the inductive type represent zeroes, infinities, NaNs, and finite numbers. For each of them, the first argument is the sign, which is true when negative. For NaNs, the following arguments are the payload and a proof that the payload fits in the format. For finite numbers, the following arguments are the integer significand and the exponent, as well as a proof that they are normalized.
+Inductive binary_float ( prec emax : Z ) : Set :=
+| B754_zero ( s : bool ) : binary_float prec emax
+| B754_infinity ( s : bool ) : binary_float prec emax
+| B754_nan ( s : bool ) ( pl : positive ) :
+nan_pl prec pl = true → binary_float prec emax
+| B754_finite ( s : bool ) ( m : positive ) ( e : Z ) :
+bounded prec emax m e = true → binary_float prec emax .
+Here are two of the helper functions. Function B2R turns a binary floating-point number into the real value it represents (or zero in case of exceptional value). Function Bsign returns whether the sign of a binary floating-point number is negative.
+The library provides effective operators on binary floating-point numbers. They are Bplus , Bminus , Bmult , Bdiv , and Bsqrt . The arguments of these functions follow the same pattern. First come the two parameters of the formats and two terms proving that they are meaningful. Then comes a function that will be called when the result is invalid; it takes the binary floating-point inputs as arguments and should return a NaN. Then comes the rounding direction of type mode , which enumerates the five standard modes.
+Inductive mode : Set :=
+mode_NE | mode_ZR | mode_DN | mode_UP | mode_NA .
+The final arguments of the operators are the binary floating-point inputs. The returned value is a binary floating-point number that satisfy the IEEE-754 standard. The behavior of the operators on exceptional inputs can be recovered by reducing them. On finite inputs, several theorems express that the operators behave as if they first computed the infinitely-precise result and then rounded it to the format. Theorem Bdiv_correct corresponds to the correctness of the division. It relates the binary floating-point number z computed by Bdiv with the real number r obtained by applying round to the infinitely-precise quotient x / y . The theorem states that, when this real number r does not overflow, the floating-point number z returned by the division operator represents it.
+Theorem Bdiv_correct :
+∀ ( prec emax : Z ) ( Hp : Prec_gt_0 prec ) ( Hm : ( prec < emax )% Z )
+( div_nan : binary_float prec emax → binary_float prec emax →
+{ z : binary_float prec emax | is_nan prec emax z = true } )
+( m : mode ) ( x y : binary_float prec emax ),
+B2R prec emax y ≠ 0% R →
+let r := round radix2 ( FLT_exp (3 - emax - prec ) prec ) ( round_mode m ) ( B2R prec emax x / B2R prec emax y ) in
+let z := Bdiv prec emax Hp Hm div_nan m x y in
+if Rlt_bool ( Rabs r ) ( bpow radix2 emax )
+then
+B2R prec emax z = r ∧
+is_finite prec emax z = is_finite prec emax x ∧
+( is_nan prec emax z = false →
+Bsign prec emax z = xorb ( Bsign prec emax x ) ( Bsign prec emax y ) )
+else
+B2FF prec emax z = binary_overflow prec emax m ( xorb ( Bsign prec emax x ) ( Bsign prec emax y )).

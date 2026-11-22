@@ -6,6 +6,7 @@
  * `declaredIn`): a name that a scope around it declares, a logic variable,
  * data, or, where it can only have been meant as a name, an error.
  */
+
 import { Effect, Exit, Option } from "effect";
 import { MalformedFormError, unboundSet } from "@/errors/evaluation";
 import { nameOrString } from "@/evaluation/base-forms/primitive";
@@ -13,6 +14,7 @@ import { declares, type Scope, scopeWith } from "@/evaluation/environment";
 import { run } from "@/evaluation/evaluate";
 import { bodyNames, declaredIn, definedIn } from "@/evaluation/hoisting";
 import { isLogicVariableName, isNamespacedName } from "@/logic/terms";
+import { Exact, type LionNumber, toNearest } from "@/numbers/exact";
 import {
   fitsForm,
   isMatchCase,
@@ -179,7 +181,7 @@ const escapePointerSegment = (segment: number | string) =>
 export const pathToPointer = (path: StructuralPath): string =>
   path.length === 0 ? "" : `/${path.map(escapePointerSegment).join("/")}`;
 
-const primitiveLabel = (value: boolean | null | number | string) => {
+const primitiveLabel = (value: boolean | null | LionNumber | string) => {
   if (typeof value === "string") {
     return JSON.stringify(value);
   }
@@ -357,12 +359,17 @@ const analyzeNode = (
     );
   }
   const base = { path, pointer: pathToPointer(path), quoted };
-  if (expression === null || typeof expression !== "object") {
+  if (
+    expression === null ||
+    typeof expression !== "object" ||
+    expression instanceof Exact
+  ) {
     return {
       ...base,
       kind: "primitive",
       label: primitiveLabel(expression),
-      value: expression,
+      // A node holds a JSON value; an exact number's label is its digits.
+      value: expression instanceof Exact ? toNearest(expression) : expression,
       children: [],
     };
   }

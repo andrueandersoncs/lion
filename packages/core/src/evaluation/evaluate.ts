@@ -1,4 +1,4 @@
-import { Effect, pipe, Schema } from "effect";
+import { Effect, pipe } from "effect";
 import { compileArray } from "@/evaluation/base-forms/array";
 import { compilePrimitive } from "@/evaluation/base-forms/primitive";
 import { compileRecord } from "@/evaluation/base-forms/record";
@@ -18,9 +18,10 @@ import {
 } from "@/logic/database";
 import { nameFunctions } from "@/logic/terms";
 import { type Watched, watchQuery } from "@/logic/watch";
+import { Exact } from "@/numbers/exact";
 import type { JsonPrimitiveType } from "@/schemas/json-primitive";
 import {
-  LionExpressionSchema,
+  decodeExpression,
   type LionExpressionType,
   type LionRecordExpressionType,
 } from "@/schemas/lion-expression";
@@ -43,7 +44,11 @@ export const compile = (
   if (Array.isArray(expression)) {
     return compileArray(expression, scope);
   }
-  return typeof expression === "object" && expression !== null
+  // A number no JavaScript number writes, as the reader gives 1/3 or
+  // 2^53 + 1, is itself, as every number is.
+  return typeof expression === "object" &&
+    expression !== null &&
+    !(expression instanceof Exact)
     ? compileRecord(expression as LionRecordExpressionType, scope)
     : compilePrimitive(expression as JsonPrimitiveType, scope);
 };
@@ -107,7 +112,7 @@ export const run = (
     const database = options.database ?? new LogicDatabase();
     nameFunctions(environment);
     return pipe(
-      Schema.decodeUnknownEffect(LionExpressionSchema)(expression),
+      decodeExpression(expression),
       Effect.flatMap((program) => {
         const top = topScope(program, {
           ...relationBindings(database),

@@ -1,0 +1,438 @@
+The Lean Language Reference
+The Lean Language Reference
+Table of Contents
+1. Introduction
+2. Elaboration and Compilation
+3. Interacting with Lean
+4. The Type System
+5. Source Files and Modules
+6. Namespaces and Sections
+7. Definitions
+8. Axioms
+9. Attributes
+10. Type Classes
+11. Coercions
+12. Run-Time Code
+13. Terms
+14. Tactic Proofs
+15. The Simplifier
+16. The grind tactic
+17. The vcgen tactic
+18. The mvcgen tactic
+19. Functors, Monads and do -Notation
+20. Basic Propositions
+21. Basic Types
+22. IO
+23. Iterators
+24. Notations and Macros
+25. Build Tools and Distribution
+26. Linters and Code Quality
+27. External Kernels
+Validating a Lean Proof
+Error Explanations
+Release Notes
+Supported Platforms
+Index
+8. Axioms
+1. Axiom Declarations
+axiom …
+2. Consistency
+3. Reduction
+4. Standard Axioms
+5. Displaying Axiom Dependencies
+Source Code
+Report Issues
+← 7.6. Recursive Definitions 9. Attributes → 8. Axioms 🔗
+Axioms are postulated constants.
+While the axiom's type must itself be a type (that is, it must have type Sort u ), there are no further requirements.
+Axioms do not reduce to other terms.
+Axioms can be used to experiment with the consequences of an idea before investing the time required to construct a model or prove a theorem.
+They can also be used to adopt reasoning principles that can't otherwise be accessed in Lean's type theory; Lean itself provides three such axioms that are known to be consistent.
+However, axioms should be used with caution: axioms that are inconsistent with one another, or just false, undermine the very foundations of proofs.
+Lean automatically tracks the axioms that each proof depends on so that they can be audited.
+8.1. Axiom Declarations 🔗
+Axioms declarations include a name and a type:
+syntax Axiom Declarations axiom ::= ...
+| axiom `declId` matches `foo` or `foo.{u,v}`: an identifier possibly followed by a list of universe names declId `declSig` matches the signature of a declaration with required type: a list of binders and then `: type` declSig
+Axioms declarations may be modified with all possible declaration modifiers .
+Documentation comments, attributes, private , and protected have the same meaning as for other declarations.
+The modifiers partial , nonrec , noncomputable and unsafe have no effect.
+8.2. Consistency 🔗
+Using axioms is risky.
+Because they introduce a new constant of any type, and an inhabitant of a type that is a proposition counts as a proof of the proposition, axioms can be used to prove even false propositions.
+Any proof that relies on an axiom can be trusted only to the extent that the axiom is both true and consistent with the other axioms used.
+By their very nature, Lean cannot check whether new axioms are consistent; please exercise care when adding axioms.
+Inconsistencies From Axioms Axioms may introduce inconsistency, either alone or in combination with other axioms.
+Assuming a false statement allows any statement at all to be proved:
+axiom false_is_true : False
+theorem two_eq_five : 2 = 5 := false_is_true . elim
+Inconsistency may also arise from axioms that are incompatible with other properties of Lean.
+For example, parametricity is a powerful reasoning technique when used in languages that support it, but it is not compatible with Lean's standard axioms.
+If parametricity held, then the “free theorem” from the introduction to Wadler's Theorems for Free (1989), which describes a technique for using parametricity to derive theorems about polymorphic functions, would be true.
+As an axiom, it reads:
+axiom List.free_theorem { α β }
+( f : { α : _ } → List α → List α ) ( g : α → β ) :
+f ∘ ( List.map g ) = ( List.map g ) ∘ f
+However, a consequence of excluded middle is that all propositions are decidable; this means that a function can check whether they are true or false.
+This function can't be compiled, but it still exists.
+This can be used to define polymorphic functions that are not parametric:
+open Classical in
+noncomputable def nonParametric
+{ α : _ } ( xs : List α ) :
+List α :=
+if α = Nat then [ ] else xs
+The existence of this function contradicts the “free theorem”:
+theorem unit_not_nat : Unit ≠ Nat := by ⊢ Unit ≠ Nat
+intro eq eq : Unit = Nat ⊢ False
+have ⟨ allEq ⟩ := eq ▸ ( inferInstance : Subsingleton Unit ) eq : Unit = Nat allEq : ∀ ( a b : Nat ), a = b ⊢ False
+specialize allEq 0 1 eq : Unit = Nat allEq : 0 = 1 ⊢ False
+contradiction All goals completed! 🐙
+example : False := by ⊢ False
+have := List.free_theorem nonParametric ( fun ( ) => 42 ) this : ( nonParametric ∘ List.map fun x => 42 ) = ( List.map fun x => 42 ) ∘ nonParametric ⊢ False
+unfold nonParametric at this this : ( (fun xs => if Nat = Nat then [ ] else xs ) ∘ List.map fun x => 42 ) =
+( List.map fun x => 42 ) ∘ fun xs => if Unit = Nat then [ ] else xs ⊢ False
+simp [ unit_not_nat ] at this this : ( (fun xs => [ ] ) ∘ List.map fun x => 42 ) = ( List.map fun x => 42 ) ∘ fun xs => xs ⊢ False
+have := congrFun this [ ( ) ] this✝ : ( (fun xs => [ ] ) ∘ List.map fun x => 42 ) = ( List.map fun x => 42 ) ∘ fun xs => xs this : ( (fun xs => [ ] ) ∘ List.map fun x => 42 ) [ ( ) ] = ( ( List.map fun x => 42 ) ∘ fun xs => xs ) [ ( ) ] ⊢ False
+contradiction All goals completed! 🐙
+Live ↪
+8.3. Reduction 🔗
+Even consistent axioms can cause difficulties.
+Definitional equality identifies terms modulo reduction rules.
+The ι-reduction rule specifies the interaction of recursors and constructors; because axioms are not constructors, it does not apply to them.
+Ordinarily, terms without free variables reduce to applications of constructors, but axioms can cause them to get “stuck,” resulting in large terms.
+Axioms and Stuck Reduction Adding an additional 0 to Nat with an axiom results in some definitional reductions getting stuck.
+In this example, two Nat.succ constructors are successfully moved to the outside of the term by reduction, but Nat.rec is unable to make further progress after encountering Nat.otherZero .
+axiom Nat.otherZero : Nat
+( ( Nat.rec ⟨ fun x => x , PUnit.unit ⟩ (fun n n_ih => ⟨ fun x => ( n_ih .1 x ) . succ , n_ih ⟩ ) Nat.otherZero ) .1 4 ) . succ . succ #reduce 4 + ( Nat.otherZero + 2 )
+( ( Nat.rec ⟨ fun x => x , PUnit.unit ⟩ (fun n n_ih => ⟨ fun x => ( n_ih .1 x ) . succ , n_ih ⟩ ) Nat.otherZero ) .1 4 ) . succ . succ
+Live ↪
+Furthermore, the Lean compiler is not able to generate code for axioms.
+At runtime, Lean values must be represented by concrete data in memory, but axioms do not have a concrete representation.
+Definitions that contain non-proof code that relies on axioms must be marked noncomputable and can't be compiled.
+Axioms and Compilation Adding an additional 0 to Nat with an axiom makes it so functions that use it can't be compiled.
+In particular, List.length' returns the axiom Nat.otherZero instead of Nat.zero as the length of the empty list.
+axiom Nat.otherZero : Nat
+def `Nat.otherZero` not supported by code generator; consider marking definition as `noncomputable` List.length' : List α → Nat
+| [ ] => Nat.otherZero
+| _ :: _ => Unknown identifier ` xs.length ` xs.length
+`Nat.otherZero` not supported by code generator; consider marking definition as `noncomputable`
+Axioms used in proofs rather than programs do not prevent a function from being compiled.
+The compiler does not generate code for proofs, so axioms in proofs are no problem.
+nextOdd computes the next odd number from a Nat , which may be the number itself or one greater:
+def nextOdd ( k : Nat ) :
+{ n : Nat // n % 2 = 1 ∧ ( n = k ∨ n = k + 1 ) } where
+val := if k % 2 = 1 then k else k + 1
+property := by k : Nat ⊢ ( if k % 2 = 1 then k else k + 1 ) % 2 = 1 ∧
+( ( if k % 2 = 1 then k else k + 1 ) = k ∨ ( if k % 2 = 1 then k else k + 1 ) = k + 1 )
+by_cases k % 2 = 1 pos k : Nat h✝ : k % 2 = 1 ⊢ ( if k % 2 = 1 then k else k + 1 ) % 2 = 1 ∧
+( ( if k % 2 = 1 then k else k + 1 ) = k ∨ ( if k % 2 = 1 then k else k + 1 ) = k + 1 ) neg k : Nat h✝ : ¬ k % 2 = 1 ⊢ ( if k % 2 = 1 then k else k + 1 ) % 2 = 1 ∧
+( ( if k % 2 = 1 then k else k + 1 ) = k ∨ ( if k % 2 = 1 then k else k + 1 ) = k + 1 ) <;> pos k : Nat h✝ : k % 2 = 1 ⊢ ( if k % 2 = 1 then k else k + 1 ) % 2 = 1 ∧
+( ( if k % 2 = 1 then k else k + 1 ) = k ∨ ( if k % 2 = 1 then k else k + 1 ) = k + 1 ) neg k : Nat h✝ : ¬ k % 2 = 1 ⊢ ( if k % 2 = 1 then k else k + 1 ) % 2 = 1 ∧
+( ( if k % 2 = 1 then k else k + 1 ) = k ∨ ( if k % 2 = 1 then k else k + 1 ) = k + 1 )
+simp [ * ] neg k : Nat h✝ : ¬ k % 2 = 1 ⊢ ( k + 1 ) % 2 = 1 <;> neg k : Nat h✝ : ¬ k % 2 = 1 ⊢ ( k + 1 ) % 2 = 1 omega All goals completed! 🐙
+The tactic proof generates a term that transitively relies on three axioms:
+' nextOdd ' depends on axioms: [ propext , Classical.choice , Quot.sound ] #print axioms nextOdd
+' nextOdd ' depends on axioms: [ propext , Classical.choice , Quot.sound ]
+Because they occur only in a proof, the compiler has no problem generating code:
+(5, 5) #eval ( nextOdd 4 , nextOdd 5 )
+(5, 5)
+Live ↪
+8.4. Standard Axioms 🔗
+There are four standard axioms in Lean. The first three axioms are important parts of how mathematics is done in Lean:
+Classical.choice .{ u } { α : Sort u } : Nonempty α → α
+propext { a b : Prop } : ( a ↔ b ) → a = b
+Quot.sound .{ u } { α : Sort u }
+{ r : α → α → Prop } { a b : α } :
+r a b → Quot.mk r a = Quot.mk r b
+All three of these axioms are discussed in the book Theorem Proving in Lean .
+The axiom sorryAx is used as part of the implementation of the sorry tactic and sorry term.
+Uses of this axiom are not intended to occur in finished proofs, as it can be used to prove anything:
+sorryAx { α : Sort u } ( synthetic := true ) : α
+In addition to the standard axioms, proofs by native evaluation introduce a dedicated axiom for each computation that is asserted by the compiled code.
+These axioms track proofs that depend on the correctness of the entire compiler, and not just on the much smaller kernel .
+Axioms and the native_decide Tactic The native_decide tactic creates a bespoke axiom for each invocation.
+This allows each axiom to be audited for the precise statement that it proves.
+Definition ` bigSum ` is a proposition; use `theorem` instead of `def`
+Note: This linter can be disabled with `set_option linter.defProp false` def bigSum : ( List.range 1_001 ) . sum = 500_500 := by ⊢ ( List.range 1001 ) . sum = 500500 native_decide All goals completed! 🐙
+' bigSum ' depends on axioms: [ bigSum._native.native_decide.ax_1 ] #print axioms bigSum
+' bigSum ' depends on axioms: [ bigSum._native.native_decide.ax_1 ]
+The axiom's type can be checked directly:
+bigSum._native.native_decide.ax_1 : decide ( ( List.range 1001 ) . sum = 500500 ) = true #check bigSum._native.native_decide.ax_1
+bigSum._native.native_decide.ax_1 : decide ( ( List.range 1001 ) . sum = 500500 ) = true
+Live ↪
+8.5. Displaying Axiom Dependencies 🔗
+The command Lean.Parser.Command.printAxioms : command Prints the axioms used by a declaration, directly or indirectly.
+Please consult [the reference manual](https://lean-lang.org/doc/reference/4.37.0-rc1/find/?domain=Verso.Genre.Manual.section&name=validating-proofs) to understand the significance of the output. #print axioms , followed by a defined identifier, displays all the axioms that a definition transitively relies on.
+In other words, if a proof uses another proof, which itself uses an axiom, then the axiom is reported by Lean.Parser.Command.printAxioms : command Prints the axioms used by a declaration, directly or indirectly.
+Please consult [the reference manual](https://lean-lang.org/doc/reference/4.37.0-rc1/find/?domain=Verso.Genre.Manual.section&name=validating-proofs) to understand the significance of the output. #print axioms for both.
+This can be used to audit the assumptions made by a proof, for instance detecting that a proof transitively depends on the sorry tactic.
+Definition ` lazy ` is a proposition; use `theorem` instead of `def`
+Note: This linter can be disabled with `set_option linter.defProp false` def declaration uses ` sorry ` lazy : 4 == 2 + 1 + 1 := by ⊢ ( 4 == 2 + 1 + 1 ) = true sorry All goals completed! 🐙
+' lazy ' depends on axioms: [ sorryAx ] #print axioms lazy
+' lazy ' depends on axioms: [ sorryAx ]
+Printing Axioms of Simple Definitions Consider the following three constants:
+def addThree ( n : Nat ) : Nat := 1 + n + 2
+theorem excluded_middle ( P : Prop ) : P ∨ ¬ P := Classical.em P
+theorem simple_equality ( P : Prop ) : ( P ∨ False ) = P := or_false P
+Regular functions like addThree that we might want to actually evaluation typically do not depend on any axioms:
+' addThree ' does not depend on any axioms #print axioms addThree
+' addThree ' does not depend on any axioms
+The excluded middle theorem is only true if we use classical reasoning, so the foundation for classical reasoning shows up alongside other axioms:
+' excluded_middle ' depends on axioms: [ propext , Classical.choice , Quot.sound ] #print axioms excluded_middle
+' excluded_middle ' depends on axioms: [ propext , Classical.choice , Quot.sound ]
+Finally, the idea that two equivalent propositions are equal directly relies on propositional extensionality .
+' simple_equality ' depends on axioms: [ propext ] #print axioms simple_equality
+' simple_equality ' depends on axioms: [ propext ]
+Live ↪
+Using Lean.Parser.Command.printAxioms : command Prints the axioms used by a declaration, directly or indirectly.
+Please consult [the reference manual](https://lean-lang.org/doc/reference/4.37.0-rc1/find/?domain=Verso.Genre.Manual.section&name=validating-proofs) to understand the significance of the output. #print axioms with Lean.guardMsgsCmd : command `/-- ... -/ #guard_msgs in cmd` captures the messages generated by the command `cmd`
+and checks that they match the contents of the docstring.
+Basic example:
+```lean
+/--
+error: Unknown identifier `x`
+-/
+#guard_msgs in
+example : α := x
+```
+This checks that there is such an error and then consumes the message.
+By default, the command captures all messages, but the filter condition can be adjusted.
+For example, we can select only warnings:
+```lean
+/--
+warning: declaration uses 'sorry'
+-/
+#guard_msgs(warning) in
+example : α := sorry
+```
+or only errors
+```lean
+#guard_msgs(error) in
+example : α := sorry
+```
+In the previous example, since warnings are not captured there is a warning on `sorry`.
+We can drop the warning completely with
+```lean
+#guard_msgs(error, drop warning) in
+example : α := sorry
+```
+In general, `#guard_msgs` accepts a comma-separated list of configuration clauses in parentheses:
+```
+#guard_msgs (configElt,*) in cmd
+```
+By default, the configuration list is
+`(check all, whitespace := normalized, ordering := exact, positions := false)`.
+Message filters select messages by severity:
+- `info`, `warning`, `error`: (non-trace) messages with the given severity level.
+- `trace`: trace messages
+- `all`: all messages.
+The filters can be prefixed with the action to take:
+- `check` (the default): capture and check the message
+- `drop`: drop the message
+- `pass`: let the message pass through
+If no filter is specified, `check all` is assumed. Otherwise, these filters are processed in
+left-to-right order, with an implicit `pass all` at the end.
+Whitespace handling (after trimming leading and trailing whitespace):
+- `whitespace := exact` requires an exact whitespace match.
+- `whitespace := normalized` converts all newline characters to a space before matching
+(the default). This allows breaking long lines.
+- `whitespace := lax` collapses whitespace to a single space before matching.
+Message ordering:
+- `ordering := exact` uses the exact ordering of the messages (the default).
+- `ordering := sorted` sorts the messages in lexicographic order.
+This helps with testing commands that are non-deterministic in their ordering.
+Position reporting:
+- `positions := true` reports the ranges of all messages relative to the line on which
+`#guard_msgs` appears.
+- `positions := false` does not report position info.
+Substring matching:
+- `substring := true` checks that the docstring appears as a substring of the output
+(after whitespace normalization). This is useful when you only care about part of the message.
+- `substring := false` (the default) requires exact matching (modulo whitespace normalization).
+Stabilizing output:
+When messages contain autogenerated names (e.g., metavariables like `?m.47`), the output may
+differ between runs or Lean versions. Use `set_option pp.mvars.anonymous false` to replace
+anonymous metavariables with `?_` while preserving user-named metavariables like `?a`.
+Alternatively, `set_option pp.mvars false` replaces all metavariables with `?_`.
+Similarly, `set_option pp.fvars.anonymous false` replaces loose free variable names like
+`_fvar.22` with `_fvar._`.
+For example, `#guard_msgs (error, drop all) in cmd` means to check errors and drop
+everything else.
+The command elaborator has special support for `#guard_msgs` for linting.
+The `#guard_msgs` itself wants to capture linter warnings,
+so it elaborates the command it is attached to as if it were a top-level command.
+However, the command elaborator runs linters for *all* top-level commands,
+which would include `#guard_msgs` itself, and would cause duplicate and/or uncaptured linter warnings.
+The top-level command elaborator only runs the linters if `#guard_msgs` is not present. #guard_msgs You can use Lean.Parser.Command.printAxioms : command Prints the axioms used by a declaration, directly or indirectly.
+Please consult [the reference manual](https://lean-lang.org/doc/reference/4.37.0-rc1/find/?domain=Verso.Genre.Manual.section&name=validating-proofs) to understand the significance of the output. #print axioms
+together with Lean.guardMsgsCmd : command `/-- ... -/ #guard_msgs in cmd` captures the messages generated by the command `cmd`
+and checks that they match the contents of the docstring.
+Basic example:
+```lean
+/--
+error: Unknown identifier `x`
+-/
+#guard_msgs in
+example : α := x
+```
+This checks that there is such an error and then consumes the message.
+By default, the command captures all messages, but the filter condition can be adjusted.
+For example, we can select only warnings:
+```lean
+/--
+warning: declaration uses 'sorry'
+-/
+#guard_msgs(warning) in
+example : α := sorry
+```
+or only errors
+```lean
+#guard_msgs(error) in
+example : α := sorry
+```
+In the previous example, since warnings are not captured there is a warning on `sorry`.
+We can drop the warning completely with
+```lean
+#guard_msgs(error, drop warning) in
+example : α := sorry
+```
+In general, `#guard_msgs` accepts a comma-separated list of configuration clauses in parentheses:
+```
+#guard_msgs (configElt,*) in cmd
+```
+By default, the configuration list is
+`(check all, whitespace := normalized, ordering := exact, positions := false)`.
+Message filters select messages by severity:
+- `info`, `warning`, `error`: (non-trace) messages with the given severity level.
+- `trace`: trace messages
+- `all`: all messages.
+The filters can be prefixed with the action to take:
+- `check` (the default): capture and check the message
+- `drop`: drop the message
+- `pass`: let the message pass through
+If no filter is specified, `check all` is assumed. Otherwise, these filters are processed in
+left-to-right order, with an implicit `pass all` at the end.
+Whitespace handling (after trimming leading and trailing whitespace):
+- `whitespace := exact` requires an exact whitespace match.
+- `whitespace := normalized` converts all newline characters to a space before matching
+(the default). This allows breaking long lines.
+- `whitespace := lax` collapses whitespace to a single space before matching.
+Message ordering:
+- `ordering := exact` uses the exact ordering of the messages (the default).
+- `ordering := sorted` sorts the messages in lexicographic order.
+This helps with testing commands that are non-deterministic in their ordering.
+Position reporting:
+- `positions := true` reports the ranges of all messages relative to the line on which
+`#guard_msgs` appears.
+- `positions := false` does not report position info.
+Substring matching:
+- `substring := true` checks that the docstring appears as a substring of the output
+(after whitespace normalization). This is useful when you only care about part of the message.
+- `substring := false` (the default) requires exact matching (modulo whitespace normalization).
+Stabilizing output:
+When messages contain autogenerated names (e.g., metavariables like `?m.47`), the output may
+differ between runs or Lean versions. Use `set_option pp.mvars.anonymous false` to replace
+anonymous metavariables with `?_` while preserving user-named metavariables like `?a`.
+Alternatively, `set_option pp.mvars false` replaces all metavariables with `?_`.
+Similarly, `set_option pp.fvars.anonymous false` replaces loose free variable names like
+`_fvar.22` with `_fvar._`.
+For example, `#guard_msgs (error, drop all) in cmd` means to check errors and drop
+everything else.
+The command elaborator has special support for `#guard_msgs` for linting.
+The `#guard_msgs` itself wants to capture linter warnings,
+so it elaborates the command it is attached to as if it were a top-level command.
+However, the command elaborator runs linters for *all* top-level commands,
+which would include `#guard_msgs` itself, and would cause duplicate and/or uncaptured linter warnings.
+The top-level command elaborator only runs the linters if `#guard_msgs` is not present. #guard_msgs to ensure
+that updates to libraries from other projects cannot silently
+introduce unwanted dependencies on axioms.
+For example, if the proof of double_neg_elim below changed in such a way that it used more
+axioms than those listed, then the Lean.guardMsgsCmd : command `/-- ... -/ #guard_msgs in cmd` captures the messages generated by the command `cmd`
+and checks that they match the contents of the docstring.
+Basic example:
+```lean
+/--
+error: Unknown identifier `x`
+-/
+#guard_msgs in
+example : α := x
+```
+This checks that there is such an error and then consumes the message.
+By default, the command captures all messages, but the filter condition can be adjusted.
+For example, we can select only warnings:
+```lean
+/--
+warning: declaration uses 'sorry'
+-/
+#guard_msgs(warning) in
+example : α := sorry
+```
+or only errors
+```lean
+#guard_msgs(error) in
+example : α := sorry
+```
+In the previous example, since warnings are not captured there is a warning on `sorry`.
+We can drop the warning completely with
+```lean
+#guard_msgs(error, drop warning) in
+example : α := sorry
+```
+In general, `#guard_msgs` accepts a comma-separated list of configuration clauses in parentheses:
+```
+#guard_msgs (configElt,*) in cmd
+```
+By default, the configuration list is
+`(check all, whitespace := normalized, ordering := exact, positions := false)`.
+Message filters select messages by severity:
+- `info`, `warning`, `error`: (non-trace) messages with the given severity level.
+- `trace`: trace messages
+- `all`: all messages.
+The filters can be prefixed with the action to take:
+- `check` (the default): capture and check the message
+- `drop`: drop the message
+- `pass`: let the message pass through
+If no filter is specified, `check all` is assumed. Otherwise, these filters are processed in
+left-to-right order, with an implicit `pass all` at the end.
+Whitespace handling (after trimming leading and trailing whitespace):
+- `whitespace := exact` requires an exact whitespace match.
+- `whitespace := normalized` converts all newline characters to a space before matching
+(the default). This allows breaking long lines.
+- `whitespace := lax` collapses whitespace to a single space before matching.
+Message ordering:
+- `ordering := exact` uses the exact ordering of the messages (the default).
+- `ordering := sorted` sorts the messages in lexicographic order.
+This helps with testing commands that are non-deterministic in their ordering.
+Position reporting:
+- `positions := true` reports the ranges of all messages relative to the line on which
+`#guard_msgs` appears.
+- `positions := false` does not report position info.
+Substring matching:
+- `substring := true` checks that the docstring appears as a substring of the output
+(after whitespace normalization). This is useful when you only care about part of the message.
+- `substring := false` (the default) requires exact matching (modulo whitespace normalization).
+Stabilizing output:
+When messages contain autogenerated names (e.g., metavariables like `?m.47`), the output may
+differ between runs or Lean versions. Use `set_option pp.mvars.anonymous false` to replace
+anonymous metavariables with `?_` while preserving user-named metavariables like `?a`.
+Alternatively, `set_option pp.mvars false` replaces all metavariables with `?_`.
+Similarly, `set_option pp.fvars.anonymous false` replaces loose free variable names like
+`_fvar.22` with `_fvar._`.
+For example, `#guard_msgs (error, drop all) in cmd` means to check errors and drop
+everything else.
+The command elaborator has special support for `#guard_msgs` for linting.
+The `#guard_msgs` itself wants to capture linter warnings,
+so it elaborates the command it is attached to as if it were a top-level command.
+However, the command elaborator runs linters for *all* top-level commands,
+which would include `#guard_msgs` itself, and would cause duplicate and/or uncaptured linter warnings.
+The top-level command elaborator only runs the linters if `#guard_msgs` is not present. #guard_msgs command would report an error.
+theorem double_neg_elim ( P : Prop ) : ( ¬ ¬ P ) = P :=
+propext Classical.not_not
+/--
+info: 'double_neg_elim' depends on axioms:
+[propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs ( whitespace := lax ) in
+#print axioms double_neg_elim
+Live ↪
+← 7.6. Recursive Definitions 9. Attributes →

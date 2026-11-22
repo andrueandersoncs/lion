@@ -1,0 +1,5 @@
+The user's directions in the session that released core 0.15.0 and then asked whether Lion can be called a proof language, 2026-11-21.
+
+On whether Lion is a proof language, after being shown that the solver proves over exact numbers while plain code computes with doubles: "wait, isn't there a way to support proofs with arbitrary arithmetic? How does Lean do this?"
+
+On what to do, after being told that exact numbers would change how every JSON number reads and undo a recorded decision: "Start with exact numbers, do the research run first"

@@ -1,0 +1,703 @@
+{
+  "sources": [
+    {
+      "id": "r7rs-numbers",
+      "url": "https://standards.scheme.org/corrected-r7rs/r7rs-Z-H-8.html",
+      "title": "Revised^7 Report on the Algorithmic Language Scheme, Chapter 6: Standard procedures (6.2 Numbers)",
+      "publisher": "Scheme Steering Committee (R7RS editors Alex Shinn, John Cowan, Arthur A. Gleckler)",
+      "kind": "primary",
+      "published": 20221219
+    },
+    {
+      "id": "racket-numbers",
+      "url": "https://docs.racket-lang.org/reference/numbers.html",
+      "title": "4.3 Numbers (The Racket Reference)",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "racket-reader-numbers",
+      "url": "https://docs.racket-lang.org/reference/reader.html",
+      "title": "1.3 The Reader (The Racket Reference)",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "racket-guide-numbers",
+      "url": "https://docs.racket-lang.org/guide/numbers.html",
+      "title": "3.2 Numbers (The Racket Guide)",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "racket-json",
+      "url": "https://docs.racket-lang.org/json/index.html",
+      "title": "JSON",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "racket-json-source",
+      "url": "https://raw.githubusercontent.com/racket/racket/master/racket/collects/json/main.rkt",
+      "title": "racket/collects/json/main.rkt",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "tc39-json-parse-source",
+      "url": "https://raw.githubusercontent.com/tc39/proposal-json-parse-with-source/master/README.md",
+      "title": "JSON.parse source text access",
+      "publisher": "Ecma TC39",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "rfc7493",
+      "url": "https://www.rfc-editor.org/rfc/rfc7493.txt",
+      "title": "RFC 7493: The I-JSON Message Format",
+      "publisher": "IETF",
+      "kind": "primary",
+      "published": 20150301
+    },
+    {
+      "id": "mdn-json",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON",
+      "title": "JSON - JavaScript | MDN",
+      "publisher": "Mozilla",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "mdn-json-rawjson",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/rawJSON",
+      "title": "JSON.rawJSON() - JavaScript | MDN",
+      "publisher": "Mozilla",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "mdn-bigint",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt",
+      "title": "BigInt - JavaScript | MDN",
+      "publisher": "Mozilla",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "python-decimal",
+      "url": "https://docs.python.org/3/library/decimal.html",
+      "title": "decimal — Decimal fixed-point and floating-point arithmetic",
+      "publisher": "Python Software Foundation",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "python-fractions",
+      "url": "https://docs.python.org/3/library/fractions.html",
+      "title": "fractions — Rational numbers",
+      "publisher": "Python Software Foundation",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "python-json",
+      "url": "https://docs.python.org/3/library/json.html",
+      "title": "json — JSON encoder and decoder",
+      "publisher": "Python Software Foundation",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "python-stdtypes",
+      "url": "https://docs.python.org/3/library/stdtypes.html",
+      "title": "Built-in Types",
+      "publisher": "Python Software Foundation",
+      "kind": "primary",
+      "published": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "en-a1",
+      "source": "r7rs-numbers",
+      "quote": "A Scheme number is exact if it was written as an exact constant or was derived from exact numbers using only exact operations.",
+      "says": {
+        "defines": "exact number"
+      },
+      "where": "6.2.2 Exactness"
+    },
+    {
+      "id": "en-a2",
+      "source": "r7rs-numbers",
+      "quote": "Scheme explicitly distinguishes exact from inexact numbers.",
+      "says": {
+        "designed": "scheme's numeric tower",
+        "in": "R7RS Scheme"
+      },
+      "where": "6.2.2 Exactness"
+    },
+    {
+      "id": "en-a3",
+      "source": "r7rs-numbers",
+      "quote": "If two implementations produce exact results for a computation that did not involve inexact intermediate results, the two ultimate results will be mathematically equal.",
+      "says": {
+        "covers": "proofs that hold of the code's own arithmetic",
+        "by": "exact rational arithmetic",
+        "is": true
+      },
+      "where": "6.2.2 Exactness"
+    },
+    {
+      "id": "en-a4",
+      "source": "r7rs-numbers",
+      "quote": "This is generally not true of computations involving inexact numbers since approximate methods such as floating-point arithmetic may be used",
+      "says": {
+        "covers": "proofs that hold of the code's own arithmetic",
+        "by": "binary64 floating point",
+        "is": false
+      },
+      "where": "6.2.2 Exactness"
+    },
+    {
+      "id": "en-a5",
+      "source": "r7rs-numbers",
+      "quote": "It is recommended, but not required, that implementations support exact integers and exact rationals of practically unlimited size and precision",
+      "says": {
+        "designed": "exact rational arithmetic",
+        "in": "R7RS Scheme"
+      },
+      "where": "6.2.3 Implementation restrictions (recommended, not required)"
+    },
+    {
+      "id": "en-a6",
+      "source": "r7rs-numbers",
+      "quote": "an implementation that uses IEEE binary double-precision floating-point numbers to represent all its inexact real numbers may also support a practically unbounded range of exact integers and rationals",
+      "says": {
+        "covers": "integers kept exact past two to the 53rd",
+        "by": "scheme's numeric tower",
+        "is": true
+      },
+      "where": "6.2.3 Implementation restrictions (an example of what an implementation may do)"
+    },
+    {
+      "id": "en-a7",
+      "source": "r7rs-numbers",
+      "quote": "If the written representation of a number has no exactness prefix, the constant is inexact if it contains a decimal point or an exponent.",
+      "says": {
+        "defines": "inexact constant"
+      },
+      "where": "6.2.5 Syntax of numerical constants (so 0.1 reads inexact)"
+    },
+    {
+      "id": "en-a8",
+      "source": "r7rs-numbers",
+      "quote": "A numerical constant can be specified to be either exact or inexact by a prefix.",
+      "says": {
+        "covers": "decimals written in JSON kept exact",
+        "by": "exactness prefixes",
+        "is": true
+      },
+      "where": "6.2.5 Syntax of numerical constants (#e for exact, #i for inexact)"
+    },
+    {
+      "id": "en-a9",
+      "source": "r7rs-numbers",
+      "quote": "The implementation approach of converting all arguments to inexact numbers if any argument is inexact is not transitive.",
+      "says": {
+        "needs": "comparisons that do not turn exact arguments inexact",
+        "by": "scheme's numeric tower"
+      },
+      "where": "6.2.6 Numerical operations, = < > <= >= (these predicates are required to be transitive)"
+    },
+    {
+      "id": "en-a10",
+      "source": "racket-numbers",
+      "quote": "each number is also either an exact number or an inexact number",
+      "says": {
+        "adopted": "scheme's numeric tower",
+        "in": "Racket"
+      },
+      "where": "4.3 Numbers"
+    },
+    {
+      "id": "en-a11",
+      "source": "racket-numbers",
+      "quote": "The precision and size of exact numbers is limited only by available memory (and the precision of operations that can produce irrational numbers).",
+      "says": {
+        "covers": "numbers of any size and precision",
+        "by": "exact rational arithmetic",
+        "is": true
+      },
+      "where": "4.3 Numbers"
+    },
+    {
+      "id": "en-a12",
+      "source": "racket-numbers",
+      "quote": "In particular, adding, multiplying, subtracting, and dividing exact numbers always produces an exact result.",
+      "says": {
+        "adopted": "exact rational arithmetic",
+        "in": "Racket"
+      },
+      "where": "4.3 Numbers"
+    },
+    {
+      "id": "en-a13",
+      "source": "racket-guide-numbers",
+      "quote": "In terms of performance, computations with small integers are typically the fastest",
+      "says": {
+        "covers": "arithmetic as fast as a double's",
+        "by": "fixnums",
+        "is": true
+      },
+      "where": "3.2 Numbers ('small' means it fits one bit less than a machine word)"
+    },
+    {
+      "id": "en-a14",
+      "source": "racket-guide-numbers",
+      "quote": "Computation with very large exact integers or with non-integer exact numbers can be much more expensive than computation with inexact numbers.",
+      "says": {
+        "covers": "arithmetic as fast as a double's",
+        "by": "exact rational arithmetic",
+        "is": false
+      },
+      "where": "3.2 Numbers"
+    },
+    {
+      "id": "en-a15",
+      "source": "racket-guide-numbers",
+      "quote": "Racket offers no “inexact booleans,” so computations that branch on the comparison of inexact numbers can nevertheless produce exact results.",
+      "says": {
+        "covers": "proofs that hold of the code's own arithmetic",
+        "by": "scheme's numeric tower",
+        "is": false
+      },
+      "where": "3.2 Numbers (exactness does not follow control flow)"
+    },
+    {
+      "id": "en-a16",
+      "source": "racket-reader-numbers",
+      "quote": "#e (exact) or #i (inexact), which specifies its parsing as an exact or inexact number",
+      "says": {
+        "adopted": "exactness prefixes",
+        "in": "Racket"
+      },
+      "where": "1.3.3 Reading Numbers"
+    },
+    {
+      "id": "en-a17",
+      "source": "racket-reader-numbers",
+      "quote": "If the read-decimal-as-inexact parameter is set to #f , then all numbers without an exactness specifier are instead parsed as exact.",
+      "says": {
+        "adopted": "a reader setting that reads decimals as exact",
+        "in": "Racket"
+      },
+      "where": "1.3.3 Reading Numbers"
+    },
+    {
+      "id": "en-a18",
+      "source": "racket-json",
+      "quote": "( or/c exact-integer? ( and/c inexact-real? rational? ) )",
+      "says": {
+        "covers": "fractions written as JSON",
+        "by": "racket's json library",
+        "is": false
+      },
+      "where": "1 JS-Expressions: the numbers a jsexpr may hold (exact integers or finite flonums; an exact 1/3 is not a jsexpr, and write-json's x must be jsexpr?)"
+    },
+    {
+      "id": "en-a19",
+      "source": "racket-json-source",
+      "quote": "[else (raise-type-error who \"legal JSON value\" x)]",
+      "says": {
+        "covers": "fractions written as JSON",
+        "by": "racket's json library",
+        "is": false
+      },
+      "where": "write-json: a number that is neither an exact integer nor a finite flonum, such as 1/3, falls to this branch"
+    },
+    {
+      "id": "en-a20",
+      "source": "racket-json-source",
+      "quote": "[else (exact->inexact (* sgn n (expt 10 exp)))]",
+      "says": {
+        "covers": "decimals written in JSON kept exact",
+        "by": "racket's json library",
+        "is": false
+      },
+      "where": "read-number, read-fraction-rest: the exact value of the digits is built, then made a flonum"
+    },
+    {
+      "id": "en-a21",
+      "source": "racket-json-source",
+      "quote": "adding one digit at a time to a bignum is O(n^2) for a",
+      "says": {
+        "covers": "integers kept exact past two to the 53rd",
+        "by": "racket's json library",
+        "is": true
+      },
+      "where": "read-number, comment on read-digits: a JSON integer without fraction or exponent is read as an exact bignum"
+    },
+    {
+      "id": "en-a22",
+      "source": "tc39-json-parse-source",
+      "quote": "This proposal is at stage 4 of [the TC39 Process]",
+      "says": {
+        "designed": "json.parse source text access",
+        "in": "JavaScript"
+      },
+      "where": "Status"
+    },
+    {
+      "id": "en-a23",
+      "source": "tc39-json-parse-source",
+      "quote": "Update `JSON.parse` to provide reviver functions with more arguments, primarily conveying the source text from which a value was derived",
+      "says": {
+        "covers": "a way to read a JSON number's text exactly",
+        "by": "json.parse source text access",
+        "is": true
+      },
+      "where": "Proposed Solution"
+    },
+    {
+      "id": "en-a24",
+      "source": "tc39-json-parse-source",
+      "quote": "support for non-lossy serialization with `JSON.stringify` (and thus also complete round-trippability) was requested and added",
+      "says": {
+        "covers": "a way to write a JSON number's text exactly",
+        "by": "json.parse source text access",
+        "is": true
+      },
+      "where": "Serialization (JSON.rawJSON)"
+    },
+    {
+      "id": "en-a25",
+      "source": "tc39-json-parse-source",
+      "quote": "[V8](https://issues.chromium.org/issues/42202895)",
+      "says": {
+        "adopted": "json.parse source text access",
+        "in": "V8"
+      },
+      "where": "Implementations (a link in a list, no version given)"
+    },
+    {
+      "id": "en-a26",
+      "source": "tc39-json-parse-source",
+      "quote": "[JavaScriptCore](https://github.com/WebKit/WebKit/pull/7057)",
+      "says": {
+        "adopted": "json.parse source text access",
+        "in": "JavaScriptCore"
+      },
+      "where": "Implementations (a link in a list, no version given)"
+    },
+    {
+      "id": "en-a27",
+      "source": "tc39-json-parse-source",
+      "quote": "[SpiderMonkey](https://bugzilla.mozilla.org/show_bug.cgi?id=1855468)",
+      "says": {
+        "adopted": "json.parse source text access",
+        "in": "SpiderMonkey"
+      },
+      "where": "Implementations (a link in a list, no version given)"
+    },
+    {
+      "id": "en-a28",
+      "source": "mdn-json-rawjson",
+      "quote": "Since March 2025, this feature works across the latest devices and browser versions.",
+      "says": {
+        "adopted": "json.parse source text access",
+        "in": "JavaScript"
+      },
+      "where": "JSON.rawJSON(), Baseline 2025, newly available"
+    },
+    {
+      "id": "en-a29",
+      "source": "mdn-json",
+      "quote": "JSON can contain number literals of arbitrary precision.",
+      "says": {
+        "covers": "numbers of any size and precision",
+        "by": "json",
+        "is": true
+      },
+      "where": "Lossless number serialization"
+    },
+    {
+      "id": "en-a30",
+      "source": "mdn-json",
+      "quote": "JSON.parse(\"12345678901234567890\") returns 12345678901234568000 because the number is rounded to the nearest representable number.",
+      "says": {
+        "covers": "integers kept exact past two to the 53rd",
+        "by": "binary64 floating point",
+        "is": false
+      },
+      "where": "Lossless number serialization (JavaScript's JSON.parse)"
+    },
+    {
+      "id": "en-a31",
+      "source": "mdn-json",
+      "quote": "You can use the context.source parameter of the JSON.parse() reviver function to re-parse the number yourself.",
+      "says": {
+        "covers": "a way to read a JSON number's text exactly",
+        "by": "json.parse source text access",
+        "is": true
+      },
+      "where": "Lossless number serialization"
+    },
+    {
+      "id": "en-a32",
+      "source": "rfc8259",
+      "quote": "A number is represented in base 10 using decimal digits.",
+      "says": {
+        "defines": "JSON number"
+      },
+      "where": "Section 6, Numbers"
+    },
+    {
+      "id": "en-a33",
+      "source": "rfc8259",
+      "quote": "This specification allows implementations to set limits on the range and precision of numbers accepted.",
+      "says": {
+        "covers": "numbers that every JSON reader reads the same",
+        "by": "json",
+        "is": false
+      },
+      "where": "Section 6, Numbers"
+    },
+    {
+      "id": "en-a34",
+      "source": "rfc8259",
+      "quote": "good interoperability can be achieved by implementations that expect no more precision or range than these provide, in the sense that implementations will approximate JSON numbers within the expected precision.",
+      "says": {
+        "needs": "numbers within binary64's range and precision",
+        "by": "json"
+      },
+      "where": "Section 6, Numbers ('these' are IEEE 754 binary64 numbers)"
+    },
+    {
+      "id": "en-a35",
+      "source": "rfc7493",
+      "quote": "I-JSON messages SHOULD NOT include numbers that express greater magnitude or precision than an IEEE 754 double precision number provides",
+      "says": {
+        "needs": "numbers within binary64's range and precision",
+        "by": "i-json"
+      },
+      "where": "2.2. Numbers (SHOULD NOT)"
+    },
+    {
+      "id": "en-a36",
+      "source": "rfc7493",
+      "quote": "An I-JSON sender cannot expect a receiver to treat an integer whose absolute value is greater than 9007199254740991 (i.e., that is outside the range [-(2**53)+1, (2**53)-1]) as an exact value.",
+      "says": {
+        "covers": "integers kept exact past two to the 53rd",
+        "by": "json",
+        "is": false
+      },
+      "where": "2.2. Numbers (about what receivers can be relied on to do)"
+    },
+    {
+      "id": "en-a37",
+      "source": "rfc7493",
+      "quote": "For applications that require the exact interchange of numbers with greater magnitude or precision, it is RECOMMENDED to encode them in JSON string values.",
+      "says": {
+        "covers": "numbers that every JSON reader reads the same",
+        "by": "numbers encoded as JSON strings",
+        "is": true
+      },
+      "where": "2.2. Numbers (RECOMMENDED)"
+    },
+    {
+      "id": "en-a38",
+      "source": "rfc7493",
+      "quote": "This requires that the receiving program understand the intended semantic of the value.",
+      "says": {
+        "needs": "a receiver that knows the string holds a number",
+        "by": "numbers encoded as JSON strings"
+      },
+      "where": "2.2. Numbers"
+    },
+    {
+      "id": "en-a39",
+      "source": "mdn-bigint",
+      "quote": "BigInt values represent integer values which are too high or too low to be represented by the number primitive",
+      "says": {
+        "adopted": "arbitrary-precision integers",
+        "in": "JavaScript"
+      },
+      "where": "BigInt (Baseline widely available since September 2020)"
+    },
+    {
+      "id": "en-a40",
+      "source": "mdn-bigint",
+      "quote": "Division ( / ) truncates fractional components towards zero, since BigInt is unable to represent fractional quantities.",
+      "says": {
+        "covers": "fractions kept exact",
+        "by": "arbitrary-precision integers",
+        "is": false
+      },
+      "where": "Operators (JavaScript's BigInt)"
+    },
+    {
+      "id": "en-a41",
+      "source": "mdn-bigint",
+      "quote": "Using JSON.stringify() with any BigInt value will raise a TypeError , as BigInt values aren't serialized in JSON by default.",
+      "says": {
+        "covers": "a way to write a JSON number's text exactly",
+        "by": "arbitrary-precision integers",
+        "is": false
+      },
+      "where": "Use within JSON (by default, without toJSON, a replacer, or JSON.rawJSON)"
+    },
+    {
+      "id": "en-a42",
+      "source": "mdn-bigint",
+      "quote": "A BigInt value cannot be used with methods in the built-in Math object and cannot be mixed with a Number value in operations; they must be coerced to the same type.",
+      "says": {
+        "needs": "operands that are all BigInts, never mixed with Numbers",
+        "by": "arbitrary-precision integers"
+      },
+      "where": "Description (JavaScript's BigInt)"
+    },
+    {
+      "id": "en-a43",
+      "source": "python-decimal",
+      "quote": "The decimal module provides support for fast correctly rounded decimal floating-point arithmetic.",
+      "says": {
+        "adopted": "decimal floating point",
+        "in": "Python"
+      },
+      "where": "decimal (opening)"
+    },
+    {
+      "id": "en-a44",
+      "source": "python-decimal",
+      "quote": "numbers like 1.1 and 2.2 do not have exact representations in binary floating point.",
+      "says": {
+        "covers": "decimals written in JSON kept exact",
+        "by": "binary64 floating point",
+        "is": false
+      },
+      "where": "decimal (opening)"
+    },
+    {
+      "id": "en-a45",
+      "source": "python-decimal",
+      "quote": "The use of decimal floating point eliminates decimal representation error (making it possible to represent 0.1 exactly)",
+      "says": {
+        "covers": "decimals written in JSON kept exact",
+        "by": "decimal floating point",
+        "is": true
+      },
+      "where": "Floating-point notes: Mitigating round-off error with increased precision"
+    },
+    {
+      "id": "en-a46",
+      "source": "python-decimal",
+      "quote": "some operations can still incur round-off error when non-zero digits exceed the fixed precision.",
+      "says": {
+        "needs": "results whose digits fit the context precision",
+        "by": "decimal floating point"
+      },
+      "where": "Floating-point notes (e.g. Decimal(1) / Decimal(7) rounds to the precision, 28 digits by default)"
+    },
+    {
+      "id": "en-a47",
+      "source": "python-decimal",
+      "quote": "This includes an option to enforce exact arithmetic by using exceptions to block any inexact operations.",
+      "says": {
+        "covers": "proofs that hold of the code's own arithmetic",
+        "by": "errors at the edges of exact arithmetic",
+        "is": true
+      },
+      "where": "decimal (opening; the Inexact trap)"
+    },
+    {
+      "id": "en-a48",
+      "source": "python-fractions",
+      "quote": "The fractions module provides support for rational number arithmetic.",
+      "says": {
+        "adopted": "exact rational arithmetic",
+        "in": "Python"
+      },
+      "where": "fractions (opening)"
+    },
+    {
+      "id": "en-a49",
+      "source": "python-fractions",
+      "quote": "any string that represents a finite value and is accepted by the float constructor is also accepted by the Fraction constructor.",
+      "says": {
+        "covers": "decimals written in JSON kept exact",
+        "by": "exact rational arithmetic",
+        "is": true
+      },
+      "where": "Fraction(string): e.g. Fraction('1.414213') is Fraction(1414213, 1000000)"
+    },
+    {
+      "id": "en-a50",
+      "source": "python-json",
+      "quote": "This can be used to use another datatype or parser for JSON floats (e.g. decimal.Decimal ).",
+      "says": {
+        "covers": "decimals written in JSON kept exact",
+        "by": "a JSON reader hook given each number's text",
+        "is": true
+      },
+      "where": "JSONDecoder, parse_float (called with the string of every JSON float)"
+    },
+    {
+      "id": "en-a51",
+      "source": "python-json",
+      "quote": "In particular, it is common for JSON numbers to be deserialized into IEEE 754 double precision numbers and thus subject to that representation’s range and precision limitations.",
+      "says": {
+        "covers": "numbers that every JSON reader reads the same",
+        "by": "json",
+        "is": false
+      },
+      "where": "Implementation Limitations"
+    },
+    {
+      "id": "en-a52",
+      "source": "python-json",
+      "quote": "The default parse_int of int() now limits the maximum length of the integer string via the interpreter’s integer string conversion length limitation to help avoid denial of service attacks.",
+      "says": {
+        "needs": "a limit on how many digits a number read from text may have",
+        "by": "arbitrary-precision integers"
+      },
+      "where": "json.load, changed in version 3.11"
+    },
+    {
+      "id": "en-a53",
+      "source": "python-stdtypes",
+      "quote": "Integers have unlimited precision.",
+      "says": {
+        "adopted": "arbitrary-precision integers",
+        "in": "Python"
+      },
+      "where": "Numeric Types — int, float, complex"
+    },
+    {
+      "id": "en-a54",
+      "source": "r7rs-numbers",
+      "quote": "If the written representation of a number has no exactness prefix, the constant is inexact if it contains a decimal point or an exponent.",
+      "says": {
+        "covers": "decimals written in JSON kept exact",
+        "by": "scheme's numeric tower",
+        "is": false
+      },
+      "where": "6.2.5 Syntax of numerical constants: 0.1 written without a prefix reads inexact"
+    },
+    {
+      "id": "en-a55",
+      "source": "python-decimal",
+      "quote": "some operations can still incur round-off error when non-zero digits exceed the fixed precision.",
+      "says": {
+        "covers": "proofs that hold of the code's own arithmetic",
+        "by": "decimal floating point",
+        "is": false
+      },
+      "where": "Floating-point notes: a division such as Decimal(1) / Decimal(7) rounds to the context's precision, 28 digits by default"
+    }
+  ]
+}

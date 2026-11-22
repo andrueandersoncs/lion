@@ -103,8 +103,8 @@ const SCHEME_CASE_MUTATIONS: readonly Mutation[] = [
   {
     name: "number/add of no numbers is 1",
     file: core("modules/number.ts"),
-    find: "(a, b) => a + b,\n    0\n  ),",
-    replace: "(a, b) => a + b,\n    1\n  ),",
+    find: '  add: arithmetic("add", "+", sum, ANY, undefined, 0),',
+    replace: '  add: arithmetic("add", "+", sum, ANY, undefined, 1),',
     tests: ["src/modules/tests/arity.test.ts"],
   },
   {
@@ -689,9 +689,9 @@ const WEIGHTS: readonly Mutation[] = [
     ["src/logic/tests/aggregates.test.ts", ...WEIGHT_TESTS]
   ),
   weighed(
-    "a running total is kept for numbers that are not whole",
-    "      Number.isSafeInteger(value) && Number.isSafeInteger(kept.total);",
-    "      true;"
+    "a running total ignores how many candidates a value lost or gained",
+    "      kept.total = sum(kept.total, product(by, value as LionNumber));",
+    "      kept.total = sum(kept.total, value as LionNumber);"
   ),
   weighed(
     "an answer several rules with one head find counts once for each",
@@ -906,6 +906,14 @@ const WEIGHTS: readonly Mutation[] = [
 ];
 
 export const MUTATIONS: readonly Mutation[] = [
+  {
+    name: "a fraction JSON cannot write counts as data a pair can give",
+    file: "packages/metrics/src/pairs.ts",
+    find: "  } catch {\n    return false;\n  }\n};",
+    replace: "  } catch {\n    return true;\n  }\n};",
+    package: "metrics",
+    tests: ["src/tests/pairs.test.ts"],
+  },
   {
     name: "a goal that cannot run says nothing of a list written as a call",
     file: core("logic/compile.ts"),
@@ -1841,7 +1849,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "the checker lets an inequality be taken away",
     file: core("logic/certificate.ts"),
-    find: '          (m < 0 && (lines[at] as Whole).relation !== "=")',
+    find: '          (compareNumbers(m, 0) < 0 && (lines[at] as Whole).relation !== "=")',
     replace: "          false",
     tests: ["src/logic/tests/solver.test.ts"],
   },
@@ -2804,8 +2812,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "value/integer? is true for every number",
     file: core("modules/value.ts"),
-    find: '  "integer?": is(Number.isInteger),',
-    replace: '  "integer?": is((a) => typeof a === "number"),',
+    find: '  "integer?": is(isInteger),',
+    replace: '  "integer?": is(isNumber),',
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
@@ -2903,16 +2911,16 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "number/add takes two numbers and no more",
     file: core("modules/number.ts"),
-    find: '    "+",\n    (a, b) => a + b,\n    ANY,',
-    replace: '    "+",\n    (a, b) => a + b,\n    2,',
+    find: '  add: arithmetic("add", "+", sum, ANY, undefined, 0),',
+    replace: '  add: arithmetic("add", "+", sum, 2, undefined, 0),',
     tests: ["src/modules/tests/arity.test.ts"],
   },
   {
     name: "arithmetic on several numbers leaves out the last",
     file: core("modules/number.ts"),
-    find: "      const result = values.reduce((a, b) => operate(a, b));",
+    find: "      for (let at = 1; at < values.length && result !== undefined; at += 1) {",
     replace:
-      "      const result = values.slice(0, 2).reduce((a, b) => operate(a, b));",
+      "      for (let at = 1; at < Math.min(values.length, 2) && result !== undefined; at += 1) {",
     tests: ["src/modules/tests/arity.test.ts"],
   },
   {
@@ -2925,9 +2933,12 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "number/toString writes a number as JSON does not",
     file: core("modules/number.ts"),
-    find: "      String(n).replace(WHOLE, (digits) =>",
-    replace: "      n.toFixed(1).replace(WHOLE, (digits) =>",
-    tests: ["src/modules/tests/models.test.ts"],
+    find: "      numberText(n).replace(WHOLE, (digits) =>",
+    replace: "      String(Number(String(n))).replace(WHOLE, (digits) =>",
+    tests: [
+      "src/modules/tests/models.test.ts",
+      "src/numbers/tests/exact.test.ts",
+    ],
   },
   {
     name: "number/toString groups digits in twos",
@@ -3414,18 +3425,18 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
-    name: "a number read as text keeps -0",
-    file: core("modules/lib/numerals.ts"),
-    find: "  return n + 0;",
-    replace: "  return n;",
-    tests: ["src/modules/tests/models.test.ts"],
+    name: "a product of 0 and a negative number is -0",
+    file: core("numbers/exact.ts"),
+    find: "      return result + 0;",
+    replace: "      return result;",
+    tests: ["src/modules/tests/arity.test.ts"],
   },
   {
-    name: "a number read as text keeps a number JSON cannot hold",
-    file: core("modules/lib/numerals.ts"),
-    find: "  if (!Number.isFinite(n) || (rest",
-    replace: "  if ((rest",
-    tests: ["src/modules/tests/models.test.ts"],
+    name: "a number read from text may have any number of digits",
+    file: core("numbers/exact.ts"),
+    find: "    significant + Math.max(0, power) > DIGITS ||",
+    replace: "    false ||",
+    tests: ["src/numbers/tests/exact.test.ts"],
   },
   {
     name: "number/fromString reads text with space around the number",
@@ -3584,8 +3595,8 @@ export const MUTATIONS: readonly Mutation[] = [
     [
       "no schema has a guard, so every library call runs the decoder",
       "lib/guard.ts",
-      'const kind = ast._tag === "Arrays" ? listGuard(ast) : KINDS[ast._tag];',
-      "const kind = undefined as Guard | undefined;",
+      '  const kind =\n    DECLARED.get(ast) ??\n    (ast._tag === "Arrays" ? listGuard(ast) : KINDS[ast._tag]);',
+      "  const kind = undefined as Guard | undefined;",
     ],
     [
       "a schema that transforms gets a guard",
@@ -3909,8 +3920,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a page's worker answers a program that failed as if it gave null",
     file: "packages/cli/src/worker.ts",
-    find: "  return Exit.isSuccess(exit)",
-    replace: "  return true",
+    find: "  if (Exit.isSuccess(exit)) {",
+    replace: "  if (true) {",
     package: "cli",
     tests: [WORKER_TESTS],
   },
@@ -4349,22 +4360,73 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: [CANDIDATE_TESTS],
   },
   {
-    name: "a sum rounds at every value",
+    name: "a sum adds as doubles do",
     file: core("logic/aggregates.ts"),
-    find: "    const low = small - (high - big);",
-    replace: "    const low = 0;",
+    find: "  (values as readonly LionNumber[]).reduce<LionNumber>(add, 0);",
+    replace:
+      "  (values as readonly number[]).reduce<LionNumber>((a, b) => (a as number) + b, 0);",
     tests: ["src/logic/tests/aggregates.test.ts"],
   },
   {
-    name: "a sum whose partial sums overflow adds its values in order",
-    file: core("logic/aggregates.ts"),
-    find: "  return Number.isFinite(high) ? high : exactSum(values as readonly number[]);",
+    name: "a double is read as its binary value, not its digits",
+    file: core("numbers/exact.ts"),
+    find: "    read = parseDecimal(String(value)) as Rational;",
     replace:
-      "  return Number.isFinite(high)\n    ? high\n    : (values as readonly number[]).reduce((a, b) => a + b, 0);",
+      "    read = ratio(BigInt(Math.round(value * 2 ** 40)), 2n ** 40n);",
+    tests: ["src/numbers/tests/exact.test.ts"],
+  },
+  {
+    name: "a fraction no decimal writes is written as decimal digits",
+    file: core("numbers/exact.ts"),
+    find: "  if (rest !== 1n) {\n    return undefined;\n  }",
+    replace: "",
+    tests: ["src/numbers/tests/exact.test.ts"],
+  },
+  {
+    name: "number/round rounds down",
+    file: core("numbers/exact.ts"),
+    find: "  const rounded = ratio(floor(add(scaled, ratio(1n, 2n))));",
+    replace: "  const rounded = ratio(floor(scaled));",
+    tests: ["src/numbers/tests/exact.test.ts"],
+  },
+  {
+    name: "a whole power may have any number of digits",
+    file: core("numbers/exact.ts"),
+    find: "    if (Math.floor(Number(abs(exponent)) * size) + 1 > DIGITS) {",
+    replace: "    if (false) {",
+    tests: ["src/numbers/tests/exact.test.ts"],
+  },
+  {
+    name: "a form that holds an exact number is malformed",
+    file: core("schemas/evaluation.ts"),
+    find: "    is(value) || (holdsExact(value) && is(asPlainNumbers(value)));",
+    replace: "    is(value);",
+    tests: ["src/numbers/tests/exact.test.ts"],
+  },
+  {
+    name: "a program that holds an exact number is refused",
+    file: core("schemas/lion-expression.ts"),
+    find: "  Effect.catch(decodePlain(value), () => decodeExact(value)) as Effect.Effect<",
+    replace:
+      "  Effect.catch(decodePlain(value), (error) => Effect.fail(error)) as Effect.Effect<",
     tests: [
-      "src/modules/tests/finite-numbers.test.ts",
-      "src/logic/tests/aggregates.test.ts",
+      "src/numbers/tests/exact.test.ts",
+      "src/evaluation/tests/reading.test.ts",
     ],
+  },
+  {
+    name: "a snapshot writes 1/3 as data JSON cannot hold",
+    file: core("logic/terms.ts"),
+    find: "  if (isJsonText(item)) {",
+    replace: "  if (isJsonText(item) || item instanceof Exact) {",
+    tests: ["src/numbers/tests/exact.test.ts"],
+  },
+  {
+    name: "a quotient of whole numbers is the double JavaScript gives",
+    file: core("numbers/exact.ts"),
+    find: "  if (isSafe(a) && isSafe(b) && b !== 0 && a % b === 0) {",
+    replace: "  if (isSafe(a) && isSafe(b) && b !== 0) {",
+    tests: ["src/numbers/tests/exact.test.ts"],
   },
   {
     name: "the analysis reads the head of a call as data",
@@ -4439,31 +4501,35 @@ export const MUTATIONS: readonly Mutation[] = [
   },
   {
     name: "integer arithmetic past the exact integers rounds without a word",
-    file: core("modules/number.ts"),
-    find: "      if (whole === BigInt(result)) {",
-    replace: "      if (whole !== undefined) {",
-    tests: ["src/modules/tests/finite-numbers.test.ts"],
+    file: core("numbers/exact.ts"),
+    find: "      Number.isSafeInteger(result)\n    ) {\n      return result;\n    }\n    const scaled = scaledSum(a, b, 1);",
+    replace:
+      "      Number.isInteger(result)\n    ) {\n      return result;\n    }\n    const scaled = scaledSum(a, b, 1);",
+    tests: ["src/numbers/tests/exact.test.ts"],
   },
   {
-    name: "a sum of integers past the exact integers rounds without a word",
-    file: core("logic/aggregates.ts"),
-    find: "  sum: { check: summable, fold: sum, selects: false },",
-    replace: "  sum: { check: onlyNumbers, fold: sum, selects: false },",
-    tests: ["src/modules/tests/finite-numbers.test.ts"],
+    name: "a number of 16 or 17 digits a double writes is not kept as that double",
+    file: core("numbers/exact.ts"),
+    find: "  if (count <= 17 && Number.isFinite(near) && same(toRational(near), a)) {",
+    replace: "  if (false) {",
+    tests: ["src/numbers/tests/exact.test.ts"],
   },
   {
     name: "text that writes an integer past the exact integers reads it rounded",
     file: core("evaluation/reading.ts"),
-    find: "    if (isInteger && !readsAsWritten(written)) {",
-    replace: "    if (false) {",
+    find: "        needsDigits(text)",
+    replace: "        false",
     tests: ["src/evaluation/tests/reading.test.ts"],
   },
   {
     name: "number/fromString reads an integer past the exact integers rounded",
     file: core("modules/lib/numerals.ts"),
-    find: '(rest === "" && !readsAsWritten(written))',
-    replace: "false",
-    tests: ["src/modules/tests/finite-numbers.test.ts"],
+    find: "  return readNumberText(",
+    replace: "  return ((text: string) => Number(text) + 0)(",
+    tests: [
+      "src/modules/tests/models.test.ts",
+      "src/numbers/tests/exact.test.ts",
+    ],
   },
   {
     name: "object/get reads a key a record inherits",

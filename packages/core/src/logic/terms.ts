@@ -7,6 +7,14 @@
  */
 import { Effect } from "effect";
 import type { Environment } from "@/evaluation/environment";
+import {
+  compareNumbers,
+  decimalDigits,
+  Exact,
+  fromRational,
+  isNumber,
+  ratio,
+} from "@/numbers/exact";
 
 export type LionFunction = (...args: unknown[]) => unknown;
 
@@ -827,8 +835,16 @@ export const write = (item: unknown, writer: Writer): unknown => {
   if (typeof item === "function") {
     return writeFunction(item as LionFunction, writer);
   }
-  if (isJson(item)) {
+  if (isJsonText(item)) {
     return writer.data(item);
+  }
+  if (item instanceof Exact) {
+    // JSON text holds no 1/3, so it is written as the division that makes it.
+    return [
+      "number/divide",
+      fromRational(ratio(item.n)),
+      fromRational(ratio(item.d)),
+    ];
   }
   if (Array.isArray(item)) {
     // A bare list would read as a call, so it is written as the call that
@@ -878,7 +894,7 @@ const DISPLAY: Writer = {
  * logic value as the Lion expression that evaluates to it.
  */
 export const render = (value: unknown): unknown =>
-  isGroundValue(value) ? value : write(value, DISPLAY);
+  isDataOf(value, true, false) ? value : write(value, DISPLAY);
 
 export const show = (value: unknown): string =>
   JSON.stringify(render(value)) ?? String(value);
@@ -919,8 +935,16 @@ export const instantiate = (
 /** Raised by a writer for a value with no Lion form. */
 export class Unwritable extends Error {}
 
-/** True for JSON data, or with `unknowns`, data that may hold unknowns. */
-const isDataOf = (value: unknown, unknowns: boolean): boolean => {
+/**
+ * True for JSON data, or with `unknowns`, data that may hold unknowns. A
+ * number is data whatever its form; with `fractions` false, a fraction no
+ * decimal writes, such as 1/3, is not, as JSON text cannot hold it.
+ */
+const isDataOf = (
+  value: unknown,
+  unknowns: boolean,
+  fractions: boolean
+): boolean => {
   if (value === null) {
     return true;
   }
@@ -933,14 +957,14 @@ const isDataOf = (value: unknown, unknowns: boolean): boolean => {
     default:
       break;
   }
-  if (value instanceof Unknown) {
-    return unknowns;
-  }
   if (!(Array.isArray(value) || isPlainObject(value))) {
-    return false;
+    if (value instanceof Exact) {
+      return fractions || decimalDigits(value) !== undefined;
+    }
+    return value instanceof Unknown && unknowns;
   }
   for (const item of Array.isArray(value) ? value : Object.values(value)) {
-    if (!isDataOf(item, unknowns)) {
+    if (!isDataOf(item, unknowns, fractions)) {
       return false;
     }
   }
@@ -951,10 +975,14 @@ const isDataOf = (value: unknown, unknowns: boolean): boolean => {
  * Facts may only contain data: JSON values, and unknowns anywhere a JSON
  * value can stand.
  */
-export const isGroundValue = (value: unknown): boolean => isDataOf(value, true);
+export const isGroundValue = (value: unknown): boolean =>
+  isDataOf(value, true, true);
 
 /** True for JSON data with no unknown in it. */
-export const isJson = (value: unknown): boolean => isDataOf(value, false);
+export const isJson = (value: unknown): boolean => isDataOf(value, false, true);
+
+/** True for data JSON text can hold as it is: no unknown, and no fraction no decimal writes. */
+const isJsonText = (value: unknown): boolean => isDataOf(value, false, false);
 
 /** Lists and records known to be JSON data, so each is looked at once. */
 const DATA = new WeakSet<object>();
@@ -996,7 +1024,7 @@ const canonical = (value: unknown): unknown => {
         .map((key) => [key, canonical(value[key])])
     );
   }
-  return value;
+  return value instanceof Exact ? `\u0000#${value.n}/${value.d}` : value;
 };
 
 /** A key that is equal for structurally equal data. */
@@ -1066,6 +1094,9 @@ const typeRank = (value: unknown): number => {
   if (isPlainObject(value)) {
     return 5;
   }
+  if (value instanceof Exact) {
+    return 2;
+  }
   return value instanceof Unknown ? 6 : 7;
 };
 
@@ -1092,6 +1123,9 @@ export const compareValues = (a: unknown, b: unknown): number => {
   }
   if (typeof a === "number" && typeof b === "number") {
     return Math.sign(a - b);
+  }
+  if (isNumber(a) && isNumber(b)) {
+    return compareNumbers(a, b);
   }
   if (typeof a === "boolean" || typeof a === "string") {
     if (a === b) {

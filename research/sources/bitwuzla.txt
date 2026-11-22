@@ -1,0 +1,60 @@
+View On GitHub
+ZIP
+TAR
+DOWNLOADS
+Bitwuzla
+An SMT solver for bit-vectors, floating-points, arrays and uninterpreted functions.
+Downloads
+Documentation
+Publications
+Awards
+People
+About Bitwuzla
+Bitwuzla is a Satisfiability Modulo Theories (SMT) solver for the theories of
+fixed-size bit-vectors, floating-point arithmetic, arrays and uninterpreted
+functions and their combinations.
+Its name is derived from an Austrian dialect expression that can be translated
+as “ someone who tinkers with bits ”.
+“Bitwuzla” is pronounced as “ bitvootslah ”
+Bit …
+‘ w ’ as ‘v’ in ‘vector’,
+‘ u ’ as ‘oo’ in ‘good’ (but short),
+‘ z ’ as ‘ts’ in ‘tsunami’,
+‘ l ’ just an ‘l’,
+‘ a ’ as ‘u’ in ‘cut’
+Citing Bitwuzla
+A comprehensive system description was presented and published at CAV 2023
+and awarded a CAV Distinguished Paper Award .
+If you are citing Bitwuzla, please use the following BibTex entry (retrieved
+from DBLP ):
+@inproceedings{DBLP:conf/cav/NiemetzP23,
+author = {Aina Niemetz and
+Mathias Preiner},
+editor = {Constantin Enea and
+Akash Lal},
+title = {Bitwuzla},
+booktitle = {Computer Aided Verification - 35th International Conference, {CAV}
+2023, Paris, France, July 17-22, 2023, Proceedings, Part {II}},
+series = {Lecture Notes in Computer Science},
+volume = {13965},
+pages = {3--17},
+publisher = {Springer},
+year = {2023},
+url = {https://doi.org/10.1007/978-3-031-37703-7\_1},
+doi = {10.1007/978-3-031-37703-7\_1},
+timestamp = {Fri, 21 Jul 2023 17:55:59 +0200},
+biburl = {https://dblp.org/rec/conf/cav/NiemetzP23.bib},
+bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+News
+Our paper Scalable Bit-Blasting with Abstractions
+at CAV 2024
+Bitwuzla won 26 out of 56 (participated) division awards at SMT-COMP 2023
+Our system description of Bitwuzla won a CAV distinguished paper award at CAV 2023
+Bitwuzla won 32 out of 48 (participated) division awards at SMT-COMP 2022
+Bitwuzla won 17 out of 28 (participated) division awards at SMT-COMP 2021
+Bitwuzla is now available on GitHub
+Bitwuzla won 43 out of 71 (participated) division awards at SMT-COMP 2020
+Bitwuzla participating at SMT-COMP 2020 ( submitted binary )
+Project maintained by bitwuzla
+Hosted on GitHub Pages — Based on a theme by mattgraham

@@ -1,6 +1,6 @@
 # How Lion can improve Lion: the plan's nine mechanisms, weighed
 
-Run `self-improvement` (2026-11-21), steps `46-si-frame`, `47-si-lion`, and `48-si-precedents`, at commit 7d623a7 (core 0.15.0). It weighs the nine mechanisms of `plan.md` §5 as ideas in the shared research model, against what the repository holds now. The shared rules give each its verdict, its rank, and its place in what is left to build. Every figure below is what the model gives. The checks named "Self-improvement: …" in `research/checks.json` ask for them.
+Run `self-improvement` (2026-11-21), steps `52-si-frame`, `53-si-lion`, and `54-si-precedents`, at commit 7d623a7 (core 0.15.0). It weighs the nine mechanisms of `plan.md` §5 as ideas in the shared research model, against what the repository holds now. The shared rules give each its verdict, its rank, and its place in what is left to build. Every figure below is what the model gives. The checks named "Self-improvement: …" in `research/checks.json` ask for them.
 
 Lion is a programming language whose programs are JSON, with a logic layer of facts and rules. Its developers, mostly AI agents, keep three models written in Lion beside the code: this research model, the project record in `history/`, and the improvement record in `improvement/`. The plan asks how those models, and Lion's own measuring tools, can judge and steer each change to Lion. Here are its nine answers, weighed.
 

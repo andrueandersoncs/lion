@@ -77,7 +77,7 @@ export const composed = (outer: Expression, inner: Expression): Expression => {
 /**
  * Whether a value is data a relation can hold: JSON's values, with finite
  * numbers, or a logic value, which JSON writes as the expression it shows
- * as. A host function given what it does not take can give NaN, and plain
+ * as, but not a fraction JSON cannot write. A host function given what it does not take can give NaN, and plain
  * code then gives no data for a place to give back.
  */
 export const isData = (value: unknown): boolean => {
@@ -99,8 +99,14 @@ export const isData = (value: unknown): boolean => {
   if (Object.getPrototypeOf(value) === Object.prototype) {
     return Object.values(value).every(isData);
   }
-  const written = JSON.stringify(value);
-  return written !== undefined && written !== "null";
+  // An exact fraction no decimal writes, as 4/3, is a value JSON cannot
+  // hold, and its JSON fails.
+  try {
+    const written = JSON.stringify(value);
+    return written !== undefined && written !== "null";
+  } catch {
+    return false;
+  }
 };
 
 /** A pair's cell, with the rows it was made of. */

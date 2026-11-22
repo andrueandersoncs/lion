@@ -4,6 +4,7 @@
  * of a box, or a grid of fractions, and checks every example it gives
  * against the constraints.
  */
+
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Schema } from "effect";
 import { type Certificate, checks, refute } from "@/logic/certificate";
@@ -11,13 +12,10 @@ import {
   type Constraint,
   constant,
   fromNumber,
-  isWhole,
   type Linear,
   meets,
   plus,
-  type Rational,
   type Relation,
-  ratio,
   type Sort,
   satisfiable,
   solve,
@@ -26,6 +24,7 @@ import {
   type Values,
   variable,
 } from "@/logic/solver";
+import { isWhole, type Rational, ratio, toNearest } from "@/numbers/exact";
 import { element } from "./programs";
 
 const OPTIONS = { timeout: 120_000, arbitrary: { runs: 400 } };
@@ -372,7 +371,7 @@ describe("the solver", () => {
               at,
               at < certificate.constraints.length &&
               certificate.constraints[at]?.relation !== "="
-                ? -Math.abs(m) - 1
+                ? -Math.abs(toNearest(m)) - 1
                 : m,
             ] as const
         ),
@@ -407,20 +406,22 @@ const sameConstraints = (
     ]);
     // The scale that takes the given constant, or a coefficient, to the line's.
     const pairs: [Rational, number][] = [
-      [given.linear.constant, line.constant],
+      [given.linear.constant, toNearest(line.constant)],
       ...[...names].map((name): [Rational, number] => [
         given.linear.coefficients.get(name) ?? ratio(0n),
-        line.sum[name] ?? 0,
+        toNearest(line.sum[name] ?? 0),
       ]),
     ];
     const scale = pairs.find(([k]) => k.n !== 0n);
     if (scale === undefined) {
       return pairs.every(([, n]) => n === 0);
     }
-    const factor = scale[1] / toNumber(scale[0]);
+    const factor = scale[1] / toNearest(toNumber(scale[0]));
     return (
       factor > 0 &&
       line.relation === given.relation &&
-      pairs.every(([k, n]) => Math.abs(toNumber(k) * factor - n) < 1e-9)
+      pairs.every(
+        ([k, n]) => Math.abs(toNearest(toNumber(k)) * factor - n) < 1e-9
+      )
     );
   });

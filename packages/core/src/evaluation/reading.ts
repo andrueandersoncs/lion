@@ -1,46 +1,53 @@
 /**
- * Reading a program, or a database, from its JSON text. JSON numbers are
- * JavaScript's, which hold every integer only up to 2^53 - 1: the text
- * 9007199254740993 would read as 9007199254740992 without a word, and
- * compare equal to it. So an integer written in the text that would come
- * back as another when Lion writes it is refused, as arithmetic whose
- * integer result cannot be held exactly is. Text Lion writes always reads
- * back: past that range a number is a float, which JSON may write with
- * digits alone, as it writes 36944794794896088 as 36944794794896090. A
- * number written with a fraction or an exponent is read as near as it can
- * be, as any JSON number is.
+ * Reading a program, or a database, from its JSON text, and writing a value
+ * as JSON text. Every number is exact, so a number in the text is read as the
+ * exact value its digits write: 0.1 is one tenth, and 9007199254740993 is
+ * itself, where `JSON.parse` would read the nearest double. A value is
+ * written with each number's digits, and a fraction no decimal writes, such
+ * as 1/3, has no JSON text.
  */
 import { Effect } from "effect";
-import { LogicError } from "@/errors/evaluation";
+import { ArithmeticError, LogicError } from "@/errors/evaluation";
+import { DIGITS, NotJson, readNumberText } from "@/numbers/exact";
 
 /** A JSON string, which is skipped, or a JSON number, with its parts. */
 const TOKEN = /"(?:[^"\\]|\\.)*"|-?\d+(\.\d+)?([eE][+-]?\d+)?/g;
 
 /**
- * Whether written digits, with maybe a minus sign, read as what they say:
- * as the integer itself, or as the number JSON writes with these digits.
+ * Whether a number token reads exactly as the double `JSON.parse` makes of
+ * it: a decimal of at most 15 significant digits, as every double holds,
+ * that is neither too large nor too small for one.
  */
-export const readsAsWritten = (written: string) => {
-  const n = Number(written);
-  return BigInt(written) === BigInt(n) || JSON.stringify(n) === written;
+const EXPONENT = /[eE].*$/;
+const SIGN_AND_POINT = /[-.]/g;
+const LEADING_ZEROS = /^0+/;
+const TRAILING_ZEROS = /0+$/;
+
+const readsAsDouble = (token: string) => {
+  const mantissa = token.replace(EXPONENT, "").replace(SIGN_AND_POINT, "");
+  const significant = mantissa
+    .replace(LEADING_ZEROS, "")
+    .replace(TRAILING_ZEROS, "");
+  const value = Number(token);
+  return (
+    significant.length <= 15 &&
+    Number.isFinite(value) &&
+    (value !== 0 || significant === "")
+  );
 };
 
-/** The first integer the text writes that does not read as itself. */
-export const inexactInteger = (
-  text: string
-): { readonly at: number; readonly written: string } | undefined => {
-  for (const found of text.matchAll(TOKEN)) {
-    const [written, fraction, exponent] = found;
-    const isInteger =
-      !written.startsWith('"') &&
-      fraction === undefined &&
-      exponent === undefined;
-    if (isInteger && !readsAsWritten(written)) {
-      return { at: found.index, written };
+/** Whether some number in the text needs its digits to be read exactly. */
+const needsDigits = (text: string) => {
+  for (const [token] of text.matchAll(TOKEN)) {
+    if (!(token.startsWith('"') || readsAsDouble(token))) {
+      return true;
     }
   }
-  return undefined;
+  return false;
 };
+
+/** Raised by the reader for a number with more digits than text may write. */
+class TooLong extends Error {}
 
 /** The line and column of a place in the text, counted from 1. */
 const placeOf = (text: string, at: number) => {
@@ -48,34 +55,71 @@ const placeOf = (text: string, at: number) => {
   return `line ${before.length}, column ${(before.at(-1)?.length ?? 0) + 1}`;
 };
 
-/** The failure of text that writes an integer JSON numbers cannot hold. */
-export const inexactIntegerError = (
-  text: string,
-  at: number,
-  written: string
-) =>
-  new LogicError({
-    message: `The integer ${written} at ${placeOf(text, at)} cannot be held exactly: a JSON number holds every integer only from -9007199254740991 to 9007199254740991, and this one would read as ${String(Number(written))}.`,
-  });
+type Reviver = (
+  this: unknown,
+  key: string,
+  value: unknown,
+  context?: { readonly source?: string }
+) => unknown;
+
+const exactly: Reviver = (_key, value, context) => {
+  if (typeof value !== "number" || context?.source === undefined) {
+    return value;
+  }
+  const read = readNumberText(context.source);
+  if (read === undefined) {
+    throw new TooLong(context.source);
+  }
+  return read;
+};
 
 /**
- * The value JSON text writes, as `JSON.parse` reads it, or a failure when the
- * text is not JSON or writes an integer that would not read as itself.
+ * The value JSON text writes, each number exactly as its digits write it,
+ * or a failure when the text is not JSON or writes a number with more digits
+ * than a number read from text may have.
  */
 export const readJson = (text: string): Effect.Effect<unknown, LogicError> =>
   Effect.suspend(() => {
-    let value: unknown;
     try {
-      value = JSON.parse(text);
+      return Effect.succeed(
+        needsDigits(text)
+          ? JSON.parse(text, exactly as Parameters<typeof JSON.parse>[1])
+          : JSON.parse(text)
+      );
     } catch (error) {
+      if (error instanceof TooLong) {
+        const at = text.indexOf(error.message);
+        return Effect.fail(
+          new LogicError({
+            message: `The number at ${placeOf(text, at)} has more than ${DIGITS} digits, more than a number read from text may have.`,
+          })
+        );
+      }
       return Effect.fail(
         new LogicError({
           message: `The text is not JSON: ${error instanceof Error ? error.message : String(error)}`,
         })
       );
     }
-    const inexact = inexactInteger(text);
-    return inexact === undefined
-      ? Effect.succeed(value)
-      : Effect.fail(inexactIntegerError(text, inexact.at, inexact.written));
+  });
+
+/**
+ * A value as JSON text, each number with its digits, or a failure when it
+ * holds a fraction no decimal writes, such as 1/3.
+ */
+export const writeJson = (
+  value: unknown,
+  space?: number | string
+): Effect.Effect<string, ArithmeticError> =>
+  Effect.suspend(() => {
+    try {
+      return Effect.succeed(
+        JSON.stringify(value === undefined ? null : value, null, space)
+      );
+    } catch (error) {
+      if (error instanceof NotJson) {
+        return Effect.fail(new ArithmeticError({ message: error.message }));
+      }
+      throw error;
+    }
   });

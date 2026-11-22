@@ -1,0 +1,12 @@
+{
+  "claims": [
+    {
+      "quote": "The research model weighs how Lion should make its numbers exact, so that what its solver proves holds of what its code computes, and how provers such as Lean prove arithmetic no procedure decides. Its page, `research/runs/exact-numbers/`, ranks first of everything left to build making every number exact: integers of any size and fractions, each number read as the value its digits write, which a model of exact numbers estimates would make Lion's adding of decimals take 1.7 times as long. Its probes found that the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away, and that no integer from 2^53 up is unchanged by adding 1, while Lion's own code breaks both, and that Lion rounds 2^53 + 1 without a word. After exact numbers it orders polynomial identities, nonlinear facts from products of hypotheses, and proofs as values a small checker accepts; induction over recursive functions can start now.",
+      "says": {
+        "feature": "research-exact-numbers",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}

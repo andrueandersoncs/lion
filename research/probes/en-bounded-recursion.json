@@ -1,0 +1,35 @@
+[
+  "begin",
+  [
+    "define",
+    "sum to",
+    [
+      "lambda",
+      ["n"],
+      [
+        "cond",
+        [["number/lessThanOrEqualTo", "n", 0], 0],
+        ["else", ["number/add", "n", ["sum to", ["number/subtract", "n", 1]]]]
+      ]
+    ]
+  ],
+  {
+    "no n from 0 to 50 sums to less than 0": [
+      "query",
+      [
+        "not",
+        [
+          "exists",
+          ["?n"],
+          [
+            "and",
+            ["schema/fits?", "?n", "value/integer?"],
+            ["number/greaterThanOrEqualTo", "?n", 0],
+            ["number/lessThanOrEqualTo", "?n", 50],
+            ["number/lessThan", ["sum to", "?n"], 0]
+          ]
+        ]
+      ]
+    ]
+  }
+]

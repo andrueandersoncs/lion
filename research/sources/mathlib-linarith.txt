@@ -1,0 +1,396 @@
+Documentation
+Mathlib . Tactic . Linarith . Frontend
+Search
+return to top
+source
+Imports Init
+Lean.Elab.ConfigEval
+Mathlib.Control.Basic
+Mathlib.Util.ElabWithoutMVars
+Mathlib.Tactic.Linarith.Preprocessing
+Mathlib.Tactic.Linarith.Verification
+Mathlib.Tactic.Ring.Basic
+Mathlib.Tactic.Linarith.Oracle.SimplexAlgorithm
+Imported by
+Mathlib . Tactic . Linarith . LinarithConfig
+Mathlib . Tactic . Linarith . LinarithConfig . updateReducibility
+Mathlib . Tactic . Linarith . getContrLemma
+Mathlib . Tactic . Linarith . applyContrLemma
+Mathlib . Tactic . Linarith . ExprMultiMap
+Mathlib . Tactic . Linarith . ExprMultiMap . find
+Mathlib . Tactic . Linarith . ExprMultiMap . insert
+Mathlib . Tactic . Linarith . partitionByTypeIdx
+Mathlib . Tactic . Linarith . findLinarithContradiction
+Mathlib . Tactic . Linarith . runLinarith
+Mathlib . Tactic . Linarith . linarithUsedHyps
+Mathlib . Tactic . Linarith . linarith
+Mathlib . Tactic . linarithArgsRest
+Mathlib . Tactic . linarith
+Mathlib . Tactic . linarith?
+Mathlib . Tactic . tacticLinarith!_
+Mathlib . Tactic . tacticLinarith?!_
+Mathlib . Tactic . nlinarith
+Mathlib . Tactic . tacticNlinarith!_
+Mathlib . Tactic . elabLinarithConfig
+linarith : solving linear arithmetic goals #
+linarith is a tactic for solving goals with linear arithmetic.
+Suppose we have a set of hypotheses in n variables
+S = {a₁x₁ + a₂x₂ + ... + aₙxₙ R b₁x₁ + b₂x₂ + ... + bₙxₙ} ,
+where R ∈ {<, ≤, =, ≥, >} .
+Our goal is to determine if the inequalities in S are jointly satisfiable, that is, if there is
+an assignment of values to x₁, ..., xₙ such that every inequality in S is true.
+Specifically, we aim to show that they are not satisfiable. This amounts to proving a
+contradiction. If our goal is also a linear inequality, we negate it and move it to a hypothesis
+before trying to prove False .
+When the inequalities are over a dense linear order, linarith is a decision procedure: it will
+prove False if and only if the inequalities are unsatisfiable. linarith will also run on some
+types like ℤ that are not dense orders, but it will fail to prove False on some unsatisfiable
+problems. It will run over concrete types like ℕ , ℚ , and ℝ , as well as abstract types that
+are instances of CommRing , LinearOrder and IsStrictOrderedRing .
+Algorithm sketch #
+First, the inequalities in the set S are rearranged into the form tᵢ Rᵢ 0 , where
+Rᵢ ∈ {<, ≤, =} and each tᵢ is of the form ∑ cⱼxⱼ .
+linarith uses an untrusted oracle to search for a certificate of unsatisfiability.
+The oracle searches for a list of natural number coefficients kᵢ such that ∑ kᵢtᵢ = 0 , where for
+at least one i , kᵢ > 0 and Rᵢ = < .
+Given a list of such coefficients, linarith verifies that ∑ kᵢtᵢ = 0 using a normalization
+tactic such as ring . It proves that ∑ kᵢtᵢ < 0 by transitivity, since each component of the sum
+is either equal to, less than or equal to, or less than zero by hypothesis. This produces a
+contradiction.
+Preprocessing #
+linarith does some basic preprocessing before running. Most relevantly, inequalities over natural
+numbers are cast into inequalities about integers, and rational division by numerals is canceled
+into multiplication. We do this so that we can guarantee the coefficients in the certificate are
+natural numbers, which allows the tactic to solve goals over types that are not fields.
+Preprocessors are allowed to branch, that is, to case split on disjunctions. linarith will succeed
+overall if it succeeds in all cases. This leads to exponential blowup in the number of linarith
+calls, and should be used sparingly. The default preprocessor set does not include case splits.
+Oracles #
+There are two oracles that can be used in linarith so far.
+Fourier-Motzkin elimination.
+This technique transforms a set of inequalities in n variables to an equisatisfiable set in
+n - 1 variables. Once all variables have been eliminated, we conclude that the original set was
+unsatisfiable iff the comparison 0 < 0 is in the resulting set.
+While performing this elimination, we track the history of each derived comparison. This allows us
+to represent any comparison at any step as a positive combination of comparisons from the original
+set. In particular, if we derive 0 < 0 , we can find our desired list of coefficients
+by counting how many copies of each original comparison appear in the history.
+This oracle was historically implemented earlier, and is sometimes faster on small states, but it
+has bugs and cannot handle
+large problems. You can use it with linarith (oracle := .fourierMotzkin) .
+Simplex Algorithm (default).
+This oracle reduces the search for an unsatisfiability certificate to some Linear Programming
+problem. The problem is then solved by a standard Simplex Algorithm. We use
+Bland's pivot rule to guarantee that the algorithm
+terminates.
+The default version of the algorithm operates with sparse matrices as it is usually faster. You
+can invoke the dense version by linarith (oracle := .simplexAlgorithmDense) .
+Implementation details #
+linarith homogenizes numerical constants: the expression 1 is treated as a variable t₀ .
+Often linarith is called on goals that have comparison hypotheses over multiple types. This
+creates multiple linarith problems, each of which is handled separately; the goal is solved as
+soon as one problem is found to be contradictory.
+Disequality hypotheses t ≠ 0 do not fit in this pattern. linarith will attempt to prove equality
+goals by splitting them into two weak inequalities and running twice. But it does not split
+disequality hypotheses, since this would lead to a number of runs exponential in the number of
+disequalities in the context.
+The oracle is very modular. It can easily be replaced with another function of type
+List Comp → ℕ → MetaM ((Std.HashMap ℕ ℕ)) ,
+which takes a list of comparisons and the largest variable
+index appearing in those comparisons, and returns a map from comparison indices to coefficients.
+An alternate oracle can be specified in the LinarithConfig object.
+A variant, nlinarith , adds an extra preprocessing step to handle some basic nonlinear goals.
+There is a hook in the LinarithConfig configuration object to add custom preprocessing routines.
+The certificate checking step is not by reflection. linarith converts the certificate into a
+proof term of type False .
+Some of the behavior of linarith can be inspected with the option
+set_option trace. linarith true .
+However, both oracles mainly runs outside the tactic monad, so we cannot trace intermediate
+steps there.
+File structure #
+The components of linarith are spread between a number of files for the sake of organization.
+Lemmas.lean contains proofs of some arithmetic lemmas that are used in preprocessing and in
+verification.
+Datatypes.lean contains data structures that are used across multiple files, along with some
+useful auxiliary functions.
+Preprocessing.lean contains functions used at the beginning of the tactic to transform
+hypotheses into a shape suitable for the main routine.
+Parsing.lean contains functions used to compute the linear structure of an expression.
+The Oracle folder contains files implementing the oracles that can be used to produce a
+certificate of unsatisfiability.
+Verification.lean contains the certificate checking functions that produce a proof of False .
+Frontend.lean contains the control methods and user-facing components of the tactic.
+Tags #
+linarith, nlinarith, lra, nra, Fourier-Motzkin, linear arithmetic, linear programming
+Config objects #
+The config object is defined in the frontend, instead of in Datatypes.lean , since the oracles must
+be in context to choose a default.
+source
+structure Mathlib . Tactic . Linarith . LinarithConfig : Type
+A configuration object for linarith .
+discharger : Lean.Elab.Tactic.TacticM Unit
+Discharger to prove that a candidate linear combination of hypothesis is zero.
+In a tactic configuration, set using (discharger := by ...) notation.
+exfalso : Bool
+Prove goals which are not linear comparisons by first calling exfalso .
+transparency : Lean.Meta.TransparencyMode
+Transparency mode for identifying atomic expressions in comparisons.
+splitHypotheses : Bool
+Split conjunctions in hypotheses.
+splitNe : Bool
+Split ≠ in hypotheses, by branching in cases < and > .
+minimize : Bool
+If true, linarith? attempts to greedily remove unused hypotheses from its
+suggestion.
+preprocessors : List GlobalBranchingPreprocessor
+Override the list of preprocessors.
+oracle : CertificateOracle
+Specify an oracle for identifying candidate contradictions.
+.simplexAlgorithmSparse , .simplexAlgorithmSparse , and .fourierMotzkin are available.
+Instances For
+source
+def Mathlib . Tactic . Linarith . LinarithConfig . updateReducibility ( cfg : LinarithConfig ) ( reduce_default : Bool ) : LinarithConfig
+cfg. updateReducibility reduce_default will change the transparency setting of cfg to
+default if reduce_default is true. In this case, it also sets the discharger to ring! ,
+since this is typically needed when using stronger unification.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+Control #
+source
+def Mathlib . Tactic . Linarith . getContrLemma ( e : Lean.Expr ) : Lean.MetaM ( Lean.Name × Lean.Expr )
+If e is a comparison a R b or the negation of a comparison ¬ a R b , found in the target,
+getContrLemma e returns the name of a lemma that will change the goal to an
+implication, along with the type of a and b .
+For example, if e is (a : ℕ) < b , returns (`lt_of_not_ge, ℕ) .
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . Linarith . applyContrLemma ( g : Lean.MVarId ) : Lean.MetaM ( Option ( Lean.Expr × Lean.Expr ) × Lean.MVarId )
+applyContrLemma inspects the target to see if it can be moved to a hypothesis by negation.
+For example, a goal ⊢ a ≤ b can become b < a ⊢ false .
+If this is the case, it applies the appropriate lemma and introduces the new hypothesis.
+It returns the type of the terms in the comparison (e.g. the type of a and b above) and the
+newly introduced local constant.
+Otherwise returns none .
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+@[reducible, inline]
+abbrev Mathlib . Tactic . Linarith . ExprMultiMap ( α : Type u_1) : Type u_1
+A map of keys to values, where the keys are Expr up to defeq and one key can be
+associated to multiple values.
+Equations Mathlib.Tactic.Linarith.ExprMultiMap α = Array ( Lean.Expr × List α )
+Instances For
+source
+def Mathlib . Tactic . Linarith . ExprMultiMap . find { α : Type } ( self : ExprMultiMap α ) ( k : Lean.Expr ) : Lean.MetaM ( ℕ × List α )
+Retrieves the list of values at a key, as well as the index of the key for later modification.
+(If the key is not in the map it returns self.size as the index.)
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . Linarith . ExprMultiMap . insert { α : Type } ( self : ExprMultiMap α ) ( k : Lean.Expr ) ( v : α ) : Lean.MetaM ( ExprMultiMap α )
+Insert a new value into the map at key k . This does a defeq check with all other keys
+in the map.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . Linarith . partitionByTypeIdx ( l : List ( Lean.Expr × ℕ ) ) : Lean.MetaM ( ExprMultiMap ( Lean.Expr × ℕ ))
+partitionByTypeIdx l takes a list l of pairs (h, i) where h is a proof of a
+comparison and i records the original position of h . The proofs are grouped by the
+type of the variables appearing in the comparison, e.g. (a : ℚ) < 1 and
+(b : ℤ) > c will be separated. The resulting map associates each type with the
+list of (h, i) pairs over that type.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . Linarith . findLinarithContradiction ( cfg : LinarithConfig ) ( g : Lean.MVarId ) ( ls : List ( Lean.Expr × List ( Lean.Expr × ℕ ) ) ) : Lean.MetaM ( Lean.Expr × List ℕ )
+Given a list ls of pairs (α, L) where each L is a list of indexed proofs of
+comparisons over the type α , findLinarithContradiction cfg g ls tries each list in
+succession, invoking linarith until one produces a contradiction. It returns the
+resulting proof of False together with the indices of the hypotheses that had
+nonzero coefficients in the final certificate.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . Linarith . runLinarith ( cfg : LinarithConfig ) ( prefType : Option Lean.Expr ) ( g : Lean.MVarId ) ( hyps : List Lean.Expr ) : Lean.MetaM ( List ℕ )
+Given a list hyps of proofs of comparisons, runLinarith cfg prefType g hyps preprocesses
+hyps according to the list of preprocessors in cfg . This results in a list of branches
+(typically only one), each of which must succeed in order to close the goal.
+In each branch, the hypotheses are partitioned by type and linarith is run on each class in
+turn; one of these must succeed in order for linarith to succeed on the branch. If prefType
+is provided, the corresponding class is tried first.
+On success, the metavariable g is assigned and the function returns the indices of the
+original hypotheses that were used with nonzero coefficient in the final proof.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+partial def Mathlib . Tactic . Linarith . linarithUsedHyps ( only_on : Bool ) ( hyps : List Lean.Expr ) ( cfg : LinarithConfig := { } ) ( g : Lean.MVarId ) : Lean.MetaM ( List Lean.Expr )
+linarithUsedHyps only_on hyps cfg g runs linarith with the supplied hypotheses. It
+fails if the goal cannot be closed. When successful, it returns the subset of hyps that
+were actually used (i.e. had a nonzero coefficient) in the final certificate.
+hyps is a list of proofs of comparisons to include in the search.
+If only_on is true, the search will be restricted to hyps . Otherwise it will use all
+comparisons in the local context.
+If cfg. transparency := semireducible ,
+it will unfold semireducible definitions when trying to match atomic expressions.
+source
+def Mathlib . Tactic . Linarith . linarith ( only_on : Bool ) ( hyps : List Lean.Expr ) ( cfg : LinarithConfig := { } ) ( g : Lean.MVarId ) : Lean.MetaM Unit
+Run the core linarith procedure on the goal g using the hypotheses hyps .
+If only_on is true, the search is restricted to hyps ; otherwise all suitable
+local hypotheses are considered. This is the workhorse behind the user-facing
+linarith tactic.
+Equations Mathlib.Tactic.Linarith.linarith only_on hyps cfg g = discard ( Mathlib.Tactic.Linarith.linarithUsedHyps only_on hyps cfg g )
+Instances For
+User facing functions #
+source
+def Mathlib . Tactic . linarithArgsRest : Lean.ParserDescr
+Syntax for the arguments of linarith , after the optional ! .
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . linarith : Lean.ParserDescr
+linarith attempts to find a contradiction between hypotheses that are linear (in)equalities.
+Equivalently, it can prove a linear inequality by assuming its negation and proving False .
+In theory, linarith should prove any goal that is true in the theory of linear arithmetic over
+the rationals. While there is some special handling for non-dense orders like Nat and Int ,
+this tactic is not complete for these theories and will not prove every true goal. It will solve
+goals over arbitrary types that instantiate CommRing , LinearOrder and IsStrictOrderedRing .
+An example:
+example (x y z : ℚ) (h1 : 2*x < 3*y) (h2 : -4*x + 2*z < 0)
+(h3 : 12*y - 4* z < 0) : False := by
+linarith
+linarith will use all appropriate hypotheses and the negation of the goal, if applicable.
+Disequality hypotheses require case splitting and are not normally considered
+(see the splitNe option below).
+linarith [t1, t2, t3] will additionally use proof terms t1, t2, t3 .
+linarith only [h1, h2, h3, t1, t2, t3] will use only the goal (if relevant), local hypotheses
+h1 , h2 , h3 , and proofs t1 , t2 , t3 . It will ignore the rest of the local context.
+linarith! will use a stronger reducibility setting to try to identify atoms. For example,
+example (x : ℚ) : id x ≥ x := by
+linarith
+will fail, because linarith will not identify x and id x . linarith! will.
+This can sometimes be expensive.
+linarith (config := { .. }) takes a config object with five
+optional arguments:
+discharger specifies a tactic to be used for reducing an algebraic equation in the
+proof stage. The default is ring . Other options include simp for basic
+problems.
+transparency controls how hard linarith will try to match atoms to each other. By default
+it will only unfold reducible definitions.
+If splitHypotheses is true, linarith will split conjunctions in the context into separate
+hypotheses.
+If splitNe is true , linarith will case split on disequality hypotheses.
+For a given x ≠ y hypothesis, linarith is run with both x < y and x > y ,
+and so this runs linarith exponentially many times with respect to the number of
+disequality hypotheses. ( false by default.)
+If exfalso is false , linarith will fail when the goal is neither an inequality nor False .
+( true by default.)
+If minimize is false , linarith? will report all hypotheses appearing in its initial
+proof without attempting to drop redundancies. ( true by default.)
+restrict_type (not yet implemented in mathlib4)
+will only use hypotheses that are inequalities over tp . This is useful
+if you have e.g. both integer- and rational-valued inequalities in the local context, which can
+sometimes confuse the tactic.
+A variant, nlinarith , does some basic preprocessing to handle some nonlinear goals.
+The option set_option trace. linarith true will trace certain intermediate stages of the linarith
+routine.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . linarith? : Lean.ParserDescr
+linarith? behaves like linarith but, on success, it prints a suggestion of
+the form linarith only [...] listing a minimized set of hypotheses used in the
+final proof. Use linarith?! for the higher-reducibility variant and set the
+minimize flag in the configuration to control whether greedy minimization is
+performed.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . tacticLinarith!_ : Lean.ParserDescr
+linarith attempts to find a contradiction between hypotheses that are linear (in)equalities.
+Equivalently, it can prove a linear inequality by assuming its negation and proving False .
+In theory, linarith should prove any goal that is true in the theory of linear arithmetic over
+the rationals. While there is some special handling for non-dense orders like Nat and Int ,
+this tactic is not complete for these theories and will not prove every true goal. It will solve
+goals over arbitrary types that instantiate CommRing , LinearOrder and IsStrictOrderedRing .
+An example:
+example (x y z : ℚ) (h1 : 2*x < 3*y) (h2 : -4*x + 2*z < 0)
+(h3 : 12*y - 4* z < 0) : False := by
+linarith
+linarith will use all appropriate hypotheses and the negation of the goal, if applicable.
+Disequality hypotheses require case splitting and are not normally considered
+(see the splitNe option below).
+linarith [t1, t2, t3] will additionally use proof terms t1, t2, t3 .
+linarith only [h1, h2, h3, t1, t2, t3] will use only the goal (if relevant), local hypotheses
+h1 , h2 , h3 , and proofs t1 , t2 , t3 . It will ignore the rest of the local context.
+linarith! will use a stronger reducibility setting to try to identify atoms. For example,
+example (x : ℚ) : id x ≥ x := by
+linarith
+will fail, because linarith will not identify x and id x . linarith! will.
+This can sometimes be expensive.
+linarith (config := { .. }) takes a config object with five
+optional arguments:
+discharger specifies a tactic to be used for reducing an algebraic equation in the
+proof stage. The default is ring . Other options include simp for basic
+problems.
+transparency controls how hard linarith will try to match atoms to each other. By default
+it will only unfold reducible definitions.
+If splitHypotheses is true, linarith will split conjunctions in the context into separate
+hypotheses.
+If splitNe is true , linarith will case split on disequality hypotheses.
+For a given x ≠ y hypothesis, linarith is run with both x < y and x > y ,
+and so this runs linarith exponentially many times with respect to the number of
+disequality hypotheses. ( false by default.)
+If exfalso is false , linarith will fail when the goal is neither an inequality nor False .
+( true by default.)
+If minimize is false , linarith? will report all hypotheses appearing in its initial
+proof without attempting to drop redundancies. ( true by default.)
+restrict_type (not yet implemented in mathlib4)
+will only use hypotheses that are inequalities over tp . This is useful
+if you have e.g. both integer- and rational-valued inequalities in the local context, which can
+sometimes confuse the tactic.
+A variant, nlinarith , does some basic preprocessing to handle some nonlinear goals.
+The option set_option trace. linarith true will trace certain intermediate stages of the linarith
+routine.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . tacticLinarith?!_ : Lean.ParserDescr
+linarith? behaves like linarith but, on success, it prints a suggestion of
+the form linarith only [...] listing a minimized set of hypotheses used in the
+final proof. Use linarith?! for the higher-reducibility variant and set the
+minimize flag in the configuration to control whether greedy minimization is
+performed.
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . nlinarith : Lean.ParserDescr
+An extension of linarith with some preprocessing to allow it to solve some nonlinear arithmetic
+problems. (Based on Coq's nra tactic.) See linarith for the available syntax of options,
+which are inherited by nlinarith ; that is, nlinarith! and nlinarith only [h1, h2] all work as
+in linarith . The preprocessing is as follows:
+For every subterm a ^ 2 or a * a in a hypothesis or the goal,
+the assumption 0 ≤ a ^ 2 or 0 ≤ a * a is added to the context.
+For every pair of hypotheses a1 R1 b1 , a2 R2 b2 in the context, R1, R2 ∈ {<, ≤, =} ,
+the assumption 0 R' (b1 - a1) * (b2 - a2) is added to the context (non-recursively),
+where R ∈ {<, ≤, =} is the appropriate comparison derived from R1, R2 .
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . tacticNlinarith!_ : Lean.ParserDescr
+An extension of linarith with some preprocessing to allow it to solve some nonlinear arithmetic
+problems. (Based on Coq's nra tactic.) See linarith for the available syntax of options,
+which are inherited by nlinarith ; that is, nlinarith! and nlinarith only [h1, h2] all work as
+in linarith . The preprocessing is as follows:
+For every subterm a ^ 2 or a * a in a hypothesis or the goal,
+the assumption 0 ≤ a ^ 2 or 0 ≤ a * a is added to the context.
+For every pair of hypotheses a1 R1 b1 , a2 R2 b2 in the context, R1, R2 ∈ {<, ≤, =} ,
+the assumption 0 R' (b1 - a1) * (b2 - a2) is added to the context (non-recursively),
+where R ∈ {<, ≤, =} is the appropriate comparison derived from R1, R2 .
+Equations One or more equations did not get rendered due to their size.
+Instances For
+source
+def Mathlib . Tactic . elabLinarithConfig ( cfg : Lean.Syntax ) ( init : Linarith.LinarithConfig := { } ) ( logExceptions : Bool := true ) : Lean.Elab.Tactic.TacticM Linarith.LinarithConfig
+Allow elaboration of LinarithConfig arguments to tactics.
+Equations One or more equations did not get rendered due to their size.
+Instances For

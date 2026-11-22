@@ -1,7 +1,7 @@
 {
   "claims": [
     {
-      "quote": "Run `self-improvement` (2026-11-21), steps `46-si-frame`, `47-si-lion`, and `48-si-precedents`, at commit 7d623a7 (core 0.15.0). It weighs the nine mechanisms of `plan.md` §5 as ideas in the shared research model",
+      "quote": "Run `self-improvement` (2026-11-21), steps `52-si-frame`, `53-si-lion`, and `54-si-precedents`, at commit 7d623a7 (core 0.15.0). It weighs the nine mechanisms of `plan.md` §5 as ideas in the shared research model",
       "says": {
         "feature": "research-run-self-improvement",
         "kind": "file",

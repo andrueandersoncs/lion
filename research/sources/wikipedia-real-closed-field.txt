@@ -1,0 +1,248 @@
+Jump to content
+Main menu
+Main menu
+move to sidebar
+hide
+Navigation
+Main page
+Contents
+Current events
+Random article
+About Wikipedia
+Contact us
+Contribute
+Help
+Learn to edit
+Community portal
+Recent changes
+Upload file
+Special pages
+Search
+Search
+Appearance
+Donate
+Create account
+Log in
+Personal tools
+Donate
+Create account
+Log in
+Contents
+move to sidebar
+hide
+(Top)
+1
+Equivalent definitions
+2
+Examples of real closed fields
+3
+Real closure
+4
+Decidability and quantifier elimination
+Toggle Decidability and quantifier elimination subsection
+4.1
+Complexity of deciding 𝘛 rcf
+5
+Order properties
+6
+The generalized continuum hypothesis
+7
+Elementary Euclidean geometry
+8
+See also
+9
+Notes
+10
+References
+11
+External links
+Toggle the table of contents
+Real closed field
+11 languages
+العربية
+Deutsch
+Español
+Français
+עברית
+日本語
+한국어
+Polski
+Piemontèis
+Português
+中文
+Edit links
+Article
+Talk
+English
+Read
+Edit
+View history
+Save
+Tools
+Tools
+move to sidebar
+hide
+Actions
+Read
+Edit
+View history
+Save
+General
+What links here
+Related changes
+Upload file
+Permanent link
+Page information
+Cite this page
+Get shortened URL
+Switch to legacy parser
+Print/export
+Download as PDF
+Printable version
+In other projects
+Wikimedia Commons
+Wikidata item
+Appearance
+move to sidebar
+hide
+From Wikipedia, the free encyclopedia
+Field in mathematics similar to the real numbers
+"Artin–Schreier theorem" redirects here. For the branch of Galois theory, see Artin–Schreier theory .
+In mathematics , a real closed field is a field F that has the same first-order properties as the field of real numbers . (First-order properties are those properties that can be expressed with the logic symbols ∀ , ∃ , ∨ , ∧ , ¬ , → and the arithmetic symbols 0 , 1 , + , − , × , ÷ , = , where the domain of all quantifiers is the set F ; it is hence not allowed to quantify over natural numbers, subsets of F , sequences in F , functions F → F etc.) Some examples of real closed fields are the field of real numbers itself, the field of real algebraic numbers , and fields of hyperreal numbers that include infinitesimals. In algebra, most theorems that involve the real numbers remain true when formulated for arbitrary real closed fields.
+Equivalent definitions
+[ edit ]
+A real closed field is a field F in which any of the following equivalent conditions is true:
+F is elementarily equivalent to the field of real numbers. In other words, it has the same first-order properties as the reals: any sentence in the first-order language of fields is true in F if and only if it is true in the reals.
+There is a total order on F turning F into an ordered field such that, in this ordering, every positive element of F has a square root in F and any polynomial of odd degree with coefficients in F has at least one root in F .
+There is a total order on F turning F into an ordered field such that, in this ordering, the intermediate value theorem holds for all polynomials with coefficients in F .
+F is a formally real field (meaning there exists a total order on F turning F into an ordered field) such that every polynomial of odd degree with coefficients in F has at least one root in F , and for every element a of F there is b in F such that a = b 2 or a = − b 2 .
+F is not algebraically closed , but its algebraic closure is a finite extension of F .
+F is not algebraically closed but the field extension F ( − 1 ) is algebraically closed.
+There is an ordering on F that does not extend to an ordering on any proper algebraic extension of F .
+F is a formally real field such that no proper algebraic extension of F is formally real. (In other words, the field is maximal in an algebraic closure with respect to the property of being formally real.)
+F is a weakly o-minimal ordered field. [ 1 ]
+Examples of real closed fields
+[ edit ]
+The following fields are real closed, which can be shown by verifying property 2 above:
+the field of real algebraic numbers ;
+the field of computable real numbers ;
+the field of definable real numbers ;
+the field of real numbers ;
+the field of Puiseux series with real coefficients;
+the Levi-Civita field ;
+the hyperreal number fields;
+the superreal number fields;
+the field of surreal numbers (this is a proper class , not a set ).
+Real closure
+[ edit ]
+If F is an ordered field, the Artin–Schreier theorem states that F has an algebraic extension, called the real closure K of F , such that K is a real closed field whose ordering is an extension of the given ordering on F , and is unique up to a unique isomorphism of fields identical on F [ 2 ] (note that every ring homomorphism between real closed fields automatically is order preserving , because x ≤ y if and only if ∃ z : y = x + z 2 ). For example, the real closure of the ordered field of rational numbers is the field ℝ a l g of real algebraic numbers. The theorem is named for Emil Artin and Otto Schreier , who proved it in 1926.
+If ( F , P ) is an ordered field, and E is a Galois extension of F , then by Zorn's lemma there is a maximal ordered field extension ( M , Q ) with M a subfield of E containing F and the order on M extending P . This M , together with its ordering Q , is called the relative real closure of ( F , P ) in E . We call ( F , P ) real closed relative to E if M is just F . When E is the algebraic closure of F the relative real closure of F in E is actually the real closure of F described earlier. [ 3 ]
+If F is a field (not ordered or even orderable) then F still has a real closure, which may not be a field anymore, but just a real closed ring . For example, the real closure of the field ℚ ( 2 ) is the ring ℝ a l g × ℝ a l g (the two copies correspond to the two orderings of ℚ ( 2 ) ). On the other hand, if ℚ ( 2 ) is considered as an ordered subfield of ℝ , its real closure is again the field ℝ a l g .
+Decidability and quantifier elimination
+[ edit ]
+The language of real closed fields ℒ rcf includes symbols for the operations of addition and multiplication, the constants 0 and 1, and the order relation ≤ (as well as equality, if this is not considered a logical symbol). In this language, the (first-order) theory of real closed fields, 𝒯 rcf , consists of all sentences that follow from the following axioms:
+the axioms of ordered fields ;
+the axiom asserting that every positive number has a square root;
+for every odd number d , the axiom asserting that all polynomials of degree d have at least one root.
+All of these axioms can be expressed in first-order logic (i.e. quantification ranges only over elements of the field). Note that 𝒯 rcf is just the set of all first-order sentences that are true about the field of real numbers.
+Tarski showed that 𝒯 rcf is complete , meaning that any ℒ rcf -sentence can be proven either true or false from the above axioms. Furthermore, 𝒯 rcf is decidable , meaning that there is an algorithm to determine the truth or falsity of any such sentence. This was done by showing quantifier elimination : there is an algorithm that, given any ℒ rcf - formula , which may contain free variables , produces an equivalent quantifier-free formula in the same free variables, where equivalent means that the two formulas are true for exactly the same values of the variables. Tarski's proof uses a generalization of Sturm's theorem . Since the truth of quantifier-free formulas without free variables can be easily checked, this yields the desired decision procedure. These results were obtained c.   1930 and published in 1948. [ 4 ]
+The Tarski–Seidenberg theorem extends this result to the following projection theorem . If R is a real closed field, a formula with n free variables defines a subset of R n , the set of the points that satisfy the formula. Such a subset is called a semialgebraic set . Given a subset of k variables, the projection from R n to R k is the function that maps every n -tuple to the k -tuple of the components corresponding to the subset of variables. The projection theorem asserts that a projection of a semialgebraic set is a semialgebraic set, and that there is an algorithm that, given a quantifier-free formula defining a semialgebraic set, produces a quantifier-free formula for its projection.
+In fact, the projection theorem is equivalent to quantifier elimination, as the projection of a semialgebraic set defined by the formula p ( x , y ) is defined by
+( ∃ x ) P ( x , y ) ,
+where x and y represent respectively the set of eliminated variables, and the set of kept variables.
+The decidability of a first-order theory of the real numbers depends dramatically on the primitive operations and functions that are considered (here addition and multiplication). Adding other functions symbols, for example, the sine or the exponential function , can provide undecidable theories; see Richardson's theorem and Decidability of first-order theories of the real numbers .
+Furthermore, the completeness and decidability of the first-order theory of the real numbers (using addition and multiplication) contrasts sharply with Gödel 's and Turing 's results about the incompleteness and undecidability of the first-order theory of the natural numbers (using addition and multiplication). There is no contradiction, since the statement " x is an integer" cannot be formulated as a first-order formula in the language ℒ rcf .
+Complexity of deciding 𝘛 rcf
+[ edit ]
+Tarski's original algorithm for quantifier elimination has nonelementary computational complexity , meaning that no tower
+2 2 ⋅ ⋅ ⋅ n
+can bound the execution time of the algorithm if n is the size of the input formula. The cylindrical algebraic decomposition , introduced by George E. Collins , provides a much more practicable algorithm of complexity
+d 2 O ( n )
+where n is the total number of variables (free and bound), d is the product of the degrees of the polynomials occurring in the formula, and O ( n ) is big O notation .
+Davenport and Heintz (1988) proved that this worst-case complexity is nearly optimal for quantifier elimination by producing a family ''n''</sub>"}},"i":0}}]}'/> Φ n of formulas of length O ( n ) , with n quantifiers, and involving polynomials of constant degree, such that any quantifier-free formula equivalent to ''n''</sub>"}},"i":0}}]}'/> Φ n must involve polynomials of degree 2 2 Ω ( n ) and length 2 2 Ω ( n ) , where Ω ( n ) is big Omega notation . This shows that both the time complexity and the space complexity of quantifier elimination are intrinsically double exponential .
+For the decision problem, Ben-Or, Kozen , and Reif (1986) claimed to have proved that the theory of real closed fields is decidable in exponential space , and therefore in double exponential time, but their argument (in the case of more than one variable) is generally held as flawed; see Renegar (1992) for a discussion.
+For purely existential formulas, that is for formulas of the form
+1</sub>, ..., ∃''x''<sub>''k''</sub> ''P''<sub>1</sub>(''x''<sub>1</sub>, ..., ''x''<sub>''k''</sub>) ⋈ 0 ∧ ... ∧ ''P''<sub>''s''</sub>(''x''<sub>1</sub>, ..., ''x''<sub>''k''</sub>) ⋈ 0,"}},"i":0}}]}"/> ∃ x 1 , ..., ∃ x k P 1 ( x 1 , ..., x k ) ⋈ 0 ∧ ... ∧ P s ( x 1 , ..., x k ) ⋈ 0,
+where ⋈ stands for either "}},"i":0}}]}'/> <, > or = , the complexity is lower. Basu and Roy (1996) provided a well-behaved algorithm to decide the truth of such an existential formula with complexity of ''k''+1</sup>''d''<sup>''O''(''k'')</sup>"}},"i":0}}]}'/> s k +1 d O ( k ) arithmetic operations and polynomial space .
+Order properties
+[ edit ]
+Any real closed field can be turned into an ordered field in just one way: the positive elements are precisely the squares of non-zero elements.
+A crucially important property of the real numbers is that it is an Archimedean field , meaning it has the Archimedean property that for any real number, there is an integer larger than it in absolute value . Note that this statement is not expressible in the first-order language of ordered fields, since it is not possible to quantify over integers in that language.
+There are real-closed fields that are non-Archimedean ; for example, any field of hyperreal numbers is real-closed and non-Archimedean. These fields contain infinitely large (larger than any integer) and infinitesimal (positive but smaller than any positive rational) elements.
+The Archimedean property is related to the concept of cofinality . A set X contained in an ordered set F is cofinal in F if for every y in F there is an x in X such that y < x . In other words, X is an unbounded sequence in F . The cofinality of F is the cardinality of the smallest cofinal set, which is to say, the size of the smallest cardinality giving an unbounded sequence. For example, natural numbers are cofinal in the reals, and the cofinality of the reals is therefore ℵ 0 .
+We have therefore the following invariants defining the nature of a real closed field F :
+The cardinality of F .
+The cofinality of F .
+To this we may add
+The weight of F , which is the minimum size of a dense subset of F .
+These three cardinal numbers tell us much about the order properties of any real closed field, though it may be difficult to discover what they are, especially if we are not willing to invoke the generalized continuum hypothesis . There are also particular properties that may or may not hold:
+A field F is complete if there is no ordered field K properly containing F such that F is dense in K . If the cofinality of F is κ , this is equivalent to saying Cauchy sequences indexed by κ are convergent in F .
+An ordered field F has the eta set property η α , for the ordinal number α , if for any two subsets L and U of F of cardinality less than ℵ α such that every element of L is less than every element of U , there is an element x in F with x larger than every element of L and smaller than every element of U . This is closely related to the model-theoretic property of being a saturated model ; any two real closed fields are η α if and only if they are ℵ α -saturated, and moreover two η α real closed fields both of cardinality ℵ α are order isomorphic .
+The generalized continuum hypothesis
+[ edit ]
+The characteristics of real closed fields become much simpler if we are willing to assume the generalized continuum hypothesis . If the continuum hypothesis holds, all real closed fields with cardinality of the continuum and having the η 1 property are order isomorphic. This unique field Ϝ can be defined by means of an ultrapower , as ℝ ℕ / 𝐌 , where M is a maximal ideal not leading to a field order-isomorphic to ℝ . This is the most commonly used hyperreal number field in nonstandard analysis , and its uniqueness is equivalent to the continuum hypothesis. (Even without the continuum hypothesis we have that if the cardinality of the continuum is
+ℵ β then we have a unique η β field of size ℵ β .)
+Moreover, we do not need ultrapowers to construct Ϝ , we can do so much more constructively as the subfield of series with a countable number of nonzero terms of the field ℝ [ [ G ] ] of formal power series on a totally ordered abelian divisible group G that is an η 1 group of cardinality ℵ 1 ( Alling 1962 ) .
+Ϝ however is not a complete field; if we take its completion, we end up with a field Κ of larger cardinality. Ϝ has the cardinality of the continuum, which by hypothesis is ℵ 1 , Κ has cardinality ℵ 2 , and contains Ϝ as a dense subfield. It is not an ultrapower but it is a hyperreal field, and hence a suitable field for the usages of nonstandard analysis. It can be seen to be the higher-dimensional analogue of the real numbers; with cardinality ℵ 2 instead of ℵ 1 , cofinality ℵ 1 instead of ℵ 0 , and weight ℵ 1 instead of ℵ 0 , and with the η 1 property in place of the η 0 property (which merely means between any two real numbers we can find another).
+Elementary Euclidean geometry
+[ edit ]
+Tarski's axioms are an axiom system for the first-order ("elementary") portion of Euclidean geometry . Using those axioms, one can show that the points on a line form a real closed field R, and one can introduce coordinates so that the Euclidean plane is identified with R 2 . Employing the decidability of the theory of real closed fields, Tarski then proved that the elementary theory of Euclidean geometry is complete and decidable. [ 4 ]
+See also
+[ edit ]
+Euclidean ordered field
+p-adically closed field
+real-closed ring
+Notes
+[ edit ]
+↑ D. Macpherson et al. (1998)
+↑ Rajwade (1993) pp. 222–223
+↑ Efrat (2006) p. 177
+1 2 McNaughton, Robert (1953). "Review: A decision method for elementary algebra and geometry by A. Tarski" (PDF) . Bull. Amer. Math. Soc . 59 (1): 91– 93. doi : 10.1090/s0002-9904-1953-09664-1 .
+References
+[ edit ]
+\\eta_\\alpha</math>-sets of power <math>\\aleph_\\alpha</math>"},"last":{"wt":"Alling"},"first":{"wt":"Norman L."},"journal":{"wt":"[[Transactions of the American Mathematical Society]]"},"volume":{"wt":"103"},"year":{"wt":"1962"},"pages":{"wt":"341–352"},"mr":{"wt":"0146089"},"doi":{"wt":"10.1090/S0002-9947-1962-0146089-X"}},"i":1}},"\n\n* ",{"template":{"target":{"wt":"cite book ","href":"./Template:Cite_book"},"params":{"last1":{"wt":"Basu"},"first1":{"wt":"Saugata"},"last2":{"wt":"Pollack"},"first2":{"wt":"Richard"},"author2-link":{"wt":"Richard M. Pollack"},"last3":{"wt":"Roy"},"first3":{"wt":"Marie-Françoise"},"author3-link":{"wt":"Marie-Françoise Roy"},"title":{"wt":"Algorithms in Real Algebraic Geometry"},"year":{"wt":"2006"},"series":{"wt":"Algorithms and Computation in Mathematics"},"volume":{"wt":"10"},"isbn":{"wt":"978-3-540-33098-1"},"publisher":{"wt":"[[Springer-Verlag|Springer]]"},"location":{"wt":"[[Berlin]], [[Heidelberg]]"}},"i":2}},"\n\n* ",{"template":{"target":{"wt":"cite journal ","href":"./Template:Cite_journal"},"params":{"last1":{"wt":"Ben-Or"},"first1":{"wt":"Michael"},"author1-link":{"wt":"Michael Ben-Or"},"last2":{"wt":"Kozen"},"first2":{"wt":"Dexter"},"author2-link":{"wt":"Dexter Kozen"},"last3":{"wt":"Reif"},"first3":{"wt":"John"},"author3-link":{"wt":"John Reif"},"title":{"wt":"The complexity of elementary algebra and geometry"},"journal":{"wt":"Journal of Computer and Systems Sciences"},"volume":{"wt":"32"},"doi":{"wt":"10.1016/0022-0000(86)90029-2"},"issue":{"wt":"2"},"year":{"wt":"1986"},"pages":{"wt":"251–264"}},"i":3}},"\n\n* ",{"template":{"target":{"wt":"cite book ","href":"./Template:Cite_book"},"params":{"editor1-last":{"wt":"Caviness"},"editor1-first":{"wt":"B. F."},"editor2-last":{"wt":"Johnson"},"editor2-first":{"wt":"J. R."},"title":{"wt":"Quantifier Elimination and Cylindrical Algebraic Decomposition"},"year":{"wt":"1998"},"publisher":{"wt":"[[Springer-Verlag|Springer]]"},"location":{"wt":"[[Vienna]]"},"isbn":{"wt":"978-3-211-82794-9"}},"i":4}},"\n\n* [[Chen Chung Chang]] and [[Howard Jerome Keisler]] (1989) ''Model Theory''. North-Holland.\n\n* ",{"template":{"target":{"wt":"cite book ","href":"./Template:Cite_book"},"params":{"last1":{"wt":"Dales"},"first1":{"wt":"H. Garth"},"last2":{"wt":"Woodin"},"first2":{"wt":"W. Hugh"},"author2-link":{"wt":"W. Hugh Woodin"},"title":{"wt":"Super-Real Fields"},"year":{"wt":"1996"},"publisher":{"wt":"[[Clarendon Press]]"},"location":{"wt":"[[Oxford]]"},"isbn":{"wt":"978-0-19853991-9"}},"i":5}},"\n\n* ",{"template":{"target":{"wt":"cite journal ","href":"./Template:Cite_journal"},"params":{"last1":{"wt":"Davenport"},"first1":{"wt":"James H."},"author1-link":{"wt":"James H. Davenport"},"last2":{"wt":"Heintz"},"first2":{"wt":"Joos"},"author2-link":{"wt":"Joos Ulrich Heintz"},"title":{"wt":"Real quantifier elimination is doubly exponential"},"journal":{"wt":"[[Journal of Symbolic Computation]]"},"volume":{"wt":"5"},"issue":{"wt":"1–2"},"pages":{"wt":"29–35"},"year":{"wt":"1988"},"zbl":{"wt":"0663.03015"},"doi":{"wt":"10.1016/s0747-7171(88)80004-x"}},"i":6}},"\n\n* ",{"template":{"target":{"wt":"cite book ","href":"./Template:Cite_book"},"params":{"last":{"wt":"Efrat"},"first":{"wt":"Ido"},"title":{"wt":"Valuations, Orderings, and Milnor K-Theory"},"series":{"wt":"Mathematical Surveys and Monographs"},"volume":{"wt":"124"},"location":{"wt":"[[Providence, Rhode Island|Providence]]"},"publisher":{"wt":"[[American Mathematical Society]]"},"year":{"wt":"2006"},"isbn":{"wt":"978-0-8218-4041-2"},"zbl":{"wt":"1103.12002"}},"i":7}},"\n\n* ",{"template":{"target":{"wt":"cite journal ","href":"./Template:Cite_journal"},"params":{"last1":{"wt":"Macpherson"},"first1":{"wt":"Dugald"},"author1-link":{"wt":"Dugald Macpherson"},"last2":{"wt":"Marker"},"first2":{"wt":"David"},"last3":{"wt":"Steinhorn"},"first3":{"wt":"Charles"},"title":{"wt":"Weakly o-minimal structures and real closed fields"},"journal":{"wt":"[[Transactions of the American Mathematical Society]]"},"volume":{"wt":"352"},"doi":{"wt":"10.1090/S0002-9947-00-02633-7"},"issue":{"wt":"12"},"year":{"wt":"2000"},"pages":{"wt":"5435–5483"}},"i":8}},"\n\n* Mishra, Bhubaneswar (1997) \"[http://www.cs.nyu.edu/mishra/PUBLICATIONS/97.real-alg.ps Computational Real Algebraic Geometry],\" in ''Handbook of Discrete and Computational Geometry''. CRC Press. 2004 edition, p.&nbsp;743. ",{"template":{"target":{"wt":"isbn","href":"./Template:Isbn"},"params":{"1":{"wt":"1-58488-301-4"}},"i":9}},"\n\n* ",{"template":{"target":{"wt":"cite book ","href":"./Template:Cite_book"},"params":{"title":{"wt":"Squares"},"volume":{"wt":"171"},"series":{"wt":"London Mathematical Society Lecture Note Series"},"first":{"wt":"A. R."},"last":{"wt":"Rajwade"},"publisher":{"wt":"[[Cambridge University Press]]"},"year":{"wt":"1993"},"isbn":{"wt":"0-521-42668-5"},"zbl":{"wt":"0785.11022"}},"i":10}},"\n\n* ",{"template":{"target":{"wt":"cite journal ","href":"./Template:Cite_journal"},"params":{"last":{"wt":"Renegar"},"first":{"wt":"James"},"title":{"wt":"On the computational complexity and geometry of the first-order theory of the reals. Part I: Introduction. Preliminaries. The geometry of semi-algebraic sets. The decision problem for the existential theory of the reals"},"journal":{"wt":"[[Journal of Symbolic Computation]]"},"volume":{"wt":"13"},"number":{"wt":"3"},"year":{"wt":"1992"},"pages":{"wt":"255–299"},"doi":{"wt":"10.1016/S0747-7171(10)80003-3"},"doi-access":{"wt":"free"}},"i":11}},"\n\n* ",{"template":{"target":{"wt":"cite thesis ","href":"./Template:Cite_thesis"},"params":{"type":{"wt":"PhD"},"title":{"wt":"Combined Decision Procedures for Nonlinear Arithmetics, Real and Complex"},"first":{"wt":"Grant"},"last":{"wt":"Passmore"},"publisher":{"wt":"[[University of Edinburgh]]"},"year":{"wt":"2011"},"url":{"wt":"https://www.cl.cam.ac.uk/~gp351/passmore-phd-thesis.pdf"},"author-link":{"wt":"Grant Olney"}},"i":12}},"\n\n* ",{"template":{"target":{"wt":"cite book ","href":"./Template:Cite_book"},"params":{"last":{"wt":"Tarski"},"first":{"wt":"Alfred"},"authorlink":{"wt":"Alfred Tarski"},"year":{"wt":"1951"},"title":{"wt":"A Decision Method for Elementary Algebra and Geometry"},"publisher":{"wt":"[[University of California Press]]"},"location":{"wt":"[[Berkeley, California|Berkeley]]"},"edition":{"wt":"2nd"}},"i":13}},"\n\n* ",{"template":{"target":{"wt":"cite journal ","href":"./Template:Cite_journal"},"params":{"last1":{"wt":"Erdős"},"first1":{"wt":"P."},"author1-link":{"wt":"Paul Erdős"},"last2":{"wt":"Gillman"},"first2":{"wt":"L."},"last3":{"wt":"Henriksen"},"first3":{"wt":"M."},"title":{"wt":"An isomorphism theorem for real-closed fields"},"journal":{"wt":"[[Annals of Mathematics]]"},"volume":{"wt":"61"},"issue":{"wt":"3"},"pages":{"wt":"542–554"},"mr":{"wt":"0069161"},"year":{"wt":"1955"},"doi":{"wt":"10.2307/1969812"}},"i":14}},"\n",{"template":{"target":{"wt":"refend","href":"./Template:Refend"},"params":{},"i":15}}]}'>
+Alling, Norman L. (1962). "On the existence of real-closed fields that are η α -sets of power ℵ α ". Transactions of the American Mathematical Society . 103 : 341– 352. doi : 10.1090/S0002-9947-1962-0146089-X . MR 0146089 .
+Basu, Saugata; Pollack, Richard ; Roy, Marie-Françoise (2006). Algorithms in Real Algebraic Geometry . Algorithms and Computation in Mathematics. Vol. 10. Berlin , Heidelberg : Springer . ISBN 978-3-540-33098-1 .
+Ben-Or, Michael ; Kozen, Dexter ; Reif, John (1986). "The complexity of elementary algebra and geometry". Journal of Computer and Systems Sciences . 32 (2): 251– 264. doi : 10.1016/0022-0000(86)90029-2 .
+Caviness, B. F.; Johnson, J. R., eds. (1998). Quantifier Elimination and Cylindrical Algebraic Decomposition . Vienna : Springer . ISBN 978-3-211-82794-9 .
+Chen Chung Chang and Howard Jerome Keisler (1989) Model Theory . North-Holland.
+Dales, H. Garth; Woodin, W. Hugh (1996). Super-Real Fields . Oxford : Clarendon Press . ISBN 978-0-19853991-9 .
+Davenport, James H. ; Heintz, Joos (1988). "Real quantifier elimination is doubly exponential". Journal of Symbolic Computation . 5 ( 1– 2): 29– 35. doi : 10.1016/s0747-7171(88)80004-x . Zbl 0663.03015 .
+Efrat, Ido (2006). Valuations, Orderings, and Milnor K-Theory . Mathematical Surveys and Monographs. Vol. 124. Providence : American Mathematical Society . ISBN 978-0-8218-4041-2 . Zbl 1103.12002 .
+Macpherson, Dugald ; Marker, David; Steinhorn, Charles (2000). "Weakly o-minimal structures and real closed fields". Transactions of the American Mathematical Society . 352 (12): 5435– 5483. doi : 10.1090/S0002-9947-00-02633-7 .
+Mishra, Bhubaneswar (1997) " Computational Real Algebraic Geometry ," in Handbook of Discrete and Computational Geometry . CRC Press. 2004 edition, p. 743. ISBN 1-58488-301-4
+Rajwade, A. R. (1993). Squares . London Mathematical Society Lecture Note Series. Vol. 171. Cambridge University Press . ISBN 0-521-42668-5 . Zbl 0785.11022 .
+Renegar, James (1992). "On the computational complexity and geometry of the first-order theory of the reals. Part I: Introduction. Preliminaries. The geometry of semi-algebraic sets. The decision problem for the existential theory of the reals" . Journal of Symbolic Computation . 13 (3): 255– 299. doi : 10.1016/S0747-7171(10)80003-3 .
+Passmore, Grant (2011). Combined Decision Procedures for Nonlinear Arithmetics, Real and Complex (PDF) (PhD). University of Edinburgh .
+Tarski, Alfred (1951). A Decision Method for Elementary Algebra and Geometry (2nd ed.). Berkeley : University of California Press .
+Erdős, P. ; Gillman, L.; Henriksen, M. (1955). "An isomorphism theorem for real-closed fields". Annals of Mathematics . 61 (3): 542– 554. doi : 10.2307/1969812 . MR 0069161 .
+External links
+[ edit ]
+Wikimedia Commons has media related to Real closed fields .
+Real Algebraic and Analytic Geometry Preprint Server
+Model Theory preprint server
+Retrieved from " https://en.wikipedia.org/w/index.php?title=Real_closed_field&oldid=1385096104 "
+Category : Real closed field
+Hidden categories: Articles with short description
+Short description is different from Wikidata
+Commons category link from Wikidata
+This page was last edited on 11 November 2026, at 21:20 (UTC) .
+Page was rendered with Parsoid .
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License ;
+additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy . Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc. , a non-profit organization.
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Legal & safety contacts
+Code of Conduct
+Developers
+Statistics
+Cookie statement
+Mobile view
+Search
+Search
+Toggle the table of contents
+Real closed field
+11 languages
+Add topic

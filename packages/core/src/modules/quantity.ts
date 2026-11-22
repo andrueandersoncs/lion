@@ -2,6 +2,8 @@ import { Effect, Schema } from "effect";
 import { ArithmeticError, atLeast } from "@/errors/evaluation";
 import { combining, overEffect } from "@/modules/lib/shared";
 import { module as number } from "@/modules/number";
+import { isNumber, type LionNumber, numberText } from "@/numbers/exact";
+import { NumberSchema } from "@/schemas/number";
 
 /**
  * Numbers that carry their units, checked when the program runs, as Pint
@@ -18,13 +20,13 @@ type Unit = Readonly<Record<string, number>>;
 
 interface Quantity {
   readonly unit: Unit;
-  readonly value: number;
+  readonly value: LionNumber;
 }
 
 const QuantitySchema = Schema.Union([
-  Schema.Number,
+  NumberSchema,
   Schema.Struct({
-    value: Schema.Number,
+    value: NumberSchema,
     unit: Schema.Record(Schema.String, Schema.Int),
   }),
 ]);
@@ -32,8 +34,8 @@ const QuantitySchema = Schema.Union([
 const UnitSchema = Schema.Record(Schema.String, Schema.Int);
 
 /** A quantity of a number or a quantity record, its unit without 0s. */
-const quantityOf = (given: number | Quantity): Quantity =>
-  typeof given === "number"
+const quantityOf = (given: LionNumber | Quantity): Quantity =>
+  isNumber(given)
     ? { value: given, unit: {} }
     : { value: given.value, unit: normal(given.unit) };
 
@@ -58,20 +60,20 @@ const sameUnit = (a: Unit, b: Unit) =>
   JSON.stringify(normal(a)) === JSON.stringify(normal(b));
 
 /** A quantity as the value it gives: a plain number when no unit is left. */
-const given = (value: number, unit: Unit): number | Quantity =>
+const given = (value: LionNumber, unit: Unit): LionNumber | Quantity =>
   Object.keys(unit).length === 0 ? value : { value, unit };
 
 /** How a quantity reads in a message: its value and its unit. */
 const said = (quantity: Quantity) =>
   Object.keys(quantity.unit).length === 0
-    ? String(quantity.value)
-    : `${quantity.value} ${JSON.stringify(quantity.unit)}`;
+    ? numberText(quantity.value)
+    : `${numberText(quantity.value)} ${JSON.stringify(quantity.unit)}`;
 
 /** Runs a number function on values, as the number module checks them. */
 const numbers = (
   fn: (...args: unknown[]) => unknown,
-  values: readonly number[]
-) => fn(...values) as Effect.Effect<number, unknown>;
+  values: readonly LionNumber[]
+) => fn(...values) as Effect.Effect<LionNumber, unknown>;
 
 /**
  * Adding or subtracting quantities: they must have one unit, and the result

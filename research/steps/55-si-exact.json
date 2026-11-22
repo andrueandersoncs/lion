@@ -1,0 +1,100 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-si-exact"
+   ],
+   [
+    "quote",
+    "research/probes/si-number-gap.json"
+   ],
+   [
+    "quote",
+    "The same program, asking the solver and plain code one question about numbers, after the exact-numbers work was merged"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261122030000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-x1"
+   ],
+   [
+    "quote",
+    "lion-probes-si-exact"
+   ],
+   [
+    "quote",
+    "\"plain code at x = 0.1: (x + 0.2) - 0.2 is other than x\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a solver that computes with the numbers plain code computes with",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-x1"
+   ],
+   [
+    "quote",
+    "program si-number-gap.json, after exact numbers: plain code at 0.1 gives (x + 0.2) - 0.2 equal to x, as the solver proves"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-x2"
+   ],
+   [
+    "quote",
+    "lion-probes-si-exact"
+   ],
+   [
+    "quote",
+    "\"plain code at n = 2^53: n + 1 equals n\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a solver that computes with the numbers plain code computes with",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-x2"
+   ],
+   [
+    "quote",
+    "program si-number-gap.json, after exact numbers: plain code at 2^53 gives n + 1 other than n, as the solver proves"
+   ]
+  ]
+ ],
+ "recorded"
+]

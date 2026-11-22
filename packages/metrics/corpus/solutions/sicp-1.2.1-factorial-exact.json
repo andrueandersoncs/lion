@@ -1,0 +1,20 @@
+[
+  "begin",
+  [
+    "define",
+    "factorial",
+    [
+      "lambda",
+      ["n"],
+      [
+        "cond",
+        [["number/lessThanOrEqualTo", "n", 1], 1],
+        [
+          "else",
+          ["number/multiply", "n", ["factorial", ["number/subtract", "n", 1]]]
+        ]
+      ]
+    ]
+  ],
+  "factorial"
+]

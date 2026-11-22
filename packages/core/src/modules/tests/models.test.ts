@@ -3,10 +3,12 @@
  * with it on every input, take their subject first as the rest of the
  * library does, and return plain Lion values.
  */
+
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Result, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
+import { fromRational, type LionNumber, ratio } from "@/numbers/exact";
 
 /** Strings are names in Lion, so string data is quoted. */
 const quote = (value: unknown) => ["quote", value];
@@ -938,20 +940,32 @@ const UNICODE_MINUS = /^−/;
 const LEADING_ZEROS = /^(-?)0+(?=\d)/;
 const LETTERS = /^[A-Za-z]{1,6}$/;
 
-const asJson = (written: string): number | null => {
+/** A JSON number's parts: a sign, a whole part, a fraction, and an exponent. */
+const JSON_NUMBER = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([-+]?\d+))?$/;
+
+/**
+ * The number text writes as JSON writes numbers, exactly, or null for any
+ * other text: "1e400" is ten to the 400th, which no double holds.
+ */
+const asJson = (written: string): LionNumber | null => {
   if (written !== written.trim()) {
     return null;
   }
+  const text = written.replace(UNICODE_MINUS, "-").replace(LEADING_ZEROS, "$1");
   try {
-    const value: unknown = JSON.parse(
-      written.replace(UNICODE_MINUS, "-").replace(LEADING_ZEROS, "$1")
-    );
-    return typeof value === "number" && Number.isFinite(value)
-      ? value + 0
-      : null;
+    if (typeof JSON.parse(text) !== "number") {
+      return null;
+    }
   } catch {
     return null;
   }
+  const [, sign = "", whole = "", part = "", exponent = "0"] =
+    JSON_NUMBER.exec(text) ?? [];
+  const shift = Number(exponent) - part.length;
+  const n = BigInt(`${sign}${whole}${part}`);
+  return shift >= 0
+    ? fromRational(ratio(n * 10n ** BigInt(shift)))
+    : fromRational(ratio(n, 10n ** BigInt(-shift)));
 };
 
 const digits = Arbitrary.map(
@@ -1006,7 +1020,7 @@ describe("number/fromString", () => {
   );
 
   it.effect.prop(
-    "reads a number as JSON does, and any other text as null",
+    "reads a number as JSON writes it, exactly, and any other text as null",
     { written: numberish },
     ({ written }) =>
       Effect.gen(function* () {

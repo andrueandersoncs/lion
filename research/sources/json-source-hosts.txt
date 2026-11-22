@@ -1,0 +1,8 @@
+JavaScript runtimes asked by research/probes/json-source/check.mjs at commit 4e8e625, 2026-11-21.
+
+node v26.7.0: JSON.parse of [0.1, 9007199254740993, 0.100000000000000000001] gives a reviver 0.1 from "0.1", 9007199254740992 from "9007199254740993", 0.1 from "0.100000000000000000001".
+node v26.7.0: JSON.rawJSON is a function.
+node v26.7.0: BigInt("9007199254740993") + 1n is 9007199254740994.
+bun 1.4.3: JSON.parse of [0.1, 9007199254740993, 0.100000000000000000001] gives a reviver 0.1 from "0.1", 9007199254740992 from "9007199254740993", 0.1 from "0.100000000000000000001".
+bun 1.4.3: JSON.rawJSON is a function.
+bun 1.4.3: BigInt("9007199254740993") + 1n is 9007199254740994.

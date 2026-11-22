@@ -47,7 +47,7 @@
   ["relation", "stats",
     ["sensor", "count", "unique", "sum", "mean", "min", "max", "values", "distinct"]],
   ["fact",
-    ["reading", "s1", 1, 3], ["reading", "s1", 2, 5], ["reading", "s1", 3, 3],
+    ["reading", "s1", 1, 3], ["reading", "s1", 2, 6], ["reading", "s1", 3, 3],
     ["reading", "s2", 1, 9]],
   ["rule", ["stats", "?s",
       ["aggregate/count", "?v"], ["aggregate/countUnique", "?v"],
@@ -86,10 +86,11 @@
 </lion-example>
 
 <h2>Summarize a plain list</h2>
-<p>Outside a rule, every aggregate function combines a list right away:</p>
+<p>Outside a rule, every aggregate function combines a list right away. Numbers are exact, so a sum or a mean is the exact one: the mean of 3, 1, and 3 is the fraction 7/3, which no decimal writes, so JSON cannot hold it. Write it as text with <a href="#module-number"><code>number/toString</code></a>, or round it to some places with <code>number/round</code>:</p>
 <lion-example name="Aggregate a list">
 {"sum": ["aggregate/sum", ["array/make", 3, 1, 3]],
- "mean": ["aggregate/mean", ["array/make", 3, 1, 3]],
+ "mean": ["number/toString", ["aggregate/mean", ["array/make", 3, 1, 3]]],
+ "mean to two places": ["number/round", ["aggregate/mean", ["array/make", 3, 1, 3]], 2],
  "unique": ["aggregate/unique", ["array/make", 3, 1, 3]]}
 </lion-example>
 

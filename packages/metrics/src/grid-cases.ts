@@ -13,6 +13,13 @@
  * an exception a Lion programmer has to remember.
  */
 
+/**
+ * A number with a numerator and a denominator, an exact one such as 1/3
+ * from whichever version of Lion made it, which stands for itself.
+ */
+const isExactNumber = (value: object) =>
+  typeof (value as { readonly n?: unknown }).n === "bigint";
+
 /** The facts a grid runs on. `?x` takes each value of `n`. */
 export interface World {
   /** Pairs of the relation `link`. */
@@ -45,7 +52,7 @@ export const literal = (value: unknown): unknown => {
   if (Array.isArray(value)) {
     return ["array/make", ...value.map(literal)];
   }
-  if (typeof value !== "object" || value === null) {
+  if (typeof value !== "object" || value === null || isExactNumber(value)) {
     return value;
   }
   if (Object.getPrototypeOf(value) === Object.prototype) {
@@ -112,6 +119,13 @@ export const EXPRESSIONS: readonly Expression[] = [
   { name: "function call", form: ["number/add", X, 1] },
   { name: "nested calls", form: ["number/multiply", ["number/add", X, 1], 2] },
   { name: "call that combines its arguments", form: ["number/add", X, 1, X] },
+  // Exact numbers: a fraction no decimal writes, and decimals that add exactly.
+  { name: "exact fraction", form: ["number/divide", X, 3] },
+  { name: "exact decimal sum", form: ["number/add", X, 0.1, 0.2] },
+  {
+    name: "fraction written as text",
+    form: ["number/toString", ["number/divide", X, 3]],
+  },
   {
     name: "text built from a number",
     form: ["string/concat", "n=", ["number/toString", X], "!"],
@@ -668,6 +682,13 @@ const displayed = (value: unknown): unknown => {
   }
   if (typeof value !== "object" || value === null) {
     return value;
+  }
+  if (isExactNumber(value)) {
+    // A fraction no decimal writes reads as the division that makes it.
+    const { d, n } = value as { readonly d: bigint; readonly n: bigint };
+    return String(value).includes("/")
+      ? ["number/divide", Number(n), Number(d)]
+      : value;
   }
   if (isJson(value)) {
     return ["quote", value];

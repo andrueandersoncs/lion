@@ -1,0 +1,572 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "research/probes/en-*.json"
+   ],
+   [
+    "quote",
+    "Lion programs of the exact-numbers run, run again with exact numbers built, on branch claude/exact-numbers"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121180000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-logic-forms-en-built"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/reference/logic-forms.html"
+   ],
+   [
+    "quote",
+    "Lion reference: Logic forms, with exact numbers built"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121180000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "exact-built-timing"
+   ],
+   [
+    "quote",
+    "research/probes/exact-model/alternate.ts"
+   ],
+   [
+    "quote",
+    "Lion adding decimals on main and with exact numbers built, timed alternately under the same load"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121190000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n1"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "\"plain code: 0.1 with 0.2 added and taken away\": 0.1, \"plain code: that equals 0.1\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "proofs that hold of the code's own arithmetic",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n1"
+   ],
+   [
+    "quote",
+    "program en-fraction-proof.json: the solver's proof and plain code now agree"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n2"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "\"plain code: two to the 53rd plus 1\": 9007199254740993"
+   ],
+   [
+    "quote",
+    {
+     "lion": "integers kept exact past two to the 53rd",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n2"
+   ],
+   [
+    "quote",
+    "program en-big-integer-proof.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n3"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "\"plain code: two to the 53rd plus 1 equals two to the 53rd\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "proofs that hold of the code's own arithmetic",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n3"
+   ],
+   [
+    "quote",
+    "program en-big-integer-proof.json, beside the solver's proof that no integer from two to the 53rd up is unchanged by adding 1"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n4"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "\"plain code: two to the 53rd plus 1\": 9007199254740993"
+   ],
+   [
+    "quote",
+    {
+     "lion": "an integer refused when it cannot be held exactly",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n4"
+   ],
+   [
+    "quote",
+    "program en-big-integer-proof.json: every integer is held exactly, so no integer is rounded without a word, and there is none left to refuse"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n5"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "\"0.1 plus 0.2 equals 0.3\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "decimals written in JSON kept exact",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n5"
+   ],
+   [
+    "quote",
+    "program en-built-decimals.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n6"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "\"1 divided by 49, times 49, equals 1\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "fractions kept exact",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n6"
+   ],
+   [
+    "quote",
+    "program en-built-decimals.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n7"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "\"a number written with 21 decimal places, 0.100000000000000000001\": 0.100000000000000000001"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a way to read a JSON number's text exactly",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n7"
+   ],
+   [
+    "quote",
+    "program en-built-decimals.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n8"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "1/3 is a fraction no decimal writes, so JSON cannot hold it"
+   ],
+   [
+    "quote",
+    {
+     "lion": "fractions written as JSON",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n8"
+   ],
+   [
+    "quote",
+    "program en-decimals.json: its result holds 1/3, so the lion command refuses to print it"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n9"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "The solver cannot reason about number/multiply of two unknowns"
+   ],
+   [
+    "quote",
+    {
+     "lion": "polynomial identities decided exactly",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n9"
+   ],
+   [
+    "quote",
+    "program en-polynomial.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n10"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "The solver cannot reason about number/multiply of two unknowns"
+   ],
+   [
+    "quote",
+    {
+     "lion": "proofs about arithmetic the solver cannot decide",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n10"
+   ],
+   [
+    "quote",
+    "program en-square.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n11"
+   ],
+   [
+    "quote",
+    "lion-probes-en-built"
+   ],
+   [
+    "quote",
+    "The solver cannot reason about a function that calls itself"
+   ],
+   [
+    "quote",
+    {
+     "lion": "proofs about functions that call themselves",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n11"
+   ],
+   [
+    "quote",
+    "program en-recursion.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n12"
+   ],
+   [
+    "quote",
+    "lion-logic-forms-en-built"
+   ],
+   [
+    "quote",
+    "Plain code computes with the same exact numbers, so what the solver proves about numbers holds of what plain code computes."
+   ],
+   [
+    "quote",
+    {
+     "lion": "plain code computes with floating-point numbers, which can round where the solver does not",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n12"
+   ],
+   [
+    "quote",
+    "Solving for values"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n13"
+   ],
+   [
+    "quote",
+    "lion-logic-forms-en-built"
+   ],
+   [
+    "quote",
+    "Plain code computes with the same exact numbers, so what the solver proves about numbers holds of what plain code computes."
+   ],
+   [
+    "quote",
+    {
+     "lion": "proofs that hold of the code's own arithmetic",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n13"
+   ],
+   [
+    "quote",
+    "Solving for values"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n14"
+   ],
+   [
+    "quote",
+    "exact-built-timing"
+   ],
+   [
+    "quote",
+    "adding a hundred thousand decimals with array/reduce, before exact numbers: 20.0 ms"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "adding a hundred thousand decimals",
+     "ms": 20
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "en-n14"
+   ],
+   [
+    "quote",
+    "timed alternately with the next, so both under the same load"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "en-n15"
+   ],
+   [
+    "quote",
+    "exact-built-timing"
+   ],
+   [
+    "quote",
+    "adding the same hundred thousand decimals, with exact numbers built: 38.0 ms"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "adding a hundred thousand decimals, with exact numbers built",
+     "ms": 38
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

@@ -1,0 +1,34 @@
+{
+  "sources": [
+    {
+      "id": "lion-probes-si-exact",
+      "url": "research/probes/si-number-gap.json",
+      "title": "The same program, asking the solver and plain code one question about numbers, after the exact-numbers work was merged",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261122030000
+    }
+  ],
+  "claims": [
+    {
+      "id": "si-x1",
+      "source": "lion-probes-si-exact",
+      "where": "program si-number-gap.json, after exact numbers: plain code at 0.1 gives (x + 0.2) - 0.2 equal to x, as the solver proves",
+      "quote": "\"plain code at x = 0.1: (x + 0.2) - 0.2 is other than x\": false",
+      "says": {
+        "lion": "a solver that computes with the numbers plain code computes with",
+        "has": true
+      }
+    },
+    {
+      "id": "si-x2",
+      "source": "lion-probes-si-exact",
+      "where": "program si-number-gap.json, after exact numbers: plain code at 2^53 gives n + 1 other than n, as the solver proves",
+      "quote": "\"plain code at n = 2^53: n + 1 equals n\": false",
+      "says": {
+        "lion": "a solver that computes with the numbers plain code computes with",
+        "has": true
+      }
+    }
+  ]
+}

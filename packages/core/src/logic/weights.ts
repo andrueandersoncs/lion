@@ -52,6 +52,7 @@
  * rows that hold with one key are two it could not make one, and the group
  * keeps them, with why, which names a rule that gives one of them now.
  */
+
 import { Effect } from "effect";
 import { LogicError, logicError } from "@/errors/evaluation";
 import { aggregator } from "@/logic/aggregates";
@@ -113,6 +114,13 @@ import {
   Unknown,
   valueKey,
 } from "@/logic/terms";
+import {
+  isNumber,
+  type LionNumber,
+  product,
+  quotient,
+  sum,
+} from "@/numbers/exact";
 
 /** The level of a row that is not held, and the end of one that never ends. */
 export const NEVER = Number.POSITIVE_INFINITY;
@@ -226,10 +234,10 @@ const takeFrom = <K>(map: Somes<K>, key: K, entry: Entry) => {
 
 /** The values some candidates give one aggregate, each counted. */
 interface Tally {
-  /** False once a value is not a whole number a running total can hold. */
+  /** False once a value is not a number, which a running total cannot hold. */
   exact: boolean;
   n: number;
-  total: number;
+  total: LionNumber;
   readonly values: Map<string, [unknown, number]>;
 }
 
@@ -998,9 +1006,11 @@ const tally = (
       kept.values.set(key, [value, had + by]);
     }
     kept.n += by;
-    kept.total += typeof value === "number" ? by * value : 0;
-    kept.exact &&=
-      Number.isSafeInteger(value) && Number.isSafeInteger(kept.total);
+    // Numbers are exact, so a running total is the sum in any order.
+    kept.exact &&= isNumber(value);
+    if (kept.exact) {
+      kept.total = sum(kept.total, product(by, value as LionNumber));
+    }
   }
   if ((tallies[0]?.n ?? 0) === 0) {
     fold.levels.delete(level);
@@ -1083,7 +1093,7 @@ const given = (kind: string, { values: counted }: Tally) => {
 
 /**
  * What an aggregate gives for the candidates of a group's lowest level. A
- * count, and a sum or mean of whole numbers, are kept as running totals.
+ * count, and a sum or mean of numbers, are kept as running totals.
  * Anything else combines the values there are, in sort order, so the result
  * does not depend on the order the candidates came in. Throws what the
  * aggregate cannot combine.
@@ -1096,7 +1106,7 @@ const combined = (rule: CompiledRule, kind: string, kept: Tally) => {
     return kept.total;
   }
   if (kept.exact && kind === "mean" && kept.n > 0) {
-    return kept.total / kept.n;
+    return quotient(kept.total, kept.n);
   }
   const values = given(kind, kept).sort(compareValues);
   const problem = aggregateProblem(rule, kind, values);

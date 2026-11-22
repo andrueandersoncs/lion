@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import {
-  ArithmeticError,
+  type ArithmeticError,
   type LogicError,
   logicError,
   takes,
@@ -29,15 +29,7 @@ const combine =
     if (problem !== undefined) {
       return logicError(`aggregate/${kind} ${problem}.`);
     }
-    const result = fold(list);
-    // Sums of large numbers can overflow; JSON holds only finite ones.
-    return typeof result === "number" && !Number.isFinite(result)
-      ? Effect.fail(
-          new ArithmeticError({
-            message: `aggregate/${kind}: the result is not a finite number.`,
-          })
-        )
-      : Effect.succeed(result);
+    return Effect.succeed(fold(list));
   };
 
 /**

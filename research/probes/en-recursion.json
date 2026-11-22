@@ -1,0 +1,32 @@
+[
+  "begin",
+  [
+    "define",
+    "sum to",
+    [
+      "lambda",
+      ["n"],
+      [
+        "cond",
+        [["number/lessThanOrEqualTo", "n", 0], 0],
+        ["else", ["number/add", "n", ["sum to", ["number/subtract", "n", 1]]]]
+      ]
+    ]
+  ],
+  [
+    "query",
+    [
+      "not",
+      [
+        "exists",
+        ["?n"],
+        [
+          "and",
+          ["schema/fits?", "?n", "value/integer?"],
+          ["number/greaterThanOrEqualTo", "?n", 0],
+          ["number/lessThan", ["sum to", "?n"], 0]
+        ]
+      ]
+    ]
+  ]
+]

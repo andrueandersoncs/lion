@@ -1,4 +1,4 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
 import { answer, isWriting } from "@/evaluation/asking";
 import {
   andThen,
@@ -25,11 +25,11 @@ import {
 } from "@/logic/terms";
 import type { EvalFormSchema } from "@/schemas/evaluation";
 import {
-  LionExpressionSchema,
+  decodeExpression,
   type LionExpressionType,
 } from "@/schemas/lion-expression";
 
-const decode = Schema.decodeUnknownEffect(LionExpressionSchema);
+const decode = decodeExpression;
 
 /**
  * Checks code, then compiles and runs it in a scope. The code is written as

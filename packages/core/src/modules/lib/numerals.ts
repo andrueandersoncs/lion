@@ -1,4 +1,10 @@
-import { readsAsWritten } from "@/evaluation/reading";
+import {
+  fromRational,
+  type LionNumber,
+  parseDecimal,
+  ratio,
+  readNumberText,
+} from "@/numbers/exact";
 
 /** Text with the characters a pattern reads as its own taken as they are. */
 const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\/-]/g, "\\$&");
@@ -17,30 +23,43 @@ const numeral = (separator: string) => {
 };
 
 /**
- * The number a written numeral stands for, unless JSON cannot hold it: a
- * number past the finite ones, or an integer that would not read as itself,
- * as 9007199254740993 would read as 9007199254740992.
+ * The exact number a written numeral stands for, unless it has more digits
+ * than a number read from text may have.
  */
 const valued = (separator: string, found: RegExpExecArray) => {
   const { rest = "", sign, whole = "" } = found.groups ?? {};
   const digits = separator === "" ? whole : whole.split(separator).join("");
-  const written = `${sign === undefined ? "" : "-"}${digits}`;
-  const n = Number(`${written}${rest}`);
-  if (!Number.isFinite(n) || (rest === "" && !readsAsWritten(written))) {
+  return readNumberText(`${sign === undefined ? "" : "-"}${digits}${rest}`);
+};
+
+/** A fraction as Scheme writes one, "1/3", with an optional minus sign. */
+const FRACTION = /^([-−]?\d+)\/(\d+)$/u;
+
+/** The number a fraction's text writes, or undefined when it writes none. */
+const fraction = (text: string): LionNumber | undefined => {
+  const found = FRACTION.exec(text);
+  if (found === null) {
     return undefined;
   }
-  // Adding zero turns -0 into 0, as JSON writes both.
-  return n + 0;
+  const [, top = "", bottom = ""] = found;
+  const n = parseDecimal(top.replace("−", "-"));
+  const d = parseDecimal(bottom);
+  return n === undefined || d === undefined || d.n === 0n
+    ? undefined
+    : fromRational(ratio(n.n, d.n));
 };
 
 /** The text as a number, when all of it is one; otherwise null. */
-export const readNumber = (text: string, separator: string): number | null => {
+export const readNumber = (
+  text: string,
+  separator: string
+): LionNumber | null => {
   const found = new RegExp(`^(?:${numeral(separator)})$`, "u").exec(text);
-  return (found && valued(separator, found)) ?? null;
+  return (found ? valued(separator, found) : fraction(text)) ?? null;
 };
 
 /** Every number written in the text, in order. */
-export const numbersIn = (text: string, separator: string): number[] =>
+export const numbersIn = (text: string, separator: string): LionNumber[] =>
   Array.from(text.matchAll(new RegExp(numeral(separator), "gu")), (found) =>
     valued(separator, found)
   ).filter((n) => n !== undefined);

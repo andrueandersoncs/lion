@@ -1,19 +1,20 @@
 import { join } from "node:path";
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Arbitrary, Effect } from "effect";
 import { type Cell, runGrid } from "../grid.ts";
 import { EXPRESSIONS, X } from "../grid-cases.ts";
-import { load } from "../lion.ts";
+import { evaluate, load } from "../lion.ts";
 import {
   apart,
   composed,
+  isData,
   isSurprise,
   type PairCell,
   pairOf,
   singlesOf,
 } from "../pairs.ts";
 import { CORE, REPOSITORY } from "../sources.ts";
-import { element } from "./generators.ts";
+import { between, element } from "./generators.ts";
 
 /** The evaluator of the working tree, loaded once, and its grid's verdicts. */
 const lion = Effect.runPromise(load(join(REPOSITORY, CORE)));
@@ -80,6 +81,34 @@ describe("pairs of the grid's rows", () => {
   );
 
   it.prop(
+    "rename apart every variable but ?x and ?_, and every relation named, in a form of any shape",
+    {
+      form: Arbitrary.array(
+        Arbitrary.array(
+          element(["?x", "?_", "?y", "?z", "big", "small", "n", "quote", 3]),
+          { maxLength: 4 }
+        ),
+        { maxLength: 4 }
+      ),
+      named: Arbitrary.array(element(["big", "small", "n"]), { maxLength: 3 }),
+    },
+    ({ form, named }) => {
+      const relations = new Set(named);
+      const moved = words(apart(form, relations));
+      for (const word of moved) {
+        expect(relations.has(word)).toBe(false);
+        expect(
+          word.startsWith("?") &&
+            word !== X &&
+            word !== "?_" &&
+            !word.endsWith("_inner")
+        ).toBe(false);
+      }
+      expect(moved.length).toBe(words(form).length);
+    }
+  );
+
+  it.prop(
     "call a cell surprising when it is an exception where each row gives plain code's answer or cannot stand",
     { inner: verdict, it: verdict, outer: verdict },
     ({ inner, it: own, outer }) => {
@@ -99,6 +128,26 @@ describe("pairs of the grid's rows", () => {
         (own === "refused" || own === "different") && fine(outer) && fine(inner)
       );
     }
+  );
+
+  it.effect.prop(
+    "count as data a quotient JSON can write, and not one it cannot, such as 4/3",
+    { a: between(-30, 30), b: between(1, 12) },
+    ({ a, b }) =>
+      Effect.gen(function* () {
+        const lionNow = yield* Effect.promise(() => lion);
+        const outcome = yield* evaluate(lionNow, ["number/divide", a, b]);
+        expect(outcome.ok).toBe(true);
+        const value = outcome.ok ? outcome.value : undefined;
+        let writes = true;
+        try {
+          JSON.stringify(value);
+        } catch {
+          writes = false;
+        }
+        expect(isData(value)).toBe(writes);
+        expect(isData([value, { v: value }])).toBe(writes);
+      })
   );
 
   it.effect.prop(

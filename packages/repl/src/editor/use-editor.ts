@@ -1,8 +1,5 @@
 import { run } from "@lionlang/core/evaluation/evaluate";
-import {
-  inexactInteger,
-  inexactIntegerError,
-} from "@lionlang/core/evaluation/reading";
+import { readJson } from "@lionlang/core/evaluation/reading";
 import { Effect } from "effect";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -416,7 +413,7 @@ export function useEditor() {
       const revision = snapshot.revision;
       const value = target
         ? valueAtPath(snapshot.sourceText, target.path)
-        : (JSON.parse(snapshot.sourceText) as unknown);
+        : Effect.runSync(readJson(snapshot.sourceText));
       const evaluationUsesJev = usesTypeSafeBindings(value);
       if (
         shouldSkipEvaluation(
@@ -451,16 +448,6 @@ export function useEditor() {
           jevApiKey,
           transcript
         );
-        // An integer the text writes that would not read as itself is
-        // refused, as the lion command refuses it.
-        const inexact = inexactInteger(snapshot.sourceText);
-        if (inexact !== undefined) {
-          throw inexactIntegerError(
-            snapshot.sourceText,
-            inexact.at,
-            inexact.written
-          );
-        }
         const result = await Effect.runPromise(run(value, environment));
         if (evaluationId !== evaluationIdRef.current) {
           return;

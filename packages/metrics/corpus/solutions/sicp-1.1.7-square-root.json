@@ -7,9 +7,13 @@
       "lambda",
       ["guess", "x"],
       [
-        "number/divide",
-        ["number/add", "guess", ["number/divide", "x", "guess"]],
-        2
+        "number/round",
+        [
+          "number/divide",
+          ["number/add", "guess", ["number/divide", "x", "guess"]],
+          2
+        ],
+        12
       ]
     ]
   ],

@@ -99,17 +99,17 @@ Then run `bun run measure --grid`. Every new cell should be `✓`. If one cannot
 bun run pairs
 ```
 
-Runs the grid over every pair of its rows: one kind of expression written where another has `?x`, such as a `match` inside a call, in every place. The grid's rule holds of a pair as of a row. A pair's cell that is an exception where neither of its rows has one in that place is a **surprise**, two features that work alone and fail together, and each is a bug to fix or a rule to document. On 2026-11-21 it printed:
+Runs the grid over every pair of its rows: one kind of expression written where another has `?x`, such as a `match` inside a call, in every place. The grid's rule holds of a pair as of a row. A pair's cell that is an exception where neither of its rows has one in that place is a **surprise**, two features that work alone and fail together, and each is a bug to fix or a rule to document. With exact numbers merged, on 2026-11-22, it printed:
 
 ```
-Pairs of the grid's rows: 6561, in 118098 cells
-  same as plain code  72371
-  plain code fails    41274
-  exceptions          155
+Pairs of the grid's rows: 7056, in 127008 cells
+  same as plain code  76041
+  plain code fails    46242
+  exceptions          161
 surprising pairs, grid: 0
 ```
 
-Every exception is one a single row already has. The inner row's own variables and the relations it declares are renamed apart first, since a string names what is bound by that name, and a pair whose plain code fails, or gives what is no data, such as a host function's NaN, is left out. `--json` prints every surprise. The properties in `src/tests/pairs.test.ts` run sixty random pairs each time, so a change that makes two features fail together fails the tests. A row you add to the grid is paired with every other.
+Every exception is one a single row already has. The inner row's own variables and the relations it declares are renamed apart first, since a string names what is bound by that name, and a pair whose plain code fails, or gives what is no data, such as a host function's NaN or an exact fraction JSON cannot write, such as 4/3, is left out. `--json` prints every surprise. The properties in `src/tests/pairs.test.ts` run sixty random pairs each time, so a change that makes two features fail together fails the tests. A row you add to the grid is paired with every other.
 
 ## Speed: `bun run bench`
 
@@ -301,13 +301,13 @@ Grades the capability corpus in [`corpus/`](corpus/README.md): tasks for each of
 
 ```
 Capability: public tasks, graded by their reference programs
-  computation    24 of  26 passed
+  computation    25 of  26 passed
   logic          14 of  15 passed
   proofs         10 of  14 passed
-  all            48 of  55 passed
+  all            49 of  55 passed
 
-Gaps: 7 tasks Lion cannot express yet
-  sicp-1.2.1-factorial-exact: Lion's numbers are exact integers only from -(2^53 - 1) to 2^53 - 1; …
+Gaps: 6 tasks Lion cannot express yet
+  r7rs-6.7-string-reverse-by-characters: Lion's strings count and split UTF-16 code units, as JavaScript does, …
 ```
 
 A gap is a task Lion cannot express yet. It stays in the corpus and counts as not passed, so closing it raises the score, and `corpus/gaps.json` says what Lion lacks.

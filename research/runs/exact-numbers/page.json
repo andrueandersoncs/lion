@@ -1,0 +1,1784 @@
+{
+  "title": "Exact numbers for Lion",
+  "summary": [
+    "cond",
+    [
+      ["built"],
+      [
+        "string/concat",
+        "Every Lion number is now exact, as Scheme's exact numbers are: an integer of any size or a fraction, each number read as the exact value its digits write. ",
+        [
+          "cond",
+          [
+            ["violated", ["quote", "en-solver-sound"], "?_"],
+            "The solver had proved statements that Lion's own code broke, because plain code rounded; now both compute with the same exact numbers, so what the solver proves about numbers holds of plain code. "
+          ],
+          ["else", ""]
+        ],
+        "Of ",
+        ["words/count", ["array/length", ["ours"]], "idea", "ideas"],
+        " weighed here, Lion does ",
+        ["words/number", ["array/length", ["doneAlready"]]],
+        " already. What the model ranks next, for proofs past what the solver decides: ",
+        ["words/listed", ["nextIdeas"]],
+        "."
+      ]
+    ],
+    [
+      "else",
+      [
+        "string/concat",
+        "Lion should make every number exact, as Scheme's exact numbers are: integers of any size and fractions, each number read as the exact value its digits write. ",
+        [
+          "cond",
+          [
+            ["violated", ["quote", "en-solver-sound"], "?_"],
+            "Today Lion's solver proves over exact numbers while its code computes with doubles, so a proof can be false of Lion's own code; exact numbers close that gap where it starts. "
+          ],
+          ["else", ""]
+        ],
+        "Of ",
+        ["words/count", ["array/length", ["ours"]], "idea", "ideas"],
+        " weighed here, the model ranks “",
+        ["label", ["firstIdea"]],
+        "” first of everything left to build in every run",
+        [
+          "cond",
+          [
+            ["number/greaterThan", ["array/length", ["setAside"]], 0],
+            [
+              "string/concat",
+              ", and sets aside ",
+              [
+                "words/count",
+                ["array/length", ["setAside"]],
+                "alternative",
+                "alternatives"
+              ],
+              " because it gives all they give, and more"
+            ]
+          ],
+          ["else", ""]
+        ],
+        ". A model of exact numbers estimates that Lion would take ",
+        ["words/number", ["slowdown"]],
+        " times as long to add decimals. What it opens up for proofs comes after: ",
+        ["listOf", ["array/map", ["later"], "label"]],
+        "."
+      ]
+    ]
+  ],
+  "names": {
+    "exact-rationals": "Make every number exact",
+    "scheme-tower": "Scheme's exact and inexact numbers side by side",
+    "exact-decimals": "Keep every number as a decimal",
+    "float-theory": "Keep doubles, solve them bit for bit",
+    "opaque-floats": "Keep doubles, refuse what they round",
+    "ring-normalization": "Decide polynomial identities",
+    "nonlinear-products": "Prove nonlinear facts from products of hypotheses",
+    "checked-proofs": "Proofs as values a small checker accepts",
+    "recursive-induction": "Prove recursive functions by induction"
+  },
+  "define": {
+    "ours": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        ["find", "?c", ["weighed_in", "?c", ["quote", "exact-numbers"]]]
+      ]
+    ],
+    "withVerdict": [
+      "lambda",
+      ["v"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["verdict", "?c", "v"],
+            ["weighed_in", "?c", ["quote", "exact-numbers"]]
+          ]
+        ]
+      ]
+    ],
+    "label": [
+      "lambda",
+      ["c"],
+      [
+        "object/get",
+        [
+          "quote",
+          {
+            "exact-rationals": "Make every number exact",
+            "scheme-tower": "Scheme's exact and inexact numbers side by side",
+            "exact-decimals": "Keep every number as a decimal",
+            "float-theory": "Keep doubles, solve them bit for bit",
+            "opaque-floats": "Keep doubles, refuse what they round",
+            "ring-normalization": "Decide polynomial identities",
+            "nonlinear-products": "Prove nonlinear facts from products of hypotheses",
+            "checked-proofs": "Proofs as values a small checker accepts",
+            "recursive-induction": "Prove recursive functions by induction"
+          }
+        ],
+        "c"
+      ]
+    ],
+    "listOf": [
+      "lambda",
+      ["items"],
+      ["words/listed", ["aggregate/unique", "items"]]
+    ],
+    "counted": ["lambda", ["v"], ["array/length", ["withVerdict", "v"]]],
+    "foundWrong": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?s",
+          [
+            "and",
+            ["violated", "?a", "?_"],
+            ["string/startsWith", "?a", "en-"],
+            ["assumption", "?a", "?s"],
+            [
+              "not",
+              [
+                "and",
+                ["expects", "?a", "?q", "?v"],
+                ["restated", "?q", "?_", "?v", "?_"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "madeTrue": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?s",
+          [
+            "and",
+            ["expects", "?a", "?q", "?v"],
+            ["string/startsWith", "?a", "en-"],
+            ["restated", "?q", "?_", "?_", "?v"],
+            ["assumption", "?a", "?s"]
+          ]
+        ]
+      ]
+    ],
+    "changedSince": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?s",
+          [
+            "and",
+            ["expects", "?a", "?q", "?v"],
+            ["string/startsWith", "?a", "en-"],
+            ["restated", "?q", "?_", "?v", "?_"],
+            ["assumption", "?a", "?s"]
+          ]
+        ]
+      ]
+    ],
+    "ranked": [
+      "lambda",
+      [],
+      [
+        "query",
+        [
+          "and",
+          ["weighed_in", "?idea", ["quote", "exact-numbers"]],
+          ["to_build", "?idea"],
+          ["rank", "?idea", "?position"]
+        ],
+        {
+          "order": "position"
+        }
+      ]
+    ],
+    "case": [
+      "lambda",
+      ["c"],
+      [
+        "string/concat",
+        [
+          "cond",
+          [
+            ["verdict", "c", ["quote", "worth adopting"]],
+            [
+              "string/concat",
+              "Worth adopting: it would give Lion ",
+              ["listOf", ["find", "?f", ["adds", "c", "?f", "?_"]]],
+              ". ",
+              [
+                "cond",
+                [
+                  ["already", "c", "?_"],
+                  [
+                    "string/concat",
+                    "Lion already has part of it: ",
+                    ["listOf", ["find", "?f", ["already", "c", "?f"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["folds", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "It would make one rule of what Lion now does in one place only: ",
+                    ["listOf", ["find", "?f", ["folds", "c", "?f", "?_"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["met", "c", "?_"],
+                  [
+                    "string/concat",
+                    "What it builds on is there: ",
+                    ["listOf", ["find", "?x", ["met", "c", "?x"]]],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["precedent", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "Already done in ",
+                    ["listOf", ["find", "?s", ["precedent", "c", "?_", "?s"]]],
+                    ". "
+                  ]
+                ],
+                ["else", "No working system among the sources does it yet. "]
+              ]
+            ]
+          ],
+          [
+            ["verdict", "c", ["quote", "worth adopting in part"]],
+            [
+              "string/concat",
+              "Worth adopting once its ground is there: it would give Lion ",
+              ["listOf", ["find", "?f", ["adds", "c", "?f", "?_"]]],
+              ", but needs ",
+              ["listOf", ["find", "?x", ["moot", "c", "?x"]]],
+              ". "
+            ]
+          ],
+          [
+            ["verdict", "c", ["quote", "Lion does this already"]],
+            [
+              "string/concat",
+              "Lion does this already: ",
+              ["listOf", ["find", "?f", ["already", "c", "?f"]]],
+              ". "
+            ]
+          ],
+          [
+            ["verdict", "c", ["quote", "conflicts with what Lion guarantees"]],
+            [
+              "string/concat",
+              "Does not fit Lion: it gives up ",
+              ["listOf", ["find", "?g", ["blocks", "c", "?g", "?_"]]],
+              ". "
+            ]
+          ],
+          [
+            ["verdict", "c", ["quote", "has nothing in Lion to work on"]],
+            [
+              "string/concat",
+              "Not now: it needs ",
+              ["listOf", ["find", "?x", ["moot", "c", "?x"]]],
+              ". "
+            ]
+          ],
+          ["else", "Not judged yet: the model has too little evidence. "]
+        ],
+        [
+          "cond",
+          [
+            ["waits", "c", "?_"],
+            [
+              "string/concat",
+              "It would change a rule Lion documents, ",
+              ["listOf", ["find", "?r", ["waits", "c", "?r"]]],
+              ", so it waits for your decision. "
+            ]
+          ],
+          ["else", ""]
+        ],
+        [
+          "cond",
+          [
+            ["caveat", "c", "?_", "?_"],
+            [
+              "string/concat",
+              "Take care: a technique it uses does not give ",
+              ["listOf", ["find", "?f", ["caveat", "c", "?f", "?_"]]],
+              ". "
+            ]
+          ],
+          ["else", ""]
+        ]
+      ]
+    ],
+    "evidenceOf": [
+      "lambda",
+      ["c"],
+      [
+        "query",
+        [
+          "and",
+          [
+            "or",
+            ["offers", "c", "?feature"],
+            ["on", "c", "?feature"],
+            ["rewrites", "c", "?feature"]
+          ],
+          [
+            "or",
+            [
+              "answer",
+              {
+                "lion has": "?feature"
+              },
+              "?_",
+              "?statement"
+            ],
+            [
+              "and",
+              ["uses", "c", "?technique"],
+              [
+                "answer",
+                {
+                  "covers": "?feature",
+                  "by": "?technique"
+                },
+                "?_",
+                "?statement"
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "passedLine": [
+      "lambda",
+      ["c"],
+      [
+        "cond",
+        [
+          ["passed_over", "c", "?_", "?_"],
+          [
+            "string/concat",
+            "Set aside: ",
+            [
+              "listOf",
+              [
+                "array/map",
+                ["find", "?d", ["passed_over", "c", "?_", "?d"]],
+                "label"
+              ]
+            ],
+            " gives all it gives, and more. "
+          ]
+        ],
+        ["else", ""]
+      ]
+    ],
+    "caseAll": [
+      "lambda",
+      ["c"],
+      ["string/concat", ["passedLine", "c"], ["case", "c"]]
+    ],
+    "firstIdea": [
+      "lambda",
+      [],
+      ["object/get", ["array/head", ["ranked"]], "idea"]
+    ],
+    "slowdown": [
+      "lambda",
+      [],
+      [
+        "array/head",
+        [
+          "find",
+          "?t",
+          ["en_slowdown", ["quote", "adding a hundred thousand decimals"], "?t"]
+        ]
+      ]
+    ],
+    "measured": [
+      "lambda",
+      ["w"],
+      [
+        "array/head",
+        [
+          "find",
+          "?ms",
+          [
+            "stated",
+            {
+              "lion measured": "w"
+            },
+            "?ms"
+          ]
+        ]
+      ]
+    ],
+    "later": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["weighed_in", "?c", ["quote", "exact-numbers"]],
+            ["to_build", "?c"],
+            ["builds_on", "?c", ["quote", "exact-rationals"], "?_"]
+          ]
+        ]
+      ]
+    ],
+    "setAside": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["weighed_in", "?c", ["quote", "exact-numbers"]],
+            ["passed_over", "?c", "?_", ["quote", "exact-rationals"]]
+          ]
+        ]
+      ]
+    ],
+    "built": [
+      "lambda",
+      [],
+      [
+        "verdict",
+        ["quote", "exact-rationals"],
+        ["quote", "Lion does this already"]
+      ]
+    ],
+    "nextIdeas": [
+      "lambda",
+      [],
+      [
+        "array/map",
+        ["ranked"],
+        ["lambda", ["row"], ["label", ["object/get", "row", "idea"]]]
+      ]
+    ],
+    "alternatives": [
+      "lambda",
+      [],
+      [
+        "quote",
+        ["scheme-tower", "exact-decimals", "opaque-floats", "float-theory"]
+      ]
+    ],
+    "doneAlready": [
+      "lambda",
+      [],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["weighed_in", "?c", ["quote", "exact-numbers"]],
+            ["verdict", "?c", ["quote", "Lion does this already"]]
+          ]
+        ]
+      ]
+    ],
+    "undecidedBy": [
+      "lambda",
+      ["f"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?t",
+          [
+            "stated",
+            {
+              "covers": "f",
+              "by": "?t"
+            },
+            false
+          ]
+        ]
+      ]
+    ],
+    "decidedBy": [
+      "lambda",
+      ["f"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?t",
+          [
+            "stated",
+            {
+              "covers": "f",
+              "by": "?t"
+            },
+            true
+          ]
+        ]
+      ]
+    ]
+  },
+  "views": [
+    {
+      "name": "The answer",
+      "blocks": [
+        {
+          "type": "figures",
+          "items": [
+            {
+              "label": "Ideas weighed",
+              "value": ["words/number", ["array/length", ["ours"]]]
+            },
+            {
+              "label": "Next to build, of the ideas here",
+              "value": ["label", ["firstIdea"]]
+            },
+            {
+              "label": "Ideas Lion does already",
+              "value": ["words/number", ["array/length", ["doneAlready"]]]
+            },
+            {
+              "label": "Time to add decimals, estimated",
+              "value": [
+                "string/concat",
+                ["words/number", ["slowdown"]],
+                " times"
+              ],
+              "note": "from a model of exact numbers and Lion's own evaluator"
+            },
+            {
+              "label": "Time to add decimals, built",
+              "value": [
+                "string/concat",
+                [
+                  "words/number",
+                  [
+                    "array/head",
+                    [
+                      "find",
+                      "?t",
+                      [
+                        "en_built",
+                        ["quote", "adding a hundred thousand decimals"],
+                        "?_",
+                        "?_",
+                        "?t"
+                      ]
+                    ]
+                  ]
+                ],
+                " times"
+              ],
+              "note": "Lion with exact numbers beside main, timed alternately"
+            },
+            {
+              "label": "Proofs of Lion's solver that its code breaks",
+              "value": [
+                "words/number",
+                [
+                  "array/length",
+                  [
+                    "aggregate/unique",
+                    [
+                      "find",
+                      "?w",
+                      ["violated", ["quote", "en-solver-sound"], "?w"]
+                    ]
+                  ]
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "How should Lion make its numbers exact?",
+          "answer": [
+            "string/concat",
+            ["label", ["quote", "exact-rationals"]],
+            ". ",
+            ["caseAll", ["quote", "exact-rationals"]],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["array/length", ["setAside"]], 0],
+                [
+                  "string/concat",
+                  "Set aside, each because it gives nothing this does not: ",
+                  [
+                    "string/join",
+                    [
+                      "array/map",
+                      ["setAside"],
+                      [
+                        "lambda",
+                        ["c"],
+                        [
+                          "string/concat",
+                          ["label", "c"],
+                          [
+                            "cond",
+                            [
+                              ["caveat", "c", "?_", "?_"],
+                              [
+                                "string/concat",
+                                ", which also fails to give ",
+                                [
+                                  "listOf",
+                                  ["find", "?f", ["caveat", "c", "?f", "?_"]]
+                                ]
+                              ]
+                            ],
+                            ["else", ""]
+                          ]
+                        ]
+                      ]
+                    ],
+                    "; "
+                  ],
+                  "."
+                ]
+              ],
+              [
+                "else",
+                [
+                  "string/concat",
+                  "The alternatives weighed beside it: ",
+                  [
+                    "string/join",
+                    [
+                      "array/map",
+                      ["alternatives"],
+                      [
+                        "lambda",
+                        ["c"],
+                        [
+                          "string/concat",
+                          ["label", "c"],
+                          ", ",
+                          ["array/head", ["find", "?v", ["verdict", "c", "?v"]]]
+                        ]
+                      ]
+                    ],
+                    "; "
+                  ],
+                  ". What each would give, exact numbers give too."
+                ]
+              ]
+            ]
+          ],
+          "evidence": ["evidenceOf", ["quote", "exact-rationals"]]
+        },
+        {
+          "type": "answer",
+          "question": "Does the gap matter for proofs?",
+          "answer": [
+            "string/concat",
+            [
+              "cond",
+              [
+                ["violated", ["quote", "en-solver-sound"], "?_"],
+                "Yes. Lion's reference said the solver decides with exact numbers while plain code computes with floating-point numbers, and two programs showed what followed: the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away, and that no integer from two to the 53rd up is unchanged by adding 1, and Lion's own code breaks both, at 0.1 and at two to the 53rd. "
+              ],
+              [
+                "else",
+                "The run found no proof of Lion's solver that its code breaks. "
+              ]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "lion has": [
+                      "quote",
+                      "proofs that hold of the code's own arithmetic"
+                    ]
+                  },
+                  true
+                ],
+                "Now that numbers are exact, Lion's code agrees with both: it gives 0.1 back, and 2^53 + 1 is 9007199254740993. "
+              ],
+              [
+                [
+                  "stated",
+                  {
+                    "covers": [
+                      "quote",
+                      "proofs that hold of the code's own arithmetic"
+                    ],
+                    "by": ["quote", "exact rational arithmetic"]
+                  },
+                  true
+                ],
+                "With exact numbers both statements hold of the code, in the model. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "needs": [
+                      "quote",
+                      "trust that compiled code agrees with the logic"
+                    ],
+                    "by": ["quote", "decision by compiled evaluation"]
+                  },
+                  true
+                ],
+                "Lean meets the same question in native_decide, which proves what compiled code computes only by trusting the compiler: its reference says such proofs are invalid wherever compiled code and the kernel disagree."
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "or",
+                [
+                  "answer",
+                  {
+                    "lion has": [
+                      "quote",
+                      "proofs that hold of the code's own arithmetic"
+                    ]
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "lion has": [
+                      "quote",
+                      "plain code computes with floating-point numbers, which can round where the solver does not"
+                    ]
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "covers": [
+                      "quote",
+                      "proofs that hold of the code's own arithmetic"
+                    ],
+                    "by": "?technique"
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "needs": [
+                      "quote",
+                      "trust that compiled code agrees with the logic"
+                    ],
+                    "by": ["quote", "decision by compiled evaluation"]
+                  },
+                  "?_",
+                  "?statement"
+                ]
+              ],
+              ["claim", "?statement", "?source", "?_", "?_"]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What would exact numbers cost?",
+          "answer": [
+            "string/concat",
+            "In a model of exact numbers, adding a hundred thousand decimals took ",
+            [
+              "words/number",
+              [
+                "measured",
+                [
+                  "quote",
+                  "adding a hundred thousand decimals, exact numbers in the model"
+                ]
+              ]
+            ],
+            " ms, against ",
+            [
+              "words/number",
+              [
+                "measured",
+                [
+                  "quote",
+                  "adding a hundred thousand decimals, doubles in the model"
+                ]
+              ]
+            ],
+            " ms with doubles. Lion's own evaluator takes ",
+            [
+              "words/number",
+              ["measured", ["quote", "adding a hundred thousand decimals"]]
+            ],
+            " ms for the same additions, so exact numbers would make that work about ",
+            ["words/number", ["slowdown"]],
+            " times as long. ",
+            "Small integers stay fast on a fast path, at ",
+            [
+              "words/number",
+              [
+                "array/head",
+                [
+                  "find",
+                  "?x",
+                  [
+                    "stated",
+                    {
+                      "result": ["quote", "arbitrary-precision integers"],
+                      "measure": [
+                        "quote",
+                        "time to add a million small integers, with a fast path for safe integers, against doubles"
+                      ],
+                      "bound": ["quote", "about"],
+                      "unit": ["quote", "times"]
+                    },
+                    "?x"
+                  ]
+                ]
+              ]
+            ],
+            " times a double's own cost before Lion's evaluator adds its share. A fraction can grow: halving and adding 0.1 two thousand times leaves a denominator of ",
+            [
+              "words/number",
+              [
+                "array/head",
+                [
+                  "find",
+                  "?n",
+                  [
+                    "stated",
+                    {
+                      "counted": [
+                        "quote",
+                        "digits of an exact fraction's denominator after halving and adding 0.1 2000 times"
+                      ]
+                    },
+                    "?n"
+                  ]
+                ]
+              ]
+            ],
+            " digits. ",
+            [
+              "cond",
+              [
+                [
+                  "en_built",
+                  ["quote", "adding a hundred thousand decimals"],
+                  "?_",
+                  "?_",
+                  "?_"
+                ],
+                [
+                  "string/concat",
+                  "Built, Lion adds the same decimals in ",
+                  [
+                    "words/number",
+                    [
+                      "array/head",
+                      [
+                        "find",
+                        "?a",
+                        [
+                          "en_built",
+                          ["quote", "adding a hundred thousand decimals"],
+                          "?_",
+                          "?a",
+                          "?_"
+                        ]
+                      ]
+                    ]
+                  ],
+                  " ms against ",
+                  [
+                    "words/number",
+                    [
+                      "array/head",
+                      [
+                        "find",
+                        "?b",
+                        [
+                          "en_built",
+                          ["quote", "adding a hundred thousand decimals"],
+                          "?b",
+                          "?_",
+                          "?_"
+                        ]
+                      ]
+                    ]
+                  ],
+                  " ms before: ",
+                  [
+                    "words/number",
+                    [
+                      "array/head",
+                      [
+                        "find",
+                        "?t",
+                        [
+                          "en_built",
+                          ["quote", "adding a hundred thousand decimals"],
+                          "?_",
+                          "?_",
+                          "?t"
+                        ]
+                      ]
+                    ]
+                  ],
+                  " times as long, against the model's estimate of ",
+                  ["words/number", ["slowdown"]],
+                  ". ",
+                  [
+                    "cond",
+                    [
+                      ["violated", ["quote", "en-cost"], "?_"],
+                      "That is more than the run expected, twice the time at most. "
+                    ],
+                    [
+                      "else",
+                      "That is within what the run expected, twice the time at most. "
+                    ]
+                  ],
+                  "Whole numbers keep their fast path, and Lion's benchmarks, which mostly add whole numbers and ask questions, are measured in the report."
+                ]
+              ],
+              [
+                ["violated", ["quote", "en-cost"], "?_"],
+                "That is more than the run expected, twice the time at most."
+              ],
+              [
+                "else",
+                "That is within what the run expected, twice the time at most. The model is plain and untuned, so a built version may do better."
+              ]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "or",
+                [
+                  "answer",
+                  [
+                    "schema/open",
+                    {
+                      "lion measured": "?_"
+                    }
+                  ],
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  [
+                    "schema/open",
+                    {
+                      "result": ["quote", "arbitrary-precision integers"]
+                    }
+                  ],
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "covers": ["quote", "arithmetic as fast as a double's"],
+                    "by": "?technique"
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "counted": [
+                      "quote",
+                      "digits of an exact fraction's denominator after halving and adding 0.1 2000 times"
+                    ]
+                  },
+                  "?_",
+                  "?statement"
+                ]
+              ],
+              ["claim", "?statement", "?source", "?_", "?_"],
+              ["string/startsWith", "?statement", "en-"]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What is left for you to decide?",
+          "answer": [
+            "cond",
+            [
+              ["built"],
+              "Nothing waits for your decision. The decision record exact-numbers settled the three choices exact numbers left: a fraction no decimal writes, such as 1/3, is refused when a value is written as JSON, as Racket's JSON library refuses it; a number read from text may have at most 4,300 digits, as Python limits them; and a power that is not whole gives the nearest double. Each result that cannot be printed says to round it or write it as text."
+            ],
+            [
+              [
+                "and",
+                ["weighed_in", "?c", ["quote", "exact-numbers"]],
+                ["waits", "?c", "?_"]
+              ],
+              [
+                "string/concat",
+                "Two alternatives would change the rule Lion documents, ",
+                [
+                  "listOf",
+                  [
+                    "find",
+                    "?r",
+                    [
+                      "and",
+                      ["weighed_in", "?c", ["quote", "exact-numbers"]],
+                      ["waits", "?c", "?r"]
+                    ]
+                  ]
+                ],
+                ", without your leave: ",
+                [
+                  "listOf",
+                  [
+                    "array/map",
+                    [
+                      "aggregate/unique",
+                      [
+                        "find",
+                        "?c",
+                        [
+                          "and",
+                          ["weighed_in", "?c", ["quote", "exact-numbers"]],
+                          ["waits", "?c", "?_"]
+                        ]
+                      ]
+                    ],
+                    "label"
+                  ]
+                ],
+                ". ",
+                [
+                  "cond",
+                  [
+                    [
+                      "stated",
+                      {
+                        "allowed": ["quote", "exact-rationals"]
+                      },
+                      "?_"
+                    ],
+                    [
+                      "string/concat",
+                      ["label", ["quote", "exact-rationals"]],
+                      " changes the same rule, and you allowed it. "
+                    ]
+                  ],
+                  ["else", ""]
+                ],
+                "Building it leaves choices for its decision record: what a fraction no decimal writes becomes when it is written as JSON, as Racket's JSON library refuses one; how many digits a number read from text may have, as Python limits them; and what an operation such as a square root gives."
+              ]
+            ],
+            ["else", "Nothing waits for your decision."]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "or",
+                [
+                  "answer",
+                  [
+                    "schema/open",
+                    {
+                      "allowed": "?_"
+                    }
+                  ],
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "covers": ["quote", "fractions written as JSON"],
+                    "by": "?technique"
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "covers": [
+                      "quote",
+                      "numbers that every JSON reader reads the same"
+                    ],
+                    "by": "?technique"
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "needs": [
+                      "quote",
+                      "a limit on how many digits a number read from text may have"
+                    ],
+                    "by": "?technique"
+                  },
+                  "?_",
+                  "?statement"
+                ]
+              ],
+              ["claim", "?statement", "?source", "?_", "?_"],
+              ["string/startsWith", "?statement", "en-"]
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Every idea weighed here, in the model's order",
+          "query": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", ["quote", "exact-numbers"]],
+              ["verdict", "?idea", "?verdict"],
+              [
+                "or",
+                ["stage", "?idea", "?stage"],
+                [
+                  "and",
+                  ["not", ["stage", "?idea", "?_"]],
+                  ["=", "?stage", null]
+                ]
+              ],
+              [
+                "or",
+                ["rank", "?idea", "?position"],
+                [
+                  "and",
+                  ["not", ["rank", "?idea", "?_"]],
+                  ["=", "?position", null]
+                ]
+              ],
+              [
+                "or",
+                [
+                  "and",
+                  ["passed_over", "?idea", "?_", "?_"],
+                  [
+                    "=",
+                    "?set_aside_for",
+                    [
+                      "aggregate/unique",
+                      ["find", "?x", ["passed_over", "?idea", "?_", "?x"]]
+                    ]
+                  ]
+                ],
+                [
+                  "and",
+                  ["not", ["passed_over", "?idea", "?_", "?_"]],
+                  ["=", "?set_aside_for", null]
+                ]
+              ]
+            ],
+            {
+              "order": ["stage", "position"]
+            }
+          ]
+        },
+        {
+          "type": "lookup",
+          "title": "Each idea: what it gives, what it needs, and where Lion stands",
+          "choose": {
+            "idea": {
+              "label": "Idea",
+              "options": ["ours"],
+              "labels": [
+                "quote",
+                {
+                  "exact-rationals": "Make every number exact",
+                  "scheme-tower": "Scheme's exact and inexact numbers side by side",
+                  "exact-decimals": "Keep every number as a decimal",
+                  "float-theory": "Keep doubles, solve them bit for bit",
+                  "opaque-floats": "Keep doubles, refuse what they round",
+                  "ring-normalization": "Decide polynomial identities",
+                  "nonlinear-products": "Prove nonlinear facts from products of hypotheses",
+                  "checked-proofs": "Proofs as values a small checker accepts",
+                  "recursive-induction": "Prove recursive functions by induction"
+                }
+              ]
+            }
+          },
+          "example": {
+            "idea": "exact-rationals"
+          },
+          "answer": ["lambda", ["idea"], ["caseAll", "idea"]],
+          "query": ["lambda", ["idea"], ["evidenceOf", "idea"]]
+        }
+      ]
+    },
+    {
+      "name": "Proofs after exact numbers",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "How does Lean prove arithmetic that no procedure decides?",
+          "answer": [
+            "string/concat",
+            "Lean checks proofs rather than deciding them. ",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": ["quote", "a proof a small checker can recheck"],
+                    "by": ["quote", "proof checking by a small kernel"]
+                  },
+                  true
+                ],
+                "A small kernel checks every proof, so the tactics that search for one need not be trusted. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "and",
+                  [
+                    "stated",
+                    {
+                      "adopted": ["quote", "arbitrary-precision integers"],
+                      "in": ["quote", "Lean"]
+                    },
+                    true
+                  ],
+                  [
+                    "stated",
+                    {
+                      "adopted": ["quote", "exact rational arithmetic"],
+                      "in": ["quote", "Lean"]
+                    },
+                    true
+                  ]
+                ],
+                "Its natural numbers and integers are exact at any size in the kernel and in compiled code, and its rationals are exact. "
+              ],
+              ["else", ""]
+            ],
+            "Each of its tactics covers a fragment. ",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "adopted": ["quote", "commutative ring normalization"],
+                    "in": ["quote", "Mathlib"]
+                  },
+                  true
+                ],
+                "ring decides equations between polynomial expressions. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": [
+                      "quote",
+                      "a decision procedure for linear real arithmetic"
+                    ],
+                    "by": ["quote", "farkas certificates"]
+                  },
+                  true
+                ],
+                "linarith decides linear inequalities over the rationals, and checks the certificate it finds with ring. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": [
+                      "quote",
+                      "proofs about arithmetic the solver cannot decide"
+                    ],
+                    "by": [
+                      "quote",
+                      "nonlinear preprocessing by products of hypotheses"
+                    ]
+                  },
+                  true
+                ],
+                "nlinarith reaches some nonlinear goals by multiplying hypotheses together. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": [
+                      "quote",
+                      "proofs written by hand and checked by machine"
+                    ],
+                    "by": ["quote", "certificates written by hand"]
+                  },
+                  true
+                ],
+                "linear_combination checks coefficients written by hand. "
+              ],
+              ["else", ""]
+            ],
+            "What none of them decides is proved by hand, from lemmas and by induction, and then checked. Across all the sources read, polynomial identities are decided by ",
+            [
+              "listOf",
+              ["decidedBy", ["quote", "polynomial identities decided exactly"]]
+            ],
+            ", and arithmetic past what a procedure decides is reached by ",
+            [
+              "listOf",
+              [
+                "decidedBy",
+                ["quote", "proofs about arithmetic the solver cannot decide"]
+              ]
+            ],
+            ". ",
+            "Lion has the first layer already, a solver whose certificates a small program rechecks. ",
+            [
+              "cond",
+              [
+                ["built"],
+                [
+                  "string/concat",
+                  "Numbers are exact now, so each can start; the model ranks them ",
+                  ["words/listed", ["nextIdeas"]],
+                  "."
+                ]
+              ],
+              [
+                "else",
+                [
+                  "string/concat",
+                  ["listOf", ["array/map", ["later"], "label"]],
+                  " would add the rest once numbers are exact, and ",
+                  ["label", ["quote", "recursive-induction"]],
+                  " can start now."
+                ]
+              ]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["claim", "?statement", "?source", "?_", "?_"],
+              ["string/startsWith", "?statement", "en-b"]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Can any system decide arbitrary arithmetic?",
+          "answer": [
+            "string/concat",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": [
+                      "quote",
+                      "a decision procedure for nonlinear integer arithmetic"
+                    ],
+                    "by": ["quote", "any algorithm"]
+                  },
+                  false
+                ],
+                "No. No algorithm decides every question about integer arithmetic with multiplication: Hilbert's tenth problem was settled in the negative, and Peano arithmetic is undecidable. "
+              ],
+              [
+                "else",
+                "The sources do not settle whether integer arithmetic with multiplication can be decided. "
+              ]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": [
+                      "quote",
+                      "a decision procedure for nonlinear integer arithmetic"
+                    ],
+                    "by": ["quote", "smt solving"]
+                  },
+                  false
+                ],
+                "Dafny's guide warns that Z3 can get stuck on such operators, and offers to leave them to lemmas applied by hand. "
+              ],
+              ["else", ""]
+            ],
+            "Over the real numbers the question can be decided, by ",
+            [
+              "listOf",
+              [
+                "decidedBy",
+                ["quote", "a decision procedure for nonlinear real arithmetic"]
+              ]
+            ],
+            ", but ",
+            [
+              "listOf",
+              [
+                "undecidedBy",
+                ["quote", "decisions in time polynomial in the formula's size"]
+              ]
+            ],
+            " can take time that grows doubly exponentially. So no system makes arbitrary arithmetic automatic: past a decidable fragment, someone gives the proof and the machine checks it."
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "or",
+                [
+                  "answer",
+                  {
+                    "covers": [
+                      "quote",
+                      "a decision procedure for nonlinear integer arithmetic"
+                    ],
+                    "by": "?technique"
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "covers": [
+                      "quote",
+                      "a decision procedure for nonlinear real arithmetic"
+                    ],
+                    "by": "?technique"
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                [
+                  "answer",
+                  {
+                    "covers": [
+                      "quote",
+                      "decisions in time polynomial in the formula's size"
+                    ],
+                    "by": "?technique"
+                  },
+                  "?_",
+                  "?statement"
+                ]
+              ],
+              ["claim", "?statement", "?source", "?_", "?_"]
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "title": "What each idea left to build waits for",
+          "query": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", ["quote", "exact-numbers"]],
+              ["to_build", "?idea"],
+              ["stage", "?idea", "?stage"],
+              [
+                "or",
+                [
+                  "and",
+                  ["builds_on", "?idea", "?_", "?_"],
+                  [
+                    "=",
+                    "?waits_for",
+                    [
+                      "aggregate/unique",
+                      [
+                        "find",
+                        "?x",
+                        [
+                          "and",
+                          ["builds_on", "?idea", "?x", "?_"],
+                          ["not", ["passed_over", "?x", "?_", "?_"]]
+                        ]
+                      ]
+                    ]
+                  ]
+                ],
+                [
+                  "and",
+                  ["not", ["builds_on", "?idea", "?_", "?_"]],
+                  ["=", "?waits_for", null]
+                ]
+              ]
+            ],
+            {
+              "order": "stage"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Who already does each idea",
+          "query": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", ["quote", "exact-numbers"]],
+              ["precedent", "?idea", "?technique", "?system"]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "How others hold numbers",
+      "blocks": [
+        {
+          "type": "comparison",
+          "title": "What each technique gives",
+          "query": [
+            "aggregate/unique",
+            [
+              "find",
+              {
+                "feature": "?feature",
+                "technique": "?technique",
+                "gives": "?gives"
+              },
+              [
+                "and",
+                ["weighed_in", "?idea", ["quote", "exact-numbers"]],
+                ["uses", "?idea", "?technique"],
+                [
+                  "or",
+                  [
+                    "and",
+                    [
+                      "stated",
+                      {
+                        "covers": "?feature",
+                        "by": "?technique"
+                      },
+                      true
+                    ],
+                    ["=", "?gives", ["quote", "gives it"]]
+                  ],
+                  [
+                    "and",
+                    [
+                      "stated",
+                      {
+                        "covers": "?feature",
+                        "by": "?technique"
+                      },
+                      false
+                    ],
+                    [
+                      "not",
+                      [
+                        "stated",
+                        {
+                          "covers": "?feature",
+                          "by": "?technique"
+                        },
+                        true
+                      ]
+                    ],
+                    ["=", "?gives", ["quote", "does not"]]
+                  ]
+                ]
+              ]
+            ]
+          ],
+          "rows": "feature",
+          "columns": "technique",
+          "cell": "gives"
+        },
+        {
+          "type": "lookup",
+          "title": "What do Lion's programs show today?",
+          "choose": {
+            "feature": {
+              "label": "Feature",
+              "options": [
+                "aggregate/unique",
+                [
+                  "find",
+                  "?f",
+                  [
+                    "and",
+                    [
+                      "claim",
+                      "?c",
+                      "?_",
+                      "?_",
+                      [
+                        "schema/open",
+                        {
+                          "lion": "?f"
+                        }
+                      ]
+                    ],
+                    ["string/startsWith", "?c", "en-l"]
+                  ]
+                ]
+              ]
+            }
+          },
+          "example": {
+            "feature": "proofs that hold of the code's own arithmetic"
+          },
+          "answer": [
+            "lambda",
+            ["feature"],
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "lion has": "feature"
+                  },
+                  true
+                ],
+                "Lion has it today."
+              ],
+              [
+                [
+                  "stated",
+                  {
+                    "lion has": "feature"
+                  },
+                  false
+                ],
+                "Lion lacks it today."
+              ],
+              ["else", "Not checked."]
+            ]
+          ],
+          "query": [
+            "lambda",
+            ["feature"],
+            [
+              "query",
+              [
+                "and",
+                [
+                  "answer",
+                  {
+                    "lion has": "feature"
+                  },
+                  "?_",
+                  "?statement"
+                ],
+                ["claim", "?statement", "?source", "?_", "?_"]
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "How solid is it",
+      "blocks": [
+        {
+          "type": "trust"
+        }
+      ]
+    },
+    {
+      "name": "Sources",
+      "blocks": [
+        {
+          "type": "sources"
+        }
+      ]
+    }
+  ]
+}

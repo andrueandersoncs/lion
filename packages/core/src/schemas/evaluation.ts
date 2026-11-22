@@ -1,4 +1,5 @@
 import { Schema } from "effect";
+import { Exact } from "@/numbers/exact";
 import { LionExpressionSchema } from "@/schemas/lion-expression.ts";
 import type { EvaluateResult } from "@/types/evaluation.ts";
 
@@ -11,6 +12,50 @@ export const LionFunctionValueSchema = Schema.declare(
 );
 
 const Expression = LionExpressionSchema;
+
+/** Whether a value holds a number no JavaScript number writes, such as 1/3. */
+const holdsExact = (value: unknown): boolean => {
+  if (value instanceof Exact) {
+    return true;
+  }
+  if (Array.isArray(value)) {
+    return value.some(holdsExact);
+  }
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Object.getPrototypeOf(value) === Object.prototype &&
+    Object.values(value).some(holdsExact)
+  );
+};
+
+/** The value with each exact number as 0, which stands where any number can. */
+const asPlainNumbers = (value: unknown): unknown => {
+  if (value instanceof Exact) {
+    return 0;
+  }
+  if (Array.isArray(value)) {
+    return value.map(asPlainNumbers);
+  }
+  return typeof value === "object" &&
+    value !== null &&
+    Object.getPrototypeOf(value) === Object.prototype
+    ? Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [key, asPlainNumbers(item)])
+      )
+    : value;
+};
+
+/**
+ * Whether a value has a form's shape. A form holds an exact number where it
+ * can hold any number, so one that holds one, which is rare, is checked with
+ * each as 0, and a form that holds none is checked as it is.
+ */
+const shaped = (schema: Schema.Top) => {
+  const is = Schema.is(schema);
+  return (value: unknown) =>
+    is(value) || (holdsExact(value) && is(asPlainNumbers(value)));
+};
 
 /** An array that starts with a form's name, then has exactly these parts. */
 const form = <const Parts extends Schema.Tuple.Elements>(
@@ -145,7 +190,7 @@ export const parameterSchemas = (parameters: readonly unknown[] | string) =>
 export const CondFormSchema = Schema.TupleWithRest(form("cond", Pair), [Pair]);
 // ["match", <value>, [<schema>, <fn>], ..., <fallback-fn>], where the
 // fallback may be left out: a last part that is a pair is a case.
-const isPair = Schema.is(Pair);
+const isPair = shaped(Pair);
 
 /** Whether a part of a match after its value is one of its cases. */
 export const isMatchCase = (part: unknown) => isPair(part);
@@ -214,33 +259,33 @@ export const InvariantFormSchema = form("invariant", Expression, Expression);
 
 /** The shape an array must have to be each special form. */
 const SHAPES: Record<SpecialFormName, (value: unknown) => boolean> = {
-  begin: Schema.is(BeginFormSchema),
-  define: Schema.is(DefineFormSchema),
-  eval: Schema.is(EvalFormSchema),
-  quote: Schema.is(QuoteFormSchema),
-  lambda: Schema.is(LambdaFormSchema),
-  cond: Schema.is(CondFormSchema),
-  match: Schema.is(MatchFormSchema),
-  relation: Schema.is(RelationFormSchema),
-  schema: Schema.is(SchemaFormSchema),
-  rule: Schema.is(RuleFormSchema),
-  fact: Schema.is(FactFormSchema),
-  retract: Schema.is(RetractFormSchema),
-  query: Schema.is(QueryFormSchema),
-  find: Schema.is(FindFormSchema),
-  assuming: Schema.is(AssumingFormSchema),
-  exists: Schema.is(ExistsFormSchema),
-  some: Schema.is(SomeFormSchema),
-  why: Schema.is(WhyFormSchema),
-  not: Schema.is(NotFormSchema),
-  and: Schema.is(AndFormSchema),
-  or: Schema.is(OrFormSchema),
-  "=": Schema.is(UnifyFormSchema),
-  in: Schema.is(InFormSchema),
-  snapshot: Schema.is(form("snapshot")),
-  invariant: Schema.is(InvariantFormSchema),
-  "set!": Schema.is(SetFormSchema),
-  delay: Schema.is(DelayFormSchema),
+  begin: shaped(BeginFormSchema),
+  define: shaped(DefineFormSchema),
+  eval: shaped(EvalFormSchema),
+  quote: shaped(QuoteFormSchema),
+  lambda: shaped(LambdaFormSchema),
+  cond: shaped(CondFormSchema),
+  match: shaped(MatchFormSchema),
+  relation: shaped(RelationFormSchema),
+  schema: shaped(SchemaFormSchema),
+  rule: shaped(RuleFormSchema),
+  fact: shaped(FactFormSchema),
+  retract: shaped(RetractFormSchema),
+  query: shaped(QueryFormSchema),
+  find: shaped(FindFormSchema),
+  assuming: shaped(AssumingFormSchema),
+  exists: shaped(ExistsFormSchema),
+  some: shaped(SomeFormSchema),
+  why: shaped(WhyFormSchema),
+  not: shaped(NotFormSchema),
+  and: shaped(AndFormSchema),
+  or: shaped(OrFormSchema),
+  "=": shaped(UnifyFormSchema),
+  in: shaped(InFormSchema),
+  snapshot: shaped(form("snapshot")),
+  invariant: shaped(InvariantFormSchema),
+  "set!": shaped(SetFormSchema),
+  delay: shaped(DelayFormSchema),
 };
 
 /** What each special form takes, said when an array names it but has another shape. */

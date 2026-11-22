@@ -101,9 +101,9 @@ The worker holds one logic database. Each message it is posted has an `id`, and 
 The snapshot there is the database of [Logic](#logic)'s first example, and each answer also has `ms`, how long it took. A page that carries this script runs the Lion of the command that printed it, so running the page's programs with that command checks the page: the [research skill](#research-skill)'s page is built this way.
 
 The `lion` command validates files as Lion expressions, evaluates them with the
-standard library, and writes results as formatted JSON. It refuses a file that
-writes an integer a JSON number cannot hold exactly, as `9007199254740993`, which
-would read as `9007199254740992`. The graph editor keeps
+standard library, and writes results as formatted JSON. It reads each number
+exactly as its digits write it, so `9007199254740993` is itself, and refuses to
+write a result that holds a fraction no decimal writes, such as 1/3. The graph editor keeps
 opened programs local to the browser and saves through the browser's file APIs.
 
 ## Basic Usage
@@ -802,7 +802,7 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 |---|---|
 | `aggregate/count` | Number of matches |
 | `aggregate/countUnique` | Number of distinct values |
-| `aggregate/sum`, `aggregate/mean` | Sum and mean of numbers, the sum rounded once so the order of the values never changes it (`mean` of nothing is `null`) |
+| `aggregate/sum`, `aggregate/mean` | Sum and mean of numbers, both exact, so the order of the values never changes them (`mean` of nothing is `null`) |
 | `aggregate/min`, `aggregate/max` | Smallest and largest value; all numbers or all strings |
 | `aggregate/shortest` | Shortest list or string; ties go to the smaller value |
 | `aggregate/union` | Every element of every list, distinct and sorted |
@@ -1245,7 +1245,7 @@ Evaluates to `{ "between": [3, 4, 5], "never overdrawn": [{}] }`: for every whol
 - `value/integer?` stands for a whole number and `value/number?` for any number. A record or list of schemas stands for a record or list of what its parts stand for, `schema/anyOf` for any of its schemas' values, `["schema/arrayOf", schema, most]` for a list of each length up to `most`, and `schema/allOf` for what its first part stands for that fits the others. A predicate alone, such as a lambda, says no kind.
 - A goal that waits only for such variables joins one step that runs after the goals its other variables need. `=` with such a variable on one side gives it the value of the other.
 - The step works the goals out on the values: `number/add`, `number/subtract`, `number/multiply` and `number/divide` by a known number, comparisons, `number/equals?`, `=`, `cond`, `number/min`, `number/max`, `number/absolute`, `boolean/and`, `boolean/or`, `boolean/not`, `not`, `object/get` on a record, and a lambda by its body. A list of known length, such as one `["schema/arrayOf", schema, most]` stands for, keeps its items' values: `array/reduce`, `array/reductions`, `array/map`, `array/flat-map`, `array/some?`, `array/every?`, `array/length`, `array/head`, `array/tail`, `array/concat`, and `array/includes?` run on it item by item, and `in` takes each of its items, so a check of every run of commands can leave the amounts they carry to the solver (see [Checking every run of commands](#checking-every-run-of-commands)). Anything else on such a value, such as a product of two unknowns, a string function, or a question, waits: the step lists the values of the variables it needs and runs it on each, as plain code does. When those are infinitely many, the step fails and names what the solver cannot reason about.
-- The solver decides with exact numbers: Fourier and Motzkin's method for any number and Pugh's Omega test for whole numbers. Every question gets yes or no, the same on every machine. Plain code computes with floating-point numbers, which can round where the solver does not.
+- The solver decides with exact numbers: Fourier and Motzkin's method for any number and Pugh's Omega test for whole numbers. Every question gets yes or no, the same on every machine. Plain code computes with the same exact numbers (see [`number`](#number)), so what the solver proves about numbers holds of what plain code computes.
 - The step binds the variables whose values make the answers, to each combination of values they take, when those are finitely many: a whole number bounded on both sides, or a number the goals fix. In a query or a `find`, which give one answer or value for every match, and in a rule that aggregates, which combines one value from each, those are every variable of the body, as for values a schema lists; in any other rule, those its head shows. A variable a `cond` defines takes the value of each case that can hold. One with infinitely many values fails, and says so. The others, a plain rule's own, those `exists` lists, and a question's own under `not`, only need some values to exist. `why` explains a row the step gave with an `example` that meets its goals.
 - A step gives at most 100,000 answers, splits into at most 4,096 cases, and makes at most 20,000 constraints while eliminating its variables; past those it is refused, so every question ends soon.
 
@@ -1419,6 +1419,8 @@ Six functions combine their arguments, as `+`, `*`, `min`, `max`, `string-append
 ["number/subtract", 10, 3]
 ["number/multiply", 5, 4]
 ["number/divide", 20, 4]
+["number/divide", 1, 3]
+["number/add", 0.1, 0.2]
 ["number/equals?", 5, 5]
 ["number/lessThan", 3, 5]
 ["number/greaterThan", 5, 3]
@@ -1432,14 +1434,16 @@ Six functions combine their arguments, as `+`, `*`, `min`, `max`, `string-append
 ["number/floor", 2.7]
 ["number/ceiling", 2.1]
 ["number/round", 2.5]
+["number/round", 2.345, 2]
 ["number/toString", 42]
+["number/toString", ["number/divide", 1, 3]]
 ["number/toString", 1234567.5, ","]
 ["number/fromString", "1,234,567.5", ","]
 ```
 
-Arithmetic whose result is not a finite number, such as division by zero, fails with `ArithmeticError`. Integers a JSON number holds exactly, those from -9007199254740991 to 9007199254740991 (2^53 - 1), do exact arithmetic, as Scheme's exact integers do: a sum, difference, product, power, or `aggregate/sum` of them is exact, or fails with `ArithmeticError` where a JSON number cannot hold the exact result, so `["number/add", 9007199254740991, 2]` fails with `number/add: 9007199254740991 + 2 is 9007199254740993, but a JSON number would hold it as 9007199254740992: …` instead of rounding without a word. Past that range a JSON number is a float, as `1e300` is, and rounds as one. A program's text, and a database file the `lion` command reads, may not write an integer that would come back as another when Lion writes it: `9007199254740993` would read as `9007199254740992`, so the text is refused, naming the integer and where it stands. Text Lion writes always reads back, as `36944794794896090`, the float JSON writes with those digits, does. `number/fromString` and `string/numbers` leave out such an integer, as they leave out a number past the largest one.
+Every number is exact, as Scheme's exact numbers are: an integer of any size or a fraction. A number a program writes is the exact value its digits write, so `0.1` is one tenth and `9007199254740993` is itself, and a JavaScript number a host passes stands for the decimal its shortest digits write. So arithmetic is exact: `["number/add", 0.1, 0.2]` is `0.3`, `["number/add", 9007199254740991, 2]` is `9007199254740993`, no sum or product overflows, and `["number/divide", 1, 3]` is the fraction one third, which times 3 is 1. A sum and a mean are exact too, in whatever order the values come. Division by zero has no result and fails with `ArithmeticError`, and so does a whole power with more than 4,300 digits; a number read from text may have at most as many. A power that is not whole, such as a square root, is the nearest double, which stands for its digits as every JavaScript number does. `number/round` takes a number of places after the point: `["number/round", 2.345, 2]` is `2.35`, a half rounding up. A result is written as JSON with each number's digits, and a fraction no decimal writes, such as 1/3, has no JSON text: the `lion` command, the website, and `object/json-stringify` fail with `ArithmeticError` and say to round it or write it as text. A snapshot writes it as `["number/divide", 1, 3]`, which reads back as the same number.
 
-`number/toString` is the number as text, the way JSON writes it: `"42"`, `"-0.5"`, `"1e+21"`. With a second argument, a string, the whole part is written in groups of three digits with that string between them, as `#:group-sep` does in Racket: `["number/toString", 1234567.5, ","]` is `"1,234,567.5"`, and `["number/toString", -1234, " "]` is `"-1 234"`. The digits after the point and a number written with an exponent stay as they are. With `string/concat` it builds text from a number, also from one a rule has bound:
+`number/toString` is the number as text, the way JSON writes it: `"42"`, `"-0.5"`, `"1e+21"`, and a fraction no decimal writes as Scheme writes it, `"1/3"`, which `number/fromString` reads back. With a second argument, a string, the whole part is written in groups of three digits with that string between them, as `#:group-sep` does in Racket: `["number/toString", 1234567.5, ","]` is `"1,234,567.5"`, and `["number/toString", -1234, " "]` is `"-1 234"`. The digits after the point and a number written with an exponent stay as they are. With `string/concat` it builds text from a number, also from one a rule has bound:
 
 ```json
 ["rule", ["label", "?id", ["string/concat", "order ", ["number/toString", "?id"]]],

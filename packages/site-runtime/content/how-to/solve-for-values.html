@@ -44,6 +44,16 @@
 </lion-example>
 <p>Each query gives <code>[{}]</code> when its goal holds and <code>[]</code> when it does not.</p>
 
+<h2>Prove something about decimals</h2>
+<p>Numbers are exact, in the solver and in plain code alike, so what the solver proves about decimals holds of what plain code computes. No number between 0 and 1 changes when 0.2 is added and taken away, and plain code gives 0.1 back:</p>
+<lion-example name="A proof about decimals">
+{"proved": ["query", ["not", ["exists", ["?x"],
+   ["and", ["schema/fits?", "?x", "value/number?"],
+     ["number/greaterThan", "?x", 0], ["number/lessThan", "?x", 1],
+     ["not", ["number/equals?", ["number/subtract", ["number/add", "?x", 0.2], 0.2], "?x"]]]]]],
+ "in plain code": ["number/subtract", ["number/add", 0.1, 0.2], 0.2]}
+</lion-example>
+
 <h2>Check what a function does for every input</h2>
 <p>A lambda you defined runs on the values the solver stands for, by its body, so a rule about what it returns is checked for every input at once. A schema of a record with typed fields stands for every such record. Here a careful withdrawal never leaves an open account below zero, for any balance and any amount, while a careless one can:</p>
 <lion-example name="Every input of a function">

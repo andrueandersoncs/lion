@@ -1,0 +1,70 @@
+Lion programs run for research with @lionlang/cli 0.14.0 built at commit 2bf1bc6 (core 0.15.0), 2026-11-22.
+
+== program si-number-gap.json
+[
+  "begin",
+  {
+    "the solver: no number x between 0 and 1 has (x + 0.2) - 0.2 other than x": [
+      "query",
+      [
+        "not",
+        [
+          "exists",
+          ["?x"],
+          [
+            "and",
+            ["schema/fits?", "?x", "value/number?"],
+            ["number/greaterThan", "?x", 0],
+            ["number/lessThan", "?x", 1],
+            [
+              "not",
+              ["=", ["number/subtract", ["number/add", "?x", 0.2], 0.2], "?x"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "plain code at x = 0.1: (x + 0.2) - 0.2 is other than x": [
+      "not",
+      ["=", ["number/subtract", ["number/add", 0.1, 0.2], 0.2], 0.1]
+    ],
+    "plain code at x = 0.1: (x + 0.2) - 0.2": [
+      "number/subtract",
+      ["number/add", 0.1, 0.2],
+      0.2
+    ],
+    "the solver: no whole number n from 2^53 up has n + 1 equal to n": [
+      "query",
+      [
+        "not",
+        [
+          "exists",
+          ["?n"],
+          [
+            "and",
+            ["schema/fits?", "?n", "value/integer?"],
+            ["number/greaterThanOrEqualTo", "?n", 9007199254740992],
+            ["=", ["number/add", "?n", 1], "?n"]
+          ]
+        ]
+      ]
+    ],
+    "plain code at n = 2^53: n + 1 equals n": [
+      "=",
+      ["number/add", 9007199254740992, 1],
+      9007199254740992
+    ]
+  }
+]
+== gives
+{
+  "the solver: no number x between 0 and 1 has (x + 0.2) - 0.2 other than x": [
+    {}
+  ],
+  "plain code at x = 0.1: (x + 0.2) - 0.2 is other than x": false,
+  "plain code at x = 0.1: (x + 0.2) - 0.2": 0.1,
+  "the solver: no whole number n from 2^53 up has n + 1 equal to n": [
+    {}
+  ],
+  "plain code at n = 2^53: n + 1 equals n": false
+}

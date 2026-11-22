@@ -84,7 +84,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "number/multiply": [0, ANY],
   "number/power": [2, 2],
   "number/remainder": [2, 2],
-  "number/round": [1, 1],
+  "number/round": [1, 2],
   "number/subtract": [2, 2],
   "number/fromString": [1, 2],
   "number/toString": [1, 2],
@@ -289,10 +289,11 @@ const nested = (fn: string, [first, ...rest]: readonly unknown[]) =>
 
 /** What each function that combines its arguments gives for a list of them. */
 const COMBINES = {
-  "number/add": (values: number[]) => values.reduce((a, b) => a + b),
-  "number/multiply": (values: number[]) => values.reduce((a, b) => a * b),
-  "number/min": (values: number[]) => Math.min(...values),
-  "number/max": (values: number[]) => Math.max(...values),
+  // Lion's numbers are exact, so -0 is 0.
+  "number/add": (values: number[]) => values.reduce((a, b) => a + b) + 0,
+  "number/multiply": (values: number[]) => values.reduce((a, b) => a * b) + 0,
+  "number/min": (values: number[]) => Math.min(...values) + 0,
+  "number/max": (values: number[]) => Math.max(...values) + 0,
 };
 
 /** What combining nothing gives, for each function that takes zero or more. */

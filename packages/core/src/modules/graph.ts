@@ -4,16 +4,23 @@
  * Results never depend on the order facts were added: ties and component
  * names go to the smaller value.
  */
+
 import { defineAlgorithm } from "@/logic/algorithms";
 import { stronglyConnected as stronglyConnectedGroups } from "@/logic/strata";
 import { compareValues, valueKey } from "@/logic/terms";
+import {
+  compareNumbers,
+  isNumber,
+  type LionNumber,
+  sum,
+} from "@/numbers/exact";
 
 type Row = readonly unknown[];
 
 interface Edge {
   readonly from: unknown;
   readonly to: unknown;
-  readonly weight: number;
+  readonly weight: LionNumber;
 }
 
 const show = (value: unknown) => JSON.stringify(value);
@@ -30,7 +37,7 @@ const readEdges = (
       return `${name} needs a relation with at least two columns, from and to.`;
     }
     const weight = weighted && tuple.length > 2 ? tuple[2] : 1;
-    if (typeof weight !== "number" || !Number.isFinite(weight) || weight < 0) {
+    if (!isNumber(weight) || compareNumbers(weight, 0) < 0) {
       return `${name} needs weights of at least 0 in the third column, but found ${show(weight)}.`;
     }
     edges.push({ from: tuple[0], to: tuple[1], weight });
@@ -124,13 +131,15 @@ const adjacency = (edges: readonly Edge[]) => {
 };
 
 interface Route {
-  readonly cost: number;
+  readonly cost: LionNumber;
   readonly node: unknown;
   readonly path: readonly unknown[];
 }
 
-const shorter = (a: Route, b: Route) =>
-  a.cost < b.cost || (a.cost === b.cost && compareValues(a.path, b.path) < 0);
+const shorter = (a: Route, b: Route) => {
+  const order = compareNumbers(a.cost, b.cost);
+  return order < 0 || (order === 0 && compareValues(a.path, b.path) < 0);
+};
 
 /** Dijkstra's algorithm from one start node, in order of cost. */
 const shortestPath = (tuples: readonly Row[], start: unknown) => {
@@ -143,7 +152,7 @@ const shortestPath = (tuples: readonly Row[], start: unknown) => {
   const settled = new Set<string>();
   const rows: Row[] = [];
   const queue = new Heap<Route>(shorter);
-  const first = { cost: 0, node: start, path: [start] };
+  const first: Route = { cost: 0, node: start, path: [start] };
   best.set(valueKey(start), first);
   queue.push(first);
   for (let route = queue.pop(); route !== undefined; route = queue.pop()) {
@@ -155,7 +164,7 @@ const shortestPath = (tuples: readonly Row[], start: unknown) => {
     rows.push([route.node, route.cost, route.path]);
     for (const edge of out.get(key) ?? []) {
       const next = {
-        cost: route.cost + edge.weight,
+        cost: sum(route.cost, edge.weight),
         node: edge.to,
         path: [...route.path, edge.to],
       };
