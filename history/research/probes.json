@@ -1,5 +1,44 @@
 [
   {
+    "case": "editor-jev-api-key-storage",
+    "area": "editor",
+    "program": [
+      "cond",
+      [
+        [
+          "boolean/and",
+          [
+            "string/includes",
+            ["repo/read", "packages/repl/src/editor/use-editor.ts"],
+            "const [jevApiKey, setJevApiKeyState] = useState<string | null>(null);"
+          ],
+          [
+            "boolean/and",
+            [
+              "number/equals?",
+              [
+                "array/length",
+                [
+                  "string/split",
+                  ["repo/read", "packages/repl/src/editor/use-editor.ts"],
+                  "Storage.setItem("
+                ]
+              ],
+              2
+            ],
+            [
+              "string/includes",
+              ["repo/read", "packages/repl/src/editor/use-editor.ts"],
+              "localStorage.setItem(\"lion-editor-live\""
+            ]
+          ]
+        ],
+        ["quote", "tab-memory"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
     "case": "host-function-returns-undefined",
     "area": "host",
     "program": [

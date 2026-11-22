@@ -195,6 +195,7 @@
 - A host function may give any value, and Lion checks none. (`host-function-results`: `any-value-at-runtime` over `json-or-function-only`, `converted-to-json`, `any-value-everywhere`)
 - Lion keeps `array/head` and `array/tail`. (`list-head-and-tail-names`: `head-tail` over `car-cdr`, `first-rest`)
 - Lion does not curry by itself. A call with fewer arguments than its function takes fails, for a special form, a lambda, and a library function alike. (`too-few-arguments`: `error` over `automatic-currying`, `curried-special-forms`)
+- The playground keeps the key in the tab. (`playground-api-key-storage`: `tab-memory` over `server-side-session`, `local-storage`)
 
 ### Rules
 
@@ -1847,7 +1848,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - treats quoted form-shaped arrays as literal data (`analyze-quoted-form-shaped-array` is `literal-data`)
 - Jev support sends requests through the app's same-origin proxy with a user-provided, preferably scoped development key that remains in browser memory (`editor-evaluation-environment` is `stdlib-and-typesafe`, was `stdlib-only`)
 - Files above 10 MiB are rejected before parsing. (`editor-file-over-10-mib` is `rejected`)
-- keeps it only in tab memory (`editor-jev-api-key-storage` is `tab-memory`)
+- The playground keeps the key in the tab. (`editor-jev-api-key-storage` is `tab-memory`)
 - Jev programs are always explicit-run to prevent accidental network requests. (`editor-jev-live-evaluation` is `disabled`)
 - return jsonResponse(404, "Unknown TypeSafe API route."); (`typesafe-proxy-unlisted-route` is `not-found`)
 - places child values left of their consuming expression (`graph-argument-position` is `left-of-consumer`, was `right-of-consumer`)
@@ -1965,7 +1966,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - Lion moves from Effect 3 to Effect 4 (rule `effect-v4`)
 - classifies every supported special form from evaluator schemas (rule `analysis-uses-evaluator-schemas`)
 - Passing unit tests alone is not completion. (rule `completion-needs-browser-proof`)
-- Keep API credentials server-side in web apps. (rule `api-credentials-server-side`)
+- The rule holds for an app's own credentials, and the playground's key that each person brings is its exception. (rule `api-credentials-server-side`)
 - Every non-root node exposes its outgoing value handle, while connection targets appear only on ordered child containers so every completed connector represents a valid move. (rule `graph-connectors-valid-moves`)
 - collapse graph and exact JSON into one representation; they remain synchronized, equally authoritative views. (rule `graph-and-json-equally-authoritative` withdrawn)
 - reintroduce a persistent text-editor pane; keep exact JSON edits focused on the selected expression. (rule `no-persistent-text-editor-pane`)

@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 235 questions have been decided, 109 records explain them, and of what the records assert, 703 hold when Lion is run, 0 are broken, 396 are stated but not checked by running Lion, and 34 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 236 questions have been decided, 110 records explain them, and of what the records assert, 705 hold when Lion is run, 0 are broken, 397 are stated but not checked by running Lion, and 34 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -241,6 +241,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-22 | [`host-function-results`](#host-function-results) | `any-value-at-runtime` | [A host function may give any value, and plain code carries it as it is; the database and a question's answers hold data](#host-values-at-runtime) |
 | 2026-11-22 | [`list-head-and-tail-names`](#list-head-and-tail-names) | `head-tail` | [A list's first item and the items after it are its head and its tail](#list-head-and-tail) |
 | 2026-11-22 | [`too-few-arguments`](#too-few-arguments) | `error` | [Lion curries only when a program asks: a call with too few arguments fails](#explicit-currying-only) |
+| 2026-11-22 | [`playground-api-key-storage`](#playground-api-key-storage) | `tab-memory` | [The editor's Jev playground holds the user's own API key in the tab, and its server only passes it on](#playground-key-in-the-tab) |
 
 <a id="program-representation"></a>
 
@@ -5445,3 +5446,34 @@ Recorded 2026-11-22 in `history/notes/explicit-currying-only.json`.
 - Holds when Lion is run: `quote-no-arguments` is `error`. "`["quote"]` and `["eval"]` fail as any other call with too few arguments does."
 - Holds when Lion is run: `eval-no-arguments` is `error`. "`["quote"]` and `["eval"]` fail as any other call with too few arguments does."
 - Holds when Lion is run: `func-partial-call` is `call-to-wrapped-function`. "`[["func/partial", "number/subtract", 10], 3]` gives `7`"
+
+<a id="playground-api-key-storage"></a>
+
+## playground-api-key-storage
+
+Now: `tab-memory`.
+
+- 2026-11-22 `playground-api-key-storage`: `tab-memory` over `server-side-session`, `local-storage`: "The playground keeps the key in the tab." (`playground-key-in-the-tab.json`)
+
+<a id="playground-key-in-the-tab"></a>
+
+### The editor's Jev playground holds the user's own API key in the tab, and its server only passes it on
+
+Recorded 2026-11-22 in `history/notes/playground-key-in-the-tab.json`.
+
+**Context.** The vendored typesafe-ai skill says to keep API credentials server-side in web apps. The graph editor's Jev playground, since September 2026, asks the person running a program for their own TypeSafe key, keeps it only in the tab's memory, never in `localStorage`, and sends it with each request to the editor's own route `/api/typesafe`, which passes it on as the `Authorization` header to the TypeSafe API for two routes, listing the models and asking System One, and keeps nothing. The project record found the playground breaking the skill's rule.
+
+**Decision.** The playground keeps the key in the tab. The skill's rule is for an app's own key, which its users must not see; the playground has no key of its own. Each person brings theirs, and a key they typed into the page is already in their browser. The rule holds for an app's own credentials, and the playground's key that each person brings is its exception.
+
+**Consequences.** The key is gone when the tab closes, and a reload asks for it again. The editor's server stores no secret and passes on only two routes. While the tab is open, a script on the editor's page could read the key, as it could read anything typed there.
+
+**Alternatives considered.**
+
+- Keep the key server-side, in a session the editor's server holds. The editor would become a store of other people's secrets, for a key each of them already holds in their own browser.
+- Keep the key in `localStorage`, so it survives a reload. It would outlive the tab on a shared machine, and any script on the page's origin could read it later.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `playground-api-key-storage`: `tab-memory`. "The playground keeps the key in the tab."
+- Holds when Lion is run: rule `api-credentials-server-side` holds. "The rule holds for an app's own credentials, and the playground's key that each person brings is its exception."
+- Holds when Lion is run: `editor-jev-api-key-storage` is `tab-memory`. "The playground keeps the key in the tab."

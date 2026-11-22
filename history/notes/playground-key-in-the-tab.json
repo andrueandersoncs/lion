@@ -1,0 +1,46 @@
+{
+  "title": "The editor's Jev playground holds the user's own API key in the tab, and its server only passes it on",
+  "context": "The vendored typesafe-ai skill says to keep API credentials server-side in web apps. The graph editor's Jev playground, since September 2026, asks the person running a program for their own TypeSafe key, keeps it only in the tab's memory, never in `localStorage`, and sends it with each request to the editor's own route `/api/typesafe`, which passes it on as the `Authorization` header to the TypeSafe API for two routes, listing the models and asking System One, and keeps nothing. The project record found the playground breaking the skill's rule.",
+  "decision": "The playground keeps the key in the tab. The skill's rule is for an app's own key, which its users must not see; the playground has no key of its own. Each person brings theirs, and a key they typed into the page is already in their browser. The rule holds for an app's own credentials, and the playground's key that each person brings is its exception.",
+  "consequences": "The key is gone when the tab closes, and a reload asks for it again. The editor's server stores no secret and passes on only two routes. While the tab is open, a script on the editor's page could read the key, as it could read anything typed there.",
+  "alternatives": [
+    {
+      "option": "Keep the key server-side, in a session the editor's server holds",
+      "rejected": "The editor would become a store of other people's secrets, for a key each of them already holds in their own browser."
+    },
+    {
+      "option": "Keep the key in `localStorage`, so it survives a reload",
+      "rejected": "It would outlive the tab on a shared machine, and any script on the page's origin could read it later."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "The playground keeps the key in the tab.",
+      "says": {
+        "decision": "playground-api-key-storage",
+        "chose": "tab-memory",
+        "over": ["server-side-session", "local-storage"],
+        "because": "the key is each person's own and already in their browser, and keeping it on the server would make the editor a store of other people's secrets",
+        "area": "editor"
+      }
+    },
+    {
+      "quote": "The rule holds for an app's own credentials, and the playground's key that each person brings is its exception.",
+      "says": {
+        "rule": "api-credentials-server-side",
+        "holds": true,
+        "statement": "Keep an app's own API credentials server-side in web apps; a key each person brings, as the editor's Jev playground asks for, stays in their tab",
+        "area": "ai",
+        "except": ["editor-jev-api-key-storage"]
+      }
+    },
+    {
+      "quote": "The playground keeps the key in the tab.",
+      "says": {
+        "behavior": "editor-jev-api-key-storage",
+        "is": "tab-memory",
+        "area": "editor"
+      }
+    }
+  ]
+}

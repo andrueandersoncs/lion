@@ -1,12 +1,1 @@
-[
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "api-credentials-server-side",
-      "case": "editor-jev-api-key-storage",
-      "predicted": "server-side",
-      "found": "tab-memory"
-    },
-    "note": "The vendored typesafe-ai skill (fa4cab8) says to keep API credentials server-side in web apps; the editor's Jev playground (af779dc) keeps the user's key in tab memory and sends it through a proxy. Third-party advice; settle with a decision that says why the playground differs, or withdraw the rule."
-  }
-]
+[]
