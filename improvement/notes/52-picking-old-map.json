@@ -1,0 +1,407 @@
+{
+  "observations": [
+    {
+      "id": "picking-old-map-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "picking-old-map",
+      "value": 1
+    },
+    {
+      "id": "picking-old-map-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "picking-old-map",
+      "value": 3
+    },
+    {
+      "id": "picking-old-map-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-8",
+      "question": {
+        "flaky checks": "telemetry"
+      },
+      "quote": "flaky checks, telemetry: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-9",
+      "question": {
+        "seconds of check": "stale",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran stale: bun run stale, exit 0, 32 s",
+      "source": "picking-old-map",
+      "value": 32
+    },
+    {
+      "id": "picking-old-map-10",
+      "question": {
+        "answers resting on stale probes": "research"
+      },
+      "quote": "answers resting on stale probes, research: 213",
+      "source": "picking-old-map",
+      "value": 213
+    },
+    {
+      "id": "picking-old-map-11",
+      "question": {
+        "seconds of check": "variants",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran variants: bun run variants, exit 0, 1 s",
+      "source": "picking-old-map",
+      "value": 1
+    },
+    {
+      "id": "picking-old-map-12",
+      "question": {
+        "known mistakes found": "programs"
+      },
+      "quote": "known mistakes found, programs: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-13",
+      "question": {
+        "seconds of check": "oracle",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran oracle: bun run oracle, exit 0, 0 s",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-14",
+      "question": {
+        "solver disagreements": "oracle"
+      },
+      "quote": "solver disagreements, oracle: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-15",
+      "question": {
+        "seconds of check": "pairs",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran pairs: bun run pairs, exit 0, 17 s",
+      "source": "picking-old-map",
+      "value": 17
+    },
+    {
+      "id": "picking-old-map-16",
+      "question": {
+        "surprising pairs": "grid"
+      },
+      "quote": "surprising pairs, grid: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-17",
+      "question": {
+        "seconds of check": "replay",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran replay: bun run affected --replay 30, exit 0, 31 s",
+      "source": "picking-old-map",
+      "value": 31
+    },
+    {
+      "id": "picking-old-map-18",
+      "question": {
+        "tests' time picked": "last 30 commits"
+      },
+      "quote": "tests' time picked, last 30 commits: 71",
+      "source": "picking-old-map",
+      "value": 71
+    },
+    {
+      "id": "picking-old-map-19",
+      "question": {
+        "seconds of check": "bench",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran bench: bun run bench, exit 0, 3 s",
+      "source": "picking-old-map",
+      "value": 3
+    },
+    {
+      "id": "picking-old-map-20",
+      "question": {
+        "bench total ms": "every benchmark"
+      },
+      "quote": "bench total ms, every benchmark: 915",
+      "source": "picking-old-map",
+      "value": 915
+    },
+    {
+      "id": "picking-old-map-21",
+      "question": {
+        "seconds of check": "capability",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran capability: bun run capability --json, exit 0, 1 s",
+      "source": "picking-old-map",
+      "value": 1
+    },
+    {
+      "id": "picking-old-map-22",
+      "question": {
+        "capability passed": "public",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, public, computation: 25",
+      "source": "picking-old-map",
+      "value": 25
+    },
+    {
+      "id": "picking-old-map-23",
+      "question": {
+        "capability passed": "public",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, public, logic: 14",
+      "source": "picking-old-map",
+      "value": 14
+    },
+    {
+      "id": "picking-old-map-24",
+      "question": {
+        "capability passed": "public",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, public, proofs: 10",
+      "source": "picking-old-map",
+      "value": 10
+    },
+    {
+      "id": "picking-old-map-25",
+      "question": {
+        "capability passed": "public",
+        "pillar": "all"
+      },
+      "quote": "capability passed, public, all: 49",
+      "source": "picking-old-map",
+      "value": 49
+    },
+    {
+      "id": "picking-old-map-26",
+      "question": {
+        "capability passed": "openrulebench",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, openrulebench, computation: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-27",
+      "question": {
+        "capability passed": "openrulebench",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, openrulebench, logic: 4",
+      "source": "picking-old-map",
+      "value": 4
+    },
+    {
+      "id": "picking-old-map-28",
+      "question": {
+        "capability passed": "openrulebench",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, openrulebench, proofs: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-29",
+      "question": {
+        "capability passed": "openrulebench",
+        "pillar": "all"
+      },
+      "quote": "capability passed, openrulebench, all: 4",
+      "source": "picking-old-map",
+      "value": 4
+    },
+    {
+      "id": "picking-old-map-30",
+      "question": {
+        "capability passed": "sv-comp",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, sv-comp, computation: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-31",
+      "question": {
+        "capability passed": "sv-comp",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, sv-comp, logic: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-32",
+      "question": {
+        "capability passed": "sv-comp",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, sv-comp, proofs: 2",
+      "source": "picking-old-map",
+      "value": 2
+    },
+    {
+      "id": "picking-old-map-33",
+      "question": {
+        "capability passed": "sv-comp",
+        "pillar": "all"
+      },
+      "quote": "capability passed, sv-comp, all: 2",
+      "source": "picking-old-map",
+      "value": 2
+    },
+    {
+      "id": "picking-old-map-34",
+      "question": {
+        "code lines per passed task": "core"
+      },
+      "quote": "code lines per passed task, core: 482.6",
+      "source": "picking-old-map",
+      "value": 482.6
+    },
+    {
+      "id": "picking-old-map-35",
+      "question": {
+        "messages per passed task": "core"
+      },
+      "quote": "messages per passed task, core: 4.6",
+      "source": "picking-old-map",
+      "value": 4.6
+    },
+    {
+      "id": "picking-old-map-36",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 43 s",
+      "source": "picking-old-map",
+      "value": 43
+    },
+    {
+      "id": "picking-old-map-37",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-38",
+      "question": {
+        "seconds of check": "record",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran record: bun run history check, exit 0, 74 s",
+      "source": "picking-old-map",
+      "value": 74
+    },
+    {
+      "id": "picking-old-map-39",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "picking-old-map",
+      "value": "holds"
+    },
+    {
+      "id": "picking-old-map-40",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 96",
+      "source": "picking-old-map",
+      "value": 96
+    },
+    {
+      "id": "picking-old-map-41",
+      "question": {
+        "seconds of check": "check",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran check: bun run affected --check, exit 0, 520 s",
+      "source": "picking-old-map",
+      "value": 520
+    },
+    {
+      "id": "picking-old-map-42",
+      "question": {
+        "picking unsound": "listed mutations"
+      },
+      "quote": "picking unsound, listed mutations: 0",
+      "source": "picking-old-map",
+      "value": 0
+    },
+    {
+      "id": "picking-old-map-43",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "picking-old-map"
+      },
+      "quote": "ran tests: bun run test, exit 0, 138 s",
+      "source": "picking-old-map",
+      "value": 138
+    },
+    {
+      "id": "picking-old-map-44",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "picking-old-map",
+      "value": 0
+    }
+  ]
+}
