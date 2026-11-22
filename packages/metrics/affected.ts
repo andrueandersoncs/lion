@@ -4,7 +4,9 @@
 //   bun run affected --map           run every package's tests once, traced,
 //                                    and write out/reach/map.json
 //   bun run affected                 the test files and mutations the working
-//                                    tree's changes since HEAD can reach
+//                                    tree's changes since HEAD can reach, and
+//                                    the rules of the project record they
+//                                    put at risk
 //   bun run affected --against main  the same for the changes since a commit
 //   bun run affected --run           run the picked test files and checks
 //   bun run affected --check         each listed mutation as a change: is every
@@ -32,6 +34,7 @@ import {
   type Reached,
   type ReachMap,
 } from "./src/affected.ts";
+import { probeReads, rulePredictions } from "./src/at-risk.ts";
 import { copyWorkingTree, removeCheckout } from "./src/checkout.ts";
 import { hunksOf, touchedBy } from "./src/functions.ts";
 import { load } from "./src/lion.ts";
@@ -305,6 +308,12 @@ const now = async ({ ask, byTest, checked, map }: Context) => {
   console.log(
     `${change.files.length} files changed since ${ref}. They reach ${tests.length} of ${map.tests.length} test files and checks, ${Math.round(seconds(tests))} of ${Math.round(seconds(map.tests))} s, and ${(picked.mutations.now ?? []).length} of ${checked.length} mutations.`
   );
+  const risked = picked.atRisk.now ?? [];
+  console.log(
+    risked.length === 0
+      ? "They put no rule of the project record at risk."
+      : `They put ${risked.length} rules of the project record at risk, whose probes read what they changed: ${risked.join(", ")}.`
+  );
   const packages = new Set(map.tests.map((t) => t.package));
   /** What a changed file no test reached picks. */
   const reachOf = (file: string) => {
@@ -357,7 +366,10 @@ const main = async () => {
   const context: Context = {
     ask: (changes, asMutations = false) =>
       Effect.runPromise(
-        pick(lion, map, changes, checked, asMutations ? checked : [])
+        pick(lion, map, changes, checked, asMutations ? checked : [], {
+          predicts: rulePredictions(REPOSITORY),
+          reads: probeReads(REPOSITORY),
+        })
       ),
     byTest: new Map(map.tests.map((t) => [t.test, t])),
     checked,

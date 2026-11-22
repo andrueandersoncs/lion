@@ -264,6 +264,16 @@ Median over 30 commits: 98% of the tests' time, 555 of 599 mutations.
 
 The seconds are each test file's own time, added up, from the traced run. "in its files" is what `bun run mutate --in` would choose. Picking chooses more, because it also brings back the mutations whose tests a change reaches.
 
+### The rules a change puts at risk
+
+`bun run affected` also names the rules of the project record a change puts at risk, before it is committed. A rule in force predicts what cases give, and each case's probe in `history/research/probes.json` reads the repository only through `repo/read`, `repo/json`, `repo/files`, and `repo/run`, so the rule protects the paths those name ([`src/at-risk.ts`](src/at-risk.ts)): a file, a folder, or the folder a command runs in, and Lion's core for a probe that names none. The rule `at_risk` in `src/affected.json` puts a rule at risk when the change touches a path it protects. With this change to the metrics in the working tree, it printed:
+
+```
+They put 8 rules of the project record at risk, whose probes read what they changed: capability-references-pass, grid-exceptions-documented, loop-figures-observed, probes-observe-repository, proof-not-in-git, tests-in-tests-folders, tests-use-vitest-effect, use-bun-not-npm.
+```
+
+Run `bun run history check` before committing such a change: those are the rules it could break.
+
 ### By function
 
 The map also holds the named functions each test file ran, as the tests ran and as the imports loaded. [`src/functions.ts`](src/functions.ts) parses a changed script with TypeScript and gives each changed line to the innermost named function around it, as V8 names it: by its own name, or the variable, property, or method it is written as. A test that ran that function reaches the change, and so does a test that loaded the function that built it, since a function made by another has no name of its own. A line of an import, a type, or a comment touches nothing that runs, and a changed constant of the file's own touches the named functions that mention it, through any constants between. A line in an exported constant or any other top-level statement, a file that is no script, and a function no test ran still read the whole file. The rules for it in `src/affected.json` only add to the file-level ones: a file read by function is `touched` rather than `changed`, and keeps every other reason a changed file is picked.

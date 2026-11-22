@@ -8,6 +8,7 @@ import {
   type Reached,
   type ReachMap,
 } from "../affected.ts";
+import { LION, pathsOf } from "../at-risk.ts";
 import { load } from "../lion.ts";
 import { refusedMap, repositoryPath, sourceOf, testScript } from "../reach.ts";
 import { CORE, REPOSITORY } from "../sources.ts";
@@ -331,6 +332,94 @@ const path = Arbitrary.map(
   Arbitrary.array(word, { maxLength: 4, minLength: 1 }),
   (words) => words.join("/")
 );
+
+const RULES = ["r1", "r2", "r3"];
+const CASES = ["c1", "c2", "c3"];
+const PROTECTED = [...FILES, "packages/a", "packages/a/src", "docs", "."];
+
+describe("the rules a change puts at risk", () => {
+  it.effect.prop(
+    "are the rules whose probes read a path the change touched, a file, a folder above it, or the whole repository, as a plain model says",
+    {
+      asked: changes,
+      m: map,
+      predicts: Arbitrary.array(
+        Arbitrary.all({ c: element(CASES), r: element(RULES) }),
+        { maxLength: 5 }
+      ),
+      reads: Arbitrary.array(
+        Arbitrary.all({ c: element(CASES), p: element(PROTECTED) }),
+        { maxLength: 5 }
+      ),
+    },
+    ({ asked, m, predicts, reads }) =>
+      Effect.gen(function* () {
+        const got = yield* pick(
+          yield* Effect.promise(() => lion),
+          m,
+          asked,
+          [],
+          [],
+          {
+            predicts: predicts.map(({ c, r }) => [r, c] as const),
+            reads: reads.map(({ c, p }) => [c, p] as const),
+          }
+        );
+        const under = (f: string, path: string) =>
+          f === path || path === "." || f.startsWith(`${path}/`);
+        const expected: Record<string, string[]> = {};
+        for (const change of asked) {
+          const rules = predicts
+            .filter(({ c }) =>
+              reads.some(
+                (read) =>
+                  read.c === c && change.files.some((f) => under(f, read.p))
+              )
+            )
+            .map(({ r }) => r);
+          if (rules.length > 0) {
+            expected[change.id] = [...new Set(rules)].sort();
+          }
+        }
+        expect(got.atRisk).toEqual(expected);
+      }),
+    { arbitrary: { runs: 150 } }
+  );
+
+  it.prop(
+    "are protected by the paths a probe names, a command as the folder it runs in, and Lion itself where it names none",
+    {
+      calls: Arbitrary.array(
+        Arbitrary.all({
+          kind: element(["repo/read", "repo/json", "repo/files", "repo/run"]),
+          name: element(["a.json", "docs", "check"]),
+          quoted: Arbitrary.schema(Schema.Boolean),
+        }),
+        { maxLength: 4 }
+      ),
+    },
+    ({ calls }) => {
+      const program = [
+        "begin",
+        ...calls.map(({ kind, name, quoted }) => [
+          kind,
+          quoted ? ["quote", name] : name,
+        ]),
+      ];
+      const commands = { check: { cwd: "packages/history" } };
+      const pathOf = (kind: string, name: string) => {
+        if (kind !== "repo/run") {
+          return name;
+        }
+        return name === "check" ? "packages/history" : ".";
+      };
+      const expected = calls.map(({ kind, name }) => pathOf(kind, name));
+      expect(pathsOf(program, commands)).toStrictEqual(
+        expected.length === 0 ? [LION] : [...new Set(expected)].sort()
+      );
+    }
+  );
+});
 
 describe("the reach map", () => {
   it.prop(

@@ -79,8 +79,19 @@ const functionsOfMutation = (m: Checked) =>
         whole: [],
       };
 
+/**
+ * What the project record's rules protect: each probe's case and the paths
+ * it reads, and each rule and the cases it predicts (see `at-risk.ts`).
+ */
+export interface Protections {
+  readonly predicts: readonly (readonly [string, string])[];
+  readonly reads: readonly (readonly [string, string])[];
+}
+
 /** What the rules pick. */
 export interface Picked {
+  /** The rules in force each change puts at risk, by change. */
+  readonly atRisk: Readonly<Record<string, readonly string[]>>;
   /** Each change's picked mutations. */
   readonly mutations: Readonly<Record<string, readonly string[]>>;
   /** Each change's picked test files. */
@@ -122,7 +133,8 @@ export const programOf = (
   map: ReachMap,
   changes: readonly Change[],
   mutations: readonly Checked[],
-  asMutations: readonly Checked[] = []
+  asMutations: readonly Checked[] = [],
+  protections: Protections = { predicts: [], reads: [] }
 ): unknown => {
   const packages = [
     ...new Set([
@@ -196,11 +208,14 @@ export const programOf = (
       "mutation",
       mutations.map((m) => [m.name, m.file])
     ),
+    ...fact("probe_reads", protections.reads),
+    ...fact("predicts", protections.predicts),
     ...fact(
       "mutation_test",
       mutations.flatMap((m) => m.tests.map((t) => [m.name, t]))
     ),
     {
+      atRisk: ["find", ["array/make", "?c", "?r"], ["at_risk", "?c", "?r"]],
       mutations: [
         "find",
         ["array/make", "?c", "?m"],
@@ -231,9 +246,13 @@ export const pick = (
   map: ReachMap,
   changes: readonly Change[],
   mutations: readonly Checked[],
-  asMutations: readonly Checked[] = []
+  asMutations: readonly Checked[] = [],
+  protections?: Protections
 ): Effect.Effect<Picked, string> =>
-  evaluate(lion, programOf(map, changes, mutations, asMutations)).pipe(
+  evaluate(
+    lion,
+    programOf(map, changes, mutations, asMutations, protections)
+  ).pipe(
     Effect.flatMap((outcome) => {
       if (!outcome.ok) {
         return Effect.fail(outcome.error);
@@ -248,6 +267,7 @@ export const pick = (
         ).values(),
       ];
       return Effect.succeed({
+        atRisk: grouped(unique(value.atRisk)),
         mutations: grouped(unique(value.mutations)),
         tests: grouped(unique(value.tests)),
         unmapped: grouped(unique(value.unmapped)),

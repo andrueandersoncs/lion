@@ -52,6 +52,7 @@
 - `bun run oracle` checks the solver against plain code: goals on one number, bounded and typed by a schema, that the solver decides, run again by plain code at sample points inside the bounds (`solver-oracle` added)
 - It also runs lints written in Lion: rules over the program read as data, one fact for each term with its JSON pointer. (`lion-check-lints` added)
 - Asks the lints `lion check` runs, Lion rules over a program read as data in [`packages/core/src/analysis/lint.ts`](../core/src/analysis/lint.ts), of every Lion program the repository holds (`variants` added)
+- `bun run affected` also names the rules of the project record a change puts at risk, before it is committed. (`affected-at-risk` added)
 
 ### Changed
 
@@ -118,6 +119,7 @@
 - With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
 - number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
 - The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
+- so the rule protects the paths those name: a file, a folder, or the folder a command runs in, and Lion's core for a probe that names none (`rule-protects` is `paths-its-probes-name`)
 
 ### Fixed
 
@@ -132,6 +134,7 @@
 - The list is what `array/make` gives with the arguments: a goal among them is asked, so `[["lambda", "args", "args"], ["small", 1]]` gives `[true]` when `small` holds 1 (`rest-parameter-goal-argument` is `asked`)
 - With exact numbers merged, the corpus task sicp-1.2.1-factorial-exact is no gap: its reference program gives 25! as 15511210043330985984000000, and the public corpus passes 49 of 55 tasks (`corpus-factorial-exact` is `passed`)
 - An exact fraction no decimal writes, as 4/3, is a value JSON cannot hold, and its JSON fails. (`grid-pairs-fraction` is `no-data`)
+- A program of strings and integers; -0 is 0, as JSON writes it. (`variants-property-negative-zero` is `normalized`)
 
 ### Documentation
 

@@ -129,7 +129,49 @@
     ["test", "?t", "?_", "?_"]
   ],
 
+  ["relation", "probe_reads", ["case", "path"]],
+  ["relation", "predicts", ["rule", "case"]],
+  ["relation", "protects", ["rule", "path"]],
+  [
+    "rule",
+    ["protects", "?r", "?p"],
+    ["predicts", "?r", "?c"],
+    ["probe_reads", "?c", "?p"]
+  ],
+  ["relation", "under", ["change", "file", "path"]],
+  [
+    "rule",
+    ["under", "?c", "?f", "?p"],
+    ["changed", "?c", "?f"],
+    ["protects", "?_", "?p"],
+    [
+      "or",
+      ["=", "?f", "?p"],
+      ["=", "?p", "."],
+      ["string/startsWith", "?f", ["string/concat", "?p", "/"]]
+    ]
+  ],
+  [
+    "rule",
+    ["under", "?c", "?f", "?p"],
+    ["touched", "?c", "?f"],
+    ["protects", "?_", "?p"],
+    [
+      "or",
+      ["=", "?f", "?p"],
+      ["=", "?p", "."],
+      ["string/startsWith", "?f", ["string/concat", "?p", "/"]]
+    ]
+  ],
+  ["relation", "at_risk", ["change", "rule"]],
+  [
+    "rule",
+    ["at_risk", "?c", "?r"],
+    ["under", "?c", "?_", "?p"],
+    ["protects", "?r", "?p"]
+  ],
   ["relation", "picked_mutation", ["change", "mutation"]],
+
   [
     "rule",
     ["picked_mutation", "?c", "?m"],

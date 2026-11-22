@@ -7,8 +7,10 @@ import { attemptLine } from "../corpus-agents.ts";
 import { examplesIn, programsOf } from "../variants.ts";
 import { word } from "./generators.ts";
 
-const program = Arbitrary.schema(
-  Schema.Array(Schema.Union([Schema.String, Schema.Int]))
+/** A program of strings and integers; -0 is 0, as JSON writes it. */
+const program = Arbitrary.map(
+  Arbitrary.schema(Schema.Array(Schema.Union([Schema.String, Schema.Int]))),
+  (items) => items.map((item) => (typeof item === "number" ? item + 0 : item))
 );
 
 describe("the programs a lint is asked of", () => {

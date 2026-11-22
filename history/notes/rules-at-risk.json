@@ -1,0 +1,29 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run affected` also names the rules of the project record a change puts at risk, before it is committed.",
+      "says": {
+        "feature": "affected-at-risk",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "so the rule protects the paths those name: a file, a folder, or the folder a command runs in, and Lion's core for a probe that names none",
+      "says": {
+        "behavior": "rule-protects",
+        "is": "paths-its-probes-name",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "A program of strings and integers; -0 is 0, as JSON writes it.",
+      "says": {
+        "behavior": "variants-property-negative-zero",
+        "is": "normalized",
+        "area": "metrics",
+        "fixes": true
+      }
+    }
+  ]
+}

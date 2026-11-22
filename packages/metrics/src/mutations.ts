@@ -912,6 +912,23 @@ const WEIGHTS: readonly Mutation[] = [
 
 export const MUTATIONS: readonly Mutation[] = [
   {
+    name: "a change to a file inside a folder a probe reads puts no rule at risk",
+    file: "packages/metrics/src/affected.json",
+    find: '      ["=", "?p", "."],\n      ["string/startsWith", "?f", ["string/concat", "?p", "/"]]\n    ]\n  ],\n  [\n    "rule",\n    ["under", "?c", "?f", "?p"],\n    ["touched"',
+    replace:
+      '      ["=", "?p", "."]\n    ]\n  ],\n  [\n    "rule",\n    ["under", "?c", "?f", "?p"],\n    ["touched"',
+    package: "metrics",
+    tests: ["src/tests/affected.test.ts"],
+  },
+  {
+    name: "a probe that reads nothing of the repository protects nothing",
+    file: "packages/metrics/src/at-risk.ts",
+    find: "  return found.length === 0 ? [LION] : [...new Set(found)].sort();",
+    replace: "  return [...new Set(found)].sort();",
+    package: "metrics",
+    tests: ["src/tests/affected.test.ts"],
+  },
+  {
     name: "a rule's head binds the variables of a list written as a call",
     file: core("analysis/lint.ts"),
     find: '    ["declared", "?w"],\n    ["not", ["rule_head", "?a"]],',
