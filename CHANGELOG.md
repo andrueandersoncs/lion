@@ -125,11 +125,11 @@
 - the source is stale when those changed since (`probe-source-stale` is `after-a-change-to-what-it-ran-on`)
 - `--agents` works the public and held-out tasks only, so an agents' run costs what it did. (`agents-work-outside-suites` is `never`)
 - `bun run capability` grades each suite by its reference programs and prints its score beside the public tasks'. (`capability-grades-outside-suites` is `by-reference-programs`)
+- The properties in `src/tests/capability.test.ts` make the reference programs of the public tasks and of every outside suite a ratchet (`outside-suite-references-gated` is `by-a-property`)
+- `sv-comp/gaps.json` says why `diamond_1` has no reference program yet, since Lion's solver cannot reason about the remainder of an unknown. (`solver-remainder-of-unknown` is `refused`)
 - With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
 - number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
-- The properties in `src/tests/capability.test.ts` make the reference programs of the public tasks and of every outside suite a ratchet (`outside-suite-references-gated` is `by-a-property`)
 - The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
-- `sv-comp/gaps.json` says why `diamond_1` has no reference program yet, since Lion's solver cannot reason about the remainder of an unknown. (`solver-remainder-of-unknown` is `refused`)
 
 ### Fixed
 
