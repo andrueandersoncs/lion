@@ -127,10 +127,10 @@
 - `bun run capability` grades each suite by its reference programs and prints its score beside the public tasks'. (`capability-grades-outside-suites` is `by-reference-programs`)
 - The properties in `src/tests/capability.test.ts` make the reference programs of the public tasks and of every outside suite a ratchet (`outside-suite-references-gated` is `by-a-property`)
 - `sv-comp/gaps.json` says why `diamond_1` has no reference program yet, since Lion's solver cannot reason about the remainder of an unknown. (`solver-remainder-of-unknown` is `refused`)
-- With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
-- number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
 - so does a file the map's commit did not hold, since no test could have reached it, even where some test ran its package's built code (`picking-file-newer-than-the-map` is `every-test-of-its-package`)
 - a test file the map lacks, such as one written after the map was made, reaches every change, as a test that runs `git` does, and counts as slow as the slowest mapped test of its package (`picking-test-file-the-map-lacks` is `picked-for-every-change`)
+- With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
+- number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
 - The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
 
 ### Fixed
