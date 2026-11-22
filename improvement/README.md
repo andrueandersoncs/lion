@@ -41,5 +41,12 @@ Each score requires the constraints:
 | mutations missed, listed | lower | `bun run mutate`, with `--full` |
 | tests' time picked, last 30 commits | lower, picking sound | `bun run affected --replay 30` and `--check` |
 | bench total ms, every benchmark | lower | `bun run bench` |
+| surprising pairs, grid | lower | `bun run pairs` |
+| flaky checks, telemetry | lower | what the commit hook logged to `out/telemetry.jsonl` |
+| capability passed by agents, per pillar and in all | higher | `bun run loop --agents`, which costs money |
+| agents' first tries that ran | higher | the same |
+| agents' failed tries of one cause, on a suite of chosen tasks | lower | `bun run loop --agents --tasks a,b` |
 
-The capability scores are answered once the corpus of phase 1B is on this branch. Until then their questions stand unanswered.
+A run of agents on some of the tasks is a suite of its own, named for how many it chose, so its scores are never compared with a run of all of them. A requirement that fails, scale or the tests, is run again, and fails a version only when it fails again.
+
+`bun run loop status` also answers how often the record's predictions came true, for scores, for requirements, and for other questions, and its rate R: capability tasks gained per hour of checks and per dollar agents spent.
