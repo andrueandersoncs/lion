@@ -17,7 +17,7 @@
 //   --base <ref>        what instrument lines removed counts from (HEAD)
 //   --skip a,b          tools to leave out: measure, capability, record,
 //                       scale, tests, bench, replay, check, instruments,
-//                       variants, oracle, pairs, telemetry, agents
+//                       stale, variants, oracle, pairs, telemetry, agents
 //   --mutations a|b     run these listed mutations, by name, split by |
 //   --repeat n          run them n times, and count the runs that caught each
 //   --full              run every listed mutation, for mutations missed
@@ -65,6 +65,7 @@ import {
   readRecord,
   readRemoved,
   readReplay,
+  readStale,
   readTurbo,
   readVariants,
 } from "./src/loop.ts";
@@ -344,6 +345,16 @@ const scores = () => {
       "telemetry",
       true,
       always(() => print(QUESTIONS.flaky, flakyOf(readLogged()).length)),
+    ],
+    [
+      "stale",
+      scripts().stale !== undefined,
+      always(() =>
+        print(
+          QUESTIONS.staleAnswers,
+          readStale(run("stale", ["bun", "run", "stale"]).text)
+        )
+      ),
     ],
     [
       "variants",

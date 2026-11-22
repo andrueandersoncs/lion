@@ -32,6 +32,15 @@ node ../skills/lion-research/scripts/build-explorer.mjs model.json --page runs/<
 
 Build the CLI first with `bunx turbo build --filter=@lionlang/cli`. The replay runs every step into a new model, and replaces `model.json` only when all of them pass.
 
+From the repository's root, `bun run stale` replays the model and lists the evidence a later change to Lion made stale ([`probes/stale.mjs`](probes/stale.mjs)). A probe's source names the commit it ran at; a Lion program depends on the core and the command line, and a run of Lion's tools on every package, so the source is stale when those changed since. The model is asked, assuming those sources stale and changing nothing, which of its present answers rest on them, by the rule `stale_answer` of step `58-si-stale`. On 2026-11-22 it printed:
+
+```
+stale probe sources, research: 23
+answers resting on stale probes, research: 213
+```
+
+Each line after those names a source, the commit it ran at, and how many answers rest on it: the probes to run again under a new source id. The improvement loop scores it as `answers resting on stale probes, research`.
+
 ## The shared frame
 
 `steps/00-core.json` is the skill's core. `steps/01-frame.src.json` holds what every run shares:

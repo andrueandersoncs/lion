@@ -1,0 +1,28 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run stale` replays the model and lists the evidence a later change to Lion made stale",
+      "says": {
+        "feature": "research-stale",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "quote": "the source is stale when those changed since",
+      "says": {
+        "behavior": "probe-source-stale",
+        "is": "after-a-change-to-what-it-ran-on",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "which of its present answers rest on them, by the rule `stale_answer` of step `58-si-stale`",
+      "says": {
+        "feature": "research-stale-answer",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

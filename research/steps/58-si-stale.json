@@ -1,0 +1,12 @@
+[
+  "begin",
+  ["relation", "stale_source", ["source", "since"]],
+  ["relation", "stale_answer", ["question", "value", "source"]],
+  [
+    "rule",
+    ["stale_answer", "?q", "?v", "?s"],
+    ["answer", "?q", "?v", "?c"],
+    ["claim", "?c", "?s", "?_", "?_"],
+    ["stale_source", "?s", "?_"]
+  ]
+]

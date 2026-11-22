@@ -912,6 +912,14 @@ const WEIGHTS: readonly Mutation[] = [
 
 export const MUTATIONS: readonly Mutation[] = [
   {
+    name: "an answer rests on a stale probe whatever source its claim comes from",
+    file: "research/steps/58-si-stale.json",
+    find: '    ["stale_source", "?s", "?_"]',
+    replace: '    ["stale_source", "?_", "?_"]',
+    package: "metrics",
+    tests: ["src/tests/stale.test.ts"],
+  },
+  {
     name: "a change to a file inside a folder a probe reads puts no rule at risk",
     file: "packages/metrics/src/affected.json",
     find: '      ["=", "?p", "."],\n      ["string/startsWith", "?f", ["string/concat", "?p", "/"]]\n    ]\n  ],\n  [\n    "rule",\n    ["under", "?c", "?f", "?p"],\n    ["touched"',

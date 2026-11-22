@@ -365,6 +365,7 @@ describe("the loop's scoreboard", () => {
             QUESTIONS.flaky,
             QUESTIONS.solverDisagreements,
             QUESTIONS.knownMistakes,
+            QUESTIONS.staleAnswers,
           ].some((q) => q.question === o.question);
         expect(o.tries).toBe(tries && score ? "d" : undefined);
       }

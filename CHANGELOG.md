@@ -53,6 +53,8 @@
 - It also runs lints written in Lion: rules over the program read as data, one fact for each term with its JSON pointer. (`lion-check-lints` added)
 - Asks the lints `lion check` runs, Lion rules over a program read as data in [`packages/core/src/analysis/lint.ts`](../core/src/analysis/lint.ts), of every Lion program the repository holds (`variants` added)
 - `bun run affected` also names the rules of the project record a change puts at risk, before it is committed. (`affected-at-risk` added)
+- `bun run stale` replays the model and lists the evidence a later change to Lion made stale (`research-stale` added)
+- which of its present answers rest on them, by the rule `stale_answer` of step `58-si-stale` (`research-stale-answer` added)
 
 ### Changed
 
@@ -116,10 +118,11 @@
 - or tried with `./try`, which logs each try's program (`corpus-try-logs-program` is `logged`)
 - the words the program's message says when it runs (`lint-and-message-wording` is `one-function`)
 - The one lint so far finds a list written as a bare array inside a rule, a find, or a query, which Lion reads as a call of its first item. (`lint-list-written-as-call` is `warned`)
+- so the rule protects the paths those name: a file, a folder, or the folder a command runs in, and Lion's core for a probe that names none (`rule-protects` is `paths-its-probes-name`)
 - With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
 - number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
+- the source is stale when those changed since (`probe-source-stale` is `after-a-change-to-what-it-ran-on`)
 - The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
-- so the rule protects the paths those name: a file, a folder, or the folder a command runs in, and Lion's core for a probe that names none (`rule-protects` is `paths-its-probes-name`)
 
 ### Fixed
 
@@ -132,9 +135,9 @@
 - A name as V8 reports it, read as the parse names the function: without the suffix a bundler adds to keep names apart, the word an accessor or a bound function starts with, or the object a property is written in, as `module.add` is the property `add`. (`affected-v8-property-name` is `last-part`)
 - No map was written: make the tests pass, with nothing else running, and map again. (`reach-map-after-failed-tests` is `refused`)
 - The list is what `array/make` gives with the arguments: a goal among them is asked, so `[["lambda", "args", "args"], ["small", 1]]` gives `[true]` when `small` holds 1 (`rest-parameter-goal-argument` is `asked`)
+- A program of strings and integers; -0 is 0, as JSON writes it. (`variants-property-negative-zero` is `normalized`)
 - With exact numbers merged, the corpus task sicp-1.2.1-factorial-exact is no gap: its reference program gives 25! as 15511210043330985984000000, and the public corpus passes 49 of 55 tasks (`corpus-factorial-exact` is `passed`)
 - An exact fraction no decimal writes, as 4/3, is a value JSON cannot hold, and its JSON fails. (`grid-pairs-fraction` is `no-data`)
-- A program of strings and integers; -0 is 0, as JSON writes it. (`variants-property-negative-zero` is `normalized`)
 
 ### Documentation
 

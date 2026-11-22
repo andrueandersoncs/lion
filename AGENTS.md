@@ -85,6 +85,9 @@ bun run oracle
 # lion check's lints, written in Lion, asked of every program the repository holds
 bun run variants
 
+# The research model's evidence a later change to Lion made stale
+bun run stale
+
 # Measure complexity, speed, growth, and how well the tests catch broken code
 bun run measure --against main
 bun run bench --against main

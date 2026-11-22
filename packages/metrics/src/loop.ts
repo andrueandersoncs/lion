@@ -82,6 +82,10 @@ export const QUESTIONS = {
     label: "solver disagreements, oracle",
     question: { "solver disagreements": "oracle" },
   },
+  staleAnswers: {
+    label: "answers resting on stale probes, research",
+    question: { "answers resting on stale probes": "research" },
+  },
   surprising: {
     label: "surprising pairs, grid",
     question: { "surprising pairs": "grid" },
@@ -246,6 +250,13 @@ export const readAgents = (printed: string): Record<string, AgentsRead> => {
 const SURPRISING = /^surprising pairs, grid: (\d+)$/m;
 const DISAGREEING = /^solver disagreements, oracle: (\d+)$/m;
 const MISTAKES = /^known mistakes found, programs: (\d+)$/m;
+const STALE = /^answers resting on stale probes, research: (\d+)$/m;
+
+/** How many of the research model's answers rest on stale probes, from what `bun run stale` printed. */
+export const readStale = (printed: string): number | undefined => {
+  const found = STALE.exec(printed);
+  return found === null ? undefined : Number(found[1]);
+};
 
 /** How many places the lints warn of, from what `bun run variants` printed. */
 export const readVariants = (printed: string): number | undefined => {
@@ -416,6 +427,7 @@ const SCORED = new Set<string>([
     QUESTIONS.flaky,
     QUESTIONS.solverDisagreements,
     QUESTIONS.knownMistakes,
+    QUESTIONS.staleAnswers,
   ].map((q) => q.label),
 ]);
 

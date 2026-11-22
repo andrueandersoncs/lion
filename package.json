@@ -22,6 +22,7 @@
     "loop": "bun run --cwd packages/metrics loop",
     "oracle": "bun run --cwd packages/metrics oracle",
     "variants": "bun run --cwd packages/metrics variants",
+    "stale": "cd research && node ../skills/lion-research/scripts/replay.mjs > /dev/null && cd .. && node research/probes/stale.mjs",
     "pairs": "bun run --cwd packages/metrics pairs",
     "history": "bun run --cwd packages/history history"
   },
