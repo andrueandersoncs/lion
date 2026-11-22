@@ -1,0 +1,72 @@
+{
+  "beliefs": [
+    {
+      "id": "later-work-2",
+      "statement": "With a test file the reach map lacks picked for every change, and a file the map's commit did not hold read as one no test reached, picking is sound for every listed mutation with the same map, 26 commits old, and the later work's scores and every requirement are as the last observation saw them",
+      "predicts": [
+        {
+          "question": {
+            "picking unsound": "listed mutations"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "capability passed": "openrulebench",
+            "pillar": "all"
+          },
+          "value": 4
+        },
+        {
+          "question": {
+            "capability passed": "sv-comp",
+            "pillar": "all"
+          },
+          "value": 2
+        },
+        {
+          "question": {
+            "known mistakes found": "programs"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "answers resting on stale probes": "research"
+          },
+          "value": 213
+        },
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}
