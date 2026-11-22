@@ -1,0 +1,522 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "ran"
+   ],
+   [
+    "quote",
+    "bun run loop scores \"--skip\" \"bench,pairs,replay,check\" \"--fail-fast\""
+   ]
+  ],
+  [
+   "about",
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "."
+   ],
+   [
+    "quote",
+    "167dfb98f728ef6b7e0f03bb1976865538de420c"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-3"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "ran measure: bun run measure, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "measure",
+     "observation": "oracle-baseline"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-4"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "grid exceptions, core: 3"
+   ],
+   [
+    "quote",
+    {
+     "grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-5"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "undocumented grid exceptions, core: 0"
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-6"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "instruments",
+     "observation": "oracle-baseline"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-7"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "instrument lines removed, since the base: 0"
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-8"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "flaky checks, telemetry: 0"
+   ],
+   [
+    "quote",
+    {
+     "flaky checks": "telemetry"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-9"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "ran oracle: bun run oracle, exit 0, 0 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "oracle",
+     "observation": "oracle-baseline"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-10"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "solver disagreements, oracle: 0"
+   ],
+   [
+    "quote",
+    {
+     "solver disagreements": "oracle"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-11"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "ran capability: bun run capability --json, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "capability",
+     "observation": "oracle-baseline"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-12"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, computation: 25"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    25
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-13"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, logic: 14"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    14
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-14"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, proofs: 10"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    10
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-15"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, all: 49"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    49
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-16"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "code lines per passed task, core: 478.4"
+   ],
+   [
+    "quote",
+    {
+     "code lines per passed task": "core"
+    }
+   ],
+   [
+    "quote",
+    478.4
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-17"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "messages per passed task, core: 4.6"
+   ],
+   [
+    "quote",
+    {
+     "messages per passed task": "core"
+    }
+   ],
+   [
+    "quote",
+    4.6
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-18"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "ran scale: bun run scale, exit 0, 47 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "scale",
+     "observation": "oracle-baseline"
+    }
+   ],
+   [
+    "quote",
+    47
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-19"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "workloads faster than linear, scale: 0"
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-20"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "ran record: bun run history check, exit 1, 80 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "record",
+     "observation": "oracle-baseline"
+    }
+   ],
+   [
+    "quote",
+    80
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "oracle-baseline-21"
+   ],
+   [
+    "quote",
+    "oracle-baseline"
+   ],
+   [
+    "quote",
+    "record check, history: fails"
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "fails"
+   ]
+  ]
+ ],
+ "recorded"
+]

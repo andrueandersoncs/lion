@@ -108,10 +108,10 @@
 - A schema that cannot stand for each value it allows gives a listing and the solver the same reason, from one module, `logic/reasons.ts`: a predicate, a schema that names itself, `schema/open` without the schema of its rest, `schema/arrayOf` without the most items, and a shape `schema/open` cannot use. (`schema-standing-reasons` is `one-wording`, was `two-wordings`)
 - The solver says of a division by zero what plain code says, that it `has no finite result`, of a list of unknown length that it goes `over` one, and of a call of a function no goal binds that it is `a call of a function no goal binds`. (`solver-refusal-wordings` is `one-wording`, was `own-wordings`)
 - A call in a rule whose function waited for a variable that is not a function says what a call says, and names the call: `5 is not a function, so it cannot be called in [5,1].` (`waiting-call-not-a-function-message` is `same-as-plain-code`, was `own-wording`)
+- A case disagrees when the solver proves that no value meets the goal and plain code finds a sample that does, or when a value the solver gives is one plain code refuses. (`solver-disagreements` is `none`)
 - With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
 - number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
 - The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
-- A case disagrees when the solver proves that no value meets the goal and plain code finds a sample that does, or when a value the solver gives is one plain code refuses. (`solver-disagreements` is `none`)
 
 ### Fixed
 

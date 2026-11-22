@@ -1,0 +1,86 @@
+{
+  "scores": [
+    {
+      "question": {
+        "solver disagreements": "oracle"
+      },
+      "better": "lower",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ],
+  "beliefs": [
+    {
+      "id": "oracle-1",
+      "statement": "With every number exact, the solver and plain code agree on all 720 cases of the oracle, and every requirement holds",
+      "predicts": [
+        {
+          "question": {
+            "solver disagreements": "oracle"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}
