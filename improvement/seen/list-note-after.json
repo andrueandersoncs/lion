@@ -1,0 +1,7 @@
+{
+ "hashes": {
+  ".": "34baf44fad0e998ea5688f0ca793c711476e0862"
+ },
+ "kind": "ran",
+ "what": "bun run loop scores \"--agents\" \"--budget\" \"5\" \"--tasks\" \"datalog-andersen-points-to,datalog-connected-components,datalog-unreachable-nodes,sicp-4.4.1-outranked-by-and-wheels\" \"--skip\" \"bench,capability,pairs,replay,check\" \"--fail-fast\""
+}

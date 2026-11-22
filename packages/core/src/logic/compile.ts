@@ -687,6 +687,41 @@ const unlistedNote = (literal: Literal) => {
   return why === undefined ? "" : ` ${why}`;
 };
 
+/**
+ * A call whose function is a logic variable, somewhere in a term: what an
+ * array of variables, such as `["?a", "?b"]`, reads as, since an array is
+ * always a call.
+ */
+const variableCall = (term: unknown): DeferredCall | undefined => {
+  if (term instanceof DeferredCall && term.fn instanceof LogicVariable) {
+    return term;
+  }
+  let parts: readonly unknown[] = [];
+  if (term instanceof LogicValue) {
+    parts = term.parts;
+  } else if (Array.isArray(term)) {
+    parts = term;
+  }
+  for (const part of parts) {
+    const found = variableCall(part);
+    if (found !== undefined) {
+      return found;
+    }
+  }
+  return;
+};
+
+/**
+ * What a goal that cannot run says besides: when it holds a call of a
+ * logic variable, that the call is no list, and how to write the list.
+ */
+const callNote = (literal: Literal) => {
+  const call = variableCall(literal);
+  return call === undefined
+    ? ""
+    : ` ${show(call)} calls ${show(call.fn)}, since an array is always a call. To match a list, write ["array/make",${[call.fn, ...call.args].map(show).join(",")}].`;
+};
+
 /** Variables as the program wrote them, without what `exists` adds. */
 const variableNames = (names: readonly string[]) =>
   [...new Set(names.map((name) => `?${name.replace(RENAMED, "")}`))].join(", ");
@@ -768,7 +803,7 @@ export const planLiterals = (
         .flatMap((part) => wants(part, scope))
         .filter((name) => !(bound.has(name) || name.startsWith("_")));
       return problem(
-        `Unsafe goal ${show(stuck)}: ${variableNames(unbound) || "its inputs"} must first be bound by a relation, "=", "in", or "schema/fits?", or typed by a schema that says what kind its values are, such as value/integer?.${unlistedNote(stuck)}`
+        `Unsafe goal ${show(stuck)}: ${variableNames(unbound) || "its inputs"} must first be bound by a relation, "=", "in", or "schema/fits?", or typed by a schema that says what kind its values are, such as value/integer?.${unlistedNote(stuck)}${callNote(stuck)}`
       );
     }
     if (next instanceof Solved) {

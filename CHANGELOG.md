@@ -74,6 +74,7 @@
 - The corpus is first of everything left to build, across every run. (`research-to-build-first` is `capability-corpus`)
 - a lambda that takes its arguments as a list gave its own body back as data when one of its arguments was a relation call, found by the pairs of the interop grid (`rest-parameter-goal-argument-before` is `body-as-data`)
 - Every cause the rules know is printed, 0 where no try failed so, so a cause that went away answers its question. (`loop-agent-cause-absent` is `zero`)
+- The message of a goal that cannot run says so when it holds such a call: `["in", ["?a", "?b"], ["quote", [[1, 2], [3, 4]]]]` is refused with `["?a","?b"] calls "?a", since an array is always a call. To match a list, write ["array/make","?a","?b"].` (`unsafe-goal-list-written-as-call` is `says-how-to-write-the-list`)
 
 ### Fixed
 

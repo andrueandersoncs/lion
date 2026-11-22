@@ -907,6 +907,13 @@ const WEIGHTS: readonly Mutation[] = [
 
 export const MUTATIONS: readonly Mutation[] = [
   {
+    name: "a goal that cannot run says nothing of a list written as a call",
+    file: core("logic/compile.ts"),
+    find: "  const call = variableCall(literal);\n  return call === undefined",
+    replace: "  const call = variableCall(literal);\n  return true",
+    tests: ["src/logic/tests/list-patterns.test.ts"],
+  },
+  {
     name: "a lambda's list of arguments waits for a goal among them instead of asking it",
     file: core("evaluation/special-forms/lambda.ts"),
     find: '  applyIn(makeList, args, "array/make", undefined, undefined);',

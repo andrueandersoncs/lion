@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "The message of a goal that cannot run says so when it holds such a call: `[\"in\", [\"?a\", \"?b\"], [\"quote\", [[1, 2], [3, 4]]]]` is refused with `[\"?a\",\"?b\"] calls \"?a\", since an array is always a call. To match a list, write [\"array/make\",\"?a\",\"?b\"].`",
+      "says": {
+        "behavior": "unsafe-goal-list-written-as-call",
+        "is": "says-how-to-write-the-list",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Of 18 failed tries, 10 in 4 tasks write a list pattern as a bare array, which Lion reads as a call.",
+      "says": {
+        "measured": "agents-failed-tries-list-pattern",
+        "after": 10,
+        "area": "metrics"
+      }
+    }
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "observations": [
+    {
+      "id": "list-note-before-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "list-note-before"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "list-note-before",
+      "value": 1
+    },
+    {
+      "id": "list-note-before-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "list-note-before",
+      "value": 3
+    },
+    {
+      "id": "list-note-before-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "list-note-before"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-8",
+      "question": {
+        "flaky checks": "telemetry"
+      },
+      "quote": "flaky checks, telemetry: 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-9",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "list-note-before"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 42 s",
+      "source": "list-note-before",
+      "value": 42
+    },
+    {
+      "id": "list-note-before-10",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-11",
+      "question": {
+        "seconds of check": "record",
+        "observation": "list-note-before"
+      },
+      "quote": "ran record: bun run history check, exit 0, 68 s",
+      "source": "list-note-before",
+      "value": 68
+    },
+    {
+      "id": "list-note-before-12",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "list-note-before",
+      "value": "holds"
+    },
+    {
+      "id": "list-note-before-13",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 96",
+      "source": "list-note-before",
+      "value": 96
+    },
+    {
+      "id": "list-note-before-14",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "list-note-before"
+      },
+      "quote": "ran tests: bun run test, exit 0, 137 s",
+      "source": "list-note-before",
+      "value": 137
+    },
+    {
+      "id": "list-note-before-15",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-16",
+      "question": {
+        "seconds of check": "agents",
+        "observation": "list-note-before"
+      },
+      "quote": "ran agents: bun run capability --agents --json --budget 5 --tasks datalog-andersen-points-to,datalog-connected-components,datalog-unreachable-nodes,sicp-4.4.1-outranked-by-and-wheels, exit 0, 38 s",
+      "source": "list-note-before",
+      "value": 38
+    },
+    {
+      "id": "list-note-before-17",
+      "question": {
+        "capability passed": "public by sonnet agents (4 chosen tasks)",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, public by sonnet agents (4 chosen tasks), computation: 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-18",
+      "question": {
+        "capability passed": "public by sonnet agents (4 chosen tasks)",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, public by sonnet agents (4 chosen tasks), logic: 4",
+      "source": "list-note-before",
+      "value": 4
+    },
+    {
+      "id": "list-note-before-19",
+      "question": {
+        "capability passed": "public by sonnet agents (4 chosen tasks)",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, public by sonnet agents (4 chosen tasks), proofs: 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-20",
+      "question": {
+        "capability passed": "public by sonnet agents (4 chosen tasks)",
+        "pillar": "all"
+      },
+      "quote": "capability passed, public by sonnet agents (4 chosen tasks), all: 4",
+      "source": "list-note-before",
+      "value": 4
+    },
+    {
+      "id": "list-note-before-21",
+      "question": {
+        "agents' cost usd": "public by sonnet agents (4 chosen tasks)"
+      },
+      "quote": "agents' cost usd, public by sonnet agents (4 chosen tasks): 1.34",
+      "source": "list-note-before",
+      "value": 1.34
+    },
+    {
+      "id": "list-note-before-22",
+      "question": {
+        "agents' first tries that ran": "public by sonnet agents (4 chosen tasks)"
+      },
+      "quote": "agents' first tries that ran, public by sonnet agents (4 chosen tasks): 2",
+      "source": "list-note-before",
+      "value": 2
+    },
+    {
+      "id": "list-note-before-23",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "list-pattern-as-call"
+      },
+      "quote": "agents' failed tries, list-pattern-as-call, public by sonnet agents (4 chosen tasks): 3",
+      "source": "list-note-before",
+      "value": 3
+    },
+    {
+      "id": "list-note-before-24",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "unsafe-goal"
+      },
+      "quote": "agents' failed tries, unsafe-goal, public by sonnet agents (4 chosen tasks): 3",
+      "source": "list-note-before",
+      "value": 3
+    },
+    {
+      "id": "list-note-before-25",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "not-a-function"
+      },
+      "quote": "agents' failed tries, not-a-function, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-26",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "rule-head-computes"
+      },
+      "quote": "agents' failed tries, rule-head-computes, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-27",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "unbound-name"
+      },
+      "quote": "agents' failed tries, unbound-name, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-28",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "arity"
+      },
+      "quote": "agents' failed tries, arity, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-29",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "argument-type"
+      },
+      "quote": "agents' failed tries, argument-type, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-30",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "unsafe-rule"
+      },
+      "quote": "agents' failed tries, unsafe-rule, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-31",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "recursion-through-negation"
+      },
+      "quote": "agents' failed tries, recursion-through-negation, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-32",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "relation-declared-twice"
+      },
+      "quote": "agents' failed tries, relation-declared-twice, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-33",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "not-a-call"
+      },
+      "quote": "agents' failed tries, not-a-call, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-34",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "fact-not-data"
+      },
+      "quote": "agents' failed tries, fact-not-data, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-35",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "invariant"
+      },
+      "quote": "agents' failed tries, invariant, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-36",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "not-json"
+      },
+      "quote": "agents' failed tries, not-json, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-37",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "no-program"
+      },
+      "quote": "agents' failed tries, no-program, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-38",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "shape"
+      },
+      "quote": "agents' failed tries, shape, public by sonnet agents (4 chosen tasks): 0",
+      "source": "list-note-before",
+      "value": 0
+    },
+    {
+      "id": "list-note-before-39",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "other"
+      },
+      "quote": "agents' failed tries, other, public by sonnet agents (4 chosen tasks): 2",
+      "source": "list-note-before",
+      "value": 2
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+$ bun run loop scores "--agents" "--budget" "5" "--tasks" "datalog-andersen-points-to,datalog-connected-components,datalog-unreachable-nodes,sicp-4.4.1-outranked-by-and-wheels" "--skip" "bench,capability,pairs,replay,check" "--fail-fast"
+$ bun run --cwd packages/metrics loop scores --agents --budget "5" --tasks "datalog-andersen-points-to,datalog-connected-components,datalog-unreachable-nodes,sicp-4.4.1-outranked-by-and-wheels" --skip "bench,capability,pairs,replay,check" --fail-fast
+$ bun run loop.ts scores --agents --budget "5" --tasks "datalog-andersen-points-to,datalog-connected-components,datalog-unreachable-nodes,sicp-4.4.1-outranked-by-and-wheels" --skip "bench,capability,pairs,replay,check" --fail-fast
+ran measure: bun run measure, exit 0, 1 s
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 0
+flaky checks, telemetry: 0
+ran scale: bun run scale, exit 0, 42 s
+workloads faster than linear, scale: 0
+ran record: bun run history check, exit 0, 68 s
+record check, history: holds
+rules no probe checks, record: 96
+ran tests: bun run test, exit 0, 137 s
+failing test tasks, all packages: 0
+ran agents: bun run capability --agents --json --budget 5 --tasks datalog-andersen-points-to,datalog-connected-components,datalog-unreachable-nodes,sicp-4.4.1-outranked-by-and-wheels, exit 0, 38 s
+capability passed, public by sonnet agents (4 chosen tasks), computation: 0
+capability passed, public by sonnet agents (4 chosen tasks), logic: 4
+capability passed, public by sonnet agents (4 chosen tasks), proofs: 0
+capability passed, public by sonnet agents (4 chosen tasks), all: 4
+agents' cost usd, public by sonnet agents (4 chosen tasks): 1.34
+agents' first tries that ran, public by sonnet agents (4 chosen tasks): 2
+agents' failed tries, list-pattern-as-call, public by sonnet agents (4 chosen tasks): 3
+agents' failed tries, unsafe-goal, public by sonnet agents (4 chosen tasks): 3
+agents' failed tries, not-a-function, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, rule-head-computes, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, unbound-name, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, arity, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, argument-type, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, unsafe-rule, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, recursion-through-negation, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, relation-declared-twice, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, not-a-call, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, fact-not-data, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, invariant, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, not-json, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, no-program, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, shape, public by sonnet agents (4 chosen tasks): 0
+agents' failed tries, other, public by sonnet agents (4 chosen tasks): 2
+[exit status 0]

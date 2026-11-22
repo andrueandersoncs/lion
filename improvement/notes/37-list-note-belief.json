@@ -1,0 +1,81 @@
+{
+  "problems": [
+    {
+      "id": "p-list-pattern",
+      "statement": "Agents write a list pattern as a bare array, which Lion reads as a call of its first item, and the message of the goal that cannot run does not say so",
+      "question": {
+        "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+        "cause": "list-pattern-as-call"
+      },
+      "value": 3
+    }
+  ],
+  "directions": [
+    {
+      "id": "list-pattern-message",
+      "statement": "Say in the message of a goal that cannot run, and in the docs agents read, that an array is a call, and how to write the list",
+      "addresses": [
+        "p-list-pattern"
+      ]
+    }
+  ],
+  "beliefs": [
+    {
+      "id": "list-note-1",
+      "tries": "list-pattern-message",
+      "statement": "With the message naming the call and the docs saying how to write a list, an agent that writes a list as a bare array fixes it after one failed try, so the four tasks have at most one such failed try, all four still pass, and as many first tries run as before",
+      "predicts": [
+        {
+          "question": {
+            "agents' failed tries": "public by sonnet agents (4 chosen tasks)",
+            "cause": "list-pattern-as-call"
+          },
+          "value": 1
+        },
+        {
+          "question": {
+            "capability passed": "public by sonnet agents (4 chosen tasks)",
+            "pillar": "all"
+          },
+          "value": 4
+        },
+        {
+          "question": {
+            "agents' first tries that ran": "public by sonnet agents (4 chosen tasks)"
+          },
+          "value": 2
+        },
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}
