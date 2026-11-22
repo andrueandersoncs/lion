@@ -21,7 +21,7 @@ import {
 } from "@/errors/evaluation";
 import { answer, isWriting, known } from "@/evaluation/asking";
 import { nameOrString } from "@/evaluation/base-forms/primitive";
-import { Pending } from "@/evaluation/compiled";
+import { Pending, toEffect } from "@/evaluation/compiled";
 import {
   assign,
   declares,
@@ -183,7 +183,7 @@ const makeLambda = (
       if (rest) {
         // One name is bound to the list of every argument.
         const frame = makeEnvironment(
-          { [parameters[0] as string]: argumentList(given) },
+          { [parameters[0] as string]: yield* toEffect(argumentList(given)) },
           environment,
           true
         );

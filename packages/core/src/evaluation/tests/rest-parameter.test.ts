@@ -25,6 +25,32 @@ const SUM = ["lambda", "xs", ["array/reduce", "xs", 0, "number/add"]];
 
 const sum = (values: readonly number[]) => values.reduce((a, b) => a + b, 0);
 
+/** An argument: a number, a goal on facts, its negation, or a find. */
+const argument = Arbitrary.flatMap(
+  Arbitrary.schema(
+    Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 3 }))
+  ),
+  (kind) =>
+    [
+      small,
+      Arbitrary.map(small, (n) => ["small", n]),
+      Arbitrary.map(small, (n) => ["not", ["small", n]]),
+      Arbitrary.map(small, (n) => [
+        "find",
+        "?y",
+        ["and", ["small", "?y"], ["number/lessThan", "?y", n]],
+      ]),
+    ][kind] as Arbitrary.Arbitrary<unknown>
+);
+
+/** What a body does with the list of the arguments. */
+const BODIES: readonly ((list: unknown) => unknown)[] = [
+  (list) => list,
+  (list) => ["array/length", list],
+  (list) => ["array/map", list, ["lambda", ["v"], ["value/boolean?", "v"]]],
+  (list) => ["array/reduce", list, 0, "number/add"],
+];
+
 describe("a lambda with one name for its parameters", () => {
   it.effect.prop(
     "gets every argument as a list, called directly, through func/apply, and through func/partial",
@@ -195,6 +221,41 @@ describe("a lambda with one name for its parameters", () => {
             ["number/add", ...names],
           ])
         ).toEqual([{}]);
+      })
+  );
+
+  it.effect.prop(
+    "gives what a lambda with as many parameters gives with array/make of them, whatever the arguments are, goals and finds among them",
+    {
+      args: Arbitrary.array(argument, { maxLength: 3 }),
+      body: Arbitrary.schema(
+        Schema.Int.check(
+          Schema.isBetween({ minimum: 0, maximum: BODIES.length - 1 })
+        )
+      ),
+    },
+    ({ args, body }) =>
+      Effect.gen(function* () {
+        const facts = [
+          ["relation", "small", ["x"]],
+          ["fact", ["small", 1], ["small", 2]],
+        ];
+        const names = args.map((_, at) => `a${at}`);
+        const of = BODIES[body] as (list: unknown) => unknown;
+        const outcome = (call: unknown) =>
+          run(["begin", ...facts, call], stdlib).pipe(
+            Effect.map((value) => ({ value: JSON.stringify(value) })),
+            Effect.catch((error) => Effect.succeed({ error: String(error) }))
+          );
+        const rest = yield* outcome([["lambda", "args", of("args")], ...args]);
+        const fixed = yield* outcome([
+          ["lambda", names, of(["array/make", ...names])],
+          ...args,
+        ]);
+        expect("error" in rest).toBe("error" in fixed);
+        if ("value" in rest && "value" in fixed) {
+          expect(rest.value).toBe(fixed.value);
+        }
       })
   );
 });

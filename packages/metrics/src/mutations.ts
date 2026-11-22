@@ -131,8 +131,8 @@ const SCHEME_CASE_MUTATIONS: readonly Mutation[] = [
   {
     name: "a lambda with one name for its parameters gets its first argument",
     file: core("evaluation/special-forms/lambda.ts"),
-    find: "    bindings.set(parameters[0] as string, argumentList(args));",
-    replace: "    bindings.set(parameters[0] as string, args[0]);",
+    find: "runBody(lambda, [list], now)",
+    replace: "runBody(lambda, [args[0]], now)",
     tests: ["src/evaluation/tests/rest-parameter.test.ts"],
   },
   {
@@ -145,7 +145,7 @@ const SCHEME_CASE_MUTATIONS: readonly Mutation[] = [
   {
     name: "a list of arguments that holds a logic variable does not wait",
     file: core("evaluation/special-forms/lambda.ts"),
-    find: '  args.some((arg) => arg instanceof LogicValue)\n    ? new DeferredCall(makeList, "array/make", [...args])\n    : [...args];',
+    find: '  applyIn(makeList, args, "array/make", undefined, undefined);',
     replace: "  [...args];",
     tests: ["src/evaluation/tests/rest-parameter.test.ts"],
   },
@@ -906,6 +906,14 @@ const WEIGHTS: readonly Mutation[] = [
 ];
 
 export const MUTATIONS: readonly Mutation[] = [
+  {
+    name: "a lambda's list of arguments waits for a goal among them instead of asking it",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: '  applyIn(makeList, args, "array/make", undefined, undefined);',
+    replace:
+      '  args.some((arg) => arg instanceof LogicValue)\n    ? new DeferredCall(makeList, "array/make", [...args])\n    : [...args];',
+    tests: ["src/evaluation/tests/rest-parameter.test.ts"],
+  },
   {
     name: "a property V8 names by its object keeps the object's name",
     file: "packages/metrics/src/functions.ts",

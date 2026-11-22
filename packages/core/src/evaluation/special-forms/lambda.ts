@@ -251,20 +251,31 @@ export const enter = (
   return run(lambda, args, depth);
 };
 
-/** Runs a Lion function's body on arguments it takes. */
+/**
+ * Runs a Lion function's body on arguments it takes. A lambda with one name
+ * for its parameters runs it on the list of them, once that list is made.
+ */
 const run = (
   lambda: Lambda,
   args: readonly unknown[],
   depth: number
+): unknown =>
+  lambda.rest
+    ? andThen(argumentList(args), depth, (list, now) =>
+        runBody(lambda, [list], now)
+      )
+    : runBody(lambda, args, depth);
+
+/** Runs a Lion function's body with its parameters bound to the values given. */
+const runBody = (
+  lambda: Lambda,
+  args: readonly unknown[],
+  depth: number
 ): unknown => {
-  const { parameters, rest } = lambda;
+  const { parameters } = lambda;
   const bindings = new Map<string, unknown>();
-  if (rest) {
-    bindings.set(parameters[0] as string, argumentList(args));
-  } else {
-    for (const [at, parameter] of parameters.entries()) {
-      bindings.set(parameter, args[at]);
-    }
+  for (const [at, parameter] of parameters.entries()) {
+    bindings.set(parameter, args[at]);
   }
   predeclare(bindings, lambda.defined);
   const scope: Environment = {
@@ -380,14 +391,13 @@ readsOnlyArguments({ makeList });
 
 /**
  * The list of a call's arguments, which a lambda with one name for its
- * parameters is given: a list, or, when an argument waits for a logic
- * variable, the call of `array/make` that makes it once the variable is
- * bound, as a list written with the arguments would be.
+ * parameters is given: what `array/make` gives with them, as a list written
+ * with the arguments would be. A goal among them is asked, and when one
+ * waits for a logic variable, the list is the call of `array/make` that
+ * makes it once the variable is bound.
  */
 export const argumentList = (args: readonly unknown[]): unknown =>
-  args.some((arg) => arg instanceof LogicValue)
-    ? new DeferredCall(makeList, "array/make", [...args])
-    : [...args];
+  applyIn(makeList, args, "array/make", undefined, undefined);
 
 /**
  * A value that holds lambdas, with those lambdas closed: the parts of a list

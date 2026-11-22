@@ -71,6 +71,7 @@
 - A check that passed and failed on the same tree is flaky, since the files did not decide its outcome. `bun run loop flaky` lists them, and the scoreboard counts them as `flaky checks, telemetry`. (`flaky-check` is `passed-and-failed-on-one-tree`)
 - A filter that fails whatever ?x is, such as the tail of an empty list, is refused when the invariant is declared, before the facts or after them. (`invariant-failing-filter-order` is `refused-either-way`)
 - The corpus is first of everything left to build, across every run. (`research-to-build-first` is `capability-corpus`)
+- a lambda that takes its arguments as a list gave its own body back as data when one of its arguments was a relation call, found by the pairs of the interop grid (`rest-parameter-goal-argument-before` is `body-as-data`)
 
 ### Fixed
 
@@ -82,6 +83,7 @@
 - The named functions that ran as the imports loaded, such as those that build the library's functions. A function they built runs in the tests with no name of its own, so a change inside it reaches the tests through the function that built it. (`affected-builder-at-load` is `reached`)
 - A name as V8 reports it, read as the parse names the function: without the suffix a bundler adds to keep names apart, the word an accessor or a bound function starts with, or the object a property is written in, as `module.add` is the property `add`. (`affected-v8-property-name` is `last-part`)
 - No map was written: make the tests pass, with nothing else running, and map again. (`reach-map-after-failed-tests` is `refused`)
+- The list is what `array/make` gives with the arguments: a goal among them is asked, so `[["lambda", "args", "args"], ["small", 1]]` gives `[true]` when `small` holds 1 (`rest-parameter-goal-argument` is `asked`)
 
 ### Documentation
 

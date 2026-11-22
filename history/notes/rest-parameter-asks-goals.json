@@ -1,0 +1,21 @@
+{
+  "claims": [
+    {
+      "quote": "The list is what `array/make` gives with the arguments: a goal among them is asked, so `[[\"lambda\", \"args\", \"args\"], [\"small\", 1]]` gives `[true]` when `small` holds 1",
+      "says": {
+        "behavior": "rest-parameter-goal-argument",
+        "is": "asked",
+        "area": "evaluation",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "a lambda that takes its arguments as a list gave its own body back as data when one of its arguments was a relation call, found by the pairs of the interop grid",
+      "says": {
+        "behavior": "rest-parameter-goal-argument-before",
+        "is": "body-as-data",
+        "area": "evaluation"
+      }
+    }
+  ]
+}
