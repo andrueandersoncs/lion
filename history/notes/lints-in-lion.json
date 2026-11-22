@@ -1,0 +1,40 @@
+{
+  "claims": [
+    {
+      "quote": "It also runs lints written in Lion: rules over the program read as data, one fact for each term with its JSON pointer.",
+      "says": {
+        "feature": "lion-check-lints",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The one lint so far finds a list written as a bare array inside a rule, a find, or a query, which Lion reads as a call of its first item.",
+      "says": {
+        "behavior": "lint-list-written-as-call",
+        "is": "warned",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "the words the program's message says when it runs",
+      "says": {
+        "behavior": "lint-and-message-wording",
+        "is": "one-function",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "Asks the lints `lion check` runs, Lion rules over a program read as data in [`packages/core/src/analysis/lint.ts`](../core/src/analysis/lint.ts), of every Lion program the repository holds",
+      "says": { "feature": "variants", "kind": "command", "present": true }
+    },
+    {
+      "quote": "or tried with `./try`, which logs each try's program",
+      "says": {
+        "behavior": "corpus-try-logs-program",
+        "is": "logged",
+        "area": "metrics"
+      }
+    }
+  ]
+}

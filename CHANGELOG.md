@@ -50,6 +50,8 @@
 - `bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs (`scale-hub-join` added)
 - solver disagreements, oracle (`loop-oracle` added)
 - `bun run oracle` checks the solver against plain code: goals on one number, bounded and typed by a schema, that the solver decides, run again by plain code at sample points inside the bounds (`solver-oracle` added)
+- It also runs lints written in Lion: rules over the program read as data, one fact for each term with its JSON pointer. (`lion-check-lints` added)
+- Asks the lints `lion check` runs, Lion rules over a program read as data in [`packages/core/src/analysis/lint.ts`](../core/src/analysis/lint.ts), of every Lion program the repository holds (`variants` added)
 
 ### Changed
 
@@ -110,6 +112,9 @@
 - A call in a rule whose function waited for a variable that is not a function says what a call says, and names the call: `5 is not a function, so it cannot be called in [5,1].` (`waiting-call-not-a-function-message` is `same-as-plain-code`, was `own-wording`)
 - A case disagrees when the solver proves that no value meets the goal and plain code finds a sample that does, or when a value the solver gives is one plain code refuses. (`solver-disagreements` is `none`)
 - The model now calls the solver check, telemetry, the improvement record, and pair coverage things Lion does already, and picking tests by function has left what is to build. (`research-self-improvement-after-build` is `recorded`)
+- or tried with `./try`, which logs each try's program (`corpus-try-logs-program` is `logged`)
+- the words the program's message says when it runs (`lint-and-message-wording` is `one-function`)
+- The one lint so far finds a list written as a bare array inside a rule, a find, or a query, which Lion reads as a call of its first item. (`lint-list-written-as-call` is `warned`)
 - With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
 - number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
 - The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)

@@ -62,6 +62,10 @@ export const QUESTIONS = {
     label: "messages per passed task, core",
     question: { "messages per passed task": "core" },
   },
+  knownMistakes: {
+    label: "known mistakes found, programs",
+    question: { "known mistakes found": "programs" },
+  },
   missed: {
     label: "mutations missed, listed",
     question: { "mutations missed": "listed" },
@@ -241,6 +245,13 @@ export const readAgents = (printed: string): Record<string, AgentsRead> => {
 
 const SURPRISING = /^surprising pairs, grid: (\d+)$/m;
 const DISAGREEING = /^solver disagreements, oracle: (\d+)$/m;
+const MISTAKES = /^known mistakes found, programs: (\d+)$/m;
+
+/** How many places the lints warn of, from what `bun run variants` printed. */
+export const readVariants = (printed: string): number | undefined => {
+  const found = MISTAKES.exec(printed);
+  return found === null ? undefined : Number(found[1]);
+};
 
 /** How many of the oracle's cases the solver and plain code disagree on, from what `bun run oracle` printed. */
 export const readOracle = (printed: string): number | undefined => {
@@ -404,6 +415,7 @@ const SCORED = new Set<string>([
     QUESTIONS.surprising,
     QUESTIONS.flaky,
     QUESTIONS.solverDisagreements,
+    QUESTIONS.knownMistakes,
   ].map((q) => q.label),
 ]);
 

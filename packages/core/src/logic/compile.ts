@@ -716,6 +716,19 @@ const variableCall = (term: unknown): DeferredCall | undefined => {
 };
 
 /**
+ * That an array written as a list, such as `["?a", "?b"]`, is a call of its
+ * first item, and how to write the list: the words the message of a goal
+ * that cannot run ends with, and the lint of a program read as data says.
+ * Each part is given as Lion writes it.
+ */
+export const listWrittenAsCall = (
+  written: string,
+  head: string,
+  items: readonly string[]
+) =>
+  `${written} calls ${head}, since an array is always a call. To match a list, write ["array/make",${items.join(",")}].`;
+
+/**
  * What a goal that cannot run says besides: when it holds a call of a
  * logic variable, that the call is no list, and how to write the list.
  */
@@ -723,7 +736,7 @@ const callNote = (literal: Literal) => {
   const call = variableCall(literal);
   return call === undefined
     ? ""
-    : ` ${show(call)} calls ${show(call.fn)}, since an array is always a call. To match a list, write ["array/make",${[call.fn, ...call.args].map(show).join(",")}].`;
+    : ` ${listWrittenAsCall(show(call), show(call.fn), [call.fn, ...call.args].map(show))}`;
 };
 
 /** Variables as the program wrote them, without what `exists` adds. */

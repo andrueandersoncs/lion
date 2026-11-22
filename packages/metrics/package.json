@@ -13,6 +13,7 @@
     "affected": "bun run affected.ts",
     "loop": "bun run loop.ts",
     "oracle": "bun run oracle.ts",
+    "variants": "bun run variants.ts",
     "pairs": "bun run pairs.ts",
     "skill-eval": "bun run skill-eval.ts",
     "capability": "bun run capability.ts",

@@ -16,6 +16,7 @@
   },
   "exports": {
     "./analysis/analyze": "./dist/analysis/analyze.mjs",
+    "./analysis/lint": "./dist/analysis/lint.mjs",
     "./errors/evaluation": "./dist/errors/evaluation.mjs",
     "./evaluation/asking": "./dist/evaluation/asking.mjs",
     "./evaluation/base-forms/array": "./dist/evaluation/base-forms/array.mjs",

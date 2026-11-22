@@ -20,6 +20,7 @@ import {
   readRemoved,
   readScale,
   readTurbo,
+  readVariants,
 } from "../loop.ts";
 import { between, element, word } from "./generators.ts";
 
@@ -253,6 +254,14 @@ describe("the loop's scoreboard", () => {
           )
         )
       ).toBe(count < 0 ? undefined : count);
+      expect(
+        readVariants(
+          printed.replace(
+            "surprising pairs, grid",
+            "known mistakes found, programs"
+          )
+        )
+      ).toBe(count < 0 ? undefined : count);
     }
   );
 
@@ -355,6 +364,7 @@ describe("the loop's scoreboard", () => {
             QUESTIONS.surprising,
             QUESTIONS.flaky,
             QUESTIONS.solverDisagreements,
+            QUESTIONS.knownMistakes,
           ].some((q) => q.question === o.question);
         expect(o.tries).toBe(tries && score ? "d" : undefined);
       }

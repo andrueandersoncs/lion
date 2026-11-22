@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { analyze, flattenAnalysis } from "@lionlang/core/analysis/analyze";
+import { lint } from "@lionlang/core/analysis/lint";
 import { run } from "@lionlang/core/evaluation/evaluate";
 import { readJson, writeJson } from "@lionlang/core/evaluation/reading";
 import { LogicDatabase } from "@lionlang/core/logic/database";
@@ -160,7 +161,9 @@ const checkCommand = Command.make(
   { file: Argument.FileText("file") },
   Effect.fn(
     function* ({ file }) {
-      const found = findings(yield* readJson(file));
+      const program = yield* readJson(file);
+      // What the analysis finds, then what the lints written in Lion find.
+      const found = [...findings(program), ...(yield* lint(program))];
       yield* Console.log(JSON.stringify(found, null, 2));
       if (found.some((each) => "error" in each)) {
         return yield* new CliError.UserError({
@@ -176,7 +179,7 @@ const checkCommand = Command.make(
   )
 ).pipe(
   Command.withDescription(
-    "Read a Lion JSON program without running it, and print what is wrong with it: parts that fail when they run, and parts that are wrong though nothing fails, such as a match case no value can reach"
+    "Read a Lion JSON program without running it, and print what is wrong with it: parts that fail when they run, parts that are wrong though nothing fails, such as a match case no value can reach, and what the lints written as Lion rules find, such as a list written as a call"
   )
 );
 

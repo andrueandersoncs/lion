@@ -65,12 +65,13 @@ const main = Effect.gen(function* () {
   const outcome = yield* evaluate(lion, (program as { value: unknown }).value, {
     environment: (inputs as { value: Record<string, unknown> }).value,
   });
+  const written = (program as { value: unknown }).value;
   if (outcome.ok) {
-    tried({ ok: true });
+    tried({ ok: true, program: written });
     console.log(shown(outcome.value));
     return;
   }
-  tried({ error: outcome.error, ok: false });
+  tried({ error: outcome.error, ok: false, program: written });
   console.log(`The program failed: ${outcome.error}`);
   process.exitCode = 1;
 });

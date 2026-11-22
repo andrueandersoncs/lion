@@ -70,6 +70,8 @@ Read a program without running it, and print what is wrong with it, each with wh
 bun run lion check program.json
 ```
 
+It also runs lints written in Lion: rules over the program read as data, one fact for each term with its JSON pointer. The one lint so far finds a list written as a bare array inside a rule, a find, or a query, which Lion reads as a call of its first item. Of `["find", "?a", ["in", ["?a", "?b"], ["quote", [[1, 2]]]]]` it prints `[{"at": "/2/1", "warning": "[\"?a\",\"?b\"] calls \"?a\", since an array is always a call. To match a list, write [\"array/make\",\"?a\",\"?b\"]."}]`, the words the program's message says when it runs.
+
 Serve the bundled graph editor locally:
 
 ```bash

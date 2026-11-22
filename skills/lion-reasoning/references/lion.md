@@ -162,7 +162,7 @@ Use invariants for the model's integrity: the shape of a kind of observation, so
 | `Facts may only contain data, but the "text" of […] is the relation "…"` | A bare string in a fact you wrote by hand is the name of a relation, or starts with `?`. | Quote it, as the message shows. |
 | `"number/subtract" takes 2 arguments but got 3.` | A function called with the wrong number of arguments. | Give it what it takes. |
 | `Nothing is bound to "…"` | A misspelled function, or text that looks like one. | Correct the name, or quote the text. |
-| `Unsafe goal […]: ?a, ?b must first be bound … ["?a","?b"] calls "?a", since an array is always a call.` | A list pattern written as a bare array, which is a call of its first item. | Write the list `["array/make", "?a", "?b"]`, as the message says. |
+| `Unsafe goal […]: ?a, ?b must first be bound … ["?a","?b"] calls "?a", since an array is always a call.` | A list pattern written as a bare array, which is a call of its first item. | Write the list `["array/make", "?a", "?b"]`, as the message says. `lion check` finds it without running the program. |
 | `"a" takes 2 arguments (x, y) but got 1.` | A relation called with the wrong number of columns. | Give every column; use `"?_"` for the ones you do not need. |
 | `Unsafe rule head […]: ?y never appears in a relation in the body.` | A head variable nothing binds. | Bind it in the body. |
 | `"number/greaterThan" takes a number as argument 1 but got "n/a".` | A filter met a value of the wrong type. | Put a guard before it. |

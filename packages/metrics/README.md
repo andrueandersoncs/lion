@@ -139,6 +139,21 @@ solver disagreements, oracle: 0
 
 The solver proved that no value meets the goal in 465 of the cases, and plain code ran 3,168 sample points. Before numbers were exact, plain code at 0.1 gave (x + 0.2) - 0.2 as 0.10000000000000003, which such a proof contradicts. The properties in `src/tests/oracle.test.ts` judge 120 random cases each run, and the listed mutation that makes plain code add decimals as JavaScript does fails them. The improvement loop scores it as `solver disagreements, oracle`.
 
+### A known mistake in other programs: `bun run variants`
+
+```bash
+bun run variants
+```
+
+Asks the lints `lion check` runs, Lion rules over a program read as data in [`packages/core/src/analysis/lint.ts`](../core/src/analysis/lint.ts), of every Lion program the repository holds: the corpus's reference programs, the docs' live examples, and the probes of the project record and the research model, and of every program agents wrote for the corpus or tried with `./try`, which logs each try's program. The mistake agents made most, a list written as a bare array, is the one lint so far. On 2026-11-22 it printed:
+
+```
+Lints asked of 1122 programs
+known mistakes found, programs: 0
+```
+
+The agents' runs before `./try` logged programs keep only what they handed in, which they had fixed. The properties in `packages/core/src/analysis/tests/lint.test.ts` check the lint against running the program: it warns exactly where running it is refused with the note that the array is a call. The improvement loop scores it as `known mistakes found, programs`.
+
 ## Speed: `bun run bench`
 
 ```bash

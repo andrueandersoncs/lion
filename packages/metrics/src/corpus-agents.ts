@@ -15,6 +15,8 @@ export interface Attempt {
   /** Why the program failed; none when it ran. */
   readonly error?: string;
   readonly ok: boolean;
+  /** The program tried, when it was JSON. */
+  readonly program?: unknown;
 }
 
 /** What `TASK.md` says: the statement, the inputs bound, and how to try. */
@@ -66,8 +68,14 @@ export const attemptsOf = (text: string): Attempt[] =>
         value !== null &&
         typeof (value as Attempt).ok === "boolean"
       ) {
-        const { error, ok } = value as Attempt;
-        return [typeof error === "string" ? { error, ok } : { ok }];
+        const { error, ok, program } = value as Attempt;
+        return [
+          {
+            ...(typeof error === "string" ? { error } : {}),
+            ok,
+            ...(program === undefined ? {} : { program }),
+          },
+        ];
       }
       return [];
     } catch {

@@ -912,6 +912,35 @@ const WEIGHTS: readonly Mutation[] = [
 
 export const MUTATIONS: readonly Mutation[] = [
   {
+    name: "a rule's head binds the variables of a list written as a call",
+    file: core("analysis/lint.ts"),
+    find: '    ["declared", "?w"],\n    ["not", ["rule_head", "?a"]],',
+    replace: '    ["declared", "?w"],',
+    tests: ["src/analysis/tests/lint.test.ts"],
+  },
+  {
+    name: "a list written as a call is warned of only when its first variable is unbound",
+    file: core("analysis/lint.ts"),
+    find: '    ["scope", "?s"],\n    ["unbound_in", "?p", "?_"],',
+    replace: '    ["scope", "?s"],\n    ["unbound_in", "?p", "?v"],',
+    tests: ["src/analysis/tests/lint.test.ts"],
+  },
+  {
+    name: "the lint warns of a list written as a call outside any rule, find, or query",
+    file: core("analysis/lint.ts"),
+    find: '    ["inside", "?p", "?s"],\n    ["scope", "?s"],\n    ["unbound_in", "?p", "?_"],',
+    replace: '    ["unbound_in", "?p", "?_"],',
+    tests: ["src/analysis/tests/lint.test.ts"],
+  },
+  {
+    name: "the programs an agent tried are not linted",
+    file: "packages/metrics/src/variants.ts",
+    find: "    ...ran,\n    ...tried,\n  ];",
+    replace: "    ...ran,\n  ];",
+    package: "metrics",
+    tests: ["src/tests/variants.test.ts"],
+  },
+  {
     name: "plain code adds decimals as JavaScript does, so 0.1 + 0.2 is 0.30000000000000004",
     file: core("numbers/exact.ts"),
     find: "    const result = a + b;\n    if (\n      Number.isSafeInteger(a) &&\n      Number.isSafeInteger(b) &&\n      Number.isSafeInteger(result)\n    ) {",
