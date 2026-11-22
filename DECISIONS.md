@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 230 questions have been decided, 104 records explain them, and of what the records assert, 685 hold when Lion is run, 2 are broken, 387 are stated but not checked by running Lion, and 34 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 231 questions have been decided, 105 records explain them, and of what the records assert, 686 hold when Lion is run, 2 are broken, 388 are stated but not checked by running Lion, and 34 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -219,6 +219,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`improvement-order`](#improvement-order) | `constraints-capability-cost-rate` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
 | 2026-11-21 | [`scheme-fidelity`](#scheme-fidelity) | `departures-decided-and-probed` | [Lion's departures from Scheme and Racket are the exceptions a decision names, and any other difference from Scheme is a finding](#scheme-departures-listed) |
 | 2026-11-21 | [`speed-constraint`](#speed-constraint) | `growth-hard-constant-soft` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
+| 2026-11-21 | [`exact-numbers`](#exact-numbers) | `exact-rationals` | [Every number is exact, so what the solver proves holds of plain code](#exact-numbers) |
 | 2026-11-21 | [`catch-handler-argument`](#catch-handler-argument) | `failure-record` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`cond-case-shape`](#cond-case-shape) | `one-result` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`continuation-shots`](#continuation-shots) | `one-shot` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
@@ -235,7 +236,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`func-apply-arguments`](#func-apply-arguments) | `spread-last-list` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
 | 2026-11-21 | [`lambda-rest-parameter`](#lambda-rest-parameter) | `one-name-for-all` | [A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme](#lambda-rest-parameter) |
 | 2026-11-21 | [`fixing-pays-off`](#fixing-pays-off) | `fix-or-improve` | [An experiment pays off when it fixes a problem it targets, as when it improves a score](#fixing-pays-off) |
-| 2026-11-21 | [`exact-numbers`](#exact-numbers) | `exact-rationals` | [Every number is exact, so what the solver proves holds of plain code](#exact-numbers) |
+| 2026-11-21 | [`scale-hub-join`](#scale-hub-join) | `scale-workload` | [The scale times the triangles of a graph whose nodes all link to two hubs](#scale-hub-join) |
 
 <a id="program-representation"></a>
 
@@ -4992,6 +4993,14 @@ Now: `growth-hard-constant-soft`.
 
 - 2026-11-21 `speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`: "A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change." (`improvement-judged-by-capability.json`)
 
+<a id="exact-numbers"></a>
+
+## exact-numbers
+
+Now: `exact-rationals`.
+
+- 2026-11-21 `exact-numbers`: `exact-rationals` over `binary64-doubles`, `scheme-numeric-tower`, `decimal-floating-point`, `solver-refuses-rounding`, `floating-point-theory`: "Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are." (`exact-numbers.json`)
+
 <a id="catch-handler-argument"></a>
 
 ## catch-handler-argument
@@ -5268,10 +5277,32 @@ Recorded 2026-11-21 in `history/notes/fixing-pays-off.json`.
 - Stated, not checked by running Lion: `reasoning-fix-pays-off` is `paid-off`. "`paid_off` then names the problem's question, and a direction's misses, its patience, and its place in "Where should the next experiment go?" count both kinds of payoff"
 - Stated, not checked by running Lion: `loop-status-replays` exists. "`bun run loop status` builds the record's model again from its steps before it asks"
 
-<a id="exact-numbers"></a>
+<a id="scale-hub-join"></a>
 
-## exact-numbers
+## scale-hub-join
 
-Now: `exact-rationals`.
+Now: `scale-workload`.
 
-- 2026-11-21 `exact-numbers`: `exact-rationals` over `binary64-doubles`, `scheme-numeric-tower`, `decimal-floating-point`, `solver-refuses-rounding`, `floating-point-theory`: "Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are." (`exact-numbers.json`)
+- 2026-11-21 `scale-hub-join`: `scale-workload` over `bench-benchmark`, `research-probe-only`: "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs, laid out as the join-gap run's generator lays them." (`scale-hub-join.json`)
+
+<a id="scale-hub-join"></a>
+
+### The scale times the triangles of a graph whose nodes all link to two hubs
+
+Recorded 2026-11-21 in `history/notes/scale-hub-join.json`.
+
+**Context.** The research run `join-gap` (2026-11-19) measured the triangle query on a graph whose every node is linked to and from two hub nodes: 15,010 ms at 19,983 edges, growing as n^1.9, against 36 ms and n^0.9 on scattered edges. The research model ranks worst-case optimal joins, which close that gap, among the first ideas left to build, and the improvement record holds the direction `joins`. No instrument of the loop could see the gap: the requirement that no workload of `bun run scale` grows faster than the facts timed only triangles among scattered edges, and `bun run bench` has no join of that shape.
+
+**Decision.** `bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs, laid out as the join-gap run's generator lays them. It is an instrument change of its own: committed, and observed by the record, before any change to the engine, so the observation before an experiment on joins shows what the gap costs.
+
+**Consequences.** Until the gap closes, the workload is stopped at 100,000 edges, so the requirement `workloads faster than linear` fails and no score of a version counts. That is the gap stated the way the loop states its constraints, and a later change that brings it back fails the same requirement.
+
+**Alternatives considered.**
+
+- Add the hub graph to `bun run bench`. The bench total sums every benchmark, so one more would make each earlier version's total incomparable, and a time at one size says nothing of how it grows.
+- Keep the gap in the research probe alone. `research/probes/hubs/time.mjs` times the CLI by hand, outside the loop, so nothing would keep a later change from bringing the gap back.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `scale-hub-join`: `scale-workload`. "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs, laid out as the join-gap run's generator lays them."
+- Holds when Lion is run: `scale-hub-join` exists. "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs"

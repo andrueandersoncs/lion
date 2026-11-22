@@ -6,16 +6,17 @@
 
 ### Breaking
 
-- `["func/apply", f, null, 1, ["array/make", 2, 3]]` calls `f` with 1, 2, and 3 (`r7rs-6.10-apply-spreads-last-argument` is `spread`, was `error`)
-- an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].` (`r7rs-6.4-car-of-empty-list` is `error`, was `null`)
-- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`r7rs-6.4-cdr-of-empty-list` is `error`, was `empty-list`)
 - Integers past 2^53 - 1 are no longer refused, and no sum or product overflows. (`aggregate-sum-non-finite` is `exact`, was `error`; `float-arithmetic-past-exact-range` is `exact`, was `rounded`; `number-overflow` is `exact`, was `error`)
 - Arithmetic, sums, and means are exact: `["number/add", 0.1, 0.2]` is 0.3, `["number/add", 9007199254740991, 2]` is 9007199254740993, and `["number/divide", 1, 3]` is the fraction 1/3. (`decimal-sum` is `exact`, was `rounded`; `integer-arithmetic-past-exact-range` is `exact`, was `error`; `integer-division-fraction` is `exact`, was `rounded`)
 - A number written in a program or a database is the exact value its digits write, so 0.1 is one tenth and 9007199254740993 is itself; a JavaScript number a host passes stands for the decimal its shortest digits write. (`integer-literal-past-exact-range` is `exact`, was `error`)
 - A sum is the exact sum in any order, which replaces the sum rounded once. (`sum-exactly-rounded` is `exact`, was `nearest`)
+- `["func/apply", f, null, 1, ["array/make", 2, 3]]` calls `f` with 1, 2, and 3 (`r7rs-6.10-apply-spreads-last-argument` is `spread`, was `error`)
+- an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].` (`r7rs-6.4-car-of-empty-list` is `error`, was `null`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails (`r7rs-6.4-cdr-of-empty-list` is `error`, was `empty-list`)
 
 ### Added
 
+- The research model weighs how Lion should make its numbers exact, so that what its solver proves holds of what its code computes, and how provers such as Lean prove arithmetic no procedure decides. Its page, `research/runs/exact-numbers/`, ranks first of everything left to build making every number exact: integers of any size and fractions, each number read as the value its digits write, which a model of exact numbers estimates would make Lion's adding of decimals take 1.7 times as long. Its probes found that the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away, and that no integer from 2^53 up is unchanged by adding 1, while Lion's own code breaks both, and that Lion rounds 2^53 + 1 without a word. After exact numbers it orders polynomial identities, nonlinear facts from products of hypotheses, and proofs as values a small checker accepts; induction over recursive functions can start now. (`research-exact-numbers` added)
 - `bun run history check` counts the rules in force that no probe of Lion checks, beside what the model holds, and `["untested", "?rule"]` lists them (`untested-rules` added)
 - `bun run affected` says which test files, checks, and mutations the changes since a commit can reach, picked by Lion rules from a map of what each test file reached when it last ran, and `--run` runs them (`affected-command` added)
 - `bun run affected --replay 30` says what picking would have run for each of the last 30 commits, beside everything (`affected-replay` added)
@@ -24,6 +25,8 @@
 - `bun run capability` grades the corpus and prints how many of each pillar's tasks are passed, and `--solutions` grades a folder of programs in place of the reference programs (`capability` added)
 - `packages/metrics/corpus/` holds Lion's public capability corpus: tasks of general computation, logic programming, and formal proofs, each a JSON record {id, pillar, statement, inputs, check, tags, origin} whose check is a Lion lambda that judges what a program gives, with a reference program for each task Lion can do (`capability-corpus` added)
 - `LION_HELD_OUT` names a folder outside the repository with the corpus's layout, whose tasks are graded beside the public ones; a folder inside the repository is refused (`held-out-corpus` added)
+- Each number has one form: the JavaScript number whose shortest digits write it, when one does, and otherwise an exact rational kept once for each value, in `packages/core/src/numbers/exact.ts`, so equality is identity and hosts mostly see plain numbers. (`numbers/exact` added)
+- The research model records Lion with exact numbers built, in step `research/steps/51-en-built.json`: the run's programs run again, and the time to add decimals measured beside main. The solver's two proofs now hold of plain code, every number idea the run weighed is one Lion does already, adding a hundred thousand decimals takes 1.9 times as long against the model's estimate of 1.7, and the proof ideas no longer wait for exact numbers, with induction over recursive functions ranked first of them. (`research-exact-numbers-built-step` added)
 - `array/zip` pairs up the items of one or more lists: a list of the first items, then of the second, up to the end of the shortest list. (`array/zip` added)
 - Experiments on Lion are recorded in `improvement/` (`improvement-record` added)
 - `bun run loop observe` runs every measuring tool through the skill's `see.mjs` and records each line the scoreboard prints, word for word (`loop-command` added)
@@ -43,12 +46,14 @@
 - The commit hook's `bun run affected --run` logs each check it runs to `out/telemetry.jsonl`: the check, the git tree of the staged files, its seconds, and whether it passed. (`check-telemetry` added)
 - Run `self-improvement` (2026-11-21), steps `52-si-frame`, `53-si-lion`, and `54-si-precedents`, at commit 7d623a7 (core 0.15.0). It weighs the nine mechanisms of `plan.md` §5 as ideas in the shared research model (`research-run-self-improvement` added)
 - --tasks a,b works only those, as a suite of its own (`loop-agents-tasks` added)
-- Each number has one form: the JavaScript number whose shortest digits write it, when one does, and otherwise an exact rational kept once for each value, in `packages/core/src/numbers/exact.ts`, so equality is identity and hosts mostly see plain numbers. (`numbers/exact` added)
-- The research model weighs how Lion should make its numbers exact, so that what its solver proves holds of what its code computes, and how provers such as Lean prove arithmetic no procedure decides. Its page, `research/runs/exact-numbers/`, ranks first of everything left to build making every number exact: integers of any size and fractions, each number read as the value its digits write, which a model of exact numbers estimates would make Lion's adding of decimals take 1.7 times as long. Its probes found that the solver proves that no number between 0 and 1 changes when 0.2 is added and taken away, and that no integer from 2^53 up is unchanged by adding 1, while Lion's own code breaks both, and that Lion rounds 2^53 + 1 without a word. After exact numbers it orders polynomial identities, nonlinear facts from products of hypotheses, and proofs as values a small checker accepts; induction over recursive functions can start now. (`research-exact-numbers` added)
-- The research model records Lion with exact numbers built, in step `research/steps/51-en-built.json`: the run's programs run again, and the time to add decimals measured beside main. The solver's two proofs now hold of plain code, every number idea the run weighed is one Lion does already, adding a hundred thousand decimals takes 1.9 times as long against the model's estimate of 1.7, and the proof ideas no longer wait for exact numbers, with induction over recursive functions ranked first of them. (`research-exact-numbers-built-step` added)
+- `bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs (`scale-hub-join` added)
 
 ### Changed
 
+- A value is written as JSON with each number's digits, and a fraction no decimal writes, such as 1/3, has no JSON text: writing it fails with `ArithmeticError`, as Racket's JSON library refuses it, and `number/toString` writes it as `1/3`, which `number/fromString` reads back. (`json-of-fraction` is `error`)
+- `number/toString` writes it as `1/3`, which `number/fromString` reads back. (`number-from-string-past-exact-range` is `exact`, was `null`; `number-to-string-fraction` is `fraction-text`)
+- `number/round` takes a number of decimal places. (`number-round-places` is `half-up`)
+- The solver reads numbers through the same rationals, so what it proves about numbers holds of what plain code computes. (`solver-proof-holds-of-plain-code` is `holds`, was `rounds`)
 - so `(and 1 2)`, `(or #f 3)`, and `(not 3)` fail where Scheme gives 2, 3, and #f (`r7rs-4.2.1-and-gives-last-value` is `error`; `r7rs-4.2.1-or-gives-first-true-value` is `error`; `r7rs-6.3-not-of-non-boolean` is `error`)
 - A `cond` case is a condition and one result (`r7rs-4.2.1-cond-clause-sequence` is `error`)
 - Forcing a promise while it is being forced fails (`r7rs-4.2.5-force-reentrant` is `error`)
@@ -82,13 +87,9 @@
 - a lambda that takes its arguments as a list gave its own body back as data when one of its arguments was a relation call, found by the pairs of the interop grid (`rest-parameter-goal-argument-before` is `body-as-data`)
 - Every cause the rules know is printed, 0 where no try failed so, so a cause that went away answers its question. (`loop-agent-cause-absent` is `zero`)
 - The message of a goal that cannot run says so when it holds such a call: `["in", ["?a", "?b"], ["quote", [[1, 2], [3, 4]]]]` is refused with `["?a","?b"] calls "?a", since an array is always a call. To match a list, write ["array/make","?a","?b"].` (`unsafe-goal-list-written-as-call` is `says-how-to-write-the-list`)
-- A value is written as JSON with each number's digits, and a fraction no decimal writes, such as 1/3, has no JSON text: writing it fails with `ArithmeticError`, as Racket's JSON library refuses it, and `number/toString` writes it as `1/3`, which `number/fromString` reads back. (`json-of-fraction` is `error`)
 - With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
 - number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
-- `number/toString` writes it as `1/3`, which `number/fromString` reads back. (`number-from-string-past-exact-range` is `exact`, was `null`; `number-to-string-fraction` is `fraction-text`)
-- `number/round` takes a number of decimal places. (`number-round-places` is `half-up`)
 - The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
-- The solver reads numbers through the same rationals, so what it proves about numbers holds of what plain code computes. (`solver-proof-holds-of-plain-code` is `holds`, was `rounds`)
 
 ### Fixed
 
@@ -120,6 +121,8 @@
 - Versions of Lion are compared in a fixed order, never by a weighted sum (`improvement-order`: `constraints-capability-cost-rate` over `weighted-sum`)
 - Lion's departures from Scheme and Racket are the cases that the rule `scheme-racket-semantics` names as exceptions, each in a decision record that says why. (`scheme-fidelity`: `departures-decided-and-probed` over `where-unclear`, `separate-departures-list`, `racket-first`)
 - A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change. (`speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`)
+- Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are. (`exact-numbers`: `exact-rationals` over `binary64-doubles`, `scheme-numeric-tower`, `decimal-floating-point`, `solver-refuses-rounding`, `floating-point-theory`)
+- A sum is the exact sum in any order, which replaces the sum rounded once. (`sum-rounding`: `exact-sum` over `nearest-exact-sum`, `added-as-values-come`, was `nearest-exact-sum`)
 - `func/catch` gives its handler a record of the failure, with what was raised under `value`, so one handler reads every failure the same way (`catch-handler-argument`: `failure-record` over `raised-object`)
 - A `cond` case is a condition and one result, written with `begin` when it is a sequence, so every case stays a pair. (`cond-case-shape`: `one-result` over `sequence`)
 - A continuation resumes once, since the delimited part runs in a fiber of its own, where Scheme's can resume again. (`continuation-shots`: `one-shot` over `multi-shot`)
@@ -137,8 +140,7 @@
 - `func/apply` calls its function with `this`, the arguments given, and then the items of its last argument, which must be a list (`func-apply-arguments`: `spread-last-list` over `pass-as-given`)
 - A lambda written with one name in place of its list of parameters, `["lambda", "args", body]`, takes any number of arguments and binds the name to the list of them. (`lambda-rest-parameter`: `one-name-for-all` over `dotted-list`, `fixed-only`)
 - An experiment pays off when its version improved a score, or fixed a problem that one of its beliefs targeted (`fixing-pays-off`: `fix-or-improve` over `fixes-counted-apart`, `fixes-only-for-problem-directions`)
-- Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are. (`exact-numbers`: `exact-rationals` over `binary64-doubles`, `scheme-numeric-tower`, `decimal-floating-point`, `solver-refuses-rounding`, `floating-point-theory`)
-- A sum is the exact sum in any order, which replaces the sum rounded once. (`sum-rounding`: `exact-sum` over `nearest-exact-sum`, `added-as-values-come`, was `nearest-exact-sum`)
+- `bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs, laid out as the join-gap run's generator lays them. (`scale-hub-join`: `scale-workload` over `bench-benchmark`, `research-probe-only`)
 
 ### Rules
 
@@ -2377,7 +2379,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - An array is always a special form or a call, never a list that evaluates to itself (rule `arrays-are-never-data`)
 - // Automatic currying (rule `automatic-currying`)
 - The evaluator is written with Effect, and evaluating a program gives an Effect (rule `evaluate-with-effect`)
-- Lion's values are still JSON values with no undefined, NaN, or Infinity: dividing by zero still fails, and an overflow, which once failed, is now an exact number. (rule `values-are-json`)
+- `array/head` and `array/tail` take a list with an item in it, and an empty list fails with `"array/head" takes a list that is not empty as argument 1 but got [].`, in plain code, in a call that waits, and in the solver's step (rule `values-are-json`)
 - Library functions are named `module/name`, with modules named for the kind of value they work on, such as `number/add` (rule `library-names-module-slash-name`)
 - breaks every form case out into its own testable unit (rule `unit-per-form`)
 - Every test file is in a `tests` folder beside the code it tests (rule `tests-in-tests-folders`)
