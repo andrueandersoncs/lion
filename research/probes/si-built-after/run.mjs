@@ -45,6 +45,26 @@ const COMMANDS = [
       "out/capability/agents/2026-11-21T22-59-43-613Z",
     ],
   },
+  {
+    shows:
+      "the corpus graded by its reference programs, with the outside suites from OpenRuleBench and SV-COMP beside it (M4)",
+    run: ["bun", "run", "capability"],
+  },
+  {
+    shows:
+      "the lints of lion check asked of every Lion program the repository holds, for the known mistake agents made most (M6)",
+    run: ["bun", "run", "variants"],
+  },
+  {
+    shows:
+      "the rules of the project record put at risk by the changes since the stale-evidence commit, from the paths their probes read (M2)",
+    run: ["bun", "run", "affected", "--against", "8176b7c"],
+  },
+  {
+    shows:
+      "the research model's probe sources a later change to what they ran on made stale, and the answers resting on them (M9)",
+    run: ["bun", "run", "stale"],
+  },
 ];
 
 /**

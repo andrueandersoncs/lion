@@ -1,0 +1,14 @@
+[
+  "query",
+  [
+    "exists",
+    ["?y"],
+    [
+      "and",
+      ["schema/fits?", "?y", "value/integer?"],
+      ["number/greaterThanOrEqualTo", "?y", 0],
+      ["number/lessThanOrEqualTo", "?y", 9],
+      ["=", ["number/remainder", "?y", 2], 3]
+    ]
+  ]
+]
