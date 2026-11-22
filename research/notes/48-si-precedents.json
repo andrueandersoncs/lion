@@ -1,0 +1,299 @@
+{
+  "sources": [
+    {
+      "id": "cos-preregistration",
+      "url": "https://www.cos.io/initiatives/prereg",
+      "title": "Preregistration",
+      "publisher": "Center for Open Science",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "thoughtworks-fitness-functions",
+      "url": "https://www.thoughtworks.com/radar/techniques/architectural-fitness-function",
+      "title": "Architectural fitness function (Technology Radar)",
+      "publisher": "Thoughtworks",
+      "kind": "secondary",
+      "published": null
+    },
+    {
+      "id": "wikipedia-change-impact-analysis",
+      "url": "https://en.wikipedia.org/wiki/Change_impact_analysis",
+      "title": "Change impact analysis",
+      "publisher": "Wikipedia",
+      "kind": "secondary",
+      "published": null
+    },
+    {
+      "id": "zhang-2018-hyrts",
+      "url": "https://experts.illinois.edu/en/publications/hybrid-regression-test-selection/",
+      "title": "Hybrid Regression Test Selection (ICSE 2018), abstract",
+      "publisher": "Lingming Zhang",
+      "kind": "primary",
+      "published": 20180603
+    },
+    {
+      "id": "ekstazi",
+      "url": "https://raw.githubusercontent.com/gliga/ekstazi/master/README.md",
+      "title": "Ekstazi README",
+      "publisher": "Gligoric et al. (Ekstazi)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "chen-2021-humaneval",
+      "url": "https://arxiv.org/abs/2107.03374",
+      "title": "Evaluating Large Language Models Trained on Code, abstract",
+      "publisher": "Chen et al. (OpenAI)",
+      "kind": "primary",
+      "published": 20210707
+    },
+    {
+      "id": "brass-stephan-2017",
+      "url": "https://ar5iv.arxiv.org/html/1701.00627",
+      "title": "Experiences with Some Benchmarks for Deductive Databases and Implementations of Bottom-Up Evaluation",
+      "publisher": "Brass, Stephan (Univ. Halle)",
+      "kind": "primary",
+      "published": 20170103
+    },
+    {
+      "id": "sv-comp",
+      "url": "https://sv-comp.sosy-lab.org/",
+      "title": "SV-COMP: International Competition on Software Verification",
+      "publisher": "SV-COMP",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "wikipedia-differential-testing",
+      "url": "https://en.wikipedia.org/wiki/Differential_testing",
+      "title": "Differential testing",
+      "publisher": "Wikipedia",
+      "kind": "secondary",
+      "published": null
+    },
+    {
+      "id": "seo-2014-build-errors",
+      "url": "https://research.google/pubs/programmers-build-errors-a-case-study-at-google/",
+      "title": "Programmers' Build Errors: A Case Study (at Google), abstract",
+      "publisher": "Seo, Sadowski, Elbaum, Aftandilian, Bowdidge (Google)",
+      "kind": "primary",
+      "published": 20140531
+    },
+    {
+      "id": "codeql-about",
+      "url": "https://codeql.github.com/docs/codeql-overview/about-codeql/",
+      "title": "About CodeQL",
+      "publisher": "GitHub (CodeQL)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "nist-combinatorial-testing",
+      "url": "https://csrc.nist.gov/projects/automated-combinatorial-testing-for-software",
+      "title": "Automated Combinatorial Testing for Software",
+      "publisher": "NIST",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "memon-2017-tap",
+      "url": "https://research.google/pubs/taming-google-scale-continuous-testing/",
+      "title": "Taming Google-Scale Continuous Testing (ICSE 2017), abstract",
+      "publisher": "Memon et al. (Google)",
+      "kind": "primary",
+      "published": 20170520
+    }
+  ],
+  "claims": [
+    {
+      "id": "si-x1",
+      "source": "cos-preregistration",
+      "where": "What is preregistration",
+      "quote": "When you preregister your research, you're simply specifying your research plan in advance of your study and submitting it to a registry.",
+      "says": {
+        "covers": "an experiment's prediction recorded before it runs",
+        "by": "preregistration",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x2",
+      "source": "cos-preregistration",
+      "where": "What is preregistration",
+      "quote": "But the same data cannot be used to generate and test a hypothesis, which can happen unintentionally and reduce the credibility of your results.",
+      "says": { "raises": "a hypothesis tested on the data that suggested it" }
+    },
+    {
+      "id": "si-x3",
+      "source": "thoughtworks-fitness-functions",
+      "where": "the blip's description",
+      "quote": "We believe architects can communicate, validate and preserve architectural characteristics in an automated, continual manner, which is the key to building evolutionary architectures.",
+      "says": {
+        "covers": "a constraint whose break fails a check",
+        "by": "architectural fitness functions",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x4",
+      "source": "wikipedia-change-impact-analysis",
+      "where": "Types of impact analysis techniques",
+      "quote": "In traceability IA, links between requirements, specifications, design elements, and tests are captured, and these relationships can be analysed to determine the scope of an initiating change.",
+      "says": {
+        "covers": "the constraints a change puts at risk, found before it is made",
+        "by": "change impact analysis",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x5",
+      "source": "zhang-2018-hyrts",
+      "where": "Abstract",
+      "quote": "Regression Test Selection (RTS) aims to reduce regression testing cost by only selecting and running the tests that may be affected by code changes.",
+      "says": {
+        "covers": "the tests a change can reach, picked from a map of what each test ran",
+        "by": "regression test selection",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x6",
+      "source": "zhang-2018-hyrts",
+      "where": "Abstract",
+      "quote": "We implemented the basic HyRTS technique by combining the method and file granularity RTS.",
+      "says": {
+        "covers": "tests picked by the functions a change touched",
+        "by": "hybrid regression test selection",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x7",
+      "source": "zhang-2018-hyrts",
+      "where": "Abstract",
+      "quote": "RTS techniques working on finer granularities may be more precise in selecting tests, while techniques working on coarser granularities may have lower overhead.",
+      "says": { "raises": "the overhead of picking tests at a finer grain" }
+    },
+    {
+      "id": "si-x8",
+      "source": "ekstazi",
+      "where": "the opening paragraph",
+      "quote": "Ekstazi implements Regression Test Selection (RTS) for Java, which is a technique to detect a set of tests that can be skipped after a code change.",
+      "says": { "adopted": "regression test selection", "in": "Ekstazi" }
+    },
+    {
+      "id": "si-x9",
+      "source": "chen-2021-humaneval",
+      "where": "Abstract",
+      "quote": "On HumanEval, a new evaluation set we release to measure functional correctness for synthesizing programs from docstrings",
+      "says": {
+        "covers": "agents' attempts at each task, graded by running checks",
+        "by": "functional-correctness evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x10",
+      "source": "brass-stephan-2017",
+      "where": "Abstract",
+      "quote": "OpenRuleBench [ 14 ] is a large benchmark suite for rule engines, which includes deductive databases.",
+      "says": {
+        "covers": "a suite of rule-engine benchmark programs",
+        "by": "openrulebench",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x11",
+      "source": "brass-stephan-2017",
+      "where": "Introduction",
+      "quote": "It is a quite large collection of problems, basically 12 logic programs, but some with different queries and different data files.",
+      "says": { "counted": "logic programs in OpenRuleBench", "n": 12 }
+    },
+    {
+      "id": "si-x12",
+      "source": "sv-comp",
+      "where": "Goals of the Competition",
+      "quote": "create and maintain a set of programs together with explicit properties to check",
+      "says": {
+        "covers": "verification tasks with explicit properties to check",
+        "by": "sv-comp benchmarks",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x13",
+      "source": "wikipedia-differential-testing",
+      "where": "lead section",
+      "quote": "Differential testing finds semantic bugs by using different implementations of the same functionality as cross-referencing oracles",
+      "says": {
+        "covers": "a solver's answers checked against plain code",
+        "by": "differential testing",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x14",
+      "source": "seo-2014-build-errors",
+      "where": "Abstract",
+      "quote": "we analyze failure frequency, error types, and resolution efforts to fix those errors",
+      "says": {
+        "covers": "failures counted by cause, to choose what to fix",
+        "by": "build error analysis",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x15",
+      "source": "codeql-about",
+      "where": "About variant analysis",
+      "quote": "Variant analysis is the process of using a known security vulnerability as a seed to find similar problems in your code.",
+      "says": {
+        "covers": "a known mistake found again in other programs by a query over the programs as data",
+        "by": "variant analysis",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x16",
+      "source": "codeql-about",
+      "where": "About variant analysis",
+      "quote": "Querying code using CodeQL is the most efficient way to perform variant analysis.",
+      "says": { "adopted": "variant analysis", "in": "CodeQL" }
+    },
+    {
+      "id": "si-x17",
+      "source": "nist-combinatorial-testing",
+      "where": "the project's description",
+      "quote": "NIST research showed that most software bugs and failures are caused by one or two parameters, with progressively fewer by three or more, which means that combinatorial testing can provide more efficient fault detection than conventional methods.",
+      "says": {
+        "covers": "pairs of features checked together in every place",
+        "by": "combinatorial testing",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x18",
+      "source": "memon-2017-tap",
+      "where": "Abstract",
+      "quote": "distilling test results data to inform developers, while they write code, of the impact of their latest changes on quality",
+      "says": {
+        "covers": "the outcome and time of every check run, kept as data",
+        "by": "continuous test results data",
+        "is": true
+      }
+    },
+    {
+      "id": "si-x19",
+      "source": "e-zhang-2024",
+      "where": "the test oracle",
+      "quote": "Our oracle relies on the Datalog engine under test to compute the results of two equivalent programs",
+      "says": {
+        "covers": "two programs that must be equivalent checked to give equal answers",
+        "by": "deopt",
+        "is": true
+      }
+    }
+  ]
+}

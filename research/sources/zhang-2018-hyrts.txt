@@ -1,0 +1,151 @@
+Skip to main navigation
+Skip to search
+Skip to main content
+Illinois Experts Home
+LOGIN & Help
+!!Link opens in a new tab
+!!Search content at Illinois Experts
+Home
+Profiles
+Research units
+Research & Scholarship
+Datasets
+Honors
+Press/Media
+Activities
+Hybrid Regression Test Selection
+Lingming Zhang
+Research output : Chapter in Book/Report/Conference proceeding › Conference contribution
+Overview
+Fingerprint
+Abstract
+Regression testing is crucial but can be extremely costly. Regression Test Selection (RTS) aims to reduce regression testing cost by only selecting and running the tests that may be affected by code changes. To date, various RTS techniques analyzing at different granularities (e.g., at the basic-block, method, and file levels) have been proposed. RTS techniques working on finer granularities may be more precise in selecting tests, while techniques working on coarser granularities may have lower overhead. According to a recent study, RTS at the file level (FRTS) can have less overall testing time compared with a finer grained technique at the method level, and represents state-of-the-art RTS. In this paper, we present the first hybrid RTS approach, HyRTS, that analyzes at multiple granularities to combine the strengths of traditional RTS techniques at different granularities. We implemented the basic HyRTS technique by combining the method and file granularity RTS. The experimental results on 2707 revisions of 32 projects, totalling over 124 Million LoC, demonstrate that HyRTS outperforms state-of-the-art FRTS significantly in terms of selected test ratio and the offline testing time. We also studied the impacts of each type of method-level changes, and further designed two new HyRTS variants based on the study results. Our additional experiments show that transforming instance method additions/deletions into file-level changes produces an even more effective HyRTS variant that can significantly outperform FRTS in both offline and online testing time.
+Original language English (US)
+Title of host publication 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE)
+Publisher IEEE
+Pages 199-209
+Number of pages 11
+Volume 2018-January
+ISBN (Print) 978-1-5386-5293-0
+DOIs https://doi.org/10.1145/3180155.3180198
+State Published - Jun 3 2018
+Externally published Yes
+Event 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE) - Gothenburg, Sweden
+Duration: May 27 2018 → Jun 3 2018
+Publication series
+Name Proceedings - International Conference on Software Engineering
+Publisher IEEE Computer Society
+ISSN (Print) 0270-5257
+Conference
+Conference 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE)
+Period 5/27/18 → 6/3/18
+Keywords
+Testing
+Tools
+Java
+Runtime
+Open source software
+ASJC Scopus subject areas
+Software
+Online availability
+10.1145/3180155.3180198
+Library availability
+Discover UIUC Full Text
+Related links
+Link to publication in Scopus
+Link to the citations in Scopus
+Fingerprint
+Dive into the research topics of 'Hybrid Regression Test Selection'. Together they form a unique fingerprint.
+Regression Test Selection
+Keyphrases
+100%
+Hybrid Regression
+Keyphrases
+100%
+Regression Test
+Computer Science
+100%
+Selection Strategy
+Keyphrases
+44%
+Granularity
+Computer Science
+44%
+File-level
+Keyphrases
+33%
+Testing Rates
+Keyphrases
+33%
+Method Level
+Keyphrases
+33%
+View full fingerprint
+Cite this
+APA
+Standard
+Harvard
+Vancouver
+Author
+BIBTEX
+RIS
+Zhang, L. (2018). Hybrid Regression Test Selection . In 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE) (Vol. 2018-January, pp. 199-209). Article 8453079 (Proceedings - International Conference on Software Engineering). IEEE. https://doi.org/10.1145/3180155.3180198
+Hybrid Regression Test Selection. / Zhang, Lingming .
+2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE). Vol. 2018-January IEEE, 2018. p. 199-209 8453079 (Proceedings - International Conference on Software Engineering). Research output : Chapter in Book/Report/Conference proceeding › Conference contribution
+Zhang, L 2018, Hybrid Regression Test Selection . in 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE). vol. 2018-January, 8453079, Proceedings - International Conference on Software Engineering, IEEE, pp. 199-209, 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE), 5/27/18 . https://doi.org/10.1145/3180155.3180198
+Zhang L . Hybrid Regression Test Selection . In 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE). Vol. 2018-January. IEEE. 2018. p. 199-209. 8453079. (Proceedings - International Conference on Software Engineering). doi: 10.1145/3180155.3180198
+Zhang, Lingming . / Hybrid Regression Test Selection . 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE). Vol. 2018-January IEEE, 2018. pp. 199-209 (Proceedings - International Conference on Software Engineering).
+@inproceedings{243eaed7613148f8876b2b7e2aac88e9,
+title = "Hybrid Regression Test Selection",
+abstract = "Regression testing is crucial but can be extremely costly. Regression Test Selection (RTS) aims to reduce regression testing cost by only selecting and running the tests that may be affected by code changes. To date, various RTS techniques analyzing at different granularities (e.g., at the basic-block, method, and file levels) have been proposed. RTS techniques working on finer granularities may be more precise in selecting tests, while techniques working on coarser granularities may have lower overhead. According to a recent study, RTS at the file level (FRTS) can have less overall testing time compared with a finer grained technique at the method level, and represents state-of-the-art RTS. In this paper, we present the first hybrid RTS approach, HyRTS, that analyzes at multiple granularities to combine the strengths of traditional RTS techniques at different granularities. We implemented the basic HyRTS technique by combining the method and file granularity RTS. The experimental results on 2707 revisions of 32 projects, totalling over 124 Million LoC, demonstrate that HyRTS outperforms state-of-the-art FRTS significantly in terms of selected test ratio and the offline testing time. We also studied the impacts of each type of method-level changes, and further designed two new HyRTS variants based on the study results. Our additional experiments show that transforming instance method additions/deletions into file-level changes produces an even more effective HyRTS variant that can significantly outperform FRTS in both offline and online testing time.",
+keywords = "Testing, Tools, Java, Runtime, Open source software",
+author = "Lingming Zhang",
+note = "We thank the anonymous reviewers for the valuable comments. This work is supported in part by NSF Grant No. CCF-1566589, UT Dallas start-up fund, Google, Huawei, and Samsung.; 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE) ; Conference date: 27-05-2018 Through 03-06-2018",
+year = "2018",
+month = jun,
+day = "3",
+doi = "10.1145/3180155.3180198",
+language = "English (US)",
+isbn = "978-1-5386-5293-0",
+volume = "2018-January",
+series = "Proceedings - International Conference on Software Engineering",
+publisher = "IEEE",
+pages = "199--209",
+booktitle = "2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE)",
+}
+TY - GEN
+T1 - Hybrid Regression Test Selection
+AU - Zhang, Lingming
+N1 - We thank the anonymous reviewers for the valuable comments. This work is supported in part by NSF Grant No. CCF-1566589, UT Dallas start-up fund, Google, Huawei, and Samsung.
+PY - 2018/6/3
+Y1 - 2018/6/3
+N2 - Regression testing is crucial but can be extremely costly. Regression Test Selection (RTS) aims to reduce regression testing cost by only selecting and running the tests that may be affected by code changes. To date, various RTS techniques analyzing at different granularities (e.g., at the basic-block, method, and file levels) have been proposed. RTS techniques working on finer granularities may be more precise in selecting tests, while techniques working on coarser granularities may have lower overhead. According to a recent study, RTS at the file level (FRTS) can have less overall testing time compared with a finer grained technique at the method level, and represents state-of-the-art RTS. In this paper, we present the first hybrid RTS approach, HyRTS, that analyzes at multiple granularities to combine the strengths of traditional RTS techniques at different granularities. We implemented the basic HyRTS technique by combining the method and file granularity RTS. The experimental results on 2707 revisions of 32 projects, totalling over 124 Million LoC, demonstrate that HyRTS outperforms state-of-the-art FRTS significantly in terms of selected test ratio and the offline testing time. We also studied the impacts of each type of method-level changes, and further designed two new HyRTS variants based on the study results. Our additional experiments show that transforming instance method additions/deletions into file-level changes produces an even more effective HyRTS variant that can significantly outperform FRTS in both offline and online testing time.
+AB - Regression testing is crucial but can be extremely costly. Regression Test Selection (RTS) aims to reduce regression testing cost by only selecting and running the tests that may be affected by code changes. To date, various RTS techniques analyzing at different granularities (e.g., at the basic-block, method, and file levels) have been proposed. RTS techniques working on finer granularities may be more precise in selecting tests, while techniques working on coarser granularities may have lower overhead. According to a recent study, RTS at the file level (FRTS) can have less overall testing time compared with a finer grained technique at the method level, and represents state-of-the-art RTS. In this paper, we present the first hybrid RTS approach, HyRTS, that analyzes at multiple granularities to combine the strengths of traditional RTS techniques at different granularities. We implemented the basic HyRTS technique by combining the method and file granularity RTS. The experimental results on 2707 revisions of 32 projects, totalling over 124 Million LoC, demonstrate that HyRTS outperforms state-of-the-art FRTS significantly in terms of selected test ratio and the offline testing time. We also studied the impacts of each type of method-level changes, and further designed two new HyRTS variants based on the study results. Our additional experiments show that transforming instance method additions/deletions into file-level changes produces an even more effective HyRTS variant that can significantly outperform FRTS in both offline and online testing time.
+KW - Testing
+KW - Tools
+KW - Java
+KW - Runtime
+KW - Open source software
+UR - https://www.scopus.com/pages/publications/85132015554
+UR - https://www.scopus.com/pages/publications/85132015554#tab=citedBy
+U2 - 10.1145/3180155.3180198
+DO - 10.1145/3180155.3180198
+M3 - Conference contribution
+SN - 978-1-5386-5293-0
+VL - 2018-January
+T3 - Proceedings - International Conference on Software Engineering
+SP - 199
+EP - 209
+BT - 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE)
+PB - IEEE
+T2 - 2018 IEEE/ACM 40th International Conference on Software Engineering (ICSE)
+Y2 - 27 May 2018 through 3 June 2018
+ER -
+Powered by Pure !!Link opens in a new tab , Scopus !!Link opens in a new tab & Elsevier Fingerprint Engine&trade; !!Link opens in a new tab
+All content on this site: Copyright &copy; 2026 Illinois Experts, its licensors, and contributors. All rights are reserved, including those for text and data mining, AI training, and similar technologies. For all open access content, the relevant licensing terms apply
+We use cookies to help provide and enhance our service and tailor content. By continuing you agree to the use of cookies
+Log in to Illinois Experts !!Link opens in a new tab
+Illinois Experts data protection policy !!Link opens in a new tab
+About web accessibility !!Link opens in a new tab
+Report vulnerability !!Link opens in a new tab
+Contact us

@@ -310,25 +310,48 @@
         "or",
         [
           "and",
-          ["answer", { "lion measured": "?workload" }, "?value", "?claim"],
+          [
+            "answer",
+            {
+              "lion measured": "?workload"
+            },
+            "?value",
+            "?claim"
+          ],
           ["=", "?unit", "ms"]
         ],
         [
           "and",
-          ["answer", { "lion grows": "?workload" }, "?value", "?claim"],
+          [
+            "answer",
+            {
+              "lion grows": "?workload"
+            },
+            "?value",
+            "?claim"
+          ],
           ["=", "?unit", "power of n"]
         ]
       ],
       ["string/includes", "?workload", "triangles"]
     ],
-    { "order": ["workload", "unit", "claim"] }
+    {
+      "order": ["workload", "unit", "claim"]
+    }
   ],
   "Join gap: the hub-graph gap before and now, what the join takes of it, and the joins verdict": [
     "query",
     [
       "and",
       ["gap", "joins", "?workload", "?now_ms"],
-      ["answer", { "lion measured": "?workload" }, "?first_ms", "li-l27"],
+      [
+        "answer",
+        {
+          "lion measured": "?workload"
+        },
+        "?first_ms",
+        "li-l27"
+      ],
       [
         "stated",
         {
@@ -402,7 +425,9 @@
         ["and", ["not", ["waits", "?idea", "?_"]], ["=", "?would_change", null]]
       ]
     ],
-    { "order": "rank" }
+    {
+      "order": "rank"
+    }
   ],
   "Clef: beliefs about Lion, and the evidence against them": [
     "query",
@@ -429,7 +454,10 @@
         "?answer_lion_changed",
         [
           "find",
-          { "from": "?before", "to": "?after" },
+          {
+            "from": "?before",
+            "to": "?after"
+          },
           [
             "and",
             ["expects", "?belief", "?q", "?_"],
@@ -442,7 +470,14 @@
   "Clef: techniques Clef designs but does not say it has built": [
     "find",
     "?technique",
-    ["stated", { "designed": "?technique", "in": ["quote", "Clef"] }, true]
+    [
+      "stated",
+      {
+        "designed": "?technique",
+        "in": ["quote", "Clef"]
+      },
+      true
+    ]
   ],
   "Clef: caveats": [
     "query",
@@ -451,5 +486,101 @@
       ["weighed_in", "?idea", ["quote", "clef"]],
       ["caveat", "?idea", "?not_given", "?technique"]
     ]
+  ],
+  "Self-improvement: verdicts, ranks, stages, and why an idea was passed over": [
+    "query",
+    [
+      "and",
+      ["weighed_in", "?idea", ["quote", "self-improvement"]],
+      ["verdict", "?idea", "?verdict"],
+      [
+        "or",
+        ["rank", "?idea", "?rank"],
+        ["and", ["not", ["rank", "?idea", "?_"]], ["=", "?rank", null]]
+      ],
+      [
+        "or",
+        ["stage", "?idea", "?stage"],
+        ["and", ["not", ["stage", "?idea", "?_"]], ["=", "?stage", null]]
+      ],
+      [
+        "=",
+        "?passed_over",
+        [
+          "find",
+          {
+            "why": "?why",
+            "detail": "?detail"
+          },
+          ["passed_over", "?idea", "?why", "?detail"]
+        ]
+      ],
+      [
+        "=",
+        "?builds_on",
+        [
+          "find",
+          {
+            "on": "?other",
+            "for": "?condition"
+          },
+          ["builds_on", "?idea", "?other", "?condition"]
+        ]
+      ]
+    ],
+    {
+      "order": ["stage", "rank", "idea"]
+    }
+  ],
+  "Self-improvement: what each idea adds, and what Lion has of what it offers": [
+    "query",
+    [
+      "and",
+      ["weighed_in", "?idea", ["quote", "self-improvement"]],
+      [
+        "=",
+        "?adds",
+        ["aggregate/unique", ["find", "?f", ["adds", "?idea", "?f", "?_"]]]
+      ],
+      [
+        "=",
+        "?already",
+        ["aggregate/unique", ["find", "?f", ["already", "?idea", "?f"]]]
+      ],
+      [
+        "=",
+        "?waits_for",
+        ["aggregate/unique", ["find", "?f", ["moot", "?idea", "?f"]]]
+      ]
+    ],
+    {
+      "order": "idea"
+    }
+  ],
+  "Self-improvement: beliefs and the evidence": [
+    "query",
+    [
+      "and",
+      ["assumption", "?belief", "?said"],
+      ["string/startsWith", "?belief", "si-"],
+      [
+        "or",
+        ["and", ["violated", "?belief", "?evidence"]],
+        [
+          "and",
+          ["confirmed", "?belief"],
+          ["=", "?evidence", ["quote", "confirmed"]]
+        ],
+        [
+          "and",
+          ["unsettled", "?belief", "?_"],
+          ["=", "?evidence", ["quote", "no evidence yet"]]
+        ]
+      ]
+    ]
+  ],
+  "Self-improvement: how fast the improvement loop resolves predictions": [
+    "query",
+    ["si_rate", "?predictions", "?seconds", "?per_hour"]
   ]
 }

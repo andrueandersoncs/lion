@@ -1,0 +1,138 @@
+Lion's reach map made at commit 7d623a7 (core 0.15.0, @lionlang/cli 0.14.0), 2026-11-21, while other commands ran beside it, among them `bun run history ask`, which rebuilds the model the project record's tests read, and what `bun run affected --check` then said of that map. The map was made again with nothing else running, and `lion-host-si-built` holds what the check says of that one.
+
+$ bun run affected --map
+$ bun run --cwd packages/metrics affected --map
+$ bun run affected.ts --map
+packages/cli: vitest passed in 11 s
+packages/core: vitest passed in 155 s
+packages/history: vitest failed in 57 s
+packages/history: bun run history.ts check passed in 74 s
+packages/metrics: vitest passed in 153 s
+packages/repl: vitest passed in 1 s
+packages/site-runtime: vitest passed in 1 s
+packages/site-runtime: bun run build-docs.ts --check passed in 0 s
+packages/typesafe-ai: vitest passed in 1 s
+
+Mapped 109 test files and checks at 7d623a7: 976 s in all.
+exit 0
+
+$ bun run affected --check   (whether picking tests by the reach map is sound for every listed mutation (M3))
+603 of 640 mutations: every test they name is picked for their change.
+SKIPS    why tells how a row came about before a change was followed through it
+         packages/core/src/logic/tests/aggregates.test.ts
+SKIPS    an aggregate of a find combines the rule's matches
+         packages/core/src/logic/tests/connectives.test.ts
+SKIPS    cond does not ask a goal it tests
+         packages/core/src/logic/tests/connectives.test.ts
+SKIPS    match does not ask the goal it is given
+         packages/core/src/logic/tests/connectives.test.ts
+SKIPS    a release reaches its commit's parents but not theirs
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a claim ships in every release that has its commits, not the oldest
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a claim that names its commits is also made by the commit that added its file
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a claim that quotes a commit is made by the commit that added its file
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    an answer appears in every release that shipped a claim of it
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a decision record with no decision claim passes
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    the pages order sections as they come, not breaking first
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    an item shows the words of its earliest claim
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    the timeline lists every item of a release under every section
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    an assertion no later word replaced still counts as replaced
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a replaced assertion still counts as stated
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a fix commit needs no entry
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a quote must keep the line breaks of its commit message
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a release that repeats the last version counts as a rise
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    the changelog lists releases oldest first
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a draft release counts as a release
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    the timeline writes < in text as it is
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    the timeline writes code as prose
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    the timeline writes a link's text as markup
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a rule that no longer holds still predicts behavior
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a rule counts as tested when the repository, not a probe, answers a case it predicts
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a library function that follows JavaScript breaks the precedent assumption
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a rule's earlier prediction stands after a later statement predicts otherwise
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a rule's exception does not excuse its conflicts
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a removal counts as decided by any decided claim
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a commit a claim was made by still counts as unread
+         packages/history/src/tests/record.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a broken chain of figures ignores the measurements between
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    drift compares the repository's word with its own
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a commit is read when any commit has a claim
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    an accepted finding is still open
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a known finding is still reported as new
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    an accepted finding the model no longer finds is not stale
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+SKIPS    a run that sees a feature gone is taken for the commit that removed it
+         packages/history/src/tests/research.test.ts
+UNSOUND  picking keeps none of the tests it names
+CAUGHT  an aggregate of a find combines the rule's matches, by the tests picking keeps
+CAUGHT  cond does not ask a goal it tests, by the tests picking keeps
+CAUGHT  match does not ask the goal it is given, by the tests picking keeps
+CAUGHT  why tells how a row came about before a change was followed through it, by the tests picking keeps
+
+Picking is not sound for 33 mutations.
+$ bun run --cwd packages/metrics affected --check
+$ bun run affected.ts --check
+error: script "affected" exited with code 1
+error: script "affected" exited with code 1
+(exit 1)

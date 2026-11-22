@@ -1,0 +1,128 @@
+TACAS
+Competition on Software Verification (SV-COMP)
+Motivation
+Competition is a driving force for the invention of new methods, technologies, and tools.
+This web page describes the competition of software-verification tools, which will
+take place at TACAS.
+There are several new and powerful software-verification tools around, but they
+are very difficult to compare. The reason is that so far no widely distributed benchmark
+suite of verification tasks was available and most concepts are only validated in research prototypes.
+This competition has changed this: Now there is an established set of verification tasks for
+comparing software verifiers, and the tools are publicized on the SV-COMP web site.
+Only few projects aim at producing stable tools that can be used by people
+outside the respective development groups,
+and the development of such tools is not continuous.
+Also, PhD students and PostDocs do not adequately benefit from
+tool development because theoretical papers count
+more than papers that present technical contributions, like tool papers.
+Through its visibility, this competition wants to change this,
+showing off the latest implementation of the research results in our community,
+and give credits and benefits to researchers and students who spend considerable amounts
+of time developing verification algorithms and software packages.
+Goals of the Competition
+Provide a snapshot of the state-of-the-art in software verification to the community.
+That means to compare, independently from particular paper projects and specific techniques,
+different verification tools in terms of precision and performance.
+Increase the visibility and credits that tool developers receive.
+That means to provide a forum for presentation of tools and discussion of the latest technologies,
+and to give the students the opportunity to publish about the development work that they have done.
+Establish a set of benchmarks for software verification in the community.
+This means to create and maintain a set of programs together with explicit properties to check,
+and to make those publicly available for researchers to be used in performance comparisons
+when evaluating a new technique.
+Reproduce Competition Results
+Information for reproducing SV-COMP results is available on the
+reproduction page .
+Competition Editions
+2027
+Description
+2026
+Description
+Verification
+Validation
+Report
+Reference
+2025
+Description
+Verification
+Validation
+Report
+Reference
+2024
+Description
+Verification
+Validation
+Report
+Reference
+2023
+Description
+Verification
+Validation
+Report
+Reference
+2022
+Description
+Verification
+Report
+Reference
+2021
+Description
+Verification
+Report
+Reference
+2020
+Description
+Verification
+Report
+Reference
+2019
+Description
+Verification
+Report
+Reference
+2018
+Description
+Verification
+2017
+Description
+Verification
+Report
+Reference
+2016
+Description
+Verification
+Report
+Reference
+2015
+Description
+Verification
+Report
+Reference
+2014
+Description
+Verification
+Report
+Reference
+2013
+Description
+Verification
+Report
+Reference
+2012
+Description
+Verification
+Report
+Reference
+Contact
+For questions about the competition, this web page, the benchmarks, or the organization of the competition,
+please contact the competition chair: Dirk Beyer, LMU Munich.
+For discussion of topics of broad interest that are related to the competition on software verification,
+please consider posting on our mailing list:
+sv-comp@googlegroups.com.
+Web archive:
+https://groups.google.com/forum/#!forum/sv-comp
+For discussion of topics specific to technical problem, setup, or the questions,
+please consider posting on our Zulip stream .
+If you did not find what you are looking for, please do not hesitate to contact
+Dirk Beyer (competition webmaster).
+Imprint and Privacy Policy

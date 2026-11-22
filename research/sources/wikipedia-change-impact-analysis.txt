@@ -1,0 +1,190 @@
+Jump to content
+Main menu
+Main menu
+move to sidebar
+hide
+Navigation
+Main page
+Contents
+Current events
+Random article
+About Wikipedia
+Contact us
+Contribute
+Help
+Learn to edit
+Community portal
+Recent changes
+Upload file
+Special pages
+Search
+Search
+Appearance
+Donate
+Create account
+Log in
+Personal tools
+Donate
+Create account
+Log in
+Contents
+move to sidebar
+hide
+(Top)
+1
+Types of impact analysis techniques
+2
+Package management and dependency IA
+3
+Source code and dependency IA
+4
+Requirements, and traceability to source code
+5
+See also
+6
+References
+7
+Sources
+Toggle the table of contents
+Change impact analysis
+2 languages
+العربية
+中文
+Edit links
+Article
+Talk
+English
+Read
+Edit
+View history
+Save
+Tools
+Tools
+move to sidebar
+hide
+Actions
+Read
+Edit
+View history
+Save
+General
+What links here
+Related changes
+Upload file
+Permanent link
+Page information
+Cite this page
+Get shortened URL
+Switch to legacy parser
+Print/export
+Download as PDF
+Printable version
+In other projects
+Wikidata item
+Appearance
+move to sidebar
+hide
+From Wikipedia, the free encyclopedia
+Analysis of impacts of changes to products or applications
+This article has multiple issues. Please help improve it or discuss these issues on the talk page . ( Learn how and when to remove these messages )
+This article is written like a personal reflection, personal essay, or argumentative essay that states a Wikipedia editor's personal feelings or presents an original argument about a topic. Please help improve it by rewriting it in an encyclopedic style . ( January 2022 ) ( Learn how and when to remove this message )
+This article may be confusing or unclear to readers . Please help clarify the article . There might be a discussion about this on the talk page . ( January 2022 ) ( Learn how and when to remove this message )
+( Learn how and when to remove this message )
+Change impact analysis ( IA ) or impact analysis is the analysis of changes within a deployed product or application and their potential consequences. [ 1 ] [ 2 ] [ 3 ]
+Change impact analysis is defined by Bohnner and Arnold as "identifying the potential consequences of a change, or estimating what needs to be modified to accomplish a change", [ 4 ] and they focus on IA in terms of scoping changes within the details of a design. In contrast, Pfleeger and Atlee focus on the risks associated with changes and state that IA is: "the evaluation of the many risks associated with the change, including estimates of the effects on resources, effort, and schedule". [ 5 ] Both the design details and risks associated with modifications are critical to performing IA within the change management processes . When changes to a software package trigger cascading incompatibility conflicts across its dependency graph, the resulting situation is colloquially known as dependency hell . [ 6 ]
+Types of impact analysis techniques
+[ edit ]
+IA techniques can be classified into three types: &#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>_7-0' rel="dc:references" typeof="mw:Transclusion mw:Extension/ref" data-mw='{"name":"ref","attrs":{"group":"","name":"FOOTNOTEKilpinen2008[[Category:Wikipedia articles needing page number citations from November 2025]]<sup class=\"noprint Inline-Template \" style=\"white-space:nowrap;\">&#91;<i>[[Wikipedia:Citing sources|<span title=\"This citation requires a reference to the specific page or range of pages in which the material appears.&#32;(November 2025)\">page&nbsp;needed</span>]]</i>&#93;</sup>"},"body":{"id":"mw-reference-text-cite_note-FOOTNOTEKilpinen2008[[Category:Wikipedia_articles_needing_page_number_citations_from_November_2025]]<sup_class=\"noprint_Inline-Template_\"_style=\"white-space:nowrap;\">&#91;<i>[[Wikipedia:Citing_sources|<span_title=\"This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)\">page&nbsp;needed</span>]]</i>&#93;</sup>-7"},"parts":[{"template":{"target":{"wt":"sfn","href":"./Template:Sfn"},"params":{"1":{"wt":"Kilpinen"},"2":{"wt":"2008"},"p":{"wt":"{{pn|date=November 2025}}"}},"i":0}}]}'> &#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>-7' id="mwJg"> [ 7 ]
+Trace
+Dependency
+Experiential
+Bohner and Arnold identify two classes of IA, traceability and dependency IA. &#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>_8-0' rel="dc:references" typeof="mw:Transclusion mw:Extension/ref" data-mw='{"name":"ref","attrs":{"group":"","name":"FOOTNOTEBohnerArnold1996[[Category:Wikipedia articles needing page number citations from November 2025]]<sup class=\"noprint Inline-Template \" style=\"white-space:nowrap;\">&#91;<i>[[Wikipedia:Citing sources|<span title=\"This citation requires a reference to the specific page or range of pages in which the material appears.&#32;(November 2025)\">page&nbsp;needed</span>]]</i>&#93;</sup>"},"body":{"id":"mw-reference-text-cite_note-FOOTNOTEBohnerArnold1996[[Category:Wikipedia_articles_needing_page_number_citations_from_November_2025]]<sup_class=\"noprint_Inline-Template_\"_style=\"white-space:nowrap;\">&#91;<i>[[Wikipedia:Citing_sources|<span_title=\"This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)\">page&nbsp;needed</span>]]</i>&#93;</sup>-8"},"parts":[{"template":{"target":{"wt":"sfn","href":"./Template:Sfn"},"params":{"1":{"wt":"Bohner"},"2":{"wt":"Arnold"},"3":{"wt":"1996"},"p":{"wt":"{{pn|date=November 2025}}"}},"i":0}}]}'> &#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>-8' id="mwLw"> [ 8 ] In traceability IA, links between requirements, specifications, design elements, and tests are captured, and these relationships can be analysed to determine the scope of an initiating change. [ 9 ] In dependency IA, linkages between parts, variables, logic, modules etc. are assessed to determine the consequences of an initiating change. Dependency IA occurs at a more detailed level than traceability IA. Within software design, static and dynamic algorithms can be run on code to perform dependency IA. [ 10 ] [ 11 ] Static methods focus on the program structure, while dynamic algorithms gather information about program behaviour at run-time.
+Literature and engineering practice also suggest a third type of IA, experiential IA, in that the impact of changes is often determined using expert design knowledge. Review meeting protocols, [ 12 ] informal team discussions, and individual engineering judgement [ 13 ] can all be used to determine the consequences of a modification. [ how? ]
+Package management and dependency IA
+[ edit ]
+Software is often delivered in packages, which contain dependencies to other software packages necessary that the one deployed runs. Following these dependencies in reverse order is a convenient way to identify the impact of changing the contents of a software package. Examples for software helpful to do this:
+scripts like whatrequires [ 14 ] [ inappropriate external link? ] for RPM , and debian package formats
+Source code and dependency IA
+[ edit ]
+Dependencies are also declared in source code. [[Metadata|Metadata [ which? ] ]] can be used [ how? ] to understand the dependencies via static analysis . Amongst the tools supporting to show such dependencies are:
+Integrated development environment
+FindBugs
+JRipples
+AppDynamics
+CodeLogic
+Visual Expert
+There are as well tools applying full-text search over source code stored in various repositories. If the source code is web-browsable, then classical search engines can be used. If the source is only available in the runtime environment, it gets more complicated and specialized tools may be of help. [ 15 ] [ verification needed ] [ inappropriate external link? ]
+Requirements, and traceability to source code
+[ edit ]
+Recent tools [ which? ] use often stable links to trace dependencies. This can be done on all levels, amongst them specification, blueprint, bugs, commits. Despite this, the use of backlink checkers known from search engine optimization is not common. Research in this area is done as well, just to name use case maps. [ 16 ]
+Commercial tools in this area include Rational DOORS . [ citation needed ]
+See also
+[ edit ]
+Change management (engineering)
+Change control
+References
+[ edit ]
+↑ Oliva, Gustavo Ansaldi; Gerosa, Marco Aurélio (2015). "Change Coupling Between Software Artifacts". The Art and Science of Analyzing Software Data . pp. 285– 323. doi : 10.1016/B978-0-12-411519-4.00011-2 . ISBN 978-0-12-411519-4 .
+↑ Alam, Khubaib Amjad; Ahmad, Rodina; Akhunzada, Adnan; Nasir, Mohd Hairul Nizam Md; Khan, Samee U. (December 2015). "Impact analysis and change propagation in service-oriented enterprises: A systematic review". Information Systems . 54 : 43– 73. doi : 10.1016/j.is.2015.06.003 .
+↑ Frainlar, Edson (29 December 2021). "What is SAP Change Impact Analysis?" . KTern.AI .
+↑ Bohner & Arnold 1996 , p. 3.
+↑ Pfleeger & Atlee 2006 , p. 526.
+↑ Mens, Tom; Decan, Alexandre (2024-11-19). "An Overview and Catalogue of Dependency Challenges in Open Source Software Package Registries". arXiv : 2409.18884 [ cs.SE ].
+&#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>-7' id='cite_note-FOOTNOTEKilpinen2008[[Category:Wikipedia_articles_needing_page_number_citations_from_November_2025]]<sup_class="noprint_Inline-Template_"_style="white-space:nowrap;">&#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>-7' data-mw-footnote-number="7"> &#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>_7-0' rel="mw:referencedBy" id="mwxA"> ↑ &#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>-7' class="mw-reference-text reference-text"> Kilpinen 2008 , p. [ page needed ] .
+&#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>-8' id='cite_note-FOOTNOTEBohnerArnold1996[[Category:Wikipedia_articles_needing_page_number_citations_from_November_2025]]<sup_class="noprint_Inline-Template_"_style="white-space:nowrap;">&#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>-8' data-mw-footnote-number="8"> &#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>_8-0' rel="mw:referencedBy" id="mw0Q"> ↑ &#91;<i>[[Wikipedia:Citing_sources|<span_title="This_citation_requires_a_reference_to_the_specific_page_or_range_of_pages_in_which_the_material_appears.&#32;(November_2025)">page&nbsp;needed</span>]]</i>&#93;</sup>-8' class="mw-reference-text reference-text"> Bohner & Arnold 1996 , p. [ page needed ] .
+↑ Eisner 2002 , pp. 236–237.
+↑ Rajlich 2000 .
+↑ Ren et al. 2004 .
+↑ Endres & Rombach 2003 , p. 17.
+↑ Ambler 2002 , p. 244.
+↑ "whatrequires" . www.pixelbeat.org . Archived from the original on 2006-04-26 . Retrieved 27 January 2022 .
+↑ "ohloh, discover, track, and compare open source" . Archived from the original on 2011-01-12 . Retrieved 2022-01-27 .
+↑ Hassine, J.; Rilling, J.; Hewitt, J. (2005). "Change Impact Analysis for Requirement Evolution using Use Case Maps". Eighth International Workshop on Principles of Software Evolution (IWPSE'05) . pp. 81– 90. doi : 10.1109/IWPSE.2005.8 . ISBN 0-7695-2349-8 .
+Sources
+[ edit ]
+Ambler, Scott (2002). Agile Modeling: Effective Practices for eXtreme Programming and the Unified Process . John Wiley & Sons. ISBN 978-0-471-27190-1 .
+Bohner, Shawn; Arnold, Robert (1996). Software Change Impact Analysis . Wiley. ISBN 978-0-8186-7384-9 .
+Eisner, Howard (2002). Essentials of Project and Systems Engineering Management . Wiley. ISBN 978-0-471-03195-6 .
+Endres, Albert; Rombach, H. Dieter (2003). A Handbook of Software and Systems Engineering: Empirical Observations, Laws, and Theories . Pearson Addison Wesley. ISBN 978-0-321-15420-0 .
+Kilpinen, M.S. (2008). The Emergence of Change at the Systems Engineering and Software Design Interface: An Investigation of Impact Analysis (PDF) (Thesis). Archived from the original (PDF) on 1 October 2011.
+Pfleeger, Shari Lawrence; Atlee, Joanne M. (2006). Software Engineering: Theory and Practice . Prentice Hall. ISBN 978-0-13-146913-6 .
+Rajlich, Václav (January 2000). "A model and a tool for change propagation in software". ACM SIGSOFT Software Engineering Notes . 25 (1): 72. doi : 10.1145/340855.340993 .
+Ren, Xiaoxia; Shah, Fenil; Tip, Frank; Ryder, Barbara G.; Chesley, Ophelia (2004). "Chianti: A tool for change impact analysis of java programs". Proceedings of the 19th annual ACM SIGPLAN conference on Object-oriented programming, systems, languages, and applications . pp. 432– 448. doi : 10.1145/1028976.1029012 . ISBN 978-1-58113-831-3 . OCLC 201980091 .
+Retrieved from " https://en.wikipedia.org/w/index.php?title=Change_impact_analysis&oldid=1364843664 "
+Category : Change management
+Hidden categories: Articles with short description
+Short description is different from Wikidata
+Wikipedia articles with style issues from January 2022
+All articles with style issues
+Wikipedia articles needing clarification from January 2022
+All Wikipedia articles needing clarification
+Articles with multiple maintenance issues
+Wikipedia articles needing page number citations from November 2025
+Wikipedia external links cleanup from January 2022
+Wikipedia spam cleanup from January 2022
+All articles with specifically marked weasel-worded phrases
+Articles with specifically marked weasel-worded phrases from January 2022
+All pages needing factual verification
+Wikipedia articles needing factual verification from January 2022
+All articles with unsourced statements
+Articles with unsourced statements from November 2025
+This page was last edited on 18 July 2026, at 21:13 (UTC) .
+Page was rendered with Parsoid .
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License ;
+additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy . Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc. , a non-profit organization.
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Legal & safety contacts
+Code of Conduct
+Developers
+Statistics
+Cookie statement
+Mobile view
+Search
+Search
+Toggle the table of contents
+Change impact analysis
+2 languages
+Add topic

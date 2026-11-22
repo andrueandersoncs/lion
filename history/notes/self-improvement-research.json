@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "Run `self-improvement` (2026-11-21), steps `46-si-frame`, `47-si-lion`, and `48-si-precedents`, at commit 7d623a7 (core 0.15.0). It weighs the nine mechanisms of `plan.md` §5 as ideas in the shared research model",
+      "says": {
+        "feature": "research-run-self-improvement",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "The corpus is first of everything left to build, across every run.",
+      "says": {
+        "behavior": "research-to-build-first",
+        "is": "capability-corpus",
+        "area": "process"
+      }
+    }
+  ]
+}

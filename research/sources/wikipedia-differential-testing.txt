@@ -1,0 +1,228 @@
+Jump to content
+Main menu
+Main menu
+move to sidebar
+hide
+Navigation
+Main page
+Contents
+Current events
+Random article
+About Wikipedia
+Contact us
+Contribute
+Help
+Learn to edit
+Community portal
+Recent changes
+Upload file
+Special pages
+Search
+Search
+Appearance
+Donate
+Create account
+Log in
+Personal tools
+Donate
+Create account
+Log in
+Contents
+move to sidebar
+hide
+(Top)
+1
+Application domains
+2
+Input generation
+Toggle Input generation subsection
+2.1
+Unguided
+2.2
+Guided
+2.2.1
+Domain-specific evolutionary guidance
+2.2.2
+Domain-independent evolutionary guidance
+2.2.3
+Automata-learning-based guidance
+2.2.4
+Symbolic-execution-based guidance
+3
+See also
+4
+References
+Toggle the table of contents
+Differential testing
+1 language
+Qaraqalpaqsha
+Edit links
+Article
+Talk
+English
+Read
+Edit
+View history
+Save
+Tools
+Tools
+move to sidebar
+hide
+Actions
+Read
+Edit
+View history
+Save
+General
+What links here
+Related changes
+Upload file
+Permanent link
+Page information
+Cite this page
+Get shortened URL
+Switch to legacy parser
+Print/export
+Download as PDF
+Printable version
+In other projects
+Wikidata item
+Appearance
+move to sidebar
+hide
+From Wikipedia, the free encyclopedia
+Software testing technique
+This article may be too technical for most readers to understand . Please help improve it to make it understandable to non-experts , without removing the technical details. ( August 2017 ) ( Learn how and when to remove this message )
+In differential testing two programs A and B should give the same answer with any randomly chosen input. If their outputs differ this indicates an error or computer bug.
+Differential testing , [ 1 ] also known as differential fuzzing , is a software testing technique that detect bugs , by providing the same input to a series of similar applications (or to different implementations of the same application), and observing differences in their execution. Differential testing complements traditional software testing because it is well-suited to find semantic or logic bugs that do not exhibit explicit erroneous behaviors like crashes or assertion failures. Differential testing is also called back-to-back testing.
+Differential testing finds semantic bugs by using different implementations of the same functionality as cross-referencing oracles , pinpointing differences in their outputs over the same input: any discrepancy between the program behaviors on the same input is marked as a potential bug.
+Application domains
+[ edit ]
+Differential testing has been used to find semantic bugs successfully in diverse domains like SSL/TLS implementations, [ 2 ] [ 3 ] [ 4 ] [ 5 ] C compilers, [ 6 ] JVM implementations, [ 7 ] Web application firewalls , [ 8 ] security policies for APIs , [ 9 ] antivirus software , [ 4 ] [ 10 ] and file systems . [ 11 ] Differential testing has also been used for automated fingerprint generation from different network protocol implementations. [ 12 ]
+Input generation
+[ edit ]
+Unguided
+[ edit ]
+Unguided differential testing tools generate test inputs independently across iterations without considering the test program’s behavior on past inputs. Such an input generation process does not use any information from past inputs and essentially creates new inputs at random from a prohibitively large input space. This can make the testing process highly inefficient, since large numbers of inputs need to be generated to find a single bug.
+An example of a differential testing system that performs unguided input generation is "Frankencerts". [ 2 ] This work synthesizes Frankencerts by randomly combining parts of real certificates. It uses syntactically valid certificates to test for semantic violations of SSL/TLS certificate validation across multiple implementations. However, since the creation and selection of Frankencerts are completely unguided, it is significantly inefficient compared to the guided tools.
+Guided
+[ edit ]
+Guided input generation process aims to minimize the number of inputs needed to find each bug by taking program behavior information for past inputs into account.
+Domain-specific evolutionary guidance
+[ edit ]
+An example of a differential testing system that performs domain-specific coverage -guided input generation is Mucerts. [ 3 ] Mucerts relies on the knowledge of the partial grammar of the X.509 certificate format and uses a stochastic sampling algorithm to drive its input generation while tracking the program coverage.
+Another line of research builds on the observation that the problem of new input generation from existing inputs can be modeled as a stochastic process. An example of a differential testing tool that uses such a stochastic process modeling for input generation is Chen et al.’s tool. [ 7 ] It performs differential testing of Java virtual machines (JVM) using Markov chain Monte Carlo (MCMC) sampling for input generation. It uses custom domain-specific mutations by leveraging detailed knowledge of the Java class file format.
+Domain-independent evolutionary guidance
+[ edit ]
+NEZHA [ 4 ] is an example of a differential testing tool that has a path selection mechanism geared towards domain-independent differential testing. It uses specific metrics (dubbed as delta-diversity) that summarize and quantify the observed asymmetries between the behaviors of multiple test applications. Such metrics that promote the relative diversity of observed program behavior have shown to be effective in applying differential testing in a domain-independent and black-box manner.
+Automata-learning-based guidance
+[ edit ]
+For applications, such as cross-site scripting (XSS) filters and X.509 certificate hostname verification, which can be modeled accurately with finite-state automata (FSA), counter-example-driven FSA learning techniques can be used to generate inputs that are more likely to find bugs. [ 8 ] [ 5 ]
+Symbolic-execution-based guidance
+[ edit ]
+Symbolic execution [ 13 ] is a white-box technique that executes a program symbolically, computes constraints along different paths, and uses a constraint solver to generate inputs that satisfy the collected constraints along each path. Symbolic execution can also be used to generate input for differential testing. [ 12 ] [ 14 ]
+The inherent limitation of symbolic-execution-assisted testing tools—path explosion and scalability—is magnified especially in the context of differential testing where multiple test programs are used. Therefore, it is very hard to scale symbolic execution techniques to perform differential testing of multiple large programs.
+See also
+[ edit ]
+Software testing
+Software diversity
+References
+[ edit ]
+↑ William M. McKeeman , “Differential testing for software,” Digital Technical Journal, vol. 10, no. 1, pp. 100–107, 1998.
+1 2 C. Brubaker, S. Jana, B. Ray, S. Khurshid, and V. Shmatikov, “Using frankencerts for automated adversarial testing of certificate validation in SSL/TLS implementations,” in Proceedings of the 2014 IEEE Symposium on Security and Privacy (S&P). IEEE Computer Society, 2014, pp. 114–129.
+1 2 Y. Chen and Z. Su, “Guided differential testing of certificate validation in SSL/TLS implementations,” in Proceedings of the 10th Joint Meeting on Foundations of Software Engineering (FSE). ACM, 2015, pp. 793– 804.
+1 2 3 Petsios, T., Tang, A., Stolfo, S., Keromytis, A. D., & Jana, S. (2017, May). NEZHA: Efficient Domain-Independent Differential Testing. In Proceedings of the 38th IEEE Symposium on Security & Privacy,(San Jose, CA).
+1 2 S. Sivakorn, G. Argyros, K. Pei, A. D. Keromytis and S. Jana, "HVLearn: Automated Black-Box Analysis of Hostname Verification in SSL/TLS Implementations," 2017 IEEE Symposium on Security and Privacy (S&P), San Jose, CA, USA, 2017, pp. 521–538.
+↑ X. Yang, Y. Chen, E. Eide, and J. Regehr, “Finding and understanding bugs in C compilers,” in Proceedings of the 32nd ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI). ACM, 2011, pp. 283–294.
+1 2 Y. Chen, T. Su, C. Sun, Z. Su, and J. Zhao, “Coverage-directed differential testing of JVM implementations,” in Proceedings of the 37th ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI). ACM, 2016, pp. 85–99.
+1 2 G. Argyros, I. Stais, S. Jana, A. D. Keromytis, and A. Kiayias, “SFADiff: Automated evasion attacks and fingerprinting using black-box differential automata learning,” in Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security (CCS). ACM, 2016, pp. 1690–1701.
+↑ V. Srivastava, M. D. Bond, K. S. McKinley, and V. Shmatikov, “A security policy oracle: Detecting security holes using multiple API implementations,” ACM SIGPLAN Notices, vol. 46, no. 6, pp. 343–354, 2011.
+↑ S. Jana and V. Shmatikov, “Abusing file processing in malware detectors for fun and profit,” in Proceedings of the 2012 IEEE Symposium on Security and Privacy (S&P). IEEE Computer Society, 2012, pp. 80– 94.
+↑ Y. Liu, M. Adkar, G. Holzmann, G. Kuenning, P. Liu, S.A. Smolka, W. Su, and E. Zadok, “Metis: file system model checking via versatile input and state exploration,” In 22nd USENIX Conference on File and Storage Technologies (FAST ’24). USENIX Association, 2024, pp. 123-140.
+1 2 D. Brumley, J. Caballero, Z. Liang, J. Newsome, and D. Song, “Towards automatic discovery of deviations in binary implementations with applications to error detection and fingerprint generation,” in 16th USENIX Security Symposium (USENIX Security ’07). USENIX Association, 2007.
+↑ J. C. King, “Symbolic execution and program testing,” Communications of the ACM, vol. 19, no. 7, pp. 385–394, 1976.
+↑ D. A. Ramos and D. R. Engler, “Practical, low-effort equivalence verification of real code,” in International Conference on Computer Aided Verification. Springer, 2011, pp. 669–685.
+v
+t
+e
+Software testing
+Test levels
+Acceptance testing
+System integration testing
+System testing
+Integration testing
+Unit testing
+Test types,
+techniques,
+tactics
+A/B testing
+Benchmark
+Compatibility testing
+Concolic testing
+Concurrent testing
+Conformance testing
+Continuous testing
+Data-driven testing
+Destructive testing
+Development testing
+Differential testing
+Dynamic program analysis
+Installation testing
+Negative testing
+Random testing
+Regression testing
+Security testing
+Smoke testing (software)
+Software performance testing
+Stress testing
+Symbolic execution
+Test automation
+Usability testing
+[x]-box
+style
+Black-box testing
+All-pairs testing
+Exploratory testing
+Fuzz testing
+Model-based testing
+Scenario testing
+Grey-box testing
+White-box testing
+API testing
+Mutation testing
+Static testing
+See also
+Graphical user interface testing
+Manual testing
+Orthogonal array testing
+Pair testing
+Soak testing
+Software reliability testing
+Stress testing
+Web testing
+Retrieved from " https://en.wikipedia.org/w/index.php?title=Differential_testing&oldid=1340529761 "
+Category : Software testing
+Hidden categories: Articles with short description
+Short description matches Wikidata
+Wikipedia articles that are too technical from August 2017
+All articles that are too technical
+This page was last edited on 26 February 2026, at 05:55 (UTC) .
+Page was rendered with Parsoid .
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License ;
+additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy . Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc. , a non-profit organization.
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Legal & safety contacts
+Code of Conduct
+Developers
+Statistics
+Cookie statement
+Mobile view
+Search
+Search
+Toggle the table of contents
+Differential testing
+1 language
+Add topic

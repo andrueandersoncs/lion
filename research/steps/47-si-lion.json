@@ -1,0 +1,2138 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "research/runs/self-improvement/plan.md"
+   ],
+   [
+    "quote",
+    "Lion improving Lion: the self-improvement plan, at commit 7d623a7"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121175247
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-improving-guideline"
+   ],
+   [
+    "quote",
+    "guidelines/improving.md"
+   ],
+   [
+    "quote",
+    "Lion's developer guidelines: Improving Lion by experiment, at commit 7d623a7"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121175247
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-improvement-readme"
+   ],
+   [
+    "quote",
+    "improvement/README.md"
+   ],
+   [
+    "quote",
+    "The improvement record, at commit 7d623a7"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121175247
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-reasoning-skill"
+   ],
+   [
+    "quote",
+    "skills/lion-reasoning/SKILL.md"
+   ],
+   [
+    "quote",
+    "The lion-reasoning skill, at commit 7d623a7"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121175247
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-history-research-readme"
+   ],
+   [
+    "quote",
+    "history/research/README.md"
+   ],
+   [
+    "quote",
+    "The project record's model, at commit 7d623a7"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121175247
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-si"
+   ],
+   [
+    "quote",
+    "research/probes/si-number-gap.json"
+   ],
+   [
+    "quote",
+    "A Lion program that asks the solver and plain code the same question about numbers, at commit 7d623a7"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121182900
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "node research/probes/si-built/run.mjs lion-host-si-built"
+   ],
+   [
+    "quote",
+    "Lion's own tools and searches of the repository, run on what the self-improvement plan built, at commit 7d623a7"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121183000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-host-si-map-failed"
+   ],
+   [
+    "quote",
+    "bun run affected --map, then bun run affected --check"
+   ],
+   [
+    "quote",
+    "Lion's reach map made while other commands ran beside it, and what the soundness check said of it, at commit 7d623a7"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121181000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d1"
+   ],
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "Lion counts the cost of every change and none of the gain."
+   ],
+   [
+    "quote",
+    {
+     "raises": "a measure of what a change buys"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d1"
+   ],
+   [
+    "quote",
+    "The idea: the four things that are missing"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d2"
+   ],
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "107 of them at phase 0's commit"
+   ],
+   [
+    "quote",
+    {
+     "counted": "rules in force that no probe checks, at phase 0",
+     "n": 107
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d2"
+   ],
+   [
+    "quote",
+    "§3.1 A constraint is kept only when a check can fail on it"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d3"
+   ],
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "Not built: agent runs on the corpus (the $25 cap is recorded), the held-out tasks (the user's to write)."
+   ],
+   [
+    "quote",
+    {
+     "lion": "agents' attempts at each task, graded by running checks",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d3"
+   ],
+   [
+    "quote",
+    "§7 Build order, the status of phase 2"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d4"
+   ],
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "Not built: agent runs on the corpus (the $25 cap is recorded), the held-out tasks (the user's to write)."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a score the tuning never saw",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d4"
+   ],
+   [
+    "quote",
+    "§7 Build order, the status of phase 2"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d5"
+   ],
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "Not built: agent runs on the corpus (the $25 cap is recorded), the held-out tasks (the user's to write)."
+   ],
+   [
+    "quote",
+    {
+     "lion": "failures counted by cause, to choose what to fix",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d5"
+   ],
+   [
+    "quote",
+    "§7 Build order, the status of phase 2: with no agent run there is no failed try for the cause rules of packages/metrics/src/agent-errors.json to count"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d6"
+   ],
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "Not built: the docs examples' forms (the docs build runs every example in under a second, so picking them would save nothing), and per-function facts."
+   ],
+   [
+    "quote",
+    {
+     "lion": "tests picked by the functions a change touched",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d6"
+   ],
+   [
+    "quote",
+    "M3, as built in phase 1A"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d7"
+   ],
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "A research run picks them in phase 1B."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a suite of rule-engine benchmark programs",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d7"
+   ],
+   [
+    "quote",
+    "§8 What this plan leaves open: which logic and verification suites"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d8"
+   ],
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "A research run picks them in phase 1B."
+   ],
+   [
+    "quote",
+    {
+     "lion": "verification tasks with explicit properties to check",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d8"
+   ],
+   [
+    "quote",
+    "§8 What this plan leaves open: which logic and verification suites"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d9"
+   ],
+   [
+    "quote",
+    "lion-self-improvement-plan"
+   ],
+   [
+    "quote",
+    "The loop adds the differential property (M5) after that lands."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a solver's answers checked against plain code",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d9"
+   ],
+   [
+    "quote",
+    "§3.2, constraint 7: a proof agrees with plain code"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d10"
+   ],
+   [
+    "quote",
+    "lion-improving-guideline"
+   ],
+   [
+    "quote",
+    "After the change and before the run, add a notes file in `improvement/notes/` with a belief that `tries` the direction, predicting each score or problem the change should move"
+   ],
+   [
+    "quote",
+    {
+     "lion": "an experiment's prediction recorded before it runs",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d10"
+   ],
+   [
+    "quote",
+    "Say what you expect before you run it"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d11"
+   ],
+   [
+    "quote",
+    "lion-improving-guideline"
+   ],
+   [
+    "quote",
+    "Removing a line from an instrument, such as the grid's `KNOWN`, a listed mutation, a corpus task or its reference program, a probe, or the record's frame, fails the requirement every score has."
+   ],
+   [
+    "quote",
+    {
+     "lion": "an experiment kept from changing the instrument that scores it",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d11"
+   ],
+   [
+    "quote",
+    "Never change what scores you"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d12"
+   ],
+   [
+    "quote",
+    "lion-improvement-readme"
+   ],
+   [
+    "quote",
+    "Each score requires the constraints:"
+   ],
+   [
+    "quote",
+    {
+     "lion": "scores that count only when every constraint holds",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d12"
+   ],
+   [
+    "quote",
+    "What it scores"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d13"
+   ],
+   [
+    "quote",
+    "lion-reasoning-skill"
+   ],
+   [
+    "quote",
+    "A version improves a score when even its worst run beats the best that any version before it was sure to give."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a score judged by its worst run against the best earlier run",
+     "by": "scores and directions",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d13"
+   ],
+   [
+    "quote",
+    "Scores and directions"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d14"
+   ],
+   [
+    "quote",
+    "lion-improvement-readme"
+   ],
+   [
+    "quote",
+    "a [lion-reasoning](../skills/lion-reasoning/SKILL.md) task folder whose scores are the qualities `research/runs/self-improvement/plan.md` measures"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "scores and directions",
+     "in": "the improvement record"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d14"
+   ],
+   [
+    "quote",
+    "the opening paragraph"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d15"
+   ],
+   [
+    "quote",
+    "lion-reasoning-skill"
+   ],
+   [
+    "quote",
+    "Every observation records the files it depends on, by content hash. When one changes, through your edit, the user's, or a pull, the observation stops counting as the present."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a probe's evidence listed as out of date when a file it ran on changes",
+     "by": "versions by file hash",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d15"
+   ],
+   [
+    "quote",
+    "What the model catches: evidence that is out of date"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d16"
+   ],
+   [
+    "quote",
+    "lion-improvement-readme"
+   ],
+   [
+    "quote",
+    "versions/ the hash of every file of the project each time it was observed"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "versions by file hash",
+     "in": "the improvement record"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d16"
+   ],
+   [
+    "quote",
+    "the layout of the folder"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d17"
+   ],
+   [
+    "quote",
+    "lion-history-research-readme"
+   ],
+   [
+    "quote",
+    "Commits the model has nothing from are counted but do not fail: they wait for a reader."
+   ],
+   [
+    "quote",
+    {
+     "lion": "commits no claim reads, counted",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d17"
+   ],
+   [
+    "quote",
+    "Findings"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d18"
+   ],
+   [
+    "quote",
+    "lion-history-research-readme"
+   ],
+   [
+    "quote",
+    "`bun run history check` fails on a finding in neither list, and on a listed finding the model no longer finds, so neither list goes stale."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a constraint whose break fails a check",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d18"
+   ],
+   [
+    "quote",
+    "Findings"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-d19"
+   ],
+   [
+    "quote",
+    "lion-history-research-readme"
+   ],
+   [
+    "quote",
+    "`untested` lists the rules in force that no probe checks"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the rules in force that no probe checks, listed",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-d19"
+   ],
+   [
+    "quote",
+    "Findings"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p1"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "Capability: public tasks, graded by their reference programs"
+   ],
+   [
+    "quote",
+    {
+     "lion": "public tasks for each pillar, graded by checks written in Lion",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p1"
+   ],
+   [
+    "quote",
+    "bun run capability: every public task's check is a Lion lambda"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p2"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "all 48 of 55 passed"
+   ],
+   [
+    "quote",
+    {
+     "counted": "public corpus tasks their reference programs pass",
+     "n": 48
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p2"
+   ],
+   [
+    "quote",
+    "bun run capability"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p3"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "all 48 of 55 passed"
+   ],
+   [
+    "quote",
+    {
+     "counted": "public corpus tasks",
+     "n": 55
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p3"
+   ],
+   [
+    "quote",
+    "bun run capability"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p4"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "computation 24 of 26 passed"
+   ],
+   [
+    "quote",
+    {
+     "counted": "public computation tasks their reference programs pass",
+     "n": 24
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p4"
+   ],
+   [
+    "quote",
+    "bun run capability"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p5"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "computation 24 of 26 passed"
+   ],
+   [
+    "quote",
+    {
+     "counted": "public computation tasks",
+     "n": 26
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p5"
+   ],
+   [
+    "quote",
+    "bun run capability"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p6"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "logic 14 of 15 passed"
+   ],
+   [
+    "quote",
+    {
+     "counted": "public logic tasks their reference programs pass",
+     "n": 14
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p6"
+   ],
+   [
+    "quote",
+    "bun run capability"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p7"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "logic 14 of 15 passed"
+   ],
+   [
+    "quote",
+    {
+     "counted": "public logic tasks",
+     "n": 15
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p7"
+   ],
+   [
+    "quote",
+    "bun run capability"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p8"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "proofs 10 of 14 passed"
+   ],
+   [
+    "quote",
+    {
+     "counted": "public proof tasks their reference programs pass",
+     "n": 10
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p8"
+   ],
+   [
+    "quote",
+    "bun run capability"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p9"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "proofs 10 of 14 passed"
+   ],
+   [
+    "quote",
+    {
+     "counted": "public proof tasks",
+     "n": 14
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p9"
+   ],
+   [
+    "quote",
+    "bun run capability"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p10"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "Gaps: 7 tasks Lion cannot express yet"
+   ],
+   [
+    "quote",
+    {
+     "counted": "corpus tasks Lion cannot express yet",
+     "n": 7
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p10"
+   ],
+   [
+    "quote",
+    "bun run capability"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p11"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "Pairs of the grid's rows: 6561, in 118098 cells"
+   ],
+   [
+    "quote",
+    {
+     "lion": "pairs of features checked together in every place",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p11"
+   ],
+   [
+    "quote",
+    "bun run pairs: one kind of expression written inside another, in every place an expression can stand"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p12"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "same as plain code 72371"
+   ],
+   [
+    "quote",
+    {
+     "lion": "two programs that must be equivalent checked to give equal answers",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p12"
+   ],
+   [
+    "quote",
+    "bun run pairs: a cell gives what plain code gives, or plain code fails, or it is an exception one of its rows already has"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p13"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "Pairs of the grid's rows: 6561, in 118098 cells"
+   ],
+   [
+    "quote",
+    {
+     "counted": "pairs of the grid's rows",
+     "n": 6561
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p13"
+   ],
+   [
+    "quote",
+    "bun run pairs"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p14"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "Pairs of the grid's rows: 6561, in 118098 cells"
+   ],
+   [
+    "quote",
+    {
+     "counted": "cells of the pairs of the grid's rows",
+     "n": 118098
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p14"
+   ],
+   [
+    "quote",
+    "bun run pairs"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p15"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "surprising pairs, grid: 0"
+   ],
+   [
+    "quote",
+    {
+     "counted": "surprising pairs of the grid's rows",
+     "n": 0
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p15"
+   ],
+   [
+    "quote",
+    "bun run pairs: a pair's exception that neither of its rows has in that place"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p35"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "636 of 640 mutations: every test they name is picked for their change."
+   ],
+   [
+    "quote",
+    {
+     "lion": "the tests a change can reach, picked from a map of what each test ran",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p35"
+   ],
+   [
+    "quote",
+    "bun run affected --check, on the reach map of 112 test files and checks made with nothing else running: each listed mutation is given as a change to its own file"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p36"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "Picking is sound for every listed mutation: the tests it picks catch each one."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a picking of tests that catches every listed mutation",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p36"
+   ],
+   [
+    "quote",
+    "bun run affected --check: the 4 mutations whose named test picking skips are caught by the tests it keeps"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p37"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "636 of 640 mutations: every test they name is picked for their change."
+   ],
+   [
+    "quote",
+    {
+     "counted": "listed mutations",
+     "n": 640
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p37"
+   ],
+   [
+    "quote",
+    "bun run affected --check"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p38"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "636 of 640 mutations: every test they name is picked for their change."
+   ],
+   [
+    "quote",
+    {
+     "counted": "listed mutations whose every named test is picked for their change",
+     "n": 636
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p38"
+   ],
+   [
+    "quote",
+    "bun run affected --check"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p17"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "\"rules no probe checks\": \"record\" }, \"best\": 96,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "rules in force that no probe checks",
+     "n": 96
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p17"
+   ],
+   [
+    "quote",
+    "bun run loop status: the best the record's score of rules no probe checks is sure to give"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p18"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "\"probed\": 44,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "cases of scheme-racket-semantics a probe runs",
+     "n": 44
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p18"
+   ],
+   [
+    "quote",
+    "bun run history ask: the cases of scheme-racket-semantics that a probe runs, among them the R7RS-small probes"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p19"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "\"excepted\": 14"
+   ],
+   [
+    "quote",
+    {
+     "counted": "departures from Scheme a decision excepts, of the cases a probe runs",
+     "n": 14
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p19"
+   ],
+   [
+    "quote",
+    "bun run history ask: of those, the departures from Scheme a decision excepts"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p20"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "\"probed\": 44, \"excepted\": 14"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a conformance suite of the cases a language standard settles, each departure decided",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p20"
+   ],
+   [
+    "quote",
+    "bun run history ask: a difference from Scheme that no decision excepts is a finding the record's check fails on"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p21"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "\"predictions resolved\": 27,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "predictions the improvement loop resolved",
+     "n": 27
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p21"
+   ],
+   [
+    "quote",
+    "bun run loop status: How many predictions has the loop resolved per hour of checks?"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p22"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "\"seconds of checks\": 2816,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "seconds of checks behind the loop's resolved predictions",
+     "n": 2816
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p22"
+   ],
+   [
+    "quote",
+    "bun run loop status: How many predictions has the loop resolved per hour of checks?"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p23"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "How many predictions has the loop resolved per hour of checks?"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the rate at which the improvement loop resolves predictions",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p23"
+   ],
+   [
+    "quote",
+    "bun run loop status"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p24"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "\"seconds of checks\": 2816,"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the time of every check the loop runs, recorded",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p24"
+   ],
+   [
+    "quote",
+    "bun run loop status: the seconds each tool of each observation took"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p25"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "\"code lines per passed task\": \"core\" }, \"best\": 468.5,"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a change's cost counted per task it lets Lion pass",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p25"
+   ],
+   [
+    "quote",
+    "bun run loop status: What is the best each score is sure to give, and in which version?"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p26"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "What is the best each score is sure to give, and in which version?"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a score judged by its worst run against the best earlier run",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p26"
+   ],
+   [
+    "quote",
+    "bun run loop status: a version is sure to give its worst run"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p27"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "What was each experiment expected to fix, and did it?"
+   ],
+   [
+    "quote",
+    {
+     "lion": "an experiment's prediction recorded before it runs",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p27"
+   ],
+   [
+    "quote",
+    "bun run loop status: each experiment's belief named the problems it should fix before it ran"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p28"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "Which versions' scores do not count, because a requirement is not met?"
+   ],
+   [
+    "quote",
+    {
+     "lion": "scores that count only when every constraint holds",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p28"
+   ],
+   [
+    "quote",
+    "bun run loop status"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p29"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "lines that write a record of a check: 0 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the outcome and time of every check run, kept as data",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p29"
+   ],
+   [
+    "quote",
+    "a search of .husky/pre-commit"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p30"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "lines that name a constraint at risk: 0 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the constraints a change puts at risk, found before it is made",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p30"
+   ],
+   [
+    "quote",
+    "a search of the project record's steps, the metrics, and the improvement record's notes"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p31"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "lines that declare a relation of stale evidence: 0 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a probe's evidence listed as out of date when a file it ran on changes",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p31"
+   ],
+   [
+    "quote",
+    "a search of every step of the research model"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p32"
+   ],
+   [
+    "quote",
+    "lion-host-si-built"
+   ],
+   [
+    "quote",
+    "packages/core/src/analysis/analyze.ts: 1"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a known mistake found again in other programs by a query over the programs as data",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p32"
+   ],
+   [
+    "quote",
+    "a search of core and the CLI: lion check's warnings are written in TypeScript, in the analysis that reads names by scope"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-m1"
+   ],
+   [
+    "quote",
+    "lion-host-si-map-failed"
+   ],
+   [
+    "quote",
+    "Mapped 109 test files and checks at 7d623a7"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a reach map refused when a test it traces fails",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-m1"
+   ],
+   [
+    "quote",
+    "bun run affected --map: after \"packages/history: vitest failed in 57 s\" the map is written all the same, without the history test files that wrote no trace, and the command exits 0"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-m2"
+   ],
+   [
+    "quote",
+    "lion-host-si-map-failed"
+   ],
+   [
+    "quote",
+    "Picking is not sound for 33 mutations."
+   ],
+   [
+    "quote",
+    {
+     "counted": "listed mutations picking is not sound for, on a map made while a package's tests failed",
+     "n": 33
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-m2"
+   ],
+   [
+    "quote",
+    "bun run affected --check, on the map made while a package's tests failed: every unsound mutation names a test of packages/history that the map lacks"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p33"
+   ],
+   [
+    "quote",
+    "lion-probes-si"
+   ],
+   [
+    "quote",
+    "\"plain code at x = 0.1: (x + 0.2) - 0.2 is other than x\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a solver that computes with the numbers plain code computes with",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p33"
+   ],
+   [
+    "quote",
+    "program si-number-gap.json: the solver proves that no x between 0 and 1 has (x + 0.2) - 0.2 other than x, and plain code at 0.1 gives 0.10000000000000003"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-p34"
+   ],
+   [
+    "quote",
+    "lion-probes-si"
+   ],
+   [
+    "quote",
+    "\"plain code at n = 2^53: n + 1 equals n\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a solver that computes with the numbers plain code computes with",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-p34"
+   ],
+   [
+    "quote",
+    "program si-number-gap.json: the solver proves that no whole number from 2^53 up has n + 1 equal to n, and plain code at 2^53 gives n + 1 equal to n"
+   ]
+  ]
+ ],
+ "recorded"
+]

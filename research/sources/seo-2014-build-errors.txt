@@ -1,0 +1,170 @@
+Skip to main content
+Explore our many areas of focus
+Explore all research areas
+Applied AI & sciences
+Earth AI
+Health AI
+Science AI
+Sustainability & crisis resilience
+Foundational ML & algorithms
+Algorithms & theory
+Information retrieval
+Machine intelligence
+Machine perception
+Natural language processing
+People, systems & quantum AI
+Human-computer interaction and visualization
+Networking
+Quantum AI
+Responsible AI
+Anti abuse
+Software engineering
+Software systems
+Learn More
+Publications
+Projects
+Building a collaborative ecosystem
+Datasets
+Access high-quality datasets to accelerate your research.
+Tools & services
+Explore our latest AI models and products.
+Open source
+Discover open-source code and collaborate with the community.
+Try Deep Review
+Get detailed AI feedback on complex documents
+Shaping the future together
+See all programs
+Faculty programs
+Participating in the academic research community through meaningful engagement with university faculty.
+Student programs
+Supporting the next generation of researchers through a wide range of programming.
+R&D programs
+Collaborating with industry and academic experts to support foundational science and innovation.
+Locations
+Find your place in our global offices and research labs.
+Translating discovery into real-world impact
+People
+Our researchers drive advancements in computer science through both fundamental and applied research.
+Teams
+Collaborative groups tackling the world's most challenging AI problems.
+Research
+Explore our many areas of focus
+Explore all research areas
+Applied AI & sciences
+Earth AI
+Health AI
+Science AI
+Sustainability & crisis resilience
+Foundational ML & algorithms
+Algorithms & theory
+Information retrieval
+Machine intelligence
+Machine perception
+Natural language processing
+People, systems & quantum AI
+Human-computer interaction and visualization
+Networking
+Quantum AI
+Responsible AI
+Anti abuse
+Software engineering
+Software systems
+Learn More
+Publications
+Projects
+Resources
+Building a collaborative ecosystem
+Datasets
+Access high-quality datasets to accelerate your research.
+Tools & services
+Explore our latest AI models and products.
+Open source
+Discover open-source code and collaborate with the community.
+Try Deep Review
+Get detailed AI feedback on complex documents
+Conferences & events
+Careers
+Shaping the future together
+See all programs
+Faculty programs
+Participating in the academic research community through meaningful engagement with university faculty.
+Student programs
+Supporting the next generation of researchers through a wide range of programming.
+R&D programs
+Collaborating with industry and academic experts to support foundational science and innovation.
+Locations
+Find your place in our global offices and research labs.
+Blog
+About
+Translating discovery into real-world impact
+People
+Our researchers drive advancements in computer science through both fundamental and applied research.
+Teams
+Collaborative groups tackling the world's most challenging AI problems.
+Google
+Research
+Google AI
+Learn about all our AI
+Google DeepMind
+Explore the frontier of AI
+Google Labs
+Try our AI experiments
+Research
+Resources
+Conferences & events
+Careers
+Blog
+About
+Search
+Home
+Publications
+Programmers’ Build Errors: A Case Study (at Google)
+Hyunmin Seo
+Caitlin Sadowski
+Sebastian Elbaum
+Edward Aftandilian
+Robert Bowdidge
+International Conference on Software Engineering (ICSE) (2014)
+Google Scholar
+Copy Bibtex
+Abstract
+Building is an integral part of the software development process. However, little is known about the errors occurring in this process. In this paper, we present an empirical study of 26.6 million builds produced during a period of nine months by thousands of developers. We describe the workflow through which those builds are generated, and we analyze failure frequency, error types, and resolution efforts to fix those errors. The results provide insights on how a large organization build process works, and pinpoints errors for which further developer support would be most effective.
+Research Areas
+Software engineering
+Meet the teams driving innovation
+Our teams advance the state of the art through research, systems engineering, and collaboration across Google.
+See our teams
+Follow us
+Explore our other initiatives
+Google AI
+Discover how Google AI is committed to enriching knowledge and solving complex challenges
+Products
+Build
+Research
+Responsibility
+Societal Impact
+About
+Google Cloud
+High-performance infrastructure for cloud computing, data analytics & machine learning
+Overview
+Solutions
+Products
+Pricing
+Resources
+Google DeepMind
+Our mission is to build AI responsibly to benefit humanity
+Models
+Research
+Science
+About
+Google Labs
+Explore the future of AI responsibly with Google Labs
+About
+Experiments
+Stay connected
+About Google
+Google Products
+Privacy
+Terms
+Cookies management controls
+&times;

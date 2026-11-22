@@ -1,0 +1,173 @@
+Skip to main content
+Explore our many areas of focus
+Explore all research areas
+Applied AI & sciences
+Earth AI
+Health AI
+Science AI
+Sustainability & crisis resilience
+Foundational ML & algorithms
+Algorithms & theory
+Information retrieval
+Machine intelligence
+Machine perception
+Natural language processing
+People, systems & quantum AI
+Human-computer interaction and visualization
+Networking
+Quantum AI
+Responsible AI
+Anti abuse
+Software engineering
+Software systems
+Learn More
+Publications
+Projects
+Building a collaborative ecosystem
+Datasets
+Access high-quality datasets to accelerate your research.
+Tools & services
+Explore our latest AI models and products.
+Open source
+Discover open-source code and collaborate with the community.
+Try Deep Review
+Get detailed AI feedback on complex documents
+Shaping the future together
+See all programs
+Faculty programs
+Participating in the academic research community through meaningful engagement with university faculty.
+Student programs
+Supporting the next generation of researchers through a wide range of programming.
+R&D programs
+Collaborating with industry and academic experts to support foundational science and innovation.
+Locations
+Find your place in our global offices and research labs.
+Translating discovery into real-world impact
+People
+Our researchers drive advancements in computer science through both fundamental and applied research.
+Teams
+Collaborative groups tackling the world's most challenging AI problems.
+Research
+Explore our many areas of focus
+Explore all research areas
+Applied AI & sciences
+Earth AI
+Health AI
+Science AI
+Sustainability & crisis resilience
+Foundational ML & algorithms
+Algorithms & theory
+Information retrieval
+Machine intelligence
+Machine perception
+Natural language processing
+People, systems & quantum AI
+Human-computer interaction and visualization
+Networking
+Quantum AI
+Responsible AI
+Anti abuse
+Software engineering
+Software systems
+Learn More
+Publications
+Projects
+Resources
+Building a collaborative ecosystem
+Datasets
+Access high-quality datasets to accelerate your research.
+Tools & services
+Explore our latest AI models and products.
+Open source
+Discover open-source code and collaborate with the community.
+Try Deep Review
+Get detailed AI feedback on complex documents
+Conferences & events
+Careers
+Shaping the future together
+See all programs
+Faculty programs
+Participating in the academic research community through meaningful engagement with university faculty.
+Student programs
+Supporting the next generation of researchers through a wide range of programming.
+R&D programs
+Collaborating with industry and academic experts to support foundational science and innovation.
+Locations
+Find your place in our global offices and research labs.
+Blog
+About
+Translating discovery into real-world impact
+People
+Our researchers drive advancements in computer science through both fundamental and applied research.
+Teams
+Collaborative groups tackling the world's most challenging AI problems.
+Google
+Research
+Google AI
+Learn about all our AI
+Google DeepMind
+Explore the frontier of AI
+Google Labs
+Try our AI experiments
+Research
+Resources
+Conferences & events
+Careers
+Blog
+About
+Search
+Home
+Publications
+Taming Google-Scale Continuous Testing
+Atif Memon
+Bao Nguyen
+Eric Nickell
+John Micco
+Sanjeev Dhanda
+Rob Siemborski
+Zebao Gao
+ICSE '17:Proceedings of the 39th International Conference on Software Engineering (2017) (to appear)
+Google Scholar
+Copy Bibtex
+Abstract
+Growth in Google’s code size and feature churn rate has seen increased reliance on continuous integration (CI) and testing to maintain quality. Even with enormous resources dedicated to testing, we are unable to regression test each code change individually, resulting in increased lag time between code check-ins and test result feedback to developers. We report results of a project that aims to reduce this time by: (1) controlling test workload without compromising quality, and (2) distilling test results data to inform developers, while they write code, of the impact of their latest changes on quality. We model, empirically understand, and leverage the correlations that exist between our code, test cases, developers, programming languages, and code-change and test-execution frequencies, to improve our CI and development processes. Our findings show: very few of our tests ever fail, but those that do are generally “closer” to the code they test; certain frequently modified code and certain users/tools cause more breakages; and code recently modified by multiple developers (more than 3) breaks more often.
+NOTE: You can find the anonymized dataset for our paper on Google drive: https://drive.google.com/open?id=0B5_QHWCtac81VGNKYnhrQkJBZGM
+Research Areas
+Software engineering
+Meet the teams driving innovation
+Our teams advance the state of the art through research, systems engineering, and collaboration across Google.
+See our teams
+Follow us
+Explore our other initiatives
+Google AI
+Discover how Google AI is committed to enriching knowledge and solving complex challenges
+Products
+Build
+Research
+Responsibility
+Societal Impact
+About
+Google Cloud
+High-performance infrastructure for cloud computing, data analytics & machine learning
+Overview
+Solutions
+Products
+Pricing
+Resources
+Google DeepMind
+Our mission is to build AI responsibly to benefit humanity
+Models
+Research
+Science
+About
+Google Labs
+Explore the future of AI responsibly with Google Labs
+About
+Experiments
+Stay connected
+About Google
+Google Products
+Privacy
+Terms
+Cookies management controls
+&times;

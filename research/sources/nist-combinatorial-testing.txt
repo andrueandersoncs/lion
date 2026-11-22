@@ -1,0 +1,732 @@
+You are viewing this page in an unauthorized frame window. 
+This is a potential security issue, you are being redirected to https://csrc.nist.gov .
+
+
+
+
+
+
+
+
+
+
+
+
+
+An official website of the United States government
+
+Here’s how you know
+
+
+
+Here’s how you know 
+
+
+
+
+
+
+
+
+
+Official websites use .gov
+A
+.gov website belongs to an official government
+organization in the United States.
+
+
+
+
+
+
+
+Secure .gov websites use HTTPS
+A
+lock (
+
+
+) or https:// means you’ve safely connected to
+the .gov website. Share sensitive information only on official,
+secure websites.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Search 
+
+
+
+
+
+
+
+Search 
+
+
+
+
+
+
+
+CSRC MENU 
+
+
+
+
+
+
+
+
+Search 
+
+
+Search 
+
+
+
+
+
+
+
+
+Projects
+
+
+
+Publications
+
+Expand or Collapse 
+
+
+
+
+
+Drafts for Public Comment
+
+All Public Drafts
+
+Final Pubs
+
+FIPS (standards)
+
+
+
+Special Publications (SP s )
+
+IR (interagency/internal reports)
+
+CSWP (cybersecurity white papers)
+
+ITL Bulletins
+
+
+
+Project Descriptions
+
+Journal Articles
+
+Conference Papers
+
+Books
+
+
+
+
+
+
+
+Topics
+
+Expand or Collapse 
+
+
+
+
+
+Security & Privacy
+
+Applications
+
+
+
+Technologies
+
+Sectors
+
+
+
+Laws & Regulations
+
+Activities & Products
+
+
+
+
+
+News & Updates
+
+Events
+
+Glossary
+
+FAQ
+
+
+
+About CSRC
+
+Expand or Collapse 
+
+
+
+
+
+
+Computer Security Division
+
+
+Cryptographic Technology
+
+Software Security Group
+
+Hardware Security Group
+
+Security Engineering and Risk Management
+
+
+
+
+
+
+Applied Cybersecurity Division
+
+
+Cybersecurity and Privacy Applications
+
+National Cybersecurity Center of Excellence (NCCoE)
+
+National Initiative for Cybersecurity Education (NICE)
+
+
+
+
+
+Contact Us
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Information Technology Laboratory 
+
+
+Computer Security Resource Center 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Projects 
+
+
+
+Combinatorial Methods for Trust and Assurance ACTS
+
+
+
+
+Share to Facebook 
+Share to X 
+Share to LinkedIn 
+Share ia Email 
+
+
+
+
+
+Project Links
+
+
+
+
+Overview
+
+
+
+
+FAQs
+
+
+
+
+Publications
+
+
+
+
+
+
+
+
+
+
+Overview
+
+
+
+
+
+Combinatorial methods reduce costs for testing, and have important applications in software engineering:
+Combinatorial or t -way testing is a proven method for better testing at lower cost. The key insight underlying its effectiveness resulted from a series of studies by NIST from 1999 to 2004. NIST research showed that most software bugs and failures are caused by one or two parameters, with progressively fewer by three or more, which means that combinatorial testing can provide more efficient fault detection than conventional methods. Multiple studies have shown fault detection equal to exhaustive testing with a 20X to 700X reduction in test set size. New algorithms compressing combinations into a small number of tests have made this method practical for industrial use, providing better testing at lower cost. See articles on high assurance software testing or security and reliability .
+Assured autonomy and AI/ML verification: Input space coverage measurements are needed in assurance and verification of autonomous systems , because current methods for assurance of safety critical systems rely on measures of structural coverage, which do not apply to many autonomous systems. Combinatorial methods, including a theorem relating measures of input space coverage , offer a better approach for autonomous system verification and AI assurance.
+Assured Autonomy through Combinatorial Methods - keynote talk from
+6th IEEE Dependable and Secure Computing conference , Nov 7-9, 2023 at University of South Florida.
+NIST Tech reports on coverage measurement for assured autonomy:
+- Ordered t-way Combinations for Testing State-based Systems (paper)
+Presentation: Powerpoint Video (mp4)
+- Combination Frequency Differencing
+- Combinatorial Coverage Difference Measuremen t
+ACTS - award winning tool for combinatorial testing, used in thousands of organizations worldwide.
+- The ACTS tool was the subject of the Most Influential Paper award at ICST 2023 (Practical category), Yu, L., Lei, Y., Kacker, R. N., & Kuhn, D. R. "ACTS: A combinatorial test generation tool" 2013 IEEE Sixth International Conference on Software Testing, Verification and Validation (ICST)
+- ACTS development team received the Excellence in Technology Transfer Award , 2009, Federal Laboratory Consortium Mid-Atlantic Region
+Examples and Case Studies - from some of the world's largest organizations, including Adobe, Avaya, Bosch, Collins Aerospace, IBM, Jaguar Land Rover, Lockheed Martin, Mercedes Benz, US Nuclear Regulatory Commission, Red Hat, SAS Institute, Siemens, the US Air Force, US Army, US Marine Corps, US Navy, and others.
+- Industrial examples - - Autonomous systems - - Cybersecurity -
+FREELY AVAILABLE SOFTWARE More than 4,500 corporate and university users -- > ACTS 3.3 is the latest version of the covering array generator
+Software on this site is free of charge and will remain free in the future. It is public domain ; no license is required and there are no restrictions on use. You are free to include it and redistribute it in commercial products if desired . NIST is a US Government agency, doing research in advanced measurement and test methods.
+To obtain the tools, please send a request to [email protected] . Please provide your first name, last name, organization , and the country from which you are making the request. We will send you a download link.
+QUICK START - It's easy to learn the basics of this method!
+Tutorial (82 pages, pdf in English or Español): Practical Combinatorial Testing // Pruebas Combinatorias Prácaticas
+Video tutorial (55 min.)
+Brief overview (12:46, mp4) of why it's so effective
+Tutorial presentation (pdf) from the 2019 Defense and Aerospace Test and Analysis Workshop
+Teaching workshops and short courses conducted jointly with Virginia Tech
+- Defense and Aerospace Test and Analysis Workshop (April 22, 2025)
+- Combinatorial Testing for AI-Enabled Systems (Sept 4, 2024)
+New papers:
+DR Kuhn, JF Defranco, "Measuring ML Dataset Coverage and Completeness: Metrics and Visualizations", in Studies Comp.Intelligence, Vol. 1272, Angelos Stavrou et al: Generative and Agentic AI Reliability: Architectures, Challenges, and Trust for Autonomous Systems, Springer Verlag, 2026. (to appear)
+DE Simos, M Leithner, R Kuhn, B Garn, R Kacker, & J Lei, (2026). "Combinatorial Security Testing—10 Years Later". IEEE Security & Privac y.
+D R Kuhn, M S Raunak, R N Kacker, Measuring and Visualizing Dataset Coverage for Machine Learning , IEEE Computer , vol 58, issue 4, Mar 2025 DOI: 10.1109/MC.2025.3527374
+M S Raunak, D R Kuhn, R N Kacker, Jeff Y Lei, Ensuring Reliability Through Combinatorial Coverage Measures , IEEE Reliability Magazine , vol 1, issue 2, May 2024, DOI: 10.1109/MRL.2024.3389629
+M S Raunak, D R Kuhn, R N Kacker, Jeff Y Lei, Combinatorial Testing for Reliable Systems , IEEE Reliability Magazine , vol 1, issue 1, Feb 2024, DOI: 10.1109/MRL.2024.3355874
+Kuhn, D. R., Raunak, M. S., Kacker, R. N., Chandrasekaran, J., Lanus, E., Cody, T., & Freeman, L. (2024). Assured Autonomy Through Combinatorial Methods . Computer, 57(5), 86-90.
+M. Olsen, M S Raunak, D.R. Kuhn, Predicting ABM Results with Covering Arrays and Random Forests , International Conference on Computational Science , Prague, Czech Republic, 3-5 July, 2023.
+D. R. Kuhn, M S Raunak, R.N. Kacker, Ordered t-way Combinations for Testing State-based Systems , IEEE 16th Intl Conf on Software Testing, Verification and Validation Workshops , 2023
+K. Khadka, J. Chandrasekaran, J.Y. Lei, R. Kacker, R. Kuhn, Synthetic Data Generation Using Combinatorial Testing and Variational Autoencoder, IEEE 16th Intl Conf on Software Testing, Verification and Validation Workshops , 2023
+B. Garn, D. Schreiber, D. Simos, R. Kuhn, J. Voas, R. Kacker, Summary of Combinatorial Methods for Testing Internet of Things Smart Home Systems, IEEE 16th Intl Conf on Software Testing, Verification and Validation Workshops , 2023
+ORACLE-FREE TESTING
+Combinatorial methods make it possible to detect a significant number of faults without a conventional test oracle. This seemingly impossible task is achieved using two layers of covering arrays with equivalence classes. A U.S. patent (#10552300) has been issued for this method, but this patent does not apply to ACTS or any other tools on this site; these tools are public domain . For more information on the oracle-free testing method, please contact our Technology Partnerships Office .
+SOME OF OUR ACCOMPLISHMENTS TO DATE INCLUDE:
+Empirical finding that software failures are triggered by interactions of only a few variables (1 to 6)
+IPOG covering array algorithm and its variants, more efficient than other known algorithms
+Developed sequence covering arrays, extending combinatorial methods to event sequence testing
+Measurement science and tools for combinatorial coverage
+Theorem relating (static) combinatorial input space coverage to (dynamic) structural code coverage, and
+Methods for error detection without conventional test oracle
+Contacts: M S Raunak - [email protected] or Rick Kuhn - [email protected] , [email protected] , or Raghu Kacker - [email protected]
+Disclaimer: Software products are identified in this document. Such identification does not imply recommendation by NIST, or that the products identified are necessarily the best available for the purpose.
+
+
+
+
+
+
+
+
+
+
+Project Links
+
+
+
+
+Overview
+
+
+
+
+FAQs
+
+
+
+
+Publications
+
+
+
+
+Additional Pages
+
+
+
+Quick start 
+Downloadable Tools 
+Fundamental background papers 
+Tutorials and Documentation 
+Combinatorial Methods in Testing 
+Why do Combinatorial Testing? 
+Event Sequence Testing 
+Case Studies 
+Assured autonomy - AI Safety and Security 
+AI-Enabled Systems 
+Explainable AI, Verification, and Validation 
+Rule-based Expert Systems and Formal Methods 
+AI and Assured Autonomy Papers 
+Assured Autonomy - briefings and videos 
+Case studies 
+Automated Testing 
+Automated Test Generation 
+Oracle-free Testing 
+Property based Testing 
+Input space measurement for autonomy and testing 
+Input Space Coverage Measurement 
+Coverage examples 
+Case studies 
+Hardware and Embedded Systems 
+Chip Verification 
+Physical Unclonable Function (PUF) Vulnerabilities 
+Embedded System Faults and Vulnerabilities 
+Cybersecurity Testing 
+Combinatorial approach 
+MagicMirror smart contract testing 
+Case studies 
+Software Testing Methodology 
+NIST Testing Process 
+DOs and DON'Ts of testing 
+ACTS Library 
+Papers on combinatorial test methods 
+Covering Array Library 
+Seminars & Talks & Tutorial 
+Combinatorial Methods For Modeling & Simulation 
+Workshop Papers 
+Our Research Program 
+
+
+
+
+
+
+
+
+Contacts
+
+M S Raunak - NIST
+[email protected]
+
+Raghu Kacker - NIST
+[email protected]
+
+
+
+
+
+Group
+
+Hardware Security Group 
+
+
+
+
+Topics
+
+
+
+Security and Privacy: 
+assurance , modeling , testing & validation
+
+
+Technologies: 
+semiconductors , software & firmware
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Additional Pages
+
+
+
+Quick start 
+Downloadable Tools 
+Fundamental background papers 
+Tutorials and Documentation 
+Combinatorial Methods in Testing 
+Why do Combinatorial Testing? 
+Event Sequence Testing 
+Case Studies 
+Assured autonomy - AI Safety and Security 
+AI-Enabled Systems 
+Explainable AI, Verification, and Validation 
+Rule-based Expert Systems and Formal Methods 
+AI and Assured Autonomy Papers 
+Assured Autonomy - briefings and videos 
+Case studies 
+Automated Testing 
+Automated Test Generation 
+Oracle-free Testing 
+Property based Testing 
+Input space measurement for autonomy and testing 
+Input Space Coverage Measurement 
+Coverage examples 
+Case studies 
+Hardware and Embedded Systems 
+Chip Verification 
+Physical Unclonable Function (PUF) Vulnerabilities 
+Embedded System Faults and Vulnerabilities 
+Cybersecurity Testing 
+Combinatorial approach 
+MagicMirror smart contract testing 
+Case studies 
+Software Testing Methodology 
+NIST Testing Process 
+DOs and DON'Ts of testing 
+ACTS Library 
+Papers on combinatorial test methods 
+Covering Array Library 
+Seminars & Talks & Tutorial 
+Combinatorial Methods For Modeling & Simulation 
+Workshop Papers 
+Our Research Program 
+
+
+
+
+
+
+
+Contacts
+
+
+M S Raunak - NIST
+[email protected]
+
+Raghu Kacker - NIST
+[email protected]
+
+
+
+
+
+
+Group
+
+Hardware Security Group 
+
+
+
+
+Topics
+
+
+
+Security and Privacy: 
+assurance , modeling , testing & validation
+
+
+Technologies: 
+semiconductors , software & firmware
+
+
+
+
+
+
+
+
+
+
+
+
+
+Created May 24, 2016 , Updated June 08, 2026 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HEADQUARTERS
+
+100 Bureau Drive
+
+Gaithersburg, MD 20899
+
+
+
+
+
+
+
+X (link is external) 
+
+
+
+
+facebook (link is external) 
+
+
+
+
+
+linkedin (link is external) 
+
+
+
+
+
+instagram 
+(link is external) 
+
+
+
+
+
+youtube (link is external) 
+
+
+
+
+
+rss 
+
+
+
+
+
+govdelivery (link is external) 
+
+
+
+
+Want updates about CSRC and our publications?
+Subscribe 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Contact Us |
+Our Other Offices 
+
+
+
+
+Send inquiries to [email protected] 
+
+
+
+
+
+
+
+Site Privacy
+
+Accessibility
+
+Privacy Program
+
+Copyrights
+
+Vulnerability Disclosure
+
+No Fear Act Policy
+
+FOIA
+
+Environmental Policy
+
+Scientific Integrity
+
+Information Quality Standards
+
+Commerce.gov
+
+Science.gov
+
+USA.gov
+
+Vote.gov

@@ -1,0 +1,236 @@
+Our sites:
+OSF
+TOP Guidelines
+Bluesky Mastodon Linkedin YouTube
+Shop
+Donate
+About
+Team
+Board
+Partners
+Strategic Plan
+Supporters
+News
+Impact
+History
+Finances
+Compliance and Standards
+Inclusion, Diversity, Equity, and Access
+Careers
+Engage
+Tools
+Training
+Community Building
+Policy Reform
+Open Science
+Preregistration
+Registered Reports
+Research
+Assessing Research Practice
+Reimagining Research
+Metascience Alliance
+Events
+Webinars
+Metascience 2027
+Year of Open Science Conference
+Blog
+Contact
+Future-proof your research.
+Preregister your next study.
+What is Preregistration?
+When you preregister your research, you're simply specifying your research plan in advance of your study and submitting it to a registry.
+Preregistering creates a specific plan for the upcoming study. Doing so helps to distinguish planned from unplanned work. Both are important. But the same data cannot be used to generate and test a hypothesis, which can happen unintentionally and reduce the credibility of your results. Addressing this problem through planning improves the transparency of your research. This helps you clearly report your study and helps others who may wish to build on it. For instructions on how to submit a preregistration on OSF, please visit our help guides .
+For additional insight and context, you can read The Preregistration Revolution ( preprint ).
+Planned Research
+Most often, this is "confirmatory" research, although you can of course plan to do exploratory work.
+Hypothesis testing
+Results are held to the highest standards
+Data-independent
+Minimizes false positives
+P-values retain diagnostic value
+Unplanned Research
+Most often, this is exploratory research.
+Hypothesis generating
+Results deserve to be replicated and confirmed
+Data-dependent
+Minimizes false negatives in order to find unexpected discoveries
+P-values lose diagnostic value
+When Can You Preregister?
+Right before your next round of data collection
+After you are asked to collect more data in peer review
+Before you begin analysis of an existing data set
+Why Preregister?
+Makes your science better by increasing the credibility of your results
+Allows you to stake your claim to your ideas earlier
+It's an easy way to plan for better research
+Resources
+Articles and Blogs About Preregistration
+The Preregistration Revolution ( preprint )
+Research Preregistration 101 (and other articles about preregistration at APS )
+Preregistration: A Plan, Not a Prison (and other blogs about preregistration on cos.io/blog )
+A manifesto for reproducible science
+Trust in science would be improved by study pre-registration
+Let’s think about cognitive bias
+Seven Selfish Reasons for Preregistration
+Presentations, Teaching Materials, and Instructions
+Webinars : Preregistration: Improve Research Rigor, Reduce Bias , Preregistration on OSF , Registered Reports for Early Career Researchers
+Teaching materials : A general introductory presentation . A workshop at LMU by Schönbrodt, Scheel, & Stachl. A workshop at APS 2019.
+Contact researchers who have preregistered before and who have said they would be happy to help you.
+Templates of many preregistration forms are available here .
+Primers on preregistration (and other open science topics) created by the UK Reproducibility Network .
+Help docs and instructions to register any project on OSF.
+Checklist of items to include when creating an analysis plan for some common statistical models.
+Checklist items to include when writing up the results of preregistered research.
+Transparent Changes When you write up the results of preregistered research, it is important to transparently disclose any changes from the proposed plan. See here for a template Transparent Changes document and here for an ongoing project to help structure these disclosures .
+Example preregistrations are available in this curated list or by searching through the OSF Registry
+Published studies that include preregistered work: here and here and over 200 examples in this library of badged studies
+Follow us on Twitter @OSFPrereg
+Hold out data-sets or split samples
+It may be difficult to fully prespecify your model until you have a chance to explore through a real data-set. This could help you test model assumptions and make reasonable decisions about how the model should be structured. However, the result of that work is a specific, testable hypothesis. By randomly splitting off some "real" data, you can build the model through exploration and then confirm it with the portion of the data that has not yet been analyzed. Though this process reduces the sample size available for confirmatory analysis, the benefit gained through increased credibility (not to mention an iron-clad rationale for using 1-tailed tests!) more than makes up for it.
+The reusable holdout: Preserving validity in adaptive data analysis. Dwork, Feldman, Hardt, Pitassi, Reingold, and Roth, 2015
+Split-Sample Strategies for Avoiding False Discoveries Anderson and Magruder, 2017 ( ungated here )
+Using Split Samples to Improve Inference on Causal Effects Fafchamps and Labonne, 2016 ( ungated and updated here )
+Literature
+Publication bias in the social sciences: Unlocking the file drawer ( preprint ) The authors find a strong bias toward statistically significant findings in reported outcomes, even within a body of work where methodology and rigor did not vary.
+Likelihood of Null Effects of Large NHLBI Clinical Trials Has Increased over Time : "The number NHLBI trials reporting positive results declined after the year 2000. Prospective declaration of outcomes in RCTs, and the adoption of transparent reporting standards, as required by clinicaltrials.gov , may have contributed to the trend toward null findings."
+See a complete annotated bibliography here .
+Preregistration is new to many researchers. Here are the questions we get asked most often.
+Do I need to report all results from my pre-analysis plans?
+Yes. The central aims of preregistration are to distinguish confirmatory and exploratory analyses in order to retain the validity of their statistical inferences. Selective reporting of planned analyses is problematic for the latter.
+Do I need to interpret all results from my pre-analaysis plans?
+Yes. Selective interpretation of pre-planned analyses can disrupt the diagnosticity of statistical inferences. For example, imagine that you planned 100 tests in your preregistration, and then reported all 100, 5 of which achieved p < .05. It is possible (even likely) that those five significant results are false positives. If the paper then discussed just those five and ignored the others, the interpretation could be highly misleading. Planning in advance is necessary but not sufficient for preserving diagnosticity.
+To reduce interpretation biases, confirmatory research designs often have a small number of tests focused on the key questions in the research design, or adjustments for multiple-tests are included in the analysis plan. It may be that some preregistered analyses are dismissed as inappropriate or ill-conceived in retrospect, but doing that explicitly and transparently assists the reader in evaluating the rest of the confirmatory results.
+Does preregistration mean that I can’t do any unplanned analyses?
+No. Preregistration distinguishes confirmatory and exploratory analyses ( Chambers et. al, 2014 ). Exploratory analysis is very important for discovery and hypothesis generation. Simultaneously, results from exploratory analyses are more tentative, p-values are less diagnostic, and additional data is required to subject an exploratory result to a confirmatory test. Making the distinction between exploratory and confirmatory analysis more transparent increases credibility of reports and helps the reader to fairly evaluate the evidence presented ( Wagenmakers et al., 2012 ).
+What is the difference between exploratory and confirmatory research?
+Exploratory and confirmatory research are both crucial to the process of science. In exploratory work, the researcher is looking for potential relationships within a dataset, effects of a candidate drug, or differences between two groups. The researcher wants to minimize the chance of making a Type II error, or a false negative, because finding something new and unexpected could be an important new discovery.
+In confirmatory work, the researcher is rigorously testing a predicted effect. The specific hypothesis is very clear, and she has specified one way to test that hypothesis. The goal of confirmatory research is to minimize the Type I error rate, or false positives.
+The purpose of preregistration is to make sure the distinction between these two processes are very clear. Once a researcher begins to slightly change the way to test the hypothesis, the work should be considered exploratory.
+At least one confirmatory test must be specified in each preregistration.
+Can I use a pre-existing data set for my preregistration?
+Perhaps. A goal of pre-analysis plans is to avoid analysis decisions that are contingent on observed results (except when those contingencies are specified in advance, see above). This is more challenging for existing data, particularly when outcomes of the data have been observed or reported. Standards for effective preregistration using existing data do not yet exist.
+When you create your research plan, you will identify whether existing data is included in your planned analysis. For some circumstances, you will describe the steps that will ensure that the data or reported outcomes do not influence the analytical decisions. Below are the categories for which preregistration may still use existing data.
+Registration prior to collection of data: As of the date of submission of Research Plan for Preregistration, the data have not yet been collected, created, or realized. In this scenario, the Entrant must certify that the data do not exist to retain eligibility.
+Registration prior to any human observation of the data: As of the date of submission, the data exist but have not yet been quantified, constructed, observed, or reported by anyone - including individuals that are not associated with the proposed Study and Research Plan. Examples include museum specimens that have not been measured, or data that have been collected by non-human collectors and are inaccessible. In this scenario, the Entrant must certify that the data have not been observed by anyone and how this is the case to retain eligibility.
+Registration prior to access to the data: As of the date of submission, the data exist, and have not been accessed by the Entrant, or the Entrant’s Study collaborators. Commonly, this includes data that has been collected by another researcher or institution. In this scenario, the Entrant must certify that they have not accessed the data, explain who has accessed the data, and justify how any observation, analysis, and reporting of that data avoids compromising the confirmatory nature of the Research Plan. The justification will be reviewed to determine eligibility.
+Registration prior to analysis of the data: As of the date of submission, the data exist and have been accessed by the researcher, though no analysis has been conducted related to the Research Plan. Common situations for this are the existence of a large dataset that is the subject of many studies over time, or a split sample in which a portion is not analyzed to be subjected to confirmatory testing after exploratory analysis of the other data. In this scenario, the Entrant must certify that they have not analyzed the data related to the Research Plan (including calculation of summary statistics), explain what other analysis or reporting of the data has been done by the Entrant or others, and justify how any prior observation, analysis, and reporting of that data avoid compromising the confirmatory nature of the Research Plan.
+I am still in exploratory mode, in uncharted territory. How can I add more rigor now?
+Split incoming data into two parts: One for exploration and finding unexpected trends or differences. Preregister tantalizing findings. Confirm with the other data set that had been held off. “Model training” and “validation” are other terms for this process. Below are three papers that describe this process in more detail:
+“ Split-Sample Strategies for Avoiding False Discoveries ,” by Michael L. Anderson and Jeremy Magruder ( ungated here )
+“ Using Split Samples to Improve Inference on Causal Effects ,” by Marcel Fafchamps and Julien Labonne ( ungated and updated here )
+The reusable holdout: Preserving validity in adaptive data analysis
+I need to change my preregistration, what should I do?
+If your preregistration on the OSF is less than 48 hours old and has not yet been confirmed by its contributors, you can cancel it (see here for details).
+If changes occur in your project after the registration is finalized, you have two options:
+Option 1 : Create a new preregistration with the updated information. After creating that preregistration, make a note of its URL and withdraw your original preregistration . In the withdrawal process, make a short note to explain the rationale for removing this registration and include the URL for the newly registered project.
+Choose option 1 if you have made a serious error in your preregistration (such as accidentally including sensitive information that should not be shared) or if you have not yet started data collection.
+Option 2 : Start a Transparent Changes document now. Upload this document to the OSF project from which you started your registration and refer to it when reporting the results of your preregistered work.
+Choose option 2 if you have already begun the study. It is expected that most preregistered studies will have some changes, so do not feel that this diminishes your study in any way, after all, your preregistration is a plan, not a prison .
+Is preregistration the same as Registered Reports?
+Background
+Registered Reports are a particular publication format in which the preregistered plan undergoes peer review in advance of observing the research outcomes. However, in the case of Registered Reports, that review is about the substance of the research and is overseen by journal editors. Research designs that pass peer review are offered ‘in principle acceptance’ (IPA) ensuring that the results are guaranteed to be published regardless of findings, as long as the methodology is carried out as described.
+After being granted IPA by a journal, you should ensure that that research plan is preserved. The journal may have a mechanism to do that, or you may use this workflow to register your accepted plan: https://osf.io/rr
+Does preregistration mean that I cannot test appropriateness of model assumptions and adjust analysis accordingly?
+No. Confirmatory analyses are planned in advance, but they can be conditional. A pre-analysis plan might specify preconditions for certain analysis strategies and what alternative analysis will be performed if those conditions are not met. For example, if an analysis strategy requires data for a variable to be normally distributed, the analysis plan can specify evaluating normality and an alternate non-parametric test to be conducted if the normality assumption is violated.
+For conditional analyses, we suggest that you define a 'decision-tree' containing logical IF-THEN rules that specify the analyses that will be used in specific situations. Here are some example decision trees . In the event that you need to conduct an unplanned analysis, preregistration does not prevent you from doing so. Preregistration simply makes clear which analyses were planned and which were not.
+Is preregistration relevant to my field or type of research?
+There are several research circumstances that present challenges to conducting preregistered research.
+Studies in which you are not conducting statistical inference testing. Most existing preregistration models are designed to reduce bias when the researcher intends to apply statistical inference techniques to collected data. There are many publishable, peer-reviewed endeavors for which this is not the case such as qualitative research and some kinds of observational studies.
+Hypothesis testing using pre-existing data. Using previously-collected data places additional burden on the researcher to avoid analysis decisions that are contingent on the data and research outcomes. For example, seeing a simple summary of descriptive statistics prior to inferential testing can influence the choice of test and comparison of conditions or variables.
+Field studies. Field science can be particularly challenging to preregister. Sample size, measured variables, and even design may have to respond to unpredictable events. Pilot trials, feedback from peers, and additional time or imagination in the planning phase can help make registered plans more accurate, including identification of data collection contingencies in advance.
+If the present preregistration process does not fit your research approach effectively, and you believe that there are ways to conduct preregistered research in your field, we encourage you to contact us to help develop and specify a preregistration process for your work (prereg@cos.io).
+I've got different papers coming from a single data collection effort, how should I preregister?
+When you have many planned studies being conducted from a single round of data collection, you need to balance two needs: 1) creating a clear and concise connection from your final paper to the preregistered plan and 2) ensuring that the complete context of the conducted study is accurately reported.
+Imagine a large study with dozens of analyses, some of which will be statistically significant by chance alone. A future reader needs to be able to obtain all of the results in order to understand the complete context of the presented evidence. With foresight, some of this challenge in minimized. Parsing one large data collection effort into different component parts may reduce the need to connect one part of the work to another, if the decision to make that distinction is made ahead of time in a data-independent manner.
+The easiest way to organize such a complex project on the OSF is with components . These sub-projects can contain your individual analysis plans for different aspects of your larger study.
+Finally, as is true with most recommendations, transparency in key. Disclose that individual papers are part of a larger study so that the community can understand the complete context of your work.
+Is my preregistration private? Can it be withdrawn?
+You may embargo your preregistration plan for up to 4 years to keep the details from public view. All registrations eventually become public because that is part of the purpose of a registry - to reduce the file-drawer effect (sometimes called the grey literature). Information about embargo periods is here . It is possible to withdraw your preregistration, but a notification of the withdrawal will be public. You may end an embargo early, see here for instructions .
+I'm in the middle of a longitudinal study, can I still preregister?
+Maybe, but there are several pitfalls to be aware of. First is the fact that a fourthcoming round of data collection is likely to be highly correlated to the previous round of data collection. If an individual was notable for one characteristic last year, they are likely to still be notable on that (or related) traits. However, there are a few ways that preregistration can still be used to perform purely confirmatory analyses on forthcoming data.
+Try partnering with colleagues who have not yet seen any summary results from previous years. A novel analyst will not be able to be influenced by preliminary measures and may be able to generate a precise analysis plan by using only the meta-data (e.g. the measures that will be collected).
+Consider using as-of-yet unused variables for forthcoming analyses. Be careful that you are truly ignorant of any summary statistics from previous years, but if that is true then the forthcoming results may be truly new to you.
+In some cases, preregistration may not be possible. If you know the cohort well, then your ability to conduct confirmatory or inferential analyses on that population may be minimal. This does not diminish the value of the work, as exploratory work is essential for making discoveries and new hypotheses, but should not be presented using the tools designed for confirmation. Preregistering future cohort studies, reserving some of the data in a hold-out confirmatory set, and encouraging direct replications is oftentimes the best answer, despite the investments required.
+Reviewers and editors are requesting that I modify parts of my preregistered plans. How should I reply?
+Preregistration is relatively new to many people, so you may get questions from reviewers or editors during the review process. Below are some possible issues you may encounter and suggested strategies.
+Possible editorial or reviewer feedback : Reviewers or editors may request that you remove an experiment, study, analysis, variable, or design feature because the results are null results or marginal.
+The issue : All preregistered analysis plans must be reported. Selective reporting undermines diagnosticity of reported statistical inferences.
+Possible response to the editor : The results of these tests are included because they stem from prespecified analyses in order to conduct a confirmatory test. Removing these results because of their non-significance would perpetuate publication bias already present in the literature (Chambers et al., 2014; Simmons et al., 2011; Wagenmakers et al., 2012).
+Notes: If the reviewer/editor proposes a reason why they believe the null result could be explained by a design flaw, it can often be helpful/appropriate to leave the test in, but discuss the reviewers concerns about the validity of that particular test/design feature in a discussion section.
+Possible editorial or reviewer feedback : Why are you referring to a preregistered plan and reporting them separately from other analyses?
+The issue : The published article must make clear which analyses were part of the confirmatory design (usually distinguished in the results section with confirmatory and exploratory results sections), and there must be a URL to the preregistration on the OSF.
+Possible response to the editor: The registration was certified prior to the start of data analysis. This defines analyses that were prespecified and confirmatory versus those which were not prespecified and therefore exploratory. Clarifying this allows readers to see that the hypotheses, analyses, and design that were prespecified have been accurately and fully reported (Jaeger & Halliday, 1998; Kerr, 1998, Thomas & Peterson, 2012).
+Possible editorial feedback : Editor requests that you perform additional tests.
+The issue : Additional tests are fine, they just need to be distinguished clearly from the confirmatory tests.
+Possible response to the editor: Yes, these additional analyses are informative. We made sure to distinguish them from our preregistered analysis plan that is the most robust to alpha inflation. These analyses provide additional information for learning from our data.
+I have a new project I'd like to preregister. There are three parts, which will be published separately but have considerable overlap in data. Do you recommend I register them separately or together?
+If your project has a single data-collection effort, and if the 3 projects do not depend on one another (ie they could be conducted in parallel and they are not sequential), then a single preregistration might be best, as long as you note in that preregistration that the results will be reported separately (you want to avoid the impression that the first paper coming out is only reporting a biased subset of the analyses- if you prespecify how results are reported then it is a clear justification for this "selective reporting" which is problematic only if it is informed by unexpected trends in the dataset).
+If your data collection efforts will be distinct or separate from one another (either in time or in methodology and organization), then multiple preregistrations will likely make the most sense.
+If the studies include exploratory that work is designed to inform latter confirmatory studies, then definitely wait to preregister until the exploratory work is completed. Make sure not to analyze any specific data as part of the exploratory stage that will also be used for the confirmatory work. If your design requires that a single data collection effort be used for both exploration and confirmation studies, then you can randomly hold out a portion of the data and use part of it for exploration before opening up the reserved portion for confirmation (see "Hold out data-sets or split samples" above).
+I don't know how to preregister, or am having trouble with my preregistration, help!
+If you've never preregistered before, go to osf.io/prereg to get started. If you need help, please see our support pages and help guides .
+Is it okay to change authors (adding/deleting) after having preregistered? Can that be seen as a disadvantage for publication when the authors don't match anymore?
+Oftentimes, the authors on the registration and the final publication do not match. This is usually due to the final article containing both preregistered and unregistered experiments, which is fine as long as the two are clearly labeled. We encourage you to leave authors on the preregistration if they are contributing to that preregistered work because they deserve that credit. It's okay for the author lists to not match perfectly as long as it's clear who did what and proper attribution is given.
+Can you recommend any (practical) resources specifically for teaching students on how to pre-register?
+Check out the resources available at cos.io/prereg . We also recommend this workshop from APS, where participants were asked to identify “holes” in preregistrations and fill them in with more specific criteria https://osf.io/4acje/ . We also recommend on that page: the checklists for complete analysis plans and complete reporting; the PowerPoint slides and recordings; and the Prereg Revolution .
+Can I use the same wording in a prereg and then the later paper? Or do I have to be careful because of self-plagiarism?
+We encourage authors to use their registration verbatim, and to cite their preregistration for clarity and discoverability. Use of quotations or changed tense from the future to the past can address self-plagiarism concerns. We encourage you to use similar language from prereg to final article because it keeps it consistent and concise for the reader.
+How detailed should the methods be in the prereg? Should a person be able to replicate using only the prereg?
+The level of detail should be enough for an interested reader to be able to replicate the methods of the original study. We encourage you to take the perspective of your future audience: what would you want to know about the study methodology and analyses to enable you to better replicate or extend that research? We also encourage concise language, as the longer the preregistration is, the less likely it will be read in its entirety (though some length is unavoidable).
+Should I list all measured variables from the study also in the prereg, even if they are not part of the preregistered hypotheses/analyses?
+If the variables will not be used in testing the preregistered hypotheses, then you do not need to include them in the preregistration. It can sometimes be helpful to include them if you think the variables will be used in an exploratory or data-driven way, but it is not required. At a minimum, the variables used in testing preregistered hypotheses must be defined in the preregistration, and any additional variables could be included if you believe their inclusion will add clarity to the work.
+Can you talk more about preregistration of studies using existing data? What precautions need to be taken? What assurances need to be made in the preregistration?
+It can be a bit tricky when using existing data, but it can still be useful and beneficial. With existing data, it is impossible for the reader to know how much you had known prior to creating the preregistration. If you know the data intimately and understand how the data are going to distribute, then the preregistration is very diminished in its power to mitigate bias. Preregistering what you know about that data helps the reader better assess what you knew before you began the project. This is the best you can do in certain situations. It's transparent what you knew prior to creating the registration, and then it's up to the reader and the community to assess how much, if any, bias may have crept in.
+Should I submit link to my preregistration project when sending my paper to a journal for publication? What about anonymity during review process?
+Yes! Sharing your preregistration with the reviewers allows it to be used in the review process. As for anonymity in the review process, you can submit anonymized view-only links . NOTE: Be sure that any attached files or answers to registration questions do not contain any identifying information (including file titles!). The anonymized link removes the Author section of the form, but it cannot redact any information in a file.
+What types of errors in a prereg are you allowed to correct using the "short" registration process?
+Updates or amendments to a preregistration are permissible (in most cases) prior to analyzing the data (up until the outcomes of the study are known). For instance, if you have preregistered an analysis plan, but learn of a better technique before you have analyzed the data, then it is still okay to update your registration since you are not aware of the results of those initial analyses. What is not okay is updating the registration after results of the initial analyses are known to shift the analyses, as it starts to enter the territory of mining for statistical significance. In this case, you are encouraged to still run those analyses, but these must be labeled as exploratory or data-driven analyses. For more information on updating a preregistration, please see this blog post: https://cos.io/blog/preregistration-plan-not-prison/
+What are recommended practices for reporting preregistration processes in completed studies that are being written up for publication (e.g., referencing the preregistration in the method, connecting to the preregistration itself via DOI)?
+Both referencing the preregistration in the methods section and providing a link to the preregistration itself are crucial when writing up preregistered work. The preregistration was written as a means to inform your readers what had been planned in the study, so it is vital they be able to access and read it. Preregistration is a great exercise for the author, but it loses nearly all its value if it cannot be read by others.
+Due to the requirement for prereg/approval before data collection, is there an option for studies that use archival data?...or large public research databases?
+For preregistering studies using archival or public research data, it is important to disclose your prior knowledge and exposure to the data at the time of registering. The concern is to what extent the knowledge could have influenced or biased the analytical decisions in the preregistration. Disclosure is key, but too much prior knowledge of the data can impact the usefulness of prereg from a bias mitigation perspective.
+The Preregistration Challenge was an education campaign that ended in 2018 and was supported by the Laura and John Arnold Foundation. The campaign included $1000 prizes for researchers who published the results of preregistered work. More information about the Prereg Challenge is available on this resources page .
+6218 Georgia Avenue NW, Suite #1, Unit 3189
+Washington, DC 20011
+Email: contact@cos.io
+Bluesky
+Mastodon
+Linkedin
+YouTube
+Join our mailing list
+Unless otherwise noted, this site is licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) License .
+Translation Help | Terms of Use | Privacy Policy
+About
+Team
+Board
+Partners
+News
+Impact
+History
+Finances
+Compliance and Standards
+Diversity, Equity & Inclusion
+Careers
+Engage
+Tools
+Training
+Community Building
+Policy Reform
+Donate
+Open Science
+Preregistration
+Registered Reports
+Research
+SCORE
+RP: Cancer Biology
+RP: Psychology
+Events
+Blog
+Contact
+Shop
+OSF
+TOP Guidelines
+Responsible stewards of your support
+COS has earned top recognition from Charity Navigator and Candid (formerly GuideStar) for our financial transparency and accountability to our mission. COS and the OSF were also awarded SOC2 accreditation in 2023 after an independent assessment of our security and procedures by the American Institute of CPAs (AICPA) .
+We invite all of our sponsors, partners, and members of the community to learn more about how our organization operates, our impact, our financial performance, and our nonprofit status.
+Photo Stream

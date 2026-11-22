@@ -1,0 +1,225 @@
+Menu
+Close
+Worldwide | English
+Australia
+English
+Brazil
+English
+|
+Português
+Canada
+English
+Chile
+English
+|
+Español
+China
+English
+|
+Chinese
+Ecuador
+English
+|
+Español
+Germany
+English
+|
+Deutsch
+India
+English
+Singapore
+English
+Spain
+English
+|
+Español
+Thailand
+English
+United Kingdom
+English
+United States
+English
+Worldwide
+English
+Search
+Close
+Ask Tai
+Worldwide | English
+Australia
+English
+Brazil
+English
+|
+Português
+Canada
+English
+Chile
+English
+|
+Español
+China
+English
+|
+Chinese
+Ecuador
+English
+|
+Español
+Germany
+English
+|
+Deutsch
+India
+English
+Singapore
+English
+Spain
+English
+|
+Español
+Thailand
+English
+United Kingdom
+English
+United States
+English
+Worldwide
+English
+What we do
+Go to overview
+How we work
+Go to overview
+Who we work with
+Go to overview
+Industries
+Automotive
+Public Sector
+Energy
+Media and Publishing
+Retail and E-commerce
+Financial Services
+Not-for-profit
+Travel and Transport
+Utilities
+Manufacturing and Engineering
+Life Sciences and Medtech
+Insights
+Go to overview
+Publications and Tools
+Technology Radar
+An opinionated guide to today's technology landscape
+Perspectives
+A no-nonsense publication for digital leaders
+Decoder
+The business execs' A-Z guide to technology
+Looking Glass
+Bringing the tech-led business changes into focus
+All Insights
+Articles
+In-depth insights to help your business grow
+Blogs
+Expert advice on design, engineering, AI and careers
+Books
+Explore our extensive library to keep learning
+Podcasts
+Conversations on the latest in business and tech
+Engineering
+Careers
+Go to overview
+Application Process
+What to expect as you interview with us
+Graduates and Career Changers
+Thoughtworks University: Preparing future leaders
+Search Jobs
+Find open positions in your region
+Stay Connected
+Sign up for our monthly newsletter
+Learning and Development
+Explore how we support career growth
+Benefits
+See how we take care of our people
+About
+Go to overview
+Contact
+Search
+Close
+Ask Tai
+Technology Radar
+Download
+Architectural fitness function
+Search
+FAQ
+Techniques
+Platforms
+Tools
+Languages & Frameworks
+Techniques
+Back
+Search
+FAQ
+Techniques
+Platforms
+Tools
+Languages & Frameworks
+Close
+Last updated : May 15, 2018
+NOT ON THE CURRENT EDITION
+This blip is not on the current edition of the Radar. If it was on one of the last few editions, it is likely that it is still relevant. If the blip is older, it might no longer be relevant and our assessment might be different today. Unfortunately, we simply don't have the bandwidth to continuously review blips from previous editions of the Radar.
+Understand more
+May 2018
+Trial
+Worth pursuing. It is important to understand how to build up this capability. Enterprises should try this technology on a project that can handle the risk.
+Borrowed from evolutionary computing, a fitness function is used to summarize how close a given design solution is to achieving the set aims. When defining an evolutionary algorithm, the designer seeks a ‘better’ algorithm; the fitness function defines what ‘better’ means in this context. An architectural fitness function , as defined in Building Evolutionary Architectures , provides an objective integrity assessment of some architectural characteristics, which may encompass existing verification criteria, such as unit testing, metrics, monitors, and so on. We believe architects can communicate, validate and preserve architectural characteristics in an automated, continual manner, which is the key to building evolutionary architectures.
+Nov 2017
+Trial
+Worth pursuing. It is important to understand how to build up this capability. Enterprises should try this technology on a project that can handle the risk.
+Borrowed from evolutionary computing, a fitness function is used to summarize how close a given design solution is to achieving the set aims. When defining an evolutionary algorithm, the designer seeks a ‘better’ algorithm; the fitness function defines what ‘better’ means in this context. An architectural fitness function , as defined in Building Evolutionary Architectures , provides an objective integrity assessment of some architectural characteristics, which may encompass existing verification criteria, such as unit testing, metrics, monitors, and so on. We believe architects can communicate, validate and preserve architectural characteristics in an automated, continual manner, which is the key to building evolutionary architectures.
+Published : Nov 30, 2017
+Download the PDF
+
+
+
+
+English | Português
+
+Sign up for the Technology Radar newsletter
+
+
+
+Subscribe now
+
+Visit our archive to read previous volumes
+Go to archive
+Company
+About us
+What we do
+Partnerships
+Who we work with
+AI/works™
+Agent/works™
+AI Labs
+News
+Diversity, Equity and Inclusion
+Careers
+Contact us
+Insights
+Preference center
+Articles
+Blogs
+Books
+Podcasts
+Site info
+Privacy policy and cookie settings
+Accessibility statement
+Modern slavery statement
+Code of conduct
+Integrity helpline
+Sustainable procurement policy
+Speak up policy
+Anti-bribery and anti-corruption policy
+Fraud advisory note
+Security and trust
+Connect with us
+© 2026 Thoughtworks, Inc.
+×
+WeChat

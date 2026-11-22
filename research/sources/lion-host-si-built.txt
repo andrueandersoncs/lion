@@ -1,0 +1,1022 @@
+Lion's own tools and searches of the repository, run for the self-improvement research run with @lionlang/cli 0.14.0 built at commit 7d623a7 (core 0.15.0), 2026-11-21.
+
+$ bun run capability   (the capability corpus, graded by its reference programs (M4))
+Capability: public tasks, graded by their reference programs
+  computation    24 of  26 passed
+  logic          14 of  15 passed
+  proofs         10 of  14 passed
+  all            48 of  55 passed
+
+Gaps: 7 tasks Lion cannot express yet
+  sicp-1.2.1-factorial-exact: Lion's numbers are exact integers only from -(2^53 - 1) to 2^53 - 1; a whole number past that is a float, so 25! comes out as 1.5511210043330986e+25, not 15511210043330985984000000. The exact-numbers research run (branch claude/clef-language-lion-insights-e4faf9) weighs exact numbers that would close this.
+  r7rs-6.7-string-reverse-by-characters: Lion's strings count and split UTF-16 code units, as JavaScript does, and Lion has no function on characters: string/split with "" breaks "𝄞" into two halves, so its characters cannot be reversed without telling surrogates apart through a side channel such as object/json-stringify, which would be bending the task.
+  datalog-win-move-well-founded: Lion's rules allow only stratified negation: a rule cannot ask a question about a relation that depends on its own head, so win(x) :- move(x, y), not win(y) is refused, and the well-founded semantics that tells won, lost, and drawn positions apart is not built. Computing it by hand with an alternating fixpoint in plain code would be bending the task.
+  lion-schema-inclusion-across-kinds: schema/includes? fails instead of giving false when the first schema allows values the solver cannot stand for: value/number? in value/integer? fails with "The solver cannot reason about value/integer?", value/string? in value/number? because value/string? says no kind, and a schema/open record in an exact one because the open rest allows any other keys.
+  bounded-sorting-correct: Lion's solver works a lambda out by its body, but not a lambda that calls itself, so it cannot follow a recursive sort such as insertion sort over a list that schema/arrayOf stands for; the goal fails with "?xs stands for infinitely many values".
+  induction-sum-of-odd-numbers: Lion's solver decides linear arithmetic over numbers and whole numbers, and reasons about lists of bounded length. A claim about every n needs induction over an unbounded sum, and n * n multiplies two unknowns, so neither is decided.
+  induction-sorting-every-length: Lion proves claims about lists of bounded length, which schema/arrayOf with a most stands for; a claim about lists of every length needs induction, which the solver does not do.
+
+$ bun run pairs   (the interop grid over every pair of its rows (M7))
+Pairs of the grid's rows: 6561, in 118098 cells
+  same as plain code  72371
+  plain code fails    41274
+  exceptions          155
+surprising pairs, grid: 0
+
+$ bun run affected --check   (whether picking tests by the reach map is sound for every listed mutation (M3))
+636 of 640 mutations: every test they name is picked for their change.
+SKIPS    why tells how a row came about before a change was followed through it
+         packages/core/src/logic/tests/aggregates.test.ts
+SKIPS    an aggregate of a find combines the rule's matches
+         packages/core/src/logic/tests/connectives.test.ts
+SKIPS    cond does not ask a goal it tests
+         packages/core/src/logic/tests/connectives.test.ts
+SKIPS    match does not ask the goal it is given
+         packages/core/src/logic/tests/connectives.test.ts
+CAUGHT  an aggregate of a find combines the rule's matches, by the tests picking keeps
+CAUGHT  cond does not ask a goal it tests, by the tests picking keeps
+CAUGHT  match does not ask the goal it is given, by the tests picking keeps
+CAUGHT  why tells how a row came about before a change was followed through it, by the tests picking keeps
+
+Picking is sound for every listed mutation: the tests it picks catch each one.
+
+$ bun run history ask '["array/length", ["find", "?rule", ["untested", "?rule"]]]'   (the rules in force that no probe checks, counted by the project record (M2))
+96
+
+$ bun run history ask '{"probed": ["array/length", ["aggregate/unique", ["find", "?case", ["and", ["predicted", "scheme-racket-semantics", "?case", "?_", "?_"], ["firsthand", {"behavior": "?case"}, "?_", "Lion at HEAD"]]]]], "excepted": ["array/length", ["aggregate/unique", ["find", "?case", ["and", ["predicted", "scheme-racket-semantics", "?case", "?_", "?_"], ["firsthand", {"behavior": "?case"}, "?_", "Lion at HEAD"], ["excepted", "scheme-racket-semantics", "?case"]]]]]}'   (the cases of the rule scheme-racket-semantics a probe runs, and those a decision excepts as departures (M4))
+{
+  "probed": 44,
+  "excepted": 14
+}
+
+$ bun run loop status   (what the improvement record says, judged by the published Lion (M1))
+Which evidence is out of date, because a file it depends on changed?
+[
+ {
+  "source": "base",
+  "path": ".",
+  "what": "bun run loop scores \"--mutations\" \"a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are|a relation goal reads a relation's rows before they are derived\""
+ },
+ {
+  "source": "flaky-before",
+  "path": ".",
+  "what": "bun run loop scores \"--skip\" \"measure,capability,record,scale,tests,bench,replay,check,instruments\" \"--repeat\" \"6\" \"--mutations\" \"a broken chain of figures ignores the measurements between|a rule that asks assuming is followed through a change as other rules are\""
+ },
+ {
+  "source": "chain-after",
+  "path": ".",
+  "what": "bun run loop scores \"--skip\" \"measure,capability,scale,bench,replay,check\" \"--repeat\" \"6\" \"--mutations\" \"a broken chain of figures ignores the measurements between\""
+ },
+ {
+  "source": "chain-experiment",
+  "path": ".",
+  "what": "bun run loop scores \"--skip\" \"measure,capability,scale,bench,replay,check\" \"--repeat\" \"6\" \"--mutations\" \"a broken chain of figures ignores the measurements between\""
+ },
+ {
+  "source": "merged",
+  "path": ".",
+  "what": "bun run loop scores"
+ },
+ {
+  "source": "merged-full",
+  "path": ".",
+  "what": "bun run loop scores"
+ },
+ {
+  "source": "probe-rules",
+  "path": ".",
+  "what": "bun run loop scores \"--skip\" \"bench,replay,check\" \"--fail-fast\""
+ },
+ {
+  "source": "assuming-property",
+  "path": ".",
+  "what": "bun run loop scores \"--skip\" \"bench,replay,check,capability\" \"--fail-fast\" \"--repeat\" \"6\" \"--mutations\" \"a rule that asks assuming is followed through a change as other rules are\""
+ },
+ {
+  "source": "stale-task-before",
+  "path": ".",
+  "what": "bun run loop scores \"--skip\" \"measure,capability,scale,record,tests,bench,replay,check,instruments\" \"--mutations\" \"a task's check passes every value\""
+ },
+ {
+  "source": "stale-pointer",
+  "path": ".",
+  "what": "bun run loop scores \"--skip\" \"bench,replay,check,capability\" \"--mutations\" \"a relation goal reads a relation's rows before they are derived|a task's check passes every value\""
+ },
+ {
+  "source": "probe-rules-2",
+  "path": ".",
+  "what": "bun run loop scores \"--skip\" \"bench,replay,check,capability\" \"--fail-fast\""
+ }
+]
+
+Which beliefs does the evidence contradict?
+[
+ {
+  "belief": "stale-1",
+  "witness": "stale-pointer-7"
+ }
+]
+
+Which beliefs hold?
+[
+ "assuming-1",
+ "chain-1",
+ "chain-2",
+ "chain-3",
+ "chain-4",
+ "probe-1",
+ "probe-2"
+]
+
+Which predictions of standing beliefs has nothing checked?
+[
+ {
+  "belief": "chain-1",
+  "question": {
+   "mutation runs caught": "a broken chain of figures ignores the measurements between",
+   "of": "6"
+  },
+  "predicts": 6
+ },
+ {
+  "belief": "chain-1",
+  "question": {
+   "failing test tasks": "all packages"
+  },
+  "predicts": 0
+ },
+ {
+  "belief": "chain-1",
+  "question": {
+   "record check": "history"
+  },
+  "predicts": "holds"
+ },
+ {
+  "belief": "chain-1",
+  "question": {
+   "instrument lines removed": "since the base"
+  },
+  "predicts": 0
+ },
+ {
+  "belief": "chain-2",
+  "question": {
+   "mutation runs caught": "a broken chain of figures ignores the measurements between",
+   "of": "6"
+  },
+  "predicts": 6
+ },
+ {
+  "belief": "chain-2",
+  "question": {
+   "failing test tasks": "all packages"
+  },
+  "predicts": 0
+ },
+ {
+  "belief": "chain-2",
+  "question": {
+   "record check": "history"
+  },
+  "predicts": "holds"
+ },
+ {
+  "belief": "chain-2",
+  "question": {
+   "instrument lines removed": "since the base"
+  },
+  "predicts": 0
+ },
+ {
+  "belief": "chain-3",
+  "question": {
+   "mutation runs caught": "a broken chain of figures ignores the measurements between",
+   "of": "6"
+  },
+  "predicts": 6
+ },
+ {
+  "belief": "chain-3",
+  "question": {
+   "failing test tasks": "all packages"
+  },
+  "predicts": 0
+ },
+ {
+  "belief": "chain-3",
+  "question": {
+   "record check": "history"
+  },
+  "predicts": "holds"
+ },
+ {
+  "belief": "chain-3",
+  "question": {
+   "instrument lines removed": "since the base"
+  },
+  "predicts": 0
+ }
+]
+
+Which scores have no run that counts on the files as they are now?
+[
+ {
+  "bench total ms": "every benchmark"
+ },
+ {
+  "capability passed": "public",
+  "pillar": "all"
+ },
+ {
+  "capability passed": "public",
+  "pillar": "computation"
+ },
+ {
+  "capability passed": "public",
+  "pillar": "logic"
+ },
+ {
+  "capability passed": "public",
+  "pillar": "proofs"
+ },
+ {
+  "code lines per passed task": "core"
+ },
+ {
+  "grid exceptions": "core"
+ },
+ {
+  "messages per passed task": "core"
+ },
+ {
+  "mutations missed": "listed"
+ },
+ {
+  "rules no probe checks": "record"
+ },
+ {
+  "tests' time picked": "last 30 commits"
+ }
+]
+
+What is the best each score is sure to give, and in which version?
+[
+ {
+  "score": {
+   "code lines per passed task": "core"
+  },
+  "best": 468.5,
+  "version": "v0019"
+ },
+ {
+  "score": {
+   "code lines per passed task": "core"
+  },
+  "best": 468.5,
+  "version": "v0020"
+ },
+ {
+  "score": {
+   "messages per passed task": "core"
+  },
+  "best": 5.2,
+  "version": "v0019"
+ },
+ {
+  "score": {
+   "messages per passed task": "core"
+  },
+  "best": 5.2,
+  "version": "v0020"
+ },
+ {
+  "score": {
+   "grid exceptions": "core"
+  },
+  "best": 3,
+  "version": "v0003"
+ },
+ {
+  "score": {
+   "grid exceptions": "core"
+  },
+  "best": 3,
+  "version": "v0019"
+ },
+ {
+  "score": {
+   "grid exceptions": "core"
+  },
+  "best": 3,
+  "version": "v0020"
+ },
+ {
+  "score": {
+   "grid exceptions": "core"
+  },
+  "best": 3,
+  "version": "v0021"
+ },
+ {
+  "score": {
+   "grid exceptions": "core"
+  },
+  "best": 3,
+  "version": "v0024"
+ },
+ {
+  "score": {
+   "rules no probe checks": "record"
+  },
+  "best": 96,
+  "version": "v0024"
+ },
+ {
+  "score": {
+   "tests' time picked": "last 30 commits"
+  },
+  "best": 98,
+  "version": "v0003"
+ },
+ {
+  "score": {
+   "bench total ms": "every benchmark"
+  },
+  "best": 965.8,
+  "version": "v0003"
+ },
+ {
+  "score": {
+   "capability passed": "public",
+   "pillar": "all"
+  },
+  "best": 48,
+  "version": "v0019"
+ },
+ {
+  "score": {
+   "capability passed": "public",
+   "pillar": "all"
+  },
+  "best": 48,
+  "version": "v0020"
+ },
+ {
+  "score": {
+   "capability passed": "public",
+   "pillar": "computation"
+  },
+  "best": 24,
+  "version": "v0019"
+ },
+ {
+  "score": {
+   "capability passed": "public",
+   "pillar": "computation"
+  },
+  "best": 24,
+  "version": "v0020"
+ },
+ {
+  "score": {
+   "capability passed": "public",
+   "pillar": "logic"
+  },
+  "best": 14,
+  "version": "v0019"
+ },
+ {
+  "score": {
+   "capability passed": "public",
+   "pillar": "logic"
+  },
+  "best": 14,
+  "version": "v0020"
+ },
+ {
+  "score": {
+   "capability passed": "public",
+   "pillar": "proofs"
+  },
+  "best": 10,
+  "version": "v0019"
+ },
+ {
+  "score": {
+   "capability passed": "public",
+   "pillar": "proofs"
+  },
+  "best": 10,
+  "version": "v0020"
+ }
+]
+
+Which versions improved a score, from what to what?
+[
+ {
+  "score": {
+   "rules no probe checks": "record"
+  },
+  "version": "v0020",
+  "before": 107,
+  "after": 101
+ },
+ {
+  "score": {
+   "rules no probe checks": "record"
+  },
+  "version": "v0024",
+  "before": 101,
+  "after": 96
+ }
+]
+
+Which versions' scores do not count, because a requirement is not met?
+[
+ {
+  "version": "v0018",
+  "score": {
+   "grid exceptions": "core"
+  },
+  "question": {
+   "failing test tasks": "all packages"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0018",
+  "score": {
+   "grid exceptions": "core"
+  },
+  "question": {
+   "record check": "history"
+  },
+  "needed": "holds"
+ },
+ {
+  "version": "v0018",
+  "score": {
+   "grid exceptions": "core"
+  },
+  "question": {
+   "workloads faster than linear": "scale"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0023",
+  "score": {
+   "grid exceptions": "core"
+  },
+  "question": {
+   "instrument lines removed": "since the base"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0012",
+  "score": {
+   "rules no probe checks": "record"
+  },
+  "question": {
+   "undocumented grid exceptions": "core"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0015",
+  "score": {
+   "rules no probe checks": "record"
+  },
+  "question": {
+   "undocumented grid exceptions": "core"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0012",
+  "score": {
+   "rules no probe checks": "record"
+  },
+  "question": {
+   "workloads faster than linear": "scale"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0015",
+  "score": {
+   "rules no probe checks": "record"
+  },
+  "question": {
+   "workloads faster than linear": "scale"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0012",
+  "score": {
+   "rules no probe checks": "record"
+  },
+  "question": {
+   "instrument lines removed": "since the base"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0023",
+  "score": {
+   "rules no probe checks": "record"
+  },
+  "question": {
+   "instrument lines removed": "since the base"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0018",
+  "score": {
+   "tests' time picked": "last 30 commits"
+  },
+  "question": {
+   "failing test tasks": "all packages"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0018",
+  "score": {
+   "tests' time picked": "last 30 commits"
+  },
+  "question": {
+   "record check": "history"
+  },
+  "needed": "holds"
+ },
+ {
+  "version": "v0018",
+  "score": {
+   "tests' time picked": "last 30 commits"
+  },
+  "question": {
+   "workloads faster than linear": "scale"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0018",
+  "score": {
+   "tests' time picked": "last 30 commits"
+  },
+  "question": {
+   "picking unsound": "listed mutations"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0018",
+  "score": {
+   "bench total ms": "every benchmark"
+  },
+  "question": {
+   "failing test tasks": "all packages"
+  },
+  "needed": 0
+ },
+ {
+  "version": "v0018",
+  "score": {
+   "bench total ms": "every benchmark"
+  },
+  "question": {
+   "record check": "history"
+  },
+  "needed": "holds"
+ },
+ {
+  "version": "v0018",
+  "score": {
+   "bench total ms": "every benchmark"
+  },
+  "question": {
+   "workloads faster than linear": "scale"
+  },
+  "needed": 0
+ }
+]
+
+Where should the next experiment go?
+[
+ {
+  "direction": "probe-rules",
+  "tried": 2,
+  "paid_off": 2,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "function-reach",
+  "tried": 0,
+  "paid_off": 0,
+  "misses": 0
+ },
+ {
+  "direction": "hook-picks",
+  "tried": 0,
+  "paid_off": 0,
+  "misses": 0
+ },
+ {
+  "direction": "close-gaps",
+  "tried": 0,
+  "paid_off": 0,
+  "misses": 0
+ },
+ {
+  "direction": "joins",
+  "tried": 0,
+  "paid_off": 0,
+  "misses": 0
+ }
+]
+
+What was each experiment expected to fix, and did it?
+[
+ {
+  "direction": "assuming-property",
+  "version": "v0021",
+  "problem": "p-assuming-runs",
+  "came": "fixed"
+ },
+ {
+  "direction": "chain-property",
+  "version": "v0015",
+  "problem": "p-chain-runs",
+  "came": "fixed"
+ },
+ {
+  "direction": "stale-pointer",
+  "version": "v0023",
+  "problem": "p-stale",
+  "came": "fixed"
+ },
+ {
+  "direction": "stale-pointer",
+  "version": "v0023",
+  "problem": "p-stale-task",
+  "came": "fixed"
+ },
+ {
+  "direction": "chain-property",
+  "version": "v0007",
+  "problem": "p-chain-runs",
+  "came": "not checked"
+ },
+ {
+  "direction": "chain-property",
+  "version": "v0009",
+  "problem": "p-chain-runs",
+  "came": "not checked"
+ },
+ {
+  "direction": "chain-property",
+  "version": "v0011",
+  "problem": "p-chain-runs",
+  "came": "not checked"
+ }
+]
+
+Which directions' experiments say nothing about a score, because none ran it with an earlier version to beat?
+[
+ {
+  "direction": "chain-property",
+  "score": {
+   "capability passed": "public",
+   "pillar": "all"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "score": {
+   "capability passed": "public",
+   "pillar": "computation"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "score": {
+   "capability passed": "public",
+   "pillar": "logic"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "score": {
+   "capability passed": "public",
+   "pillar": "proofs"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "score": {
+   "code lines per passed task": "core"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "score": {
+   "messages per passed task": "core"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "score": {
+   "grid exceptions": "core"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "score": {
+   "mutations missed": "listed"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "score": {
+   "tests' time picked": "last 30 commits"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "chain-property",
+  "score": {
+   "bench total ms": "every benchmark"
+  },
+  "tried": 2,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "probe-rules",
+  "score": {
+   "mutations missed": "listed"
+  },
+  "tried": 2,
+  "paid_off": 2,
+  "misses": 0
+ },
+ {
+  "direction": "probe-rules",
+  "score": {
+   "tests' time picked": "last 30 commits"
+  },
+  "tried": 2,
+  "paid_off": 2,
+  "misses": 0
+ },
+ {
+  "direction": "probe-rules",
+  "score": {
+   "bench total ms": "every benchmark"
+  },
+  "tried": 2,
+  "paid_off": 2,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "score": {
+   "capability passed": "public",
+   "pillar": "all"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "score": {
+   "capability passed": "public",
+   "pillar": "computation"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "score": {
+   "capability passed": "public",
+   "pillar": "logic"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "score": {
+   "capability passed": "public",
+   "pillar": "proofs"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "score": {
+   "code lines per passed task": "core"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "score": {
+   "messages per passed task": "core"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "score": {
+   "mutations missed": "listed"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "score": {
+   "tests' time picked": "last 30 commits"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "assuming-property",
+  "score": {
+   "bench total ms": "every benchmark"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "score": {
+   "capability passed": "public",
+   "pillar": "all"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "score": {
+   "capability passed": "public",
+   "pillar": "computation"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "score": {
+   "capability passed": "public",
+   "pillar": "logic"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "score": {
+   "capability passed": "public",
+   "pillar": "proofs"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "score": {
+   "code lines per passed task": "core"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "score": {
+   "messages per passed task": "core"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "score": {
+   "mutations missed": "listed"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "score": {
+   "tests' time picked": "last 30 commits"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ },
+ {
+  "direction": "stale-pointer",
+  "score": {
+   "bench total ms": "every benchmark"
+  },
+  "tried": 1,
+  "paid_off": 1,
+  "misses": 0
+ }
+]
+
+How many predictions has the loop resolved per hour of checks?
+[
+ {
+  "predictions resolved": 27,
+  "seconds of checks": 2816,
+  "per hour": 34.5
+ }
+]
+
+$ grep -rcE '>>|tee |appendFile|writeFile|\.jsonl' .husky/pre-commit   (a line of the commit hook that writes down a check it ran, its time, or its outcome (M8); built code, dependencies, and tests left out)
+lines that write a record of a check: 0 lines
+
+$ grep -rcE 'at_risk|atRisk' history/research/steps packages/metrics/src improvement/notes   (a rule that names the constraints a change puts at risk, in the project record, the metrics, or the improvement record (M2); built code, dependencies, and tests left out)
+lines that name a constraint at risk: 0 lines
+
+$ grep -rcE '\["relation",\s*"(stale|out_of_date)"' research/steps   (a relation of the research model that lists a probe's evidence as out of date (M9); built code, dependencies, and tests left out)
+lines that declare a relation of stale evidence: 0 lines
+
+$ grep -rcE 'can never be reached' packages/core/src packages/cli/src   (where the warnings of `lion check` are written: in TypeScript, or as Lion rules (M6); built code, dependencies, and tests left out)
+lines that write lion check's warning of a case no value can reach: 1 lines
+  packages/core/src/analysis/analyze.ts: 1

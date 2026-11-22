@@ -37,6 +37,7 @@
 - What is the loop's rate: capability tasks gained, per hour of checks and per dollar agents spent? (`loop-rate` added)
 - When the map holds the named functions each test ran, a script whose changed lines are all in named functions, or in imports, types, comments, and constants of its own, picks only the tests that ran one of those functions. (`affected-by-function` added)
 - The commit hook's `bun run affected --run` logs each check it runs to `out/telemetry.jsonl`: the check, the git tree of the staged files, its seconds, and whether it passed. (`check-telemetry` added)
+- Run `self-improvement` (2026-11-21), steps `46-si-frame`, `47-si-lion`, and `48-si-precedents`, at commit 7d623a7 (core 0.15.0). It weighs the nine mechanisms of `plan.md` §5 as ideas in the shared research model (`research-run-self-improvement` added)
 
 ### Changed
 
@@ -69,6 +70,7 @@
 - A function no test ran is read as its whole file. (`affected-unran-function` is `whole-file`)
 - A check that passed and failed on the same tree is flaky, since the files did not decide its outcome. `bun run loop flaky` lists them, and the scoreboard counts them as `flaky checks, telemetry`. (`flaky-check` is `passed-and-failed-on-one-tree`)
 - A filter that fails whatever ?x is, such as the tail of an empty list, is refused when the invariant is declared, before the facts or after them. (`invariant-failing-filter-order` is `refused-either-way`)
+- The corpus is first of everything left to build, across every run. (`research-to-build-first` is `capability-corpus`)
 
 ### Fixed
 
