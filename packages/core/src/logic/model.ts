@@ -140,7 +140,17 @@ export type Change = readonly [
 
 /** What a relation goal reads: the rows that hold some values at some places. */
 export interface Rows {
+  /**
+   * How many rows `lookup` gives, read from an index. Rows that cannot
+   * say, or cannot give `having`, are read only by their own goal.
+   */
+  count?(positions: readonly number[], values: readonly unknown[]): number;
   demand?: ((inputs: Tuple) => string | undefined) | undefined;
+  /**
+   * Of some rows, each given in full, the ones held, each once, in the
+   * order every `lookup` gives them.
+   */
+  having?(tuples: readonly Tuple[]): Tuple[];
   lookup(
     positions: readonly number[],
     values: readonly unknown[]
@@ -461,6 +471,25 @@ export class TupleSet {
       this.indexes.set(indexKey, index);
     }
     return index.buckets.get(valueKey(values)) ?? [];
+  }
+
+  count(positions: readonly number[], values: readonly unknown[]) {
+    const found = this.lookup(positions, values);
+    return Array.isArray(found) ? found.length : this.size;
+  }
+
+  /** A lookup gives rows in the order they were added, as their places are. */
+  having(tuples: readonly Tuple[]) {
+    const slots = new Set<number>();
+    for (const tuple of tuples) {
+      const slot = this.slots.get(valueKey(tuple));
+      if (slot !== undefined) {
+        slots.add(slot);
+      }
+    }
+    return [...slots]
+      .sort((a, b) => a - b)
+      .map((slot) => this.rows[slot] as Tuple);
   }
 }
 
@@ -944,11 +973,15 @@ const candidates = (
   return (
     tuples.demand?.(known.slice(0, inputs)) ?? {
       free,
+      known,
       patterns,
+      positions,
       tuples: tuples.lookup(positions, known),
     }
   );
 };
+
+type Found = Exclude<ReturnType<typeof candidates>, string>;
 
 /**
  * The rows a relation call can match, once its arguments are computed. An
@@ -1973,7 +2006,7 @@ const bound = (
  */
 export const matchRow = (
   model: Model,
-  found: Exclude<ReturnType<typeof candidates>, string>,
+  found: Found,
   tuple: Tuple,
   vars: Vars
 ) =>
@@ -2035,7 +2068,7 @@ type Meet = (tuple: Tuple, vars: Vars, fresh: boolean) => Vars | undefined;
  */
 const addRow = (
   model: Model,
-  found: Exclude<ReturnType<typeof candidates>, string>,
+  found: Found,
   tuple: Tuple,
   vars: Vars,
   out: Vars[],
@@ -2063,6 +2096,177 @@ const addRow = (
   });
 };
 
+/** A relation goal that stands after another in a body, and what it reads. */
+interface Later {
+  readonly atom: Atom;
+  readonly rows: Rows;
+}
+
+/** True for a relation goal whose arguments are variables and values. */
+const isPlainGoal = (literal: Literal | undefined): literal is Atom =>
+  literal instanceof Atom &&
+  literal.plain &&
+  literal.relation.computed === undefined;
+
+const LATER = new WeakMap<readonly Literal[], (readonly number[])[]>();
+
+/**
+ * The places of the relation goals right after a plain relation goal at
+ * `at`, up to the first goal of another kind or the last that shares a
+ * variable with it. Once the goal has matched a row, one of them may have
+ * nothing left to bind.
+ */
+const laterOf = (body: readonly Literal[], at: number) => {
+  let all = LATER.get(body);
+  if (all === undefined) {
+    all = body.map((goal, from) => {
+      const places: number[] = [];
+      for (let next = from + 1; isPlainGoal(body[next]); next += 1) {
+        places.push(next);
+      }
+      const shares = (place: number) =>
+        isPlainGoal(goal) &&
+        (body[place] as Atom).variables.some((name) =>
+          goal.variables.includes(name)
+        );
+      return places.slice(0, places.findLastIndex(shares) + 1);
+    });
+    LATER.set(body, all);
+  }
+  return all[at] ?? [];
+};
+
+/**
+ * True when a relation's rows can be read before its goal is reached,
+ * since reading them derives nothing: rows of facts, or derived in full.
+ */
+const readNow = (model: Model, name: string): boolean =>
+  model.strata.has(name)
+    ? readable(model, name)
+    : model.base === undefined || readNow(model.base, name);
+
+/**
+ * The later goals of the goal at `at` whose rows can be counted now, up to
+ * the first whose rows cannot be read yet. The goals between compute
+ * nothing and derive nothing, so asking a later goal early fails nothing
+ * and derives nothing that reaching it would not: only the answers' cost
+ * changes.
+ */
+const latersOf = (
+  model: Model,
+  body: readonly Literal[],
+  at: number,
+  reader: Reader | undefined
+) => {
+  const laters: Later[] = [];
+  for (const place of laterOf(body, at)) {
+    const atom = body[place] as Atom;
+    const { name } = atom.relation;
+    const rows =
+      reader?.rows?.(place) ??
+      (readNow(model, name) ? seen(model, name) : undefined);
+    if (rows === undefined) {
+      break;
+    }
+    if (rows.count !== undefined) {
+      laters.push({ atom, rows });
+    }
+  }
+  return laters;
+};
+
+/**
+ * The rows of a relation goal for an answer, read through a later goal
+ * that has fewer rows for it, as worst-case optimal joins do (Free Join's
+ * cover, chosen for each answer): a later goal that holds every variable
+ * this goal binds. Each of its rows names the one row of this goal that
+ * fits it, and an answer whose row of this goal no row of the later goal
+ * fits would end at the later goal. So the rows found are those this goal
+ * has that the later goal can keep, each once, in the order this goal has
+ * them, and a hub's many rows are read only where a later goal has as
+ * many. Undefined when no later goal has fewer rows.
+ */
+const fewest = (
+  atom: Atom,
+  found: Found,
+  vars: Vars,
+  rows: Rows,
+  laters: readonly Later[]
+) => {
+  if (
+    found.free.length === 0 ||
+    found.patterns.length > 0 ||
+    rows.having === undefined
+  ) {
+    return;
+  }
+  let least = Array.isArray(found.tuples)
+    ? found.tuples.length
+    : (rows.count?.(found.positions, found.known) ?? Number.POSITIVE_INFINITY);
+  let best:
+    | {
+        later: Later;
+        named: [number, string][];
+        positions: number[];
+        values: unknown[];
+      }
+    | undefined;
+  for (const later of laters) {
+    const positions: number[] = [];
+    const values: unknown[] = [];
+    const named: [number, string][] = [];
+    const fits = later.atom.args.every((arg, position) => {
+      const isVariable = arg instanceof LogicVariable;
+      if (isVariable && !vars.has(arg.name)) {
+        named.push([position, arg.name]);
+        return true;
+      }
+      const value = isVariable ? vars.get(arg.name) : arg;
+      positions.push(position);
+      values.push(value);
+      return isData(value);
+    });
+    const size =
+      fits && found.free.every(([, name]) => named.some(([, n]) => n === name))
+        ? (later.rows.count?.(positions, values) ?? least)
+        : least;
+    if (size < least) {
+      least = size;
+      best = { later, named, positions, values };
+    }
+  }
+  if (best === undefined) {
+    return;
+  }
+  // The first place of the later goal that holds each variable it binds.
+  const first = new Map<string, number>();
+  for (const [position, name] of best.named) {
+    if (!first.has(name)) {
+      first.set(name, position);
+    }
+  }
+  const tuples: Tuple[] = [];
+  for (const row of best.later.rows.lookup(best.positions, best.values)) {
+    if (
+      best.named.every(([position, name]) =>
+        sameValue(row[position], row[first.get(name) as number])
+      )
+    ) {
+      tuples.push(
+        atom.args.map((arg) => {
+          if (!(arg instanceof LogicVariable)) {
+            return arg;
+          }
+          return vars.has(arg.name)
+            ? vars.get(arg.name)
+            : row[first.get(arg.name) as number];
+        })
+      );
+    }
+  }
+  return rows.having(tuples);
+};
+
 /**
  * Extends each answer with every row a relation goal matches for it, and
  * hands the answers on a batch at a time.
@@ -2073,7 +2277,8 @@ const matchRows = (
   answers: readonly Vars[],
   tuples: Rows,
   on: Sink,
-  meet?: Meet
+  meet?: Meet,
+  laters: readonly Later[] = []
 ) =>
   Effect.gen(function* () {
     let out: Vars[] = [];
@@ -2084,7 +2289,11 @@ const matchRows = (
       if (typeof found === "string") {
         return yield* logicError(found);
       }
-      for (const tuple of found.tuples) {
+      const through =
+        laters.length === 0
+          ? undefined
+          : fewest(atom, found, vars, tuples, laters);
+      for (const tuple of through ?? found.tuples) {
         yield* addRow(model, found, tuple, vars, out, meet) ?? Effect.void;
         if (out.length >= BATCH) {
           yield* on(out);
@@ -2138,7 +2347,8 @@ const flow = (
       answers,
       rows ?? seen(model, literal.relation.name),
       on,
-      meet
+      meet,
+      latersOf(model, body, at, reader)
     )
   );
   return pending === undefined ? match : Effect.andThen(pending, match);

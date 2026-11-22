@@ -66,6 +66,9 @@ const REASONING_TESTS = {
   tests: ["src/tests/reasoning-skill.test.ts"],
 };
 
+/** The properties of a goal read through a later goal, against a plain model. */
+const JOIN_TESTS = "src/logic/tests/joins.test.ts";
+
 /** The properties of `lion worker`, checked against the lion command. */
 const WORKER_TESTS = "src/tests/worker.test.ts";
 
@@ -906,6 +909,50 @@ const WEIGHTS: readonly Mutation[] = [
 ];
 
 export const MUTATIONS: readonly Mutation[] = [
+  {
+    name: "a row read through a later goal comes once for each row of the later goal that fits it",
+    file: core("logic/model.ts"),
+    find: "    const slots = new Set<number>();\n    for (const tuple of tuples) {\n      const slot = this.slots.get(valueKey(tuple));\n      if (slot !== undefined) {\n        slots.add(slot);",
+    replace:
+      "    const slots: number[] = [];\n    for (const tuple of tuples) {\n      const slot = this.slots.get(valueKey(tuple));\n      if (slot !== undefined) {\n        slots.push(slot);",
+    tests: [JOIN_TESTS],
+  },
+  {
+    name: "a goal is read through a later goal that holds only some of the variables it binds",
+    file: core("logic/model.ts"),
+    find: "      fits && found.free.every(([, name]) => named.some(([, n]) => n === name))",
+    replace: "      fits",
+    tests: [JOIN_TESTS],
+  },
+  {
+    name: "rows read through a later goal come in the later goal's order",
+    file: core("logic/model.ts"),
+    find: "    return [...slots]\n      .sort((a, b) => a - b)\n      .map((slot) => this.rows[slot] as Tuple);",
+    replace: "    return [...slots].map((slot) => this.rows[slot] as Tuple);",
+    tests: [JOIN_TESTS],
+  },
+  {
+    name: "a later goal's rows are read before they are derived",
+    file: core("logic/model.ts"),
+    find: "    ? readable(model, name)",
+    replace: "    ? true",
+    tests: [JOIN_TESTS],
+  },
+  {
+    name: "a goal is read through a later goal past a filter between them",
+    file: core("logic/model.ts"),
+    find: "      for (let next = from + 1; isPlainGoal(body[next]); next += 1) {\n        places.push(next);\n      }",
+    replace:
+      "      for (let next = from + 1; next < body.length; next += 1) {\n        if (isPlainGoal(body[next])) {\n          places.push(next);\n        }\n      }",
+    tests: [JOIN_TESTS],
+  },
+  {
+    name: "a later goal's rows are read from its relation while a change is followed",
+    file: core("logic/model.ts"),
+    find: "      reader?.rows?.(place) ??\n",
+    replace: "",
+    tests: ["src/logic/tests/weights.test.ts"],
+  },
   {
     name: "a fraction JSON cannot write counts as data a pair can give",
     file: "packages/metrics/src/pairs.ts",

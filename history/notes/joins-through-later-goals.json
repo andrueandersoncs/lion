@@ -1,0 +1,28 @@
+{
+  "claims": [
+    {
+      "quote": "A relation goal finds its rows through an index on the values it knows, or, when a later relation goal holds every variable it binds and has fewer rows for the answer, through that goal's rows",
+      "says": {
+        "behavior": "join-through-later-goal",
+        "is": "fewest-rows",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "It changes what an answer costs, never which answers come or the order they come in.",
+      "says": {
+        "behavior": "join-through-later-goal-answers",
+        "is": "unchanged",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A filter between the two still runs on every answer of the goals before it",
+      "says": {
+        "behavior": "join-through-later-goal-past-filter",
+        "is": "not-read-early",
+        "area": "logic"
+      }
+    }
+  ]
+}

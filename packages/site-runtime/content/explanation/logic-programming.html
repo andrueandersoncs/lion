@@ -11,6 +11,19 @@
 <h2>Semi-naive evaluation</h2>
 <p>Re-applying every rule to every fact in each round would redo the same work again and again. Lion's evaluation is semi-naive: each round only considers matches that use at least one fact that is new since the last round, and starts each join from those new facts. A query along a 3,000-step chain takes milliseconds rather than seconds this way.</p>
 
+<h2>Joins through a hub</h2>
+<p>A rule body is matched one relation goal at a time, and each goal looks its rows up by the values the goals before it bound. That is slow where most rows share one node, a hub. To count the triangles below, the second goal would read every edge out of a hub, about a thousand, for each edge into it, though the third goal then keeps only the few that lead back to where the first edge started.</p>
+<p>So a goal can read its rows through a later relation goal that holds every variable it binds, when that goal has fewer rows for the answer: here, the edges into the node the first goal started from. Lion picks for each answer whichever of them has fewer rows, the cover of a worst-case optimal join such as Free Join, so a join through a hub reads the rows the other goals allow instead of every path through it. It changes what an answer costs, never which answers come or their order. Only relation goals may stand between the two: a filter between them still runs on every answer of the goals before it.</p>
+<lion-example name="Triangles through two hubs">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["rule", ["edge", "?n", ["number/add", "?n", 1]], ["in", "?n", ["array/range", 2, 1000]]],
+  ["rule", ["edge", "?n", "?hub"], ["in", "?n", ["array/range", 2, 1001]], ["in", "?hub", ["quote", [0, 1]]]],
+  ["rule", ["edge", "?hub", "?n"], ["in", "?n", ["array/range", 2, 1001]], ["in", "?hub", ["quote", [0, 1]]]],
+  {"edges": ["array/length", ["query", ["edge", "?a", "?b"]]],
+   "triangles": ["aggregate/count", ["find", 1, ["and", ["edge", "?a", "?b"], ["edge", "?b", "?c"], ["edge", "?c", "?a"]]]]}]
+</lion-example>
+
 <h2>Stratification</h2>
 <p>A question needs a complete picture. "Customers with no orders" is only right once every order is known, and so is a total, a list of what a goal matches, or the plain fact that it matches anything. Lion therefore groups relations into strata, ordered by what depends on what, and derives a relation fully before any rule that asks about it or aggregates it. It does so the first time something reads the relation, and keeps the rows until a fact or rule changes. A rule that asks about a relation that depends on its own head has no correct stratum, so such a rule is rejected when added.</p>
 <p>Lattice aggregates are the exception. <code>min</code>, <code>max</code>, <code>shortest</code>, and <code>union</code> only move one way as values arrive: a minimum only gets smaller. A partial result is never wrong, only not yet final, so these may aggregate through recursion. That is how a rule can compute shortest distances, and why a negative-weight cycle, where a distance would shrink forever, is stopped after 10,000 rounds.</p>

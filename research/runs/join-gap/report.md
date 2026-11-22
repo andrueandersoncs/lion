@@ -2,6 +2,16 @@
 
 Run `join-gap` (2026-11-19), step `41-jg-hubs-now`. It times again the two triangle workloads behind the candidate `joins` (worst-case optimal joins), after the logic engine was rewritten as the weights engine and expressions were compiled to closures. It measures only; nothing was built. Every figure below is what the model gives: the checks named "Join gap: …" in `research/checks.json` ask for them.
 
+## After the build
+
+Step `56-jg-built` (2026-11-21) times the same programs again once a relation goal can read its rows through a later relation goal with fewer rows for the answer (branch `claude/join-gap-44bac3`). Every figure is what the model gives, through the checks named "Join gap: …".
+
+- **The gap is closed.** The 23,950 triangles among 19,983 edges take 410 ms (`jg-c1`), start-up included, against 14,220 ms when first measured, so `closed` now holds for `joins`. Loading the edges alone takes 300 ms (`jg-c8`), so the join takes 110 ms of the 410, where it took 14,720 ms.
+- **The control.** The published CLI v0.14.0, which has no such change, took 13,340 ms on the same machine the same hour (`jg-c6`), under a load average near 16, and grows n^1.7 (`jg-c7`).
+- **How it grows.** The tree's time grows n^0.2 between the two largest sizes (`jg-c2`), since start-up is most of it. `bun run scale` now times the hub graph as a workload of its own (decision `scale-hub-join`), and it grows n^0.9 up to 100,000 edges (`jg-c4`); the triangles without hubs grow n^1.0 (`jg-c5`).
+- **What is built.** For each answer, a goal with variables to bind reads its rows from whichever has fewer: its own index, or a later relation goal that holds every variable it binds, with only relation goals between (Free Join's cover, chosen at run time, as Generic Join's intersection does). Lion now has `skewed joins` (`jg-c3`). For a triangle, by reasoning about the engine and not by a measurement, the work is the sum over edges of the smaller degree of their ends, which is O(m^1.5), the bound of a worst-case optimal join.
+- **What is not.** Lion still lacks worst-case optimal joins in general, so `joins` stays to build, at stage 1 and rank 3: a goal that binds several variables, each constrained by a different later goal, still reads all its rows, where Generic Join would bind one variable at a time and intersect each.
+
 ## The answer
 
 **Yes. The gap holds, unchanged.** On the graph with two hub nodes, counting the 23,950 triangles among 19,983 edges takes 15,010 ms on Lion as it is now (`jg-b1`), against 14,220 ms on 2026-11-17 (`li-l27`). The time still grows about n^1.9 between the two largest sizes (`jg-b2`, as `li-l28`). Without hubs, the triangles among 16,000 edges over 4,000 nodes take 36 ms (`jg-b5`) and grow n^0.9 (`jg-b4`, against n^0.8 in `li-l29`).

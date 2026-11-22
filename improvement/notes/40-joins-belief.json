@@ -1,0 +1,69 @@
+{
+  "problems": [
+    {
+      "id": "p-hub-join",
+      "statement": "The triangles of a graph whose nodes all link to two hubs grow faster than the facts: matched one goal at a time, each edge into a hub reads every edge out of it, so bun run scale stops the workload past 60 s at 100,000 edges",
+      "question": {
+        "stops or grows past n^1.15": "join: triangles among n edges, each node linked to two hubs"
+      },
+      "value": true
+    }
+  ],
+  "beliefs": [
+    {
+      "id": "joins-1",
+      "tries": "joins",
+      "statement": "A relation goal that reads its rows through a later relation goal holding every variable it binds, whichever has fewer rows for the answer, makes the triangles through a hub cost the rows the other goals allow, as Free Join's cover does: the hub workload grows about as the facts do, so no workload of the scale is faster than linear, while every answer, its order, and every requirement stay as they were. It is tried ahead of probe-rules, which the record advises first, because the plan's list of what the loop takes up first names the join gap and the research model ranks joins at stage 1 of what is left to build",
+      "predicts": [
+        {
+          "question": {
+            "stops or grows past n^1.15": "join: triangles among n edges, each node linked to two hubs"
+          },
+          "value": false
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "grid exceptions": "core"
+          },
+          "value": 3
+        },
+        {
+          "question": {
+            "rules no probe checks": "record"
+          },
+          "value": 96
+        }
+      ]
+    }
+  ]
+}
