@@ -13,6 +13,13 @@
  */
 import { LogicError } from "@/errors/evaluation";
 import {
+  isPredicate,
+  listWithoutMost,
+  namesItself,
+  notAShape,
+  openWithoutRest,
+} from "@/logic/reasons";
+import {
   type Constraint,
   constant,
   fromNumber,
@@ -33,7 +40,6 @@ import {
   type SchemaInfo,
   sameValue,
   schemaOf,
-  show,
 } from "@/logic/terms";
 import {
   compare,
@@ -359,9 +365,7 @@ export const shapeOf = (
       return new Shapeless(`"${named.name}" is still being declared`);
     }
     if (seen.has(named)) {
-      return new Shapeless(
-        `"${named.name}" names itself, so it allows values of any size`
-      );
+      return new Shapeless(namesItself(named.name));
     }
     return shapeOf(named.shape, path, sorts, new Set([...seen, named]));
   }
@@ -384,11 +388,16 @@ export const shapeOf = (
     }
     const built = buildOf(schema);
     if (built !== undefined) {
-      return shapeBuilt(nameOf(built.by), built.args, path, sorts, seen);
+      return shapeBuilt(
+        nameOf(built.by),
+        schema,
+        built.args,
+        path,
+        sorts,
+        seen
+      );
     }
-    return new Shapeless(
-      `${show(schema)} is a predicate, which says neither which values it accepts nor what kind they are`
-    );
+    return new Shapeless(isPredicate(schema));
   }
   if (isPlainObject(schema)) {
     return shapeRecord(Object.entries(schema), undefined, path, sorts, seen);
@@ -558,15 +567,14 @@ const shapeAll = (
 };
 
 const shapeOpen = (
+  schema: unknown,
   [shape, ...rest]: readonly unknown[],
   path: string,
   sorts: Map<string, Sort>,
   seen: ReadonlySet<SchemaInfo>
 ): Shaped | Shapeless => {
   if (rest.length === 0) {
-    return new Shapeless(
-      "schema/open with no schema for the rest allows any other keys or items"
-    );
+    return new Shapeless(openWithoutRest(schema));
   }
   const restShape = shapeOf(rest[0], `${path}.~`, sorts, seen);
   if (restShape instanceof Shapeless) {
@@ -577,9 +585,7 @@ const shapeOpen = (
     return shapeRecord(Object.entries(items), restShape, path, sorts, seen);
   }
   if (!Array.isArray(items)) {
-    return new Shapeless(
-      "schema/open is not given a record or a list of schemas"
-    );
+    return new Shapeless(notAShape(shape));
   }
   const named = shapeList(items, path, sorts, seen);
   if (named instanceof Shapeless) {
@@ -596,6 +602,7 @@ const shapeOpen = (
 
 const shapeBuilt = (
   name: string | undefined,
+  schema: unknown,
   args: readonly unknown[],
   path: string,
   sorts: Map<string, Sort>,
@@ -611,13 +618,11 @@ const shapeBuilt = (
     case "schema/arrayOf": {
       const [item, most] = args;
       return most === undefined
-        ? new Shapeless(
-            "schema/arrayOf with no most length allows lists of any length"
-          )
+        ? new Shapeless(listWithoutMost(schema, item))
         : union(listsUpTo(item, most as number, path, sorts, seen));
     }
     case "schema/open":
-      return shapeOpen(args, path, sorts, seen);
+      return shapeOpen(schema, args, path, sorts, seen);
     default:
       return new Shapeless(
         `${name ?? "this schema"} does not say what kind its values are`

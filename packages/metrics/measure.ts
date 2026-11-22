@@ -12,6 +12,8 @@
 //   bun run measure --files            each file as well
 //   bun run measure --grid             the whole grid as well
 //   bun run measure --json             everything, as JSON
+//   bun run measure --messages         the messages grouped by the rule each
+//                                      states, from src/message-rules.json
 import { join } from "node:path";
 import { Cause, Effect, Exit } from "effect";
 import { withCheckout } from "./src/checkout.ts";
@@ -31,6 +33,7 @@ import {
 } from "./src/grid.ts";
 import { EXPRESSIONS, POSITIONS } from "./src/grid-cases.ts";
 import { load } from "./src/lion.ts";
+import { messageRules, messageRulesLines } from "./src/message-rules.ts";
 import { change, count, readArguments, table } from "./src/report.ts";
 import {
   atCommit,
@@ -40,7 +43,7 @@ import {
   REPOSITORY,
   type Source,
 } from "./src/sources.ts";
-import { type Vocabulary, vocabularyOf } from "./src/vocabulary.ts";
+import { messagesIn, type Vocabulary, vocabularyOf } from "./src/vocabulary.ts";
 
 interface Semantics {
   readonly cells: readonly Cell[];
@@ -292,7 +295,17 @@ const args = readArguments(process.argv.slice(2), ["against"]);
 const ref = args.option("against");
 const commit = ref === undefined ? undefined : commitOf(ref);
 
+/** The working tree's messages, grouped by the rule each states. */
+const messagesReport = Effect.gen(function* () {
+  const lion = yield* load(join(REPOSITORY, CORE));
+  const model = yield* messageRules(lion, messagesIn(inWorkingTree(CORE)));
+  console.log(messageRulesLines(model).join("\n"));
+});
+
 const main = Effect.gen(function* () {
+  if (args.flag("messages")) {
+    return yield* messagesReport;
+  }
   if (ref !== undefined && commit === undefined) {
     console.error(`git knows no commit called "${ref}".`);
     process.exitCode = 1;

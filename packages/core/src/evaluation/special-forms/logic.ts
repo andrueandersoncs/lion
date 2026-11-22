@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import { logicError, MalformedFormError } from "@/errors/evaluation";
+import { logicError, MalformedFormError, notList } from "@/errors/evaluation";
 import {
   answer,
   database,
@@ -137,13 +137,26 @@ const asked = (call: Atom) =>
  * What `some` describes, or what `exists` says holds, written in plain
  * code, with the questions among its arguments asked.
  */
+const notDescribed = (form: string, goal: unknown) =>
+  logicError(
+    `${form} expects a relation call, or an "and" of them, but found ${show(goal)}.`
+  );
+
+/** The variable `some` or `exists` owns is one its goal mentions. */
+const notMentioned = (form: string, name: string, goal: unknown) =>
+  logicError(
+    `${form} owns "${name}", but its goal does not mention it: ${show(goal)}.`
+  );
+
+/** What a form that takes relation calls is told of a value that is not one. */
+const notCalls = (form: unknown, value: unknown) =>
+  logicError(`${form} expects relation calls, but found ${show(value)}.`);
+
 const described = (form: string, goal: unknown) =>
   Effect.gen(function* () {
     const calls = callsOf(goal);
     if (calls === undefined) {
-      return yield* logicError(
-        `${form} expects a relation call, or an "and" of them, but found ${show(goal)}.`
-      );
+      return yield* notDescribed(form, goal);
     }
     const answered = yield* Effect.forEach(calls, asked);
     return answered.length === 1
@@ -211,9 +224,7 @@ const atoms = (
     const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));
     const held = facts.find(isTaken);
     if (held !== undefined) {
-      return yield* logicError(
-        `${form} expects relation calls, but found ${show(held)}.`
-      );
+      return yield* notCalls(form, held);
     }
     const result: Atom[] = [];
     for (const value of yield* evaluateAll(facts, part)) {
@@ -222,9 +233,7 @@ const atoms = (
       } else if (value instanceof Atom) {
         result.push(yield* asked(value));
       } else {
-        return yield* logicError(
-          `${form} expects relation calls, but found ${show(value)}.`
-        );
+        return yield* notCalls(form, value);
       }
     }
     return result;
@@ -559,10 +568,7 @@ export const evaluateFind = (
 const changeOf = (change: unknown, part: Part, scope: Scope | undefined) =>
   Effect.gen(function* () {
     const [form, ...items] = Array.isArray(change) ? change : [];
-    const notACall = (value: unknown) =>
-      logicError(
-        `assuming takes relation calls in its ${form} forms, but found ${show(value)}.`
-      );
+    const notACall = (value: unknown) => notCalls(form, value);
     if (form === "rule") {
       return yield* heldForm(change as LionExpressionType[], part);
     }
@@ -622,13 +628,9 @@ export const evaluateAssuming = (
   scope?: Scope
 ) =>
   Effect.gen(function* () {
-    const expression = parts.at(-1);
+    // The form's shape holds a change, then an expression, so both are there.
+    const expression = parts.at(-1) as LionExpressionType;
     const changes = parts.slice(0, -1);
-    if (expression === undefined || changes.length === 0) {
-      return yield* logicError(
-        `assuming takes fact, retract, and rule forms, then the expression to evaluate as if they were made, as in ["assuming", ["fact", ["edge", "c", "d"]], ["path", "a", "d"]].`
-      );
-    }
     const made = yield* Effect.forEach(changes, (change) =>
       changeOf(change, part, scope)
     );
@@ -663,9 +665,7 @@ export const evaluateExists = (
     const own = names.map((name) => name.slice(1));
     const missing = own.find((name) => !value.variables.includes(name));
     if (missing !== undefined) {
-      return yield* logicError(
-        `exists lists "?${missing}", but its goal does not mention it: ${show(value)}.`
-      );
+      return yield* notMentioned("exists", `?${missing}`, value);
     }
     return new LogicForm("exists", [own, value]);
   });
@@ -689,15 +689,11 @@ export const evaluateSome = (
     const value = yield* part(goal);
     const variable = name.slice(1);
     if (!termVariables(value).includes(variable)) {
-      return yield* logicError(
-        `some stands for "${name}", but its goal does not mention it: ${show(value)}.`
-      );
+      return yield* notMentioned("some", name, value);
     }
     if (yield* isWriting) {
       if (callsOf(value) === undefined) {
-        return yield* logicError(
-          `some expects a relation call, or an "and" of them, but found ${show(value)}.`
-        );
+        return yield* notDescribed("some", value);
       }
       return new LogicForm("some", [new LogicVariable(variable), value]);
     }
@@ -877,9 +873,7 @@ export const compileIn = (
   const member = ([elementValue, listValue]: readonly unknown[]) =>
     Array.isArray(listValue)
       ? listValue.some((item) => sameValue(item, elementValue))
-      : new Pending(
-          logicError(`"in" expects a list, but found ${show(listValue)}.`)
-        );
+      : new Pending(logicError(notList(list, listValue)));
   return (environment, depth) =>
     andThen(runAll(operands, environment, depth), depth, (made) =>
       binding("in", made as readonly unknown[], member)

@@ -1,0 +1,42 @@
+$ bun run loop scores "--skip" "pairs,bench,replay,check" "--mutations" "a goal that is neither true nor false says it in words of its own|some over an expression that computes with its unknown says it in words of its own|in over a value that is not a list in plain code does not name its expression|in over a value that is not a list in a rule does not name its expression|a waiting call of a value that is not a function names the call as the value|a query that gives something other than data says it in words of its own|a relation declared under a schema's name is told the name is a relation|a relation whose columns repeat a name names a column that is not the one repeated|a key that repeats a column is told as the columns would be|a merge that names a column the relation lacks is told as a key would be|a rule for a relation a graph algorithm computes is told as a fact is|a rule head that invents and aggregates names no relation|exists whose goal does not mention its variable is told as some is|a fact form among the changes of assuming is told in words of its own|an assuming with one change and no expression takes the change for its expression|a listing gives a reason of its own for a predicate|the solver gives a reason of its own for schema/open without a rest"
+$ bun run --cwd packages/metrics loop scores --skip "pairs,bench,replay,check" --mutations "a goal that is neither true nor false says it in words of its own|some over an expression that computes with its unknown says it in words of its own|in over a value that is not a list in plain code does not name its expression|in over a value that is not a list in a rule does not name its expression|a waiting call of a value that is not a function names the call as the value|a query that gives something other than data says it in words of its own|a relation declared under a schema's name is told the name is a relation|a relation whose columns repeat a name names a column that is not the one repeated|a key that repeats a column is told as the columns would be|a merge that names a column the relation lacks is told as a key would be|a rule for a relation a graph algorithm computes is told as a fact is|a rule head that invents and aggregates names no relation|exists whose goal does not mention its variable is told as some is|a fact form among the changes of assuming is told in words of its own|an assuming with one change and no expression takes the change for its expression|a listing gives a reason of its own for a predicate|the solver gives a reason of its own for schema/open without a rest"
+$ bun run loop.ts scores --skip "pairs,bench,replay,check" --mutations "a goal that is neither true nor false says it in words of its own|some over an expression that computes with its unknown says it in words of its own|in over a value that is not a list in plain code does not name its expression|in over a value that is not a list in a rule does not name its expression|a waiting call of a value that is not a function names the call as the value|a query that gives something other than data says it in words of its own|a relation declared under a schema's name is told the name is a relation|a relation whose columns repeat a name names a column that is not the one repeated|a key that repeats a column is told as the columns would be|a merge that names a column the relation lacks is told as a key would be|a rule for a relation a graph algorithm computes is told as a fact is|a rule head that invents and aggregates names no relation|exists whose goal does not mention its variable is told as some is|a fact form among the changes of assuming is told in words of its own|an assuming with one change and no expression takes the change for its expression|a listing gives a reason of its own for a predicate|the solver gives a reason of its own for schema/open without a rest"
+ran measure: bun run measure, exit 0, 1 s
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 0
+flaky checks, telemetry: 0
+ran capability: bun run capability --json, exit 0, 1 s
+capability passed, public, computation: 25
+capability passed, public, logic: 14
+capability passed, public, proofs: 10
+capability passed, public, all: 49
+code lines per passed task, core: 474.3
+messages per passed task, core: 4.6
+ran scale: bun run scale, exit 0, 41 s
+workloads faster than linear, scale: 0
+ran record: bun run history check, exit 0, 73 s
+record check, history: holds
+rules no probe checks, record: 96
+ran tests: bun run test, exit 0, 161 s
+failing test tasks, all packages: 0
+ran mutations-0: bun run mutate a goal that is neither true nor false says it in words of its own some over an expression that computes with its unknown says it in words of its own in over a value that is not a list in plain code does not name its expression in over a value that is not a list in a rule does not name its expression a waiting call of a value that is not a function names the call as the value a query that gives something other than data says it in words of its own a relation declared under a schema's name is told the name is a relation a relation whose columns repeat a name names a column that is not the one repeated a key that repeats a column is told as the columns would be a merge that names a column the relation lacks is told as a key would be a rule for a relation a graph algorithm computes is told as a fact is a rule head that invents and aggregates names no relation exists whose goal does not mention its variable is told as some is a fact form among the changes of assuming is told in words of its own an assuming with one change and no expression takes the change for its expression a listing gives a reason of its own for a predicate the solver gives a reason of its own for schema/open without a rest, exit 0, 24 s
+mutation, a goal that is neither true nor false says it in words of its own: caught
+mutation, some over an expression that computes with its unknown says it in words of its own: caught
+mutation, in over a value that is not a list in plain code does not name its expression: caught
+mutation, in over a value that is not a list in a rule does not name its expression: caught
+mutation, a waiting call of a value that is not a function names the call as the value: caught
+mutation, a query that gives something other than data says it in words of its own: caught
+mutation, a relation declared under a schema's name is told the name is a relation: caught
+mutation, a relation whose columns repeat a name names a column that is not the one repeated: caught
+mutation, a key that repeats a column is told as the columns would be: caught
+mutation, a merge that names a column the relation lacks is told as a key would be: caught
+mutation, a rule for a relation a graph algorithm computes is told as a fact is: caught
+mutation, a rule head that invents and aggregates names no relation: caught
+mutation, exists whose goal does not mention its variable is told as some is: caught
+mutation, a fact form among the changes of assuming is told in words of its own: caught
+mutation, an assuming with one change and no expression takes the change for its expression: caught
+mutation, a listing gives a reason of its own for a predicate: caught
+mutation, the solver gives a reason of its own for schema/open without a rest: caught
+[exit status 0]

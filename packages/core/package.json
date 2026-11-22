@@ -50,6 +50,7 @@
     "./logic/maintain": "./dist/logic/maintain.mjs",
     "./logic/model": "./dist/logic/model.mjs",
     "./logic/query-options": "./dist/logic/query-options.mjs",
+    "./logic/reasons": "./dist/logic/reasons.mjs",
     "./logic/snapshot": "./dist/logic/snapshot.mjs",
     "./logic/solver": "./dist/logic/solver.mjs",
     "./logic/strata": "./dist/logic/strata.mjs",

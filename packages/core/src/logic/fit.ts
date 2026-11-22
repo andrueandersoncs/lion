@@ -40,6 +40,7 @@ import { boundNames } from "@/evaluation/environment";
 import { apply, call } from "@/evaluation/special-forms/function";
 import { suspendArguments } from "@/evaluation/special-forms/lambda";
 import type { Vars } from "@/logic/model";
+import { notRecord } from "@/logic/reasons";
 import {
   buildOf,
   builtBy,
@@ -912,9 +913,6 @@ const builder = (
   readsOnlyArguments({ build });
   return build;
 };
-
-const notRecord = (found: unknown) =>
-  `expects a record or a list of schemas, or a schema that names one, but found ${show(found)}`;
 
 /**
  * The schemas of a list of schemas: a list, a schema that names one, or a

@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run measure --messages` groups the messages `bun run measure` counts by the rule each states, with a Lion program, `packages/metrics/src/message-rules.json`, that reads each message as a rule and is given the source's messages as facts: it lists the rules stated in several wordings, the ones kept so on purpose and why, each topic's rules and messages, and the messages no reading covers yet.",
+      "says": {
+        "feature": "measure-messages-by-rule",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "The 251 messages of the core state 163 rules in 22 topics; 27 rules are stated in several wordings that nothing keeps.",
+      "says": {
+        "measured": "core-message-rules-to-unify",
+        "after": 27,
+        "area": "metrics"
+      }
+    }
+  ]
+}

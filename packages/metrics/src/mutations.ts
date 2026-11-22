@@ -10,6 +10,8 @@ import type { Mutation } from "./mutation.ts";
 
 const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
+/** The properties that a rule broken in several places is told in one wording. */
+const WORDING_TESTS = "src/logic/tests/wordings.test.ts";
 /** The properties of what a string means, by the scopes it is written in. */
 const SCOPE_TESTS = "src/evaluation/tests/scopes.test.ts";
 /** The properties of the analysis, checked against the evaluator. */
@@ -909,6 +911,156 @@ const WEIGHTS: readonly Mutation[] = [
 ];
 
 export const MUTATIONS: readonly Mutation[] = [
+  // One rule, one wording: where a rule is broken in several places, the
+  // message says it in the same words.
+  {
+    name: "a goal that is neither true nor false says it in words of its own",
+    file: core("logic/model.ts"),
+    find: "logicError(notTruth(instantiate(goal, vars), value))",
+    replace:
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+      "logicError(`A filter must be true or false, but ${show(instantiate(goal, vars))} is ${show(value)}.`)",
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "some over an expression that computes with its unknown says it in words of its own",
+    file: core("logic/model.ts"),
+    find: 'logicError(computesWithUnknown(show(arg), "some"))',
+    replace:
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+      'logicError(`${show(arg)} computes with a variable that "some" owns. An unknown is described by relation calls.`)',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a waiting call of a value that is not a function names the call as the value",
+    file: core("logic/model.ts"),
+    find: "logicError(notAFunction(fn, instantiate(waiting, vars)))",
+    replace: "logicError(notAFunction(instantiate(waiting, vars)))",
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "in over a value that is not a list in a rule does not name its expression",
+    file: core("logic/model.ts"),
+    find: ": logicError(notList(list, items))",
+    replace: ": logicError(notList(items, items))",
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "in over a value that is not a list in plain code does not name its expression",
+    file: core("evaluation/special-forms/logic.ts"),
+    find: "new Pending(logicError(notList(list, listValue)))",
+    replace: "new Pending(logicError(notList(listValue, listValue)))",
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a query that gives something other than data says it in words of its own",
+    file: core("logic/database.ts"),
+    find: 'producedNonData("The query", row)',
+    replace: 'producedNonData("The answer", row)',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a relation declared under a schema's name is told the name is a relation",
+    file: core("logic/database.ts"),
+    find: 'namedTwice(name, "schema", "relation")',
+    replace: 'namedTwice(name, "relation", "schema")',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a relation whose columns repeat a name names a column that is not the one repeated",
+    file: core("logic/database.ts"),
+    find: "names.find((name, at) => names.indexOf(name) !== at)",
+    replace: "names.find((name, at) => names.lastIndexOf(name) !== at)",
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a key that repeats a column is told as the columns would be",
+    file: core("logic/database.ts"),
+    find: 'repeats(name, repeated, " in its key")',
+    replace: 'repeats(name, repeated, "")',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a merge that names a column the relation lacks is told as a key would be",
+    file: core("logic/database.ts"),
+    find: 'return noColumn(name, column, "merge", columns);',
+    replace: 'return noColumn(name, column, "key", columns);',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a rule for a relation a graph algorithm computes is told as a fact is",
+    file: core("logic/database.ts"),
+    find: 'computedAddedTo(computedCall(head), "a rule")',
+    replace: 'computedAddedTo(computedCall(head), "a fact")',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a rule head that invents and aggregates names no relation",
+    file: core("logic/compile.ts"),
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    find: "          `Rule head ${show(head)}`,\n          aggregated.relation.name",
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    replace: '          `Rule head ${show(head)}`,\n          ""',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "exists whose goal does not mention its variable is told as some is",
+    file: core("evaluation/special-forms/logic.ts"),
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    find: 'notMentioned("exists", `?${missing}`, value)',
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    replace: 'notMentioned("some", `?${missing}`, value)',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a fact form among the changes of assuming is told in words of its own",
+    file: core("evaluation/special-forms/logic.ts"),
+    find: "const notACall = (value: unknown) => notCalls(form, value);",
+    replace:
+      'const notACall = (value: unknown) => notCalls("assuming", value);',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "an assuming with one change and no expression takes the change for its expression",
+    file: core("schemas/evaluation.ts"),
+    find: 'Schema.Tuple([Schema.Literal("assuming"), Change, Expression]),',
+    replace: 'Schema.Tuple([Schema.Literal("assuming"), Change]),',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "a listing gives a reason of its own for a predicate",
+    file: core("logic/listing.ts"),
+    find: "return new Unlisted(isPredicate(schema));",
+    replace:
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+      "return new Unlisted(`${show(schema)} is a predicate, which does not say which values it accepts`);",
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "the solver gives a reason of its own for schema/open without a rest",
+    file: core("logic/symbols.ts"),
+    find: "return new Shapeless(openWithoutRest(schema));",
+    replace:
+      'return new Shapeless("schema/open with no schema for the rest allows any other keys or items");',
+    tests: [WORDING_TESTS],
+  },
+  {
+    name: "the messages by rule take a rule one message states for one stated in several wordings",
+    file: "packages/metrics/src/message-rules.json",
+    find: '["number/greaterThan", ["array/length", "?ts"], 1]',
+    replace: '["number/greaterThan", ["array/length", "?ts"], 0]',
+    package: "metrics",
+    tests: ["src/tests/message-rules.test.ts"],
+  },
+  {
+    name: "the messages by rule offer to unify a rule kept in several wordings on purpose",
+    file: "packages/metrics/src/message-rules.json",
+    find: '["several", "?r", "?k", "?s", "?ts"],\n    ["not", ["kept", "?r", "?_"]]',
+    replace:
+      '["several", "?r", "?k", "?s", "?ts"],\n    ["not", ["kept", "?_", "?r"]]',
+    package: "metrics",
+    tests: ["src/tests/message-rules.test.ts"],
+  },
   {
     name: "a row read through a later goal comes once for each row of the later goal that fits it",
     file: core("logic/model.ts"),

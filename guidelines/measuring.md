@@ -14,6 +14,9 @@ bun run measure --against main
 bun run measure --against main --files
 bun run measure --grid
 
+# The messages grouped by the rule each states, and the rules stated in several wordings
+bun run measure --messages
+
 # Speed, beside main
 bun run bench --against main
 
@@ -47,6 +50,7 @@ bun run skill-eval lion-research verifies-company-figures --runs 2
 
 - **Code complexity** is counted from the source of `@lionlang/core` without its tests: code lines, functions, paths through functions, decisions weighted by how deep they nest, and `instanceof` tests of a value's kind.
 - **Semantic complexity** is how much a Lion programmer has to know: the special forms, library functions, and kinds of error; the distinct messages that tell a program it broke a rule; and the exceptions in the interop grid, the cells where an expression in some place does not give what plain code gives.
+- **Messages by rule** come from `packages/metrics/src/message-rules.json`, a Lion program that reads each message as the rule it states. When you add or reword a message, give it a reading there; `bun run measure --messages` lists the messages no reading covers, and the rules stated in several wordings that nothing keeps.
 
 How to use the numbers:
 

@@ -235,7 +235,7 @@ const Change = Schema.TupleWithRest(
   [Expression]
 );
 export const AssumingFormSchema = Schema.TupleWithRest(
-  Schema.Tuple([Schema.Literal("assuming"), Change]),
+  Schema.Tuple([Schema.Literal("assuming"), Change, Expression]),
   [Expression]
 );
 // ["exists", [<variable>, ...], <goal>]

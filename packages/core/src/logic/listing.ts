@@ -19,6 +19,13 @@
  */
 import { LogicError } from "@/errors/evaluation";
 import {
+  isPredicate,
+  listWithoutMost,
+  namesItself,
+  notAShape,
+  openWithoutRest,
+} from "@/logic/reasons";
+import {
   allowedBy,
   buildOf,
   isPlainObject,
@@ -228,9 +235,7 @@ const builtListing = (
     case "schema/arrayOf": {
       const [item, most] = args;
       if (most === undefined) {
-        return new Unlisted(
-          `${show(schema)} allows lists of any length; give it the most items a list may have, as in ["schema/arrayOf", ${show(item)}, 3]`
-        );
+        return new Unlisted(listWithoutMost(schema, item));
       }
       const each = listing(item, inward(path));
       if (each instanceof Unlisted) {
@@ -255,9 +260,7 @@ const builtListing = (
     case "schema/open": {
       const [shape, ...rest] = args;
       if (rest.length === 0) {
-        return new Unlisted(
-          `${show(schema)} allows any other keys or items; give it the schema of the rest`
-        );
+        return new Unlisted(openWithoutRest(schema));
       }
       const after = listing(rest[0], inward(path));
       const items = throughNames(shape);
@@ -266,7 +269,7 @@ const builtListing = (
       }
       return isPlainObject(items)
         ? recordListing(Object.entries(items), after, path)
-        : new Unlisted(`${show(schema)} is not a record or a list of schemas`);
+        : new Unlisted(notAShape(shape));
     }
     default:
       return undefined;
@@ -286,9 +289,7 @@ const functionListing = (schema: unknown, path: Path): Listing => {
       return () => [];
     }
     if (path.around.has(named)) {
-      return new Unlisted(
-        `"${named.name}" names itself inside its values, so it allows values of any size`
-      );
+      return new Unlisted(namesItself(named.name));
     }
     return listing(named.shape, {
       around: new Set([...path.around, named]),
@@ -313,9 +314,7 @@ const functionListing = (schema: unknown, path: Path): Listing => {
       `"${relation.name}" is a relation; bind the value with the relation goal ["${relation.name}", value] instead`
     );
   }
-  return new Unlisted(
-    `${show(schema)} is a predicate, which does not say which values it accepts`
-  );
+  return new Unlisted(isPredicate(schema));
 };
 
 /** The values a schema allows, or why it cannot list them. */

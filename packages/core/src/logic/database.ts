@@ -1,8 +1,11 @@
 import { Effect } from "effect";
 import {
   asString,
+  computedAddedTo,
+  inventsIntoAggregate,
   type LogicError,
   logicError,
+  producedNonData,
   takes,
 } from "@/errors/evaluation";
 import { madeNow } from "@/evaluation/environment";
@@ -155,6 +158,31 @@ export class LogicDatabase {
   }
 }
 
+/** The first name a list repeats. */
+const repeatedIn = (names: readonly string[]) =>
+  names.find((name, at) => names.indexOf(name) !== at);
+
+/** A relation's columns, and its key's, are each named once. */
+const repeats = (name: string, column: string, where: string) =>
+  `Relation "${name}" repeats the column "${column}"${where}.`;
+
+/** A key and a merge name columns the relation has. */
+const noColumn = (
+  name: string,
+  column: string,
+  use: "key" | "merge",
+  columns: readonly string[]
+) =>
+  `Relation "${name}" has no column "${column}" for its ${use}. Its columns are ${JSON.stringify(columns)}.`;
+
+/** A name is a relation or a schema, never both. */
+const namedTwice = (name: string, kind: string, other: string) =>
+  `"${name}" is a ${kind} here, so it cannot also name a ${other}.`;
+
+/** A relation or schema is declared again only as it was declared. */
+const declaredAlready = (kind: string, name: string, declared: string) =>
+  `${kind} "${name}" is already declared with ${declared}.`;
+
 const keyProblem = (
   name: string,
   columns: readonly string[],
@@ -165,11 +193,12 @@ const keyProblem = (
   }
   const unknown = key.find((column) => !columns.includes(column));
   if (unknown !== undefined) {
-    return `Relation "${name}" has no column "${unknown}" to use as a key. Its columns are ${JSON.stringify(columns)}.`;
+    return noColumn(name, unknown, "key", columns);
   }
-  return new Set(key).size === key.length
+  const repeated = repeatedIn(key);
+  return repeated === undefined
     ? undefined
-    : `Relation "${name}" repeats a key column.`;
+    : repeats(name, repeated, " in its key");
 };
 
 /** What a relation's merge says, as the option writes it: column to aggregate. */
@@ -215,7 +244,7 @@ const mergeProblem = (
   }
   for (const [column, kind] of merge) {
     if (!columns.includes(column)) {
-      return `Relation "${name}" has no column "${column}" to merge. Its columns are ${JSON.stringify(columns)}.`;
+      return noColumn(name, column, "merge", columns);
     }
     if (key.includes(column)) {
       return `Relation "${name}" cannot merge "${column}": it is part of the key, and the key says which rows merge.`;
@@ -270,13 +299,12 @@ export const declareRelation = (
   key?: readonly string[],
   merge?: readonly (readonly [string, string])[]
 ): Effect.Effect<RelationInfo, LogicError> => {
-  if (new Set(columns).size !== columns.length) {
-    return logicError(`Relation "${name}" repeats a column name.`);
+  const repeated = repeatedIn(columns);
+  if (repeated !== undefined) {
+    return logicError(repeats(name, repeated, ""));
   }
   if (database.schemas.has(name)) {
-    return logicError(
-      `"${name}" is a schema here, so it cannot also name a relation.`
-    );
+    return logicError(namedTwice(name, "schema", "relation"));
   }
   const used = database.relations.has(name)
     ? undefined
@@ -317,7 +345,7 @@ export const declareRelation = (
     return describeRelation(existing) === describeRelation(relation)
       ? Effect.succeed(existing)
       : logicError(
-          `Relation "${name}" is already declared with ${describeRelation(existing)}.`
+          declaredAlready("Relation", name, describeRelation(existing))
         );
   }
   database.relations.set(name, relation);
@@ -397,9 +425,7 @@ export const declareSchemas = (
   for (const [index, declaration] of declarations.entries()) {
     const name = names[index] ?? "";
     if (database.relations.has(name)) {
-      return logicError(
-        `"${name}" is a relation here, so it cannot also name a schema.`
-      );
+      return logicError(namedTwice(name, "relation", "schema"));
     }
     const held = database.schemas.get(name);
     if (held === undefined) {
@@ -414,7 +440,7 @@ export const declareSchemas = (
     const key = logicKey(before);
     if (key === undefined || key !== logicKey(declaration.definition)) {
       return logicError(
-        `Schema "${name}" is already declared as ${show(before)}.`
+        declaredAlready("Schema", name, `the shape ${show(before)}`)
       );
     }
   }
@@ -449,9 +475,7 @@ const groundTuple = (
   atom: Atom
 ): Effect.Effect<Tuple, LogicError> => {
   if (atom.relation.computed !== undefined) {
-    return logicError(
-      `${computedCall(atom)} is computed from its inputs, so it cannot have facts.`
-    );
+    return logicError(computedAddedTo(computedCall(atom), "a fact"));
   }
   if (!database.relations.has(atom.relation.name)) {
     return logicError(`Relation "${atom.relation.name}" is not declared here.`);
@@ -572,7 +596,10 @@ const effectiveRules = (
         })
       );
     } else {
-      return `Rule ${show(rule.source)} invents a value for "${rule.head.relation.name}", whose rules aggregate. A rule that invents values cannot give a row of a relation that aggregates.`;
+      return inventsIntoAggregate(
+        `Rule ${show(rule.source)}`,
+        rule.head.relation.name
+      );
     }
   }
   for (const [name, merge] of merges) {
@@ -1253,12 +1280,11 @@ const componentsOf = (flows: readonly Flow[]) => {
 
 /** How a rule's head makes a new value, for a message. */
 const making = (arg: unknown) => {
-  if (arg instanceof LogicVariable) {
-    return `computes a new value for ${show(arg)}`;
+  if (isForm(arg, "some")) {
+    return `invents a value for ${show(arg.parts[0])}`;
   }
-  return isForm(arg, "some")
-    ? `invents a value for ${show(arg.parts[0])}`
-    : "computes a new value";
+  const what = arg instanceof LogicVariable ? ` for ${show(arg)}` : "";
+  return `computes a new value${what}`;
 };
 
 /**
@@ -1384,9 +1410,7 @@ const addRules = (
   )) {
     const { computed, name } = head.relation;
     if (computed !== undefined) {
-      return logicError(
-        `Rules cannot add to ${computedCall(head)}: it is computed from its inputs.`
-      );
+      return logicError(computedAddedTo(computedCall(head), "a rule"));
     }
     if (!database.relations.has(name)) {
       return logicError(`Relation "${name}" is not declared here.`);
@@ -1733,9 +1757,7 @@ export const queryDatabase = (
               )
             );
             if (!isGroundValue(row)) {
-              return logicError(
-                `The query produced an answer that is not data: ${show(row)}.`
-              );
+              return logicError(producedNonData("The query", row));
             }
             rows.set(valueKey(row), row);
           }

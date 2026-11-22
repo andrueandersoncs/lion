@@ -4,7 +4,11 @@
  * needs when its turn comes.
  */
 import { Effect } from "effect";
-import { LogicError } from "@/errors/evaluation";
+import {
+  computesWithUnknown,
+  inventsIntoAggregate,
+  LogicError,
+} from "@/errors/evaluation";
 import { aggregateCall } from "@/logic/aggregates";
 import { unlisted } from "@/logic/listing";
 import { symbolic } from "@/logic/symbols";
@@ -1133,7 +1137,7 @@ export const equalityGoals = (head: unknown, body: readonly unknown[]) =>
 /**
  * Where an unknown can stand: as a whole argument, or inside a record or
  * list, but not where something computes with it. Fails when the head
- * computes with a variable that `exists` lists.
+ * computes with a variable that `exists` owns.
  */
 const planHeld = (
   head: unknown,
@@ -1142,9 +1146,7 @@ const planHeld = (
 ) => {
   const check = compilable(() => planLiterals(calls, bound));
   if (check === undefined) {
-    return problem(
-      `Rule head ${show(head)} computes with a variable that "exists" lists. An unknown can stand as an argument, or inside a record or list, but nothing can compute with it.`
-    );
+    return problem(computesWithUnknown(`Rule head ${show(head)}`, "exists"));
   }
   return check;
 };
@@ -1204,12 +1206,13 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
             .join(", ")}], head].`
       );
     }
-    if (
-      invented.length > 0 &&
-      heads.some((call) => aggregatesOf(call).length)
-    ) {
+    const aggregated = heads.find((call) => aggregatesOf(call).length > 0);
+    if (invented.length > 0 && aggregated !== undefined) {
       problem(
-        `Rule head ${show(head)} both aggregates and lists variables in "exists". A rule that invents values cannot aggregate.`
+        inventsIntoAggregate(
+          `Rule head ${show(head)}`,
+          aggregated.relation.name
+        )
       );
     }
     const definition = [head, ...body];

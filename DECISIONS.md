@@ -236,7 +236,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`func-apply-arguments`](#func-apply-arguments) | `spread-last-list` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
 | 2026-11-21 | [`lambda-rest-parameter`](#lambda-rest-parameter) | `one-name-for-all` | [A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme](#lambda-rest-parameter) |
 | 2026-11-21 | [`fixing-pays-off`](#fixing-pays-off) | `fix-or-improve` | [An experiment pays off when it fixes a problem it targets, as when it improves a score](#fixing-pays-off) |
-| 2026-11-22 | [`scale-hub-join`](#scale-hub-join) | `scale-workload` | [The scale times the triangles of a graph whose nodes all link to two hubs](#scale-hub-join) |
+| 2026-11-21 | [`scale-hub-join`](#scale-hub-join) | `scale-workload` | [The scale times the triangles of a graph whose nodes all link to two hubs](#scale-hub-join) |
 
 <a id="program-representation"></a>
 
@@ -5283,13 +5283,13 @@ Recorded 2026-11-21 in `history/notes/fixing-pays-off.json`.
 
 Now: `scale-workload`.
 
-- 2026-11-22 `scale-hub-join`: `scale-workload` over `bench-benchmark`, `research-probe-only`: "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs, laid out as the join-gap run's generator lays them." (`scale-hub-join.json`)
+- 2026-11-21 `scale-hub-join`: `scale-workload` over `bench-benchmark`, `research-probe-only`: "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs, laid out as the join-gap run's generator lays them." (`scale-hub-join.json`)
 
 <a id="scale-hub-join"></a>
 
 ### The scale times the triangles of a graph whose nodes all link to two hubs
 
-Recorded 2026-11-22 in `history/notes/scale-hub-join.json`.
+Recorded 2026-11-21 in `history/notes/scale-hub-join.json`.
 
 **Context.** The research run `join-gap` (2026-11-19) measured the triangle query on a graph whose every node is linked to and from two hub nodes: 15,010 ms at 19,983 edges, growing as n^1.9, against 36 ms and n^0.9 on scattered edges. The research model ranks worst-case optimal joins, which close that gap, among the first ideas left to build, and the improvement record holds the direction `joins`. No instrument of the loop could see the gap: the requirement that no workload of `bun run scale` grows faster than the facts timed only triangles among scattered edges, and `bun run bench` has no join of that shape.
 

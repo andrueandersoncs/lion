@@ -1,0 +1,175 @@
+{
+  "directions": [
+    {
+      "id": "messages-by-rule",
+      "statement": "Group the messages by the rule each states, with a Lion model of them, and say each rule a group states in several wordings in one message written by one function, keeping the detail each place gives",
+      "patience": 2
+    }
+  ],
+  "beliefs": [
+    {
+      "id": "messages-1",
+      "tries": "messages-by-rule",
+      "statement": "Saying each rule in one message wherever it is broken takes the core from 251 messages to 224 while it still passes 49 capability tasks, so messages per passed task goes from 5.1 to 4.6; the grid keeps its 3 documented exceptions, no rule is added that no probe checks, each new mutation is caught, and nothing fails or removes an instrument line",
+      "predicts": [
+        {
+          "question": {
+            "messages per passed task": "core"
+          },
+          "value": 4.6
+        },
+        {
+          "question": {
+            "capability passed": "public",
+            "pillar": "all"
+          },
+          "value": 49
+        },
+        {
+          "question": {
+            "grid exceptions": "core"
+          },
+          "value": 3
+        },
+        {
+          "question": {
+            "rules no probe checks": "record"
+          },
+          "value": 96
+        },
+        {
+          "question": {
+            "mutation": "a goal that is neither true nor false says it in words of its own"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "some over an expression that computes with its unknown says it in words of its own"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "in over a value that is not a list in plain code does not name its expression"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "in over a value that is not a list in a rule does not name its expression"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a waiting call of a value that is not a function names the call as the value"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a query that gives something other than data says it in words of its own"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a relation declared under a schema's name is told the name is a relation"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a relation whose columns repeat a name names a column that is not the one repeated"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a key that repeats a column is told as the columns would be"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a merge that names a column the relation lacks is told as a key would be"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a rule for a relation a graph algorithm computes is told as a fact is"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a rule head that invents and aggregates names no relation"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "exists whose goal does not mention its variable is told as some is"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a fact form among the changes of assuming is told in words of its own"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "an assuming with one change and no expression takes the change for its expression"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "a listing gives a reason of its own for a predicate"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "mutation": "the solver gives a reason of its own for schema/open without a rest"
+          },
+          "value": "caught"
+        },
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}
