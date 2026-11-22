@@ -220,6 +220,44 @@ const scatteredEdges = (n: number, nodes: number) => {
   return range(n).map(() => ["edge", next(nodes), next(nodes)]);
 };
 
+/**
+ * About `n` edges among `n / 5` nodes, laid out as the join-gap research
+ * run's generator lays them: each node is linked to and from the two hubs,
+ * 0 and 1, and as many edges as there are nodes join scattered pairs.
+ */
+const hubEdges = (n: number) => {
+  const nodes = Math.max(3, Math.floor(n / 5));
+  const next = scattered(7);
+  const edges = new Map<string, readonly [number, number]>();
+  const add = (from: number, to: number) =>
+    edges.set(`${from},${to}`, [from, to]);
+  for (const node of range(nodes).slice(2)) {
+    for (const hub of [0, 1]) {
+      add(node, hub);
+      add(hub, node);
+    }
+  }
+  for (const _ of range(nodes)) {
+    add(next(nodes), next(nodes));
+  }
+  return [...edges.values()];
+};
+
+/** The ordered triangles among some edges, as three edge goals match them. */
+const trianglesOf = (edges: readonly (readonly [number, number])[]) => {
+  const out = new Map<number, number[]>();
+  const has = new Set(edges.map(([from, to]) => `${from},${to}`));
+  for (const [from, to] of edges) {
+    out.set(from, out.get(from) ?? []);
+    out.get(from)?.push(to);
+  }
+  return edges.reduce(
+    (total, [a, b]) =>
+      total + (out.get(b) ?? []).filter((c) => has.has(`${c},${a}`)).length,
+    0
+  );
+};
+
 /** `n` nodes in chains of ten: nine edges in each. */
 const chainEdges = (n: number) =>
   range(n)
@@ -401,6 +439,24 @@ export const WORKLOADS: readonly Workload[] = [
   {
     name: "join: triangles among n edges over n/4 nodes",
     setup: (n) => ["begin", EDGE, ["fact", ...scatteredEdges(n, n / 4)], true],
+    timed: () => [
+      count([
+        "and",
+        ["edge", "?a", "?b"],
+        ["edge", "?b", "?c"],
+        ["edge", "?c", "?a"],
+      ]),
+    ],
+  },
+  {
+    name: "join: triangles among n edges, each node linked to two hubs",
+    gives: (n) => trianglesOf(hubEdges(n)),
+    setup: (n) => [
+      "begin",
+      EDGE,
+      ["fact", ...hubEdges(n).map((edge) => ["edge", ...edge])],
+      true,
+    ],
     timed: () => [
       count([
         "and",

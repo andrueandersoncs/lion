@@ -134,6 +134,57 @@ const WAYS = {
       ["registered", "?c", "?m"],
     ],
   ],
+  // Rings of three, whose last goal a row of the one before leaves with
+  // nothing to bind: over facts, over another group's rows, and over the
+  // ring's own rows, so the goal before it can read its rows through it.
+  rings: [
+    [
+      "rule",
+      ["ring", "?a", "?b"],
+      ["twin", "?a", "?b"],
+      ["lives", "?b", "?c"],
+      ["twin", "?c", "?a"],
+    ],
+    [
+      "rule",
+      ["ring", "?a", "?b"],
+      ["kin", "?a", "?b"],
+      ["lives", "?b", "?c"],
+      ["kin", "?c", "?a"],
+    ],
+    [
+      "rule",
+      ["ring", "?a", "?c"],
+      ["ring", "?a", "?b"],
+      ["twin", "?b", "?c"],
+      ["ring", "?c", "?a"],
+    ],
+  ],
+  // A ring of the mothers' own group, written two ways: a goal reads its
+  // rows through a mother, and a mother through another mother, while a
+  // key makes two mothers one and rows end.
+  near: [
+    [
+      "rule",
+      ["near", "?a"],
+      ["mother", "?a", "?m"],
+      ["lives", "?a", "?b"],
+      ["mother", "?b", "?m"],
+    ],
+    [
+      "rule",
+      ["near", "?a"],
+      ["lives", "?a", "?b"],
+      ["mother", "?b", "?m"],
+      ["mother", "?a", "?m"],
+    ],
+    [
+      "rule",
+      ["mother", "?c", "?m"],
+      ["near", "?c"],
+      ["registered", "?c", "?m"],
+    ],
+  ],
   // A rule that invents where a question about a relation it reads holds.
   guardians: [
     [
@@ -167,6 +218,8 @@ const rulesOf = (ways: readonly Way[], keyed: boolean): Form[] => [
   ["relation", "known", ["child"]],
   ["relation", "label", ["child", "tag"]],
   ["relation", "torn", ["child"]],
+  ["relation", "ring", ["a", "b"]],
+  ["relation", "near", ["child"]],
   ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
   ["rule", ["parent", "?c", "?m"], ["mother", "?c", "?m"]],
   // Two rows joined through a value that may be invented, and a test.
@@ -197,12 +250,14 @@ const RELATIONS = [
   "known",
   "label",
   "torn",
+  "ring",
+  "near",
 ] as const;
 
 const QUESTIONS = Object.fromEntries(
   RELATIONS.map((relation) => [
     relation,
-    relation === "known" || relation === "torn"
+    relation === "known" || relation === "torn" || relation === "near"
       ? ["find", "?x", [relation, "?x"]]
       : ["find", ["array/make", "?x", "?y"], [relation, "?x", "?y"]],
   ])

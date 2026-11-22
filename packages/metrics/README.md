@@ -130,7 +130,7 @@ bun run scale --sizes 1000,1000000 --limit 120
 bun run scale load change
 ```
 
-A benchmark says how fast one size is. `scale` runs the workloads in [`src/workloads.ts`](src/workloads.ts) at growing sizes, 1,000, 10,000, and 100,000 facts unless `--sizes` says otherwise, and says how the time grows: loading facts one form at a time and many, with and without invariants, schemas, and keys; asking every row and one row; rules that join, aggregate, negate, and recurse; and changing a fact and asking again. Each run is a process of its own, so its memory is its own, and one that takes longer than `--limit` seconds, 60 by default, is stopped and shown as `over 60 s`.
+A benchmark says how fast one size is. `scale` runs the workloads in [`src/workloads.ts`](src/workloads.ts) at growing sizes, 1,000, 10,000, and 100,000 facts unless `--sizes` says otherwise, and says how the time grows: loading facts one form at a time and many, with and without invariants, schemas, and keys; asking every row and one row; rules that join, also through two hubs that most rows share, aggregate, negate, and recurse; and changing a fact and asking again. Each run is a process of its own, so its memory is its own, and one that takes longer than `--limit` seconds, 60 by default, is stopped and shown as `over 60 s`.
 
 - `grows` is the power of the size the time follows between the two largest sizes that ran. `n^1.0` grows as the facts do. `n^2.0` grows as their square: something reads everything again for each row. A workload that was stopped shows `stops`.
 - `peak` is the most memory the timed programs added, and `kept` is what the database holds afterwards, both at the largest size.

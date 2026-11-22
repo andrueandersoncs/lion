@@ -1,0 +1,22 @@
+{
+  "observations": [
+    {
+      "id": "hubs-scale-before-1",
+      "source": "hubs-scale-before",
+      "quote": "join: triangles among n edges, each node linked to two hubs      26 ms       1.3 s    over 60 s  stops  31 MB  3 MB",
+      "question": {
+        "stops or grows past n^1.15": "join: triangles among n edges, each node linked to two hubs"
+      },
+      "value": true
+    },
+    {
+      "id": "hubs-scale-after-1",
+      "source": "hubs-scale-after",
+      "quote": "join: triangles among n edges, each node linked to two hubs       6 ms       28 ms       188 ms  n^0.8  6 MB  25 MB",
+      "question": {
+        "stops or grows past n^1.15": "join: triangles among n edges, each node linked to two hubs"
+      },
+      "value": false
+    }
+  ]
+}

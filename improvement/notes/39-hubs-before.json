@@ -1,0 +1,136 @@
+{
+  "observations": [
+    {
+      "id": "hubs-before-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "hubs-before"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "hubs-before",
+      "value": 1
+    },
+    {
+      "id": "hubs-before-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "hubs-before",
+      "value": 3
+    },
+    {
+      "id": "hubs-before-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "hubs-before",
+      "value": 0
+    },
+    {
+      "id": "hubs-before-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "hubs-before"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "hubs-before",
+      "value": 0
+    },
+    {
+      "id": "hubs-before-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "hubs-before",
+      "value": 0
+    },
+    {
+      "id": "hubs-before-8",
+      "question": {
+        "flaky checks": "telemetry"
+      },
+      "quote": "flaky checks, telemetry: 0",
+      "source": "hubs-before",
+      "value": 0
+    },
+    {
+      "id": "hubs-before-9",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "hubs-before"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 106 s",
+      "source": "hubs-before",
+      "value": 106
+    },
+    {
+      "id": "hubs-before-10",
+      "question": {
+        "seconds of check": "scale-again",
+        "observation": "hubs-before"
+      },
+      "quote": "ran scale-again: bun run scale, exit 0, 105 s",
+      "source": "hubs-before",
+      "value": 105
+    },
+    {
+      "id": "hubs-before-11",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 1",
+      "source": "hubs-before",
+      "value": 1
+    },
+    {
+      "id": "hubs-before-12",
+      "question": {
+        "seconds of check": "record",
+        "observation": "hubs-before"
+      },
+      "quote": "ran record: bun run history check, exit 0, 76 s",
+      "source": "hubs-before",
+      "value": 76
+    },
+    {
+      "id": "hubs-before-13",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "hubs-before",
+      "value": "holds"
+    },
+    {
+      "id": "hubs-before-14",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 96",
+      "source": "hubs-before",
+      "value": 96
+    },
+    {
+      "id": "hubs-before-15",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "hubs-before"
+      },
+      "quote": "ran tests: bun run test, exit 0, 139 s",
+      "source": "hubs-before",
+      "value": 139
+    },
+    {
+      "id": "hubs-before-16",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "hubs-before",
+      "value": 0
+    }
+  ]
+}

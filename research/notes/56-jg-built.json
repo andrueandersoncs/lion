@@ -1,0 +1,91 @@
+{
+  "sources": [
+    {
+      "id": "lion-bench-hubs-built",
+      "url": "node research/probes/hubs/time.mjs, on the CLI built from branch claude/join-gap-44bac3 and on the published CLI v0.14.0; bun run scale join",
+      "title": "The triangle workloads of the join-gap run, timed again once a relation goal can read its rows through a later relation goal with fewer rows for the answer",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261121225500
+    }
+  ],
+  "claims": [
+    {
+      "id": "jg-c1",
+      "source": "lion-bench-hubs-built",
+      "quote": "19,983 edges, 23,950 triangles: real 0.41 s, 0.41 s, 0.40 s; median 0.41 s",
+      "where": "the CLI built from the working tree",
+      "says": {
+        "lion measured": "triangles on a graph with two hubs, 19,983 edges",
+        "s": 0.41
+      }
+    },
+    {
+      "id": "jg-c2",
+      "source": "lion-bench-hubs-built",
+      "quote": "time grows about n^0.2 between the two largest sizes",
+      "where": "the CLI built from the working tree",
+      "says": {
+        "lion grows": "triangles on a graph with two hubs",
+        "power": 0.2
+      }
+    },
+    {
+      "id": "jg-c3",
+      "source": "lion-bench-hubs-built",
+      "quote": "join: triangles among n edges, each node linked to two hubs       7 ms       29 ms       207 ms  n^0.9",
+      "where": "bun run scale, on the same tree",
+      "says": { "lion": "skewed joins", "has": true }
+    },
+    {
+      "id": "jg-c4",
+      "source": "lion-bench-hubs-built",
+      "quote": "join: triangles among n edges, each node linked to two hubs       7 ms       29 ms       207 ms  n^0.9",
+      "where": "bun run scale, on the same tree",
+      "says": {
+        "lion grows": "triangles among n edges, each node linked to two hubs",
+        "power": 0.9
+      }
+    },
+    {
+      "id": "jg-c5",
+      "source": "lion-bench-hubs-built",
+      "quote": "join: triangles among n edges over n/4 nodes                      6 ms       25 ms       231 ms  n^1.0",
+      "where": "bun run scale, on the same tree",
+      "says": {
+        "lion grows": "triangles among n edges over n/4 nodes",
+        "power": 1
+      }
+    },
+    {
+      "id": "jg-c6",
+      "source": "lion-bench-hubs-built",
+      "quote": "19,983 edges, 23,950 triangles: real 14.11 s, 13.34 s, 13.31 s; median 13.34 s",
+      "where": "the published CLI v0.14.0, run again beside the tree",
+      "says": {
+        "lion measured": "triangles on a graph with two hubs, 19,983 edges, published CLI v0.14.0",
+        "s": 13.34
+      }
+    },
+    {
+      "id": "jg-c7",
+      "source": "lion-bench-hubs-built",
+      "quote": "time grows about n^1.7 between the two largest sizes",
+      "where": "the published CLI v0.14.0, run again beside the tree",
+      "says": {
+        "lion grows": "triangles on a graph with two hubs, published CLI v0.14.0",
+        "power": 1.7
+      }
+    },
+    {
+      "id": "jg-c8",
+      "source": "lion-bench-hubs-built",
+      "quote": "{ \"edges\": 19983 } real 0.30 user 0.38 sys 0.05",
+      "where": "the largest hub program without its triangles, the median of three runs",
+      "says": {
+        "lion measured": "start-up and loading a graph with two hubs, 19,983 edges, no triangles asked",
+        "s": 0.3
+      }
+    }
+  ]
+}

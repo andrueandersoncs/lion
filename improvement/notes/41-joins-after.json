@@ -1,0 +1,149 @@
+{
+  "observations": [
+    {
+      "id": "joins-after-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "joins-after"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "joins-after",
+      "value": 1
+    },
+    {
+      "id": "joins-after-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "joins-after",
+      "tries": "joins",
+      "value": 3
+    },
+    {
+      "id": "joins-after-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "joins-after",
+      "value": 0
+    },
+    {
+      "id": "joins-after-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "joins-after"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "joins-after",
+      "value": 0
+    },
+    {
+      "id": "joins-after-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "joins-after",
+      "value": 0
+    },
+    {
+      "id": "joins-after-8",
+      "question": {
+        "flaky checks": "telemetry"
+      },
+      "quote": "flaky checks, telemetry: 0",
+      "source": "joins-after",
+      "tries": "joins",
+      "value": 0
+    },
+    {
+      "id": "joins-after-9",
+      "question": {
+        "seconds of check": "bench",
+        "observation": "joins-after"
+      },
+      "quote": "ran bench: bun run bench, exit 0, 3 s",
+      "source": "joins-after",
+      "value": 3
+    },
+    {
+      "id": "joins-after-10",
+      "question": {
+        "bench total ms": "every benchmark"
+      },
+      "quote": "bench total ms, every benchmark: 913.2",
+      "source": "joins-after",
+      "tries": "joins",
+      "value": 913.2
+    },
+    {
+      "id": "joins-after-11",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "joins-after"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 41 s",
+      "source": "joins-after",
+      "value": 41
+    },
+    {
+      "id": "joins-after-12",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "joins-after",
+      "value": 0
+    },
+    {
+      "id": "joins-after-13",
+      "question": {
+        "seconds of check": "record",
+        "observation": "joins-after"
+      },
+      "quote": "ran record: bun run history check, exit 0, 71 s",
+      "source": "joins-after",
+      "value": 71
+    },
+    {
+      "id": "joins-after-14",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "joins-after",
+      "value": "holds"
+    },
+    {
+      "id": "joins-after-15",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 96",
+      "source": "joins-after",
+      "tries": "joins",
+      "value": 96
+    },
+    {
+      "id": "joins-after-16",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "joins-after"
+      },
+      "quote": "ran tests: bun run test, exit 0, 157 s",
+      "source": "joins-after",
+      "value": 157
+    },
+    {
+      "id": "joins-after-17",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "joins-after",
+      "value": 0
+    }
+  ]
+}

@@ -1,0 +1,298 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-bench-hubs-built"
+   ],
+   [
+    "quote",
+    "node research/probes/hubs/time.mjs, on the CLI built from branch claude/join-gap-44bac3 and on the published CLI v0.14.0; bun run scale join"
+   ],
+   [
+    "quote",
+    "The triangle workloads of the join-gap run, timed again once a relation goal can read its rows through a later relation goal with fewer rows for the answer"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261121225500
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "jg-c1"
+   ],
+   [
+    "quote",
+    "lion-bench-hubs-built"
+   ],
+   [
+    "quote",
+    "19,983 edges, 23,950 triangles: real 0.41 s, 0.41 s, 0.40 s; median 0.41 s"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "triangles on a graph with two hubs, 19,983 edges",
+     "s": 0.41
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "jg-c1"
+   ],
+   [
+    "quote",
+    "the CLI built from the working tree"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "jg-c2"
+   ],
+   [
+    "quote",
+    "lion-bench-hubs-built"
+   ],
+   [
+    "quote",
+    "time grows about n^0.2 between the two largest sizes"
+   ],
+   [
+    "quote",
+    {
+     "lion grows": "triangles on a graph with two hubs",
+     "power": 0.2
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "jg-c2"
+   ],
+   [
+    "quote",
+    "the CLI built from the working tree"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "jg-c3"
+   ],
+   [
+    "quote",
+    "lion-bench-hubs-built"
+   ],
+   [
+    "quote",
+    "join: triangles among n edges, each node linked to two hubs       7 ms       29 ms       207 ms  n^0.9"
+   ],
+   [
+    "quote",
+    {
+     "lion": "skewed joins",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "jg-c3"
+   ],
+   [
+    "quote",
+    "bun run scale, on the same tree"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "jg-c4"
+   ],
+   [
+    "quote",
+    "lion-bench-hubs-built"
+   ],
+   [
+    "quote",
+    "join: triangles among n edges, each node linked to two hubs       7 ms       29 ms       207 ms  n^0.9"
+   ],
+   [
+    "quote",
+    {
+     "lion grows": "triangles among n edges, each node linked to two hubs",
+     "power": 0.9
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "jg-c4"
+   ],
+   [
+    "quote",
+    "bun run scale, on the same tree"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "jg-c5"
+   ],
+   [
+    "quote",
+    "lion-bench-hubs-built"
+   ],
+   [
+    "quote",
+    "join: triangles among n edges over n/4 nodes                      6 ms       25 ms       231 ms  n^1.0"
+   ],
+   [
+    "quote",
+    {
+     "lion grows": "triangles among n edges over n/4 nodes",
+     "power": 1
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "jg-c5"
+   ],
+   [
+    "quote",
+    "bun run scale, on the same tree"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "jg-c6"
+   ],
+   [
+    "quote",
+    "lion-bench-hubs-built"
+   ],
+   [
+    "quote",
+    "19,983 edges, 23,950 triangles: real 14.11 s, 13.34 s, 13.31 s; median 13.34 s"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "triangles on a graph with two hubs, 19,983 edges, published CLI v0.14.0",
+     "s": 13.34
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "jg-c6"
+   ],
+   [
+    "quote",
+    "the published CLI v0.14.0, run again beside the tree"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "jg-c7"
+   ],
+   [
+    "quote",
+    "lion-bench-hubs-built"
+   ],
+   [
+    "quote",
+    "time grows about n^1.7 between the two largest sizes"
+   ],
+   [
+    "quote",
+    {
+     "lion grows": "triangles on a graph with two hubs, published CLI v0.14.0",
+     "power": 1.7
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "jg-c7"
+   ],
+   [
+    "quote",
+    "the published CLI v0.14.0, run again beside the tree"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "jg-c8"
+   ],
+   [
+    "quote",
+    "lion-bench-hubs-built"
+   ],
+   [
+    "quote",
+    "{ \"edges\": 19983 } real 0.30 user 0.38 sys 0.05"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "start-up and loading a graph with two hubs, 19,983 edges, no triangles asked",
+     "s": 0.3
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "jg-c8"
+   ],
+   [
+    "quote",
+    "the largest hub program without its triangles, the median of three runs"
+   ]
+  ]
+ ],
+ "recorded"
+]

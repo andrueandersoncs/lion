@@ -1,5 +1,14 @@
 [
   {
+    "feature": "scale-hub-join",
+    "kind": "capability",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/metrics/src/workloads.ts"],
+      "join: triangles among n edges, each node linked to two hubs"
+    ]
+  },
+  {
     "feature": "research-exact-numbers",
     "kind": "file",
     "program": [

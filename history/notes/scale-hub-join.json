@@ -1,0 +1,36 @@
+{
+  "title": "The scale times the triangles of a graph whose nodes all link to two hubs",
+  "context": "The research run `join-gap` (2026-11-19) measured the triangle query on a graph whose every node is linked to and from two hub nodes: 15,010 ms at 19,983 edges, growing as n^1.9, against 36 ms and n^0.9 on scattered edges. The research model ranks worst-case optimal joins, which close that gap, among the first ideas left to build, and the improvement record holds the direction `joins`. No instrument of the loop could see the gap: the requirement that no workload of `bun run scale` grows faster than the facts timed only triangles among scattered edges, and `bun run bench` has no join of that shape.",
+  "decision": "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs, laid out as the join-gap run's generator lays them. It is an instrument change of its own: committed, and observed by the record, before any change to the engine, so the observation before an experiment on joins shows what the gap costs.",
+  "consequences": "Until the gap closes, the workload is stopped at 100,000 edges, so the requirement `workloads faster than linear` fails and no score of a version counts. That is the gap stated the way the loop states its constraints, and a later change that brings it back fails the same requirement.",
+  "alternatives": [
+    {
+      "option": "Add the hub graph to `bun run bench`",
+      "rejected": "The bench total sums every benchmark, so one more would make each earlier version's total incomparable, and a time at one size says nothing of how it grows."
+    },
+    {
+      "option": "Keep the gap in the research probe alone",
+      "rejected": "`research/probes/hubs/time.mjs` times the CLI by hand, outside the loop, so nothing would keep a later change from bringing the gap back."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs, laid out as the join-gap run's generator lays them.",
+      "says": {
+        "decision": "scale-hub-join",
+        "chose": "scale-workload",
+        "over": ["bench-benchmark", "research-probe-only"],
+        "because": "a growth requirement keeps a later change from bringing the gap back, and a new benchmark would make every earlier bench total incomparable",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs",
+      "says": {
+        "feature": "scale-hub-join",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}
