@@ -1,0 +1,3 @@
+{
+  "sv-comp-diamond-1": "Lion's solver decides sums of numbers times known numbers, and cannot reason about number/remainder of an unknown, so it cannot decide x % 2 == y % 2 for every y: the loop leaves x at 100 when y is even and at 99 when it is odd, and telling them apart takes y's remainder. Listing every y of an unsigned int, or bounding y, would be bending the task."
+}

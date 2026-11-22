@@ -1,0 +1,33 @@
+[
+  "lambda",
+  ["assertion"],
+  [
+    "value/identity",
+    [
+      "not",
+      [
+        "exists",
+        ["?i", "?n"],
+        [
+          "and",
+          ["schema/fits?", "?i", "value/integer?"],
+          ["schema/fits?", "?n", "value/integer?"],
+          ["number/greaterThanOrEqualTo", "?n", 0],
+          ["number/greaterThanOrEqualTo", "?i", 0],
+          ["number/lessThanOrEqualTo", "?i", "?n"],
+          ["number/greaterThanOrEqualTo", "?i", "?n"],
+          [
+            "not",
+            [
+              "assertion",
+              {
+                "i": "?i",
+                "n": "?n"
+              }
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

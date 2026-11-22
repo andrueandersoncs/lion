@@ -1,0 +1,32 @@
+[
+  "begin",
+  ["relation", "c1", ["x", "y"]],
+  ["relation", "rows_c2", ["x", "y"]],
+  ["relation", "rows_c3", ["x", "y"]],
+  ["relation", "rows_c4", ["x", "y"]],
+  ["relation", "rows_d1", ["x", "y"]],
+  ["relation", "rows_d2", ["x", "y"]],
+  ["relation", "b1", ["x", "y"]],
+  ["relation", "b2", ["x", "y"]],
+  ["relation", "a", ["x", "y"]],
+  ["rule", ["rows_c2", "?x", "?y"], ["in", ["array/make", "?x", "?y"], "c2"]],
+  ["rule", ["rows_c3", "?x", "?y"], ["in", ["array/make", "?x", "?y"], "c3"]],
+  ["rule", ["rows_c4", "?x", "?y"], ["in", ["array/make", "?x", "?y"], "c4"]],
+  ["rule", ["rows_d1", "?x", "?y"], ["in", ["array/make", "?x", "?y"], "d1"]],
+  ["rule", ["rows_d2", "?x", "?y"], ["in", ["array/make", "?x", "?y"], "d2"]],
+  [
+    "rule",
+    ["c1", "?x", "?y"],
+    ["rows_d1", "?x", "?z"],
+    ["rows_d2", "?z", "?y"]
+  ],
+  ["rule", ["b1", "?x", "?y"], ["c1", "?x", "?z"], ["rows_c2", "?z", "?y"]],
+  [
+    "rule",
+    ["b2", "?x", "?y"],
+    ["rows_c3", "?x", "?z"],
+    ["rows_c4", "?z", "?y"]
+  ],
+  ["rule", ["a", "?x", "?y"], ["b1", "?x", "?z"], ["b2", "?z", "?y"]],
+  ["find", ["array/make", "?x", "?y"], ["a", "?x", "?y"]]
+]

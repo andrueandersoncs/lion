@@ -1,0 +1,67 @@
+{
+  "id": "openrulebench-tc-bound",
+  "pillar": "logic",
+  "statement": "The input par is a list of [from, to] edges of a graph over whole numbers. With tc(X, Y) :- par(X, Y) and tc(X, Y) :- par(X, Z), tc(Z, Y), the program's value is every y with tc(1, y), in any order: OpenRuleBench's transitive closure query with the first argument bound.",
+  "inputs": {
+    "par": [
+      [1, 4],
+      [1, 7],
+      [1, 20],
+      [2, 4],
+      [2, 11],
+      [4, 10],
+      [4, 19],
+      [5, 18],
+      [5, 25],
+      [7, 3],
+      [7, 13],
+      [7, 27],
+      [8, 17],
+      [8, 24],
+      [9, 23],
+      [10, 4],
+      [10, 26],
+      [12, 17],
+      [14, 27],
+      [15, 2],
+      [15, 14],
+      [15, 20],
+      [17, 6],
+      [19, 20],
+      [19, 21],
+      [21, 19],
+      [21, 29],
+      [22, 20],
+      [23, 2],
+      [23, 11],
+      [23, 15],
+      [23, 29],
+      [24, 26],
+      [25, 13],
+      [25, 16],
+      [25, 27],
+      [26, 6],
+      [26, 25],
+      [27, 2],
+      [27, 21],
+      [29, 2],
+      [30, 16],
+      [30, 24],
+      [30, 28]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["nodes"],
+    [
+      "=",
+      ["aggregate/unique", "nodes"],
+      [
+        "aggregate/unique",
+        ["quote", [2, 3, 4, 6, 7, 10, 11, 13, 16, 19, 20, 21, 25, 26, 27, 29]]
+      ]
+    ]
+  ],
+  "tags": ["recursion", "transitive-closure", "bound-argument"],
+  "origin": "OpenRuleBench (Liang, Fodor, Wan, and Kifer, 2009), as Brass and Stephan, Experiences with Some Benchmarks for Deductive Databases (2017), describe it: section 9, the transitive closure benchmark with the first argument bound"
+}

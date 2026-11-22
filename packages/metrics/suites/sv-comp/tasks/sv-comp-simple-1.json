@@ -1,0 +1,28 @@
+{
+  "id": "sv-comp-simple-1",
+  "pillar": "proofs",
+  "statement": "A program sets x to 0, and while x < 268435455 (0x0fffffff) adds 2 to x. SV-COMP's task loop-acceleration/simple_1-1 asserts afterwards that x % 2 is not 0, and simple_1-2 that it is 0. Define a function of an assertion, a predicate on x, that gives true when every run that leaves the loop meets it, and false otherwise, without running the loop's 134 million steps. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["holds"],
+    [
+      "and",
+      [
+        "boolean/not",
+        [
+          "holds",
+          ["lambda", ["x"], ["not", ["=", ["number/remainder", "x", 2], 0]]]
+        ]
+      ],
+      ["holds", ["lambda", ["x"], ["=", ["number/remainder", "x", 2], 0]]],
+      ["holds", ["lambda", ["x"], ["=", "x", 268435456]]],
+      [
+        "boolean/not",
+        ["holds", ["lambda", ["x"], ["number/greaterThan", "x", 268435456]]]
+      ]
+    ]
+  ],
+  "tags": ["loop-invariant", "verification"],
+  "origin": "SV-COMP's benchmark set (sv-benchmarks), ReachSafety, property unreach-call: c/loop-acceleration/simple_1-1.c (expected verdict false) and simple_1-2.c (expected verdict true)"
+}

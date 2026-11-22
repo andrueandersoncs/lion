@@ -1,0 +1,50 @@
+{
+  "id": "sv-comp-diamond-1",
+  "pillar": "proofs",
+  "statement": "A program sets x to 0 and y to any whole number of at least 0, and while x < 99 adds 2 to x when y is even and 1 when y is odd. SV-COMP's task loop-acceleration/diamond_1-1 asserts afterwards that x % 2 equals y % 2. Define a function of an assertion, a predicate on a state {\"x\", \"y\"}, that gives true when every run that leaves the loop meets it, for every y, and false otherwise. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["holds"],
+    [
+      "and",
+      [
+        "holds",
+        [
+          "lambda",
+          ["s"],
+          [
+            "=",
+            ["number/remainder", ["object/get", "s", "x"], 2],
+            ["number/remainder", ["object/get", "s", "y"], 2]
+          ]
+        ]
+      ],
+      [
+        "boolean/not",
+        ["holds", ["lambda", ["s"], ["=", ["object/get", "s", "x"], 100]]]
+      ],
+      [
+        "holds",
+        [
+          "lambda",
+          ["s"],
+          ["number/greaterThanOrEqualTo", ["object/get", "s", "x"], 99]
+        ]
+      ],
+      [
+        "boolean/not",
+        [
+          "holds",
+          [
+            "lambda",
+            ["s"],
+            ["=", ["number/remainder", ["object/get", "s", "x"], 2], 0]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["loop-invariant", "verification", "case-split"],
+  "origin": "SV-COMP's benchmark set (sv-benchmarks), ReachSafety, property unreach-call: c/loop-acceleration/diamond_1-1.c (expected verdict true)"
+}

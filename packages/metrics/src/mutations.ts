@@ -81,6 +81,7 @@ const CAPABILITY_TESTS = {
 };
 const CAPABILITY = "packages/metrics/src/capability.ts";
 const corpus = (file: string) => `packages/metrics/corpus/${file}`;
+const suite = (file: string) => `packages/metrics/suites/${file}`;
 
 /** Breaks in the cases R7RS-small settles that Lion gives as Scheme does. */
 const SCHEME_CASE_MUTATIONS: readonly Mutation[] = [
@@ -282,6 +283,20 @@ const CAPABILITY_MUTATIONS: readonly Mutation[] = [
     file: corpus("solutions/datalog-transitive-closure.json"),
     find: '["reach", "?x", "?y"], ["edge", "?y", "?z"]',
     replace: '["edge", "?x", "?y"], ["edge", "?y", "?z"]',
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "a reference program of an outside suite stops solving its task",
+    file: suite("openrulebench/solutions/openrulebench-tc-free.json"),
+    find: '["edge", "?x", "?z"], ["tc", "?z", "?y"]',
+    replace: '["edge", "?x", "?z"], ["edge", "?z", "?y"]',
+    ...CAPABILITY_TESTS,
+  },
+  {
+    name: "the outside suites include the files beside their folders",
+    file: CAPABILITY,
+    find: "        .filter((entry) => entry.isDirectory())\n",
+    replace: "",
     ...CAPABILITY_TESTS,
   },
   {

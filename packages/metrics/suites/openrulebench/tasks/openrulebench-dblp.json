@@ -1,0 +1,52 @@
+{
+  "id": "openrulebench-dblp",
+  "pillar": "logic",
+  "statement": "The input att is a list of [document, attribute, value] rows, as OpenRuleBench's DBLP benchmark stores a bibliography in one attribute relation. The program's value is every row of its query, answer(Id, T, A, Y, M) :- att(Id, title, T), att(Id, year, Y), att(Id, author, A), att(Id, month, M), each as [id, title, author, year, month], in any order.",
+  "inputs": {
+    "att": [
+      ["d1", "month", "March"],
+      ["d3", "author", "Stephan"],
+      ["d5", "year", 2001],
+      ["d1", "author", "Ramakrishnan"],
+      ["d3", "title", "Push Method"],
+      ["d4", "month", "May"],
+      ["d1", "author", "Beeri"],
+      ["d1", "title", "On the Power of Magic"],
+      ["d3", "year", 2017],
+      ["d3", "month", "June"],
+      ["d4", "author", "Brass"],
+      ["d1", "year", 1987],
+      ["d3", "author", "Brass"],
+      ["d2", "year", 1986],
+      ["d2", "title", "Magic Sets"],
+      ["d5", "title", "Untitled Draft"],
+      ["d2", "author", "Bancilhon"],
+      ["d4", "year", 2000],
+      ["d5", "month", "July"],
+      ["d4", "title", "SLDMagic"]
+    ]
+  },
+  "check": [
+    "lambda",
+    ["rows"],
+    [
+      "=",
+      ["aggregate/unique", "rows"],
+      [
+        "aggregate/unique",
+        [
+          "quote",
+          [
+            ["d1", "On the Power of Magic", "Beeri", 1987, "March"],
+            ["d1", "On the Power of Magic", "Ramakrishnan", 1987, "March"],
+            ["d3", "Push Method", "Brass", 2017, "June"],
+            ["d3", "Push Method", "Stephan", 2017, "June"],
+            ["d4", "SLDMagic", "Brass", 2000, "May"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  "tags": ["joins", "attribute-value"],
+  "origin": "OpenRuleBench (Liang, Fodor, Wan, and Kifer, 2009), as Brass and Stephan, Experiences with Some Benchmarks for Deductive Databases (2017), describe it: section 6, the DBLP benchmark"
+}

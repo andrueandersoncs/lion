@@ -55,6 +55,9 @@
 - `bun run affected` also names the rules of the project record a change puts at risk, before it is committed. (`affected-at-risk` added)
 - `bun run stale` replays the model and lists the evidence a later change to Lion made stale (`research-stale` added)
 - which of its present answers rest on them, by the rule `stale_answer` of step `58-si-stale` (`research-stale-answer` added)
+- Each folder of [`../suites/`](../suites/) holds a suite with this layout, its tasks drawn from a benchmark of another field, so that Lion is measured by what others measure their tools with and not only by tasks written for it. (`outside-suites` added)
+- `openrulebench` | transitive closure with no argument bound and with the first bound, Join1, and DBLP (`suite-openrulebench` added)
+- `sv-comp` | `loop-acceleration/simple_1`, `diamond_1`, and `count_by_1` (`suite-sv-comp` added)
 
 ### Changed
 
@@ -119,10 +122,14 @@
 - the words the program's message says when it runs (`lint-and-message-wording` is `one-function`)
 - The one lint so far finds a list written as a bare array inside a rule, a find, or a query, which Lion reads as a call of its first item. (`lint-list-written-as-call` is `warned`)
 - so the rule protects the paths those name: a file, a folder, or the folder a command runs in, and Lion's core for a probe that names none (`rule-protects` is `paths-its-probes-name`)
+- the source is stale when those changed since (`probe-source-stale` is `after-a-change-to-what-it-ran-on`)
+- `--agents` works the public and held-out tasks only, so an agents' run costs what it did. (`agents-work-outside-suites` is `never`)
+- `bun run capability` grades each suite by its reference programs and prints its score beside the public tasks'. (`capability-grades-outside-suites` is `by-reference-programs`)
 - With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
 - number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
-- the source is stale when those changed since (`probe-source-stale` is `after-a-change-to-what-it-ran-on`)
+- The properties in `src/tests/capability.test.ts` make the reference programs of the public tasks and of every outside suite a ratchet (`outside-suite-references-gated` is `by-a-property`)
 - The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
+- `sv-comp/gaps.json` says why `diamond_1` has no reference program yet, since Lion's solver cannot reason about the remainder of an unknown. (`solver-remainder-of-unknown` is `refused`)
 
 ### Fixed
 

@@ -1,7 +1,7 @@
 /**
- * The capability corpus and its grader. The public tasks' reference
- * programs are a ratchet: every one must pass its check, so a change to
- * Lion that breaks one fails here. The grader is checked against a plain
+ * The capability corpus and its grader. The reference programs of the
+ * public tasks and of the outside suites are a ratchet: every one must pass
+ * its check, so a change to Lion that breaks one fails here. The grader is checked against a plain
  * model of what passing means, and the loader against the files it was
  * given.
  */
@@ -11,12 +11,14 @@ import { join } from "node:path";
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect } from "effect";
 import {
+  type Corpus,
   type Graded,
   grade,
   HELD_OUT_VARIABLE,
   heldOutFolder,
   loadCorpus,
   loadSolutions,
+  outsideSuites,
   PILLARS,
   type Pillar,
   PUBLIC_CORPUS,
@@ -27,10 +29,25 @@ import { canonical, evaluate, load } from "../lion.ts";
 import { CORE, REPOSITORY } from "../sources.ts";
 import { between, element, oneOf, word } from "./generators.ts";
 
-/** The evaluator of the working tree and the public corpus, loaded once. */
+/** The corpora of one grading run as one: their tasks, solutions, and gaps. */
+const together = (corpora: readonly Corpus[]): Corpus => ({
+  gaps: new Map(corpora.flatMap((each) => [...each.gaps])),
+  problems: corpora.flatMap((each) => each.problems),
+  solutions: new Map(corpora.flatMap((each) => [...each.solutions])),
+  tasks: corpora.flatMap((each) => each.tasks),
+});
+
+/**
+ * The evaluator of the working tree, and the public corpus with the outside
+ * suites, loaded once.
+ */
 const lion = Effect.runPromise(load(join(REPOSITORY, CORE)));
 const corpus = lion.then((evaluator) =>
-  Effect.runPromise(loadCorpus(evaluator, PUBLIC_CORPUS))
+  Promise.all(
+    [PUBLIC_CORPUS, ...outsideSuites().map((suite) => suite.folder)].map(
+      (folder) => Effect.runPromise(loadCorpus(evaluator, folder))
+    )
+  ).then(together)
 );
 const loaded = Effect.promise(() =>
   Promise.all([lion, corpus]).then(([evaluator, tasks]) => ({
@@ -70,7 +87,7 @@ const taskOf = (
   tags: [],
 });
 
-describe("the public corpus", () => {
+describe("the public corpus and the outside suites", () => {
   it.effect.prop(
     "every reference program passes its check, whatever order the tasks are graded in",
     {
@@ -83,6 +100,8 @@ describe("the public corpus", () => {
       Effect.gen(function* () {
         const { corpus: tasks, lion: evaluator } = yield* loaded;
         expect(tasks.problems).toEqual([]);
+        const ids = tasks.tasks.map((task) => task.id);
+        expect(ids.filter((id, at) => ids.indexOf(id) !== at)).toEqual([]);
         const order = tasks.tasks
           .map((task, at) => ({ key: keys[at % keys.length] ?? at, task }))
           .sort((a, b) => a.key - b.key)
@@ -398,6 +417,48 @@ describe("loadCorpus", () => {
         }
       }),
     { arbitrary: { runs: 30 } }
+  );
+});
+
+describe("outsideSuites", () => {
+  it.prop(
+    "are the folders inside the suites' folder, by name in order, and nothing when it is missing",
+    {
+      entries: Arbitrary.array(
+        Arbitrary.all({ folder: element([true, false]), name: word }),
+        { maxLength: 6 }
+      ),
+      missing: element([true, false]),
+    },
+    ({ entries, missing }) => {
+      const root = mkdtempSync(join(tmpdir(), "lion-suites-"));
+      try {
+        const folder = join(root, "suites");
+        if (!missing) {
+          mkdirSync(folder);
+          for (const entry of entries) {
+            const path = join(folder, entry.name);
+            if (entry.folder) {
+              mkdirSync(path, { recursive: true });
+            } else if (
+              !entries.some((e) => e.folder && e.name === entry.name)
+            ) {
+              writeFileSync(path, "{}");
+            }
+          }
+        }
+        const folders = missing
+          ? []
+          : [
+              ...new Set(entries.filter((e) => e.folder).map((e) => e.name)),
+            ].sort();
+        expect(outsideSuites(folder)).toStrictEqual(
+          folders.map((name) => ({ folder: join(folder, name), name }))
+        );
+      } finally {
+        rmSync(root, { force: true, recursive: true });
+      }
+    }
   );
 });
 

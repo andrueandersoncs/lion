@@ -31,6 +31,7 @@ import {
   heldOutFolder,
   loadCorpus,
   loadSolutions,
+  outsideSuites,
   PUBLIC_CORPUS,
   type Score,
   type Task,
@@ -227,6 +228,11 @@ const main = Effect.gen(function* () {
   ];
   if (held.folder !== undefined) {
     folders.push({ folder: held.folder, name: "held-out" });
+  }
+  // The outside suites are graded by their reference programs; agents work
+  // the public and held-out tasks only, so a run's cost stays as it was.
+  if (agents === undefined) {
+    folders.push(...outsideSuites());
   }
   const suites: Suite[] = [];
   const seen = new Set<string>();

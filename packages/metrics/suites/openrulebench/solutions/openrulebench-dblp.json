@@ -1,0 +1,11 @@
+[
+  "find",
+  ["array/make", "?id", "?t", "?a", "?y", "?m"],
+  [
+    "and",
+    ["in", ["array/make", "?id", ["quote", "title"], "?t"], "att"],
+    ["in", ["array/make", "?id", ["quote", "year"], "?y"], "att"],
+    ["in", ["array/make", "?id", ["quote", "author"], "?a"], "att"],
+    ["in", ["array/make", "?id", ["quote", "month"], "?m"], "att"]
+  ]
+]

@@ -57,6 +57,25 @@ export interface Corpus {
 /** The public corpus. */
 export const PUBLIC_CORPUS = join(REPOSITORY, "packages/metrics/corpus");
 
+/**
+ * The folder of the outside suites: tasks drawn from benchmarks of other
+ * fields, such as OpenRuleBench for rule engines and SV-COMP for software
+ * verifiers, each suite a folder of its own with the corpus's layout.
+ */
+export const OUTSIDE_SUITES = join(REPOSITORY, "packages/metrics/suites");
+
+/** The outside suites, by name, each with its folder, in order of name. */
+export const outsideSuites = (
+  folder: string = OUTSIDE_SUITES
+): { readonly folder: string; readonly name: string }[] =>
+  existsSync(folder)
+    ? readdirSync(folder, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .sort()
+        .map((name) => ({ folder: join(folder, name), name }))
+    : [];
+
 /** The variable that names the held-out corpus's folder. */
 export const HELD_OUT_VARIABLE = "LION_HELD_OUT";
 

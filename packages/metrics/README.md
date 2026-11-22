@@ -365,13 +365,31 @@ Gaps: 6 tasks Lion cannot express yet
 
 A gap is a task Lion cannot express yet. It stays in the corpus and counts as not passed, so closing it raises the score, and `corpus/gaps.json` says what Lion lacks.
 
+The outside suites in [`suites/`](suites/) follow, each folder a suite with the corpus's layout and tasks drawn from a benchmark of another field: OpenRuleBench's rule-engine tasks and SV-COMP's loop tasks so far (see [the corpus README](corpus/README.md#the-outside-suites)). Each is graded by its reference programs, and on 2026-11-22 they printed:
+
+```
+Capability: openrulebench tasks, graded by its solutions
+  computation     0 of   0 passed
+  logic           4 of   4 passed
+  proofs          0 of   0 passed
+  all             4 of   4 passed
+
+Capability: sv-comp tasks, graded by its solutions
+  computation     0 of   0 passed
+  logic           0 of   0 passed
+  proofs          2 of   3 passed
+  all             2 of   3 passed
+```
+
+`--agents` works the public and held-out tasks only, so an agents' run costs what it did.
+
 - `--solutions <folder>` grades the programs in a folder, `<id>.json` each, in place of the reference programs, as an agent's attempts would be graded. A task with no program there is not passed, and a file that is not JSON is a program that fails.
 - `LION_HELD_OUT=<folder>` adds the held-out corpus: a folder with the corpus's layout outside the repository, where no agent that is scored can read it. Its tasks are graded by its own `solutions/`, or by `--solutions`. A folder inside the repository is refused.
 - `--json` prints each pillar's score, the gaps, and every task's verdict.
 - `--agents` has a headless `claude -p` session write the program for each task that is no gap, in a folder of its own outside the repository, with the task's statement, the core README as `LION.md`, `./lion`, and `./try`, which runs `solution.json` as the grader does and logs each try where the agent does not work. It stops starting tasks before what it spent could pass `--budget` (25 US dollars unless given; `--task-budget` is a session's most, 0.5), and prints what it cost, how many tasks' first tries ran, and how many failed tries each cause explains, by the rules in [`src/agent-errors.json`](src/agent-errors.json). Transcripts, programs, and tries stay in `out/capability/agents/<time>/`, and a held-out task's in its folder's `runs/`. `--model` names the model, `--jobs` how many work at once, and `--tasks a,b` works only those, as a suite named for how many it chose.
 - `--graded <run folder>` grades a finished agents' run again from its folder, with the cause rules as they are now, at no cost.
 
-The properties in `src/tests/capability.test.ts` make the reference programs a ratchet: each must pass its check, so a change to Lion that breaks one fails the tests. They also check that no task's check passes a generated value other than what its reference program gives, the grader against a plain model of passing, and the loader against the folders it was given.
+The properties in `src/tests/capability.test.ts` make the reference programs of the public tasks and of every outside suite a ratchet: each must pass its check, so a change to Lion that breaks one fails the tests. They also check that no task's check passes a generated value other than what its reference program gives, the grader against a plain model of passing, and the loader against the folders it was given.
 
 ## Skills: `bun run skill-eval`
 

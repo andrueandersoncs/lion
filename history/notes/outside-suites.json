@@ -1,0 +1,77 @@
+{
+  "claims": [
+    {
+      "quote": "Each folder of [`../suites/`](../suites/) holds a suite with this layout, its tasks drawn from a benchmark of another field, so that Lion is measured by what others measure their tools with and not only by tasks written for it.",
+      "says": {
+        "feature": "outside-suites",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": ["improvement-judged-by-capability"]
+    },
+    {
+      "quote": "`openrulebench` | transitive closure with no argument bound and with the first bound, Join1, and DBLP",
+      "says": {
+        "feature": "suite-openrulebench",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "`sv-comp` | `loop-acceleration/simple_1`, `diamond_1`, and `count_by_1`",
+      "says": {
+        "feature": "suite-sv-comp",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "`bun run capability` grades each suite by its reference programs and prints its score beside the public tasks'.",
+      "says": {
+        "behavior": "capability-grades-outside-suites",
+        "is": "by-reference-programs",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "`--agents` works the public and held-out tasks only, so an agents' run costs what it did.",
+      "says": {
+        "behavior": "agents-work-outside-suites",
+        "is": "never",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "The properties in `src/tests/capability.test.ts` make the reference programs of the public tasks and of every outside suite a ratchet",
+      "says": {
+        "behavior": "outside-suite-references-gated",
+        "is": "by-a-property",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "logic           4 of   4 passed",
+      "says": {
+        "measured": "capability-openrulebench-passed",
+        "after": 4,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "proofs          2 of   3 passed",
+      "says": {
+        "measured": "capability-sv-comp-passed",
+        "after": 2,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "`sv-comp/gaps.json` says why `diamond_1` has no reference program yet, since Lion's solver cannot reason about the remainder of an unknown.",
+      "says": {
+        "behavior": "solver-remainder-of-unknown",
+        "is": "refused",
+        "area": "logic"
+      }
+    }
+  ]
+}
