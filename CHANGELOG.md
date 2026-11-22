@@ -132,10 +132,10 @@
 - a name, a list, a record, a lambda's argument, and a function's result give back the very value (`host-value-carried` is `same-value`)
 - `=` is true of it only for the same value, as Racket's `equal?` compares values it cannot look into (`host-value-equality` is `identity`)
 - What the logic database holds, a fact or a derived row, and what a question answers, a `query` or a `find`, stay data, as they are for a function: such a value there fails with Lion's error. (`host-value-in-answer` is `error`; `host-value-in-fact` is `error`)
+- `packages/examples/CLAUDE.md` says the tests use Vitest with `@effect/vitest` and run with `bun run test`, as AGENTS.md does, and no longer says to use `bun test` (`test-runner` is `vitest`)
 - With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
 - number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
 - The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
-- `packages/examples/CLAUDE.md` says the tests use Vitest with `@effect/vitest` and run with `bun run test`, as AGENTS.md does, and no longer says to use `bun test` (`test-runner` is `vitest`)
 
 ### Fixed
 
@@ -149,11 +149,11 @@
 - No map was written: make the tests pass, with nothing else running, and map again. (`reach-map-after-failed-tests` is `refused`)
 - The list is what `array/make` gives with the arguments: a goal among them is asked, so `[["lambda", "args", "args"], ["small", 1]]` gives `[true]` when `small` holds 1 (`rest-parameter-goal-argument` is `asked`)
 - A program of strings and integers; -0 is 0, as JSON writes it. (`variants-property-negative-zero` is `normalized`)
-- With exact numbers merged, the corpus task sicp-1.2.1-factorial-exact is no gap: its reference program gives 25! as 15511210043330985984000000, and the public corpus passes 49 of 55 tasks (`corpus-factorial-exact` is `passed`)
 - A test that runs git in a folder of its own, and the lion-reasoning skill's scripts, clear the variables a git hook sets to name its repository, so a test the commit hook runs no longer writes `core.bare`, a test identity, or commits to the repository being committed (`git-in-a-hook-for-another-folder` is `own-folder`, was `hook-repository`)
-- An exact fraction no decimal writes, as 4/3, is a value JSON cannot hold, and its JSON fails. (`grid-pairs-fraction` is `no-data`)
 - A message shows such a value as its kind in angle brackets, as it shows a function as `<function>`: `<Map>`, `<Date>`, `<bigint>`, `<undefined>`, `<NaN>`. (`host-value-in-message` is `kind-in-angle-brackets`, was `json-text-or-crash`)
 - A test that runs git in a folder of its own, and the lion-reasoning skill's scripts, clear the variables a git hook sets to name its repository (`reasoning-skill-git-in-a-hook` is `own-folder`, was `hook-repository`)
+- With exact numbers merged, the corpus task sicp-1.2.1-factorial-exact is no gap: its reference program gives 25! as 15511210043330985984000000, and the public corpus passes 49 of 55 tasks (`corpus-factorial-exact` is `passed`)
+- An exact fraction no decimal writes, as 4/3, is a value JSON cannot hold, and its JSON fails. (`grid-pairs-fraction` is `no-data`)
 
 ### Documentation
 
