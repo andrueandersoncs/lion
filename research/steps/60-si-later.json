@@ -1,0 +1,458 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "research/probes/si-built-after/run.mjs"
+   ],
+   [
+    "quote",
+    "What the self-improvement branch built after every phase, the outside suites, the lints asked of every program, the rules a change puts at risk, and stale evidence, run with what it built before"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261122113000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-si-remainder"
+   ],
+   [
+    "quote",
+    "research/probes/si-remainder-unbounded.json"
+   ],
+   [
+    "quote",
+    "Lion programs that ask the solver about the remainder of an unknown by 2, with the unknown bounded on one side and on both"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261122112000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b1"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "Capability: openrulebench tasks, graded by its solutions"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a suite of rule-engine benchmark programs",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b1"
+   ],
+   [
+    "quote",
+    "bun run capability: OpenRuleBench's transitive closure free and bound, Join1, and DBLP, graded beside the public corpus"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b2"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "Capability: sv-comp tasks, graded by its solutions"
+   ],
+   [
+    "quote",
+    {
+     "lion": "verification tasks with explicit properties to check",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b2"
+   ],
+   [
+    "quote",
+    "bun run capability: SV-COMP's simple_1, diamond_1, and count_by_1, each a function of an assertion"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b3"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "Lints asked of 1124 programs"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a known mistake found again in other programs by a query over the programs as data",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b3"
+   ],
+   [
+    "quote",
+    "bun run variants: lion check's lints, Lion rules over a program read as data, asked of every program the repository holds"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b4"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "They put 8 rules of the project record at risk, whose probes read what they changed"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the constraints a change puts at risk, found before it is made",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b4"
+   ],
+   [
+    "quote",
+    "bun run affected --against 8176b7c: the rule at_risk over the paths each probe of the project record reads"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b5"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "stale probe sources, research: 23"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a probe's evidence listed as out of date when a file it ran on changes",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b5"
+   ],
+   [
+    "quote",
+    "bun run stale: the probe sources whose commit is older than a change to what they ran on, and the rule stale_answer"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b6"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "solver disagreements, oracle: 0"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a solver's answers checked against plain code",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b6"
+   ],
+   [
+    "quote",
+    "bun run oracle, run again with what was built since"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b7"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "Median over 30 commits: 71% of the tests' time, 195 of 702 mutations."
+   ],
+   [
+    "quote",
+    {
+     "lion": "tests picked by the functions a change touched",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b7"
+   ],
+   [
+    "quote",
+    "bun run affected --replay 30, with the reach map 26 commits old, so every test file written since is picked for every change"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b8"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "Capability: public by sonnet agents tasks, graded by the programs sonnet agents wrote"
+   ],
+   [
+    "quote",
+    {
+     "lion": "agents' attempts at each task, graded by running checks",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b8"
+   ],
+   [
+    "quote",
+    "bun run capability --graded: the agents' run of 2026-11-21 graded again"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b9"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "failed tries, list-pattern-as-call: 10 in 4 tasks"
+   ],
+   [
+    "quote",
+    {
+     "lion": "failures counted by cause, to choose what to fix",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b9"
+   ],
+   [
+    "quote",
+    "the agents' failed tries, counted by the cause rules of agent-errors.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b10"
+   ],
+   [
+    "quote",
+    "lion-host-si-built-later"
+   ],
+   [
+    "quote",
+    "lines that log a check: 2 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the outcome and time of every check run, kept as data",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b10"
+   ],
+   [
+    "quote",
+    "the lines of the metrics that log each check the commit hook runs to out/telemetry.jsonl"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b11"
+   ],
+   [
+    "quote",
+    "lion-probes-si-remainder"
+   ],
+   [
+    "quote",
+    "The solver cannot reason about number/remainder: it decides sums of numbers times known numbers, comparisons of them, and equality of values."
+   ],
+   [
+    "quote",
+    {
+     "lion": "division and remainder by a literal number decided",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b11"
+   ],
+   [
+    "quote",
+    "program si-remainder-unbounded.json: is there a whole number y of at least 0 whose remainder by 2 is 3"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "si-b12"
+   ],
+   [
+    "quote",
+    "lean-tactic-reference"
+   ],
+   [
+    "quote",
+    "If we encounter x / k or x % k for literal integers k we introduce new auxiliary variables and the relevant inequalities."
+   ],
+   [
+    "quote",
+    {
+     "covers": "division and remainder by a literal number decided",
+     "by": "the omega test without dark and grey shadows",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "si-b12"
+   ],
+   [
+    "quote",
+    "omega: how the tactic treats a quotient or a remainder by a literal integer"
+   ]
+  ]
+ ],
+ "recorded"
+]

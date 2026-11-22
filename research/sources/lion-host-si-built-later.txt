@@ -1,0 +1,229 @@
+Lion's own tools and searches of the repository, run for the self-improvement research run with @lionlang/cli 0.14.0 built at commit 40baad9 (core 0.15.0), 2026-11-22.
+
+$ bun run oracle   (the solver checked against plain code at decimals, a fraction, and past 2^53 (M5))
+Solver against plain code: 720 cases
+  agree       720
+  undecided   0
+solver disagreements, oracle: 0
+
+$ bun run affected --replay 30   (what picking tests by the functions a change touches would have run for the last 30 commits (M3))
+commit   files  tests picked  seconds picked  mutations picked  in its files
+40baad9      3     15 of 123    1593 of 2563        105 of 702             0
+1cd3f21      4     15 of 123    1593 of 2563        105 of 702             0
+351b11f      3     15 of 123    1593 of 2563        105 of 702             0
+01341cf      2     15 of 123    1593 of 2563        105 of 702             0
+58af5c5     14     31 of 123    1830 of 2563        195 of 702            14
+966c3d4      3     15 of 123    1593 of 2563        105 of 702             0
+dc831a7      2     15 of 123    1593 of 2563        105 of 702             0
+d018fa3     23     31 of 123    1830 of 2563        195 of 702            12
+8176b7c     15    123 of 123    2563 of 2563        702 of 702             4
+6a5bc26     12     31 of 123    1830 of 2563        195 of 702            11
+cc218ba     24    123 of 123    2563 of 2563        702 of 702            23
+664934c      2     15 of 123    1593 of 2563        105 of 702             0
+befcf69     17     15 of 123    1593 of 2563        105 of 702             0
+35ad04d      9     15 of 123    1593 of 2563        105 of 702             0
+66748d2     16    123 of 123    2563 of 2563        702 of 702             5
+c78e0ee     43    120 of 123    2563 of 2563        695 of 702           223
+2173fe9     44    119 of 123    2563 of 2563        702 of 702            52
+e4af012    169    123 of 123    2563 of 2563        702 of 702           243
+2bf1bc6      2     15 of 123    1593 of 2563        105 of 702             0
+edbdedd     23    119 of 123    2563 of 2563        702 of 702            14
+c9fe8f4      7     31 of 123    1830 of 2563        195 of 702             0
+d055e3d     11    102 of 123    2559 of 2563        665 of 702            18
+bcfb961     34     15 of 123    1593 of 2563        105 of 702             0
+a8dc971     22     39 of 123    2089 of 2563        266 of 702            18
+c85f03c     18     31 of 123    1830 of 2563        195 of 702             0
+f92ef5e     13     31 of 123    1830 of 2563        195 of 702             3
+09feaeb     21     31 of 123    1830 of 2563        195 of 702             7
+7d623a7     29    123 of 123    2563 of 2563        702 of 702            45
+82957e2     14     42 of 123    2082 of 2563        240 of 702             0
+ad80648     14     15 of 123    1593 of 2563        105 of 702             0
+
+Median over 30 commits: 71% of the tests' time, 195 of 702 mutations.
+The map is of f92ef5e, so an older commit is judged by what its files reach now.
+
+$ bun run capability --graded out/capability/agents/2026-11-21T22-59-43-613Z   (the agents' run of the corpus on 2026-11-21, graded again, with its failed tries counted by cause (M4, M6))
+Capability: public by sonnet agents tasks, graded by the programs sonnet agents wrote
+  computation    24 of  26 passed
+  logic          13 of  15 passed
+  proofs          9 of  14 passed
+  all            46 of  55 passed
+
+models: claude-sonnet-5-5
+cost usd: 10.28
+first tries that ran: 39 of 48
+failed tries, list-pattern-as-call: 10 in 4 tasks
+failed tries, unsafe-goal: 10 in 4 tasks
+failed tries, not-json: 2 in 1 task
+failed tries, unbound-name: 2 in 1 task
+failed tries, argument-type: 1 in 1 task
+failed tries, not-a-call: 1 in 1 task
+failed tries, not-a-function: 1 in 1 task
+failed tries, rule-head-computes: 1 in 1 task
+transcripts: /Users/andrueanderson/Workspace/lion/.claude/worktrees/silly-wing-7052d9/out/capability/agents/2026-11-21T22-59-43-613Z
+
+Gaps: 6 tasks Lion cannot express yet
+  r7rs-6.7-string-reverse-by-characters: Lion's strings count and split UTF-16 code units, as JavaScript does, and Lion has no function on characters: string/split with "" breaks "𝄞" into two halves, so its characters cannot be reversed without telling surrogates apart through a side channel such as object/json-stringify, which would be bending the task.
+  datalog-win-move-well-founded: Lion's rules allow only stratified negation: a rule cannot ask a question about a relation that depends on its own head, so win(x) :- move(x, y), not win(y) is refused, and the well-founded semantics that tells won, lost, and drawn positions apart is not built. Computing it by hand with an alternating fixpoint in plain code would be bending the task.
+  lion-schema-inclusion-across-kinds: schema/includes? fails instead of giving false when the first schema allows values the solver cannot stand for: value/number? in value/integer? fails with "The solver cannot reason about value/integer?", value/string? in value/number? because value/string? says no kind, and a schema/open record in an exact one because the open rest allows any other keys.
+  bounded-sorting-correct: Lion's solver works a lambda out by its body, but not a lambda that calls itself, so it cannot follow a recursive sort such as insertion sort over a list that schema/arrayOf stands for; the goal fails with "?xs stands for infinitely many values".
+  induction-sum-of-odd-numbers: Lion's solver decides linear arithmetic over numbers and whole numbers, and reasons about lists of bounded length. A claim about every n needs induction over an unbounded sum, and n * n multiplies two unknowns, so neither is decided.
+  induction-sorting-every-length: Lion proves claims about lists of bounded length, which schema/arrayOf with a most stands for; a claim about lists of every length needs induction, which the solver does not do.
+
+Failed: 2
+  datalog-magic-sets-ancestors: the check gave false
+  math-subadditive-functions: the check gave false
+
+No program: 1
+  sicp-1.2.1-factorial-exact
+
+$ bun run capability   (the corpus graded by its reference programs, with the outside suites from OpenRuleBench and SV-COMP beside it (M4))
+Capability: public tasks, graded by their reference programs
+  computation    25 of  26 passed
+  logic          14 of  15 passed
+  proofs         10 of  14 passed
+  all            49 of  55 passed
+
+Gaps: 6 tasks Lion cannot express yet
+  r7rs-6.7-string-reverse-by-characters: Lion's strings count and split UTF-16 code units, as JavaScript does, and Lion has no function on characters: string/split with "" breaks "𝄞" into two halves, so its characters cannot be reversed without telling surrogates apart through a side channel such as object/json-stringify, which would be bending the task.
+  datalog-win-move-well-founded: Lion's rules allow only stratified negation: a rule cannot ask a question about a relation that depends on its own head, so win(x) :- move(x, y), not win(y) is refused, and the well-founded semantics that tells won, lost, and drawn positions apart is not built. Computing it by hand with an alternating fixpoint in plain code would be bending the task.
+  lion-schema-inclusion-across-kinds: schema/includes? fails instead of giving false when the first schema allows values the solver cannot stand for: value/number? in value/integer? fails with "The solver cannot reason about value/integer?", value/string? in value/number? because value/string? says no kind, and a schema/open record in an exact one because the open rest allows any other keys.
+  bounded-sorting-correct: Lion's solver works a lambda out by its body, but not a lambda that calls itself, so it cannot follow a recursive sort such as insertion sort over a list that schema/arrayOf stands for; the goal fails with "?xs stands for infinitely many values".
+  induction-sum-of-odd-numbers: Lion's solver decides linear arithmetic over numbers and whole numbers, and reasons about lists of bounded length. A claim about every n needs induction over an unbounded sum, and n * n multiplies two unknowns, so neither is decided.
+  induction-sorting-every-length: Lion proves claims about lists of bounded length, which schema/arrayOf with a most stands for; a claim about lists of every length needs induction, which the solver does not do.
+
+Capability: openrulebench tasks, graded by its solutions
+  computation     0 of   0 passed
+  logic           4 of   4 passed
+  proofs          0 of   0 passed
+  all             4 of   4 passed
+
+Capability: sv-comp tasks, graded by its solutions
+  computation     0 of   0 passed
+  logic           0 of   0 passed
+  proofs          2 of   3 passed
+  all             2 of   3 passed
+
+Gaps: 1 tasks Lion cannot express yet
+  sv-comp-diamond-1: Lion's solver decides sums of numbers times known numbers, and cannot reason about number/remainder of an unknown, so it cannot decide x % 2 == y % 2 for every y: the loop leaves x at 100 when y is even and at 99 when it is odd, and telling them apart takes y's remainder. Listing every y of an unsigned int, or bounding y, would be bending the task.
+
+$ bun run variants   (the lints of lion check asked of every Lion program the repository holds, for the known mistake agents made most (M6))
+Lints asked of 1124 programs
+known mistakes found, programs: 0
+
+$ bun run affected --against 8176b7c   (the rules of the project record put at risk by the changes since the stale-evidence commit, from the paths their probes read (M2))
+47 files changed since 8176b7c. They reach 31 of 123 test files and checks, 1830 of 2563 s, and 195 of 702 mutations.
+They put 8 rules of the project record at risk, whose probes read what they changed: capability-references-pass, grid-exceptions-documented, loop-figures-observed, probes-observe-repository, proof-not-in-git, tests-in-tests-folders, tests-use-vitest-effect, use-bun-not-npm.
+  no test reached CHANGELOG.md, so only the tests that run git reach it
+  no test reached docs/changelog.html, so only the tests that run git reach it
+  no test reached history/notes/outside-suites.json, so only the tests that run git reach it
+  no test reached history/notes/picking-with-an-old-map.json, so only the tests that run git reach it
+  no test reached improvement/notes/49-later-work-scores.json, so only the tests that run git reach it
+  no test reached improvement/notes/50-later-work-baseline.json, so only the tests that run git reach it
+  no test reached improvement/notes/51-picking-belief.json, so only the tests that run git reach it
+  no test reached improvement/notes/52-picking-old-map.json, so only the tests that run git reach it
+  no test reached improvement/seen/later-work-baseline.json, so only the tests that run git reach it
+  no test reached improvement/seen/later-work-baseline.txt, so only the tests that run git reach it
+  no test reached improvement/seen/picking-old-map.json, so only the tests that run git reach it
+  no test reached improvement/seen/picking-old-map.txt, so only the tests that run git reach it
+  no test reached improvement/steps/49-later-work-scores.json, so only the tests that run git reach it
+  no test reached improvement/steps/50-later-work-baseline.json, so only the tests that run git reach it
+  no test reached improvement/steps/51-picking-belief.json, so only the tests that run git reach it
+  no test reached improvement/steps/52-picking-old-map.json, so only the tests that run git reach it
+  no test reached improvement/versions/0041.json, so only the tests that run git reach it
+  no test reached improvement/versions/0042.json, so only the tests that run git reach it
+  no test reached packages/metrics/README.md, so its package's tests run
+  no test reached packages/metrics/affected.ts, so its package's tests run
+  no test reached packages/metrics/capability.ts, so its package's tests run
+  no test reached packages/metrics/corpus/README.md, so its package's tests run
+  no test reached packages/metrics/src/mutations.ts, so its package's tests run
+  no test reached packages/metrics/suites/openrulebench/solutions/openrulebench-dblp.json, so its package's tests run
+  no test reached packages/metrics/suites/openrulebench/solutions/openrulebench-join1.json, so its package's tests run
+  no test reached packages/metrics/suites/openrulebench/solutions/openrulebench-tc-bound.json, so its package's tests run
+  no test reached packages/metrics/suites/openrulebench/solutions/openrulebench-tc-free.json, so its package's tests run
+  no test reached packages/metrics/suites/openrulebench/tasks/openrulebench-dblp.json, so its package's tests run
+  no test reached packages/metrics/suites/openrulebench/tasks/openrulebench-join1.json, so its package's tests run
+  no test reached packages/metrics/suites/openrulebench/tasks/openrulebench-tc-bound.json, so its package's tests run
+  no test reached packages/metrics/suites/openrulebench/tasks/openrulebench-tc-free.json, so its package's tests run
+  no test reached packages/metrics/suites/sv-comp/gaps.json, so its package's tests run
+  no test reached packages/metrics/suites/sv-comp/solutions/sv-comp-count-by-1.json, so its package's tests run
+  no test reached packages/metrics/suites/sv-comp/solutions/sv-comp-simple-1.json, so its package's tests run
+  no test reached packages/metrics/suites/sv-comp/tasks/sv-comp-count-by-1.json, so its package's tests run
+  no test reached packages/metrics/suites/sv-comp/tasks/sv-comp-diamond-1.json, so its package's tests run
+  no test reached packages/metrics/suites/sv-comp/tasks/sv-comp-simple-1.json, so its package's tests run
+  no test reached research/probes/si-built-after/run.mjs, so only the tests that run git reach it
+  no test reached research/probes/si-remainder-bounded.json, so only the tests that run git reach it
+  no test reached research/probes/si-remainder-unbounded.json, so only the tests that run git reach it
+  no test reached research/sources/lion-probes-si-remainder.txt, so only the tests that run git reach it
+  packages/core/src/analysis/tests/lint.test.ts
+  packages/core/src/logic/tests/joins.test.ts
+  packages/core/src/logic/tests/list-patterns.test.ts
+  packages/core/src/logic/tests/wordings.test.ts
+  packages/core/src/numbers/tests/exact.test.ts
+  packages/history/src/tests/git.test.ts
+  packages/history/src/tests/repository.test.ts
+  packages/history: bun run history.ts check
+  packages/metrics/src/tests/affected.test.ts
+  packages/metrics/src/tests/capability.test.ts
+  packages/metrics/src/tests/code.test.ts
+  packages/metrics/src/tests/corpus-agents.test.ts
+  packages/metrics/src/tests/doc-programs.test.ts
+  packages/metrics/src/tests/functions.test.ts
+  packages/metrics/src/tests/grid.test.ts
+  packages/metrics/src/tests/loop.test.ts
+  packages/metrics/src/tests/message-rules.test.ts
+  packages/metrics/src/tests/mutation.test.ts
+  packages/metrics/src/tests/oracle.test.ts
+  packages/metrics/src/tests/pairs.test.ts
+  packages/metrics/src/tests/reasoning-eval.test.ts
+  packages/metrics/src/tests/reasoning-skill.test.ts
+  packages/metrics/src/tests/report.test.ts
+  packages/metrics/src/tests/research-skill.test.ts
+  packages/metrics/src/tests/skill-eval.test.ts
+  packages/metrics/src/tests/stale.test.ts
+  packages/metrics/src/tests/telemetry.test.ts
+  packages/metrics/src/tests/variants.test.ts
+  packages/metrics/src/tests/vocabulary.test.ts
+  packages/metrics/src/tests/workloads.test.ts
+  packages/site-runtime: bun run build-docs.ts --check
+
+$ bun run stale   (the research model's probe sources a later change to what they ran on made stale, and the answers resting on them (M9))
+stale probe sources, research: 23
+answers resting on stale probes, research: 213
+  lion-bench-hubs, run at 54f7b11: 8 answers rest on it
+  lion-host-cl-added, run at c1279a1: 3 answers rest on it
+  lion-host-si-built-after, run at 35ad04d: 5 answers rest on it
+  lion-host-si-built, run at 7d623a7: 35 answers rest on it
+  lion-probes-built, run at a9e953c: 7 answers rest on it
+  lion-probes-ci-fixed, run at 5b36704: 12 answers rest on it
+  lion-probes-ci, run at a2324d9: 12 answers rest on it
+  lion-probes-cl-added, run at c1279a1: 7 answers rest on it
+  lion-probes-cl-built, run at 1e16052: 14 answers rest on it
+  lion-probes-cl, run at 7e4b4ad: 26 answers rest on it
+  lion-probes-en-built, run at 643e1d1: 10 answers rest on it
+  lion-probes-en, run at 4e8e625: 9 answers rest on it
+  lion-probes-eventually, run at 3eb43c4: 3 answers rest on it
+  lion-probes-fv, run at 6e9cb59: 14 answers rest on it
+  lion-probes-li-built, run at 95d18f0: 1 answers rest on it
+  lion-probes-listing, run at 54f7b11: 4 answers rest on it
+  lion-probes-now, run at f07d583: 4 answers rest on it
+  lion-probes-proofs, run at bd51c34: 6 answers rest on it
+  lion-probes-si-exact, run at 2bf1bc6: 1 answers rest on it
+  lion-probes-si, run at 7d623a7: 1 answers rest on it
+  lion-probes-solver, run at 12c6665: 5 answers rest on it
+  lion-probes-tz, run at f07d583: 2 answers rest on it
+  lion-probes, run at f49b97a: 24 answers rest on it
+
+$ grep -rcE 'logCheck\(' packages/metrics/affected.ts packages/metrics/loop.ts   (a line of the metrics that writes down a check the commit hook ran, its time, and its outcome (M8); built code, dependencies, and tests left out)
+lines that log a check: 2 lines
+  packages/metrics/affected.ts: 1
+  packages/metrics/loop.ts: 1
+
+$ grep -rcE 'at_risk|atRisk' history/research/steps packages/metrics/src improvement/notes   (a rule that names the constraints a change puts at risk (M2); built code, dependencies, and tests left out)
+lines that name a constraint at risk: 6 lines
+  history/research/steps/03-record.json: 1
+  packages/metrics/src/affected.json: 2
+  packages/metrics/src/affected.ts: 3
+
+$ grep -rcE '\["relation",\s*"(stale|out_of_date)"' research/steps   (a relation of the research model that lists a probe's evidence as out of date (M9); built code, dependencies, and tests left out)
+lines that declare a relation of stale evidence: 0 lines

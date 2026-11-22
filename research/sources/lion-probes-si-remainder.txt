@@ -1,0 +1,38 @@
+Lion programs run for research with @lionlang/cli 0.14.0 built at commit 40baad9 (core 0.15.0), 2026-11-22.
+
+== program si-remainder-unbounded.json
+[
+  "query",
+  [
+    "exists",
+    ["?y"],
+    [
+      "and",
+      ["schema/fits?", "?y", "value/integer?"],
+      ["number/greaterThanOrEqualTo", "?y", 0],
+      ["=", ["number/remainder", "?y", 2], 3]
+    ]
+  ]
+]
+== gives
+
+ERROR
+  ?y stands for infinitely many values that meet ["and",["schema/fits?","?y","value/integer?"],["number/greaterThanOrEqualTo","?y",0],["=",["number/remainder","?y",2],3]], and ["=",["number/remainder","?y",2],3] waits for its value. The solver cannot reason about number/remainder: it decides sums of numbers times known numbers, comparisons of them, and equality of values. Bound ?y on both sides, or bind it with a relation goal.
+
+== program si-remainder-bounded.json
+[
+  "query",
+  [
+    "exists",
+    ["?y"],
+    [
+      "and",
+      ["schema/fits?", "?y", "value/integer?"],
+      ["number/greaterThanOrEqualTo", "?y", 0],
+      ["number/lessThanOrEqualTo", "?y", 9],
+      ["=", ["number/remainder", "?y", 2], 3]
+    ]
+  ]
+]
+== gives
+[]

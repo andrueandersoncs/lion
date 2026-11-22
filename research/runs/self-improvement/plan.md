@@ -286,6 +286,7 @@ Each mechanism is a Lion program or a Lion model. The host only observes, the wa
   - `at_risk(c, direction)`: a direction's predicted diff touches what `c` protects.
   - `instrument_touched(experiment)`.
 - **Where it lives.** Its gates are probes in `history/research/probes.json`, so `history check` enforces them.
+- **Status: built** (6a5bc26). `bun run affected` names the rules in force a change puts at risk: the rule `at_risk` in `packages/metrics/src/affected.json` over the paths each probe reads (`src/at-risk.ts`). The changes since 8176b7c put 8 rules at risk. `instrument_touched` is the requirement `instrument lines removed, since the base`.
 
 ### M3. The impact model: Lion picks the checks
 
@@ -372,6 +373,7 @@ Each mechanism is a Lion program or a Lion model. The host only observes, the wa
   - commits no claim reads;
   - findings listed for a long time.
 - **What the loop does with them.** They are directions: on a branch, an agent rebuilds the CLI, runs the probes again under a new source id, and reads the commits into notes.
+- **Status: built for stale probes** (8176b7c). `bun run stale` lists the probe sources a later change to what they ran on made stale, and the rule `stale_answer` of research step `58-si-stale` the answers resting on them: 23 sources and 213 answers on 2026-11-22, the score `answers resting on stale probes, research`. Commits no claim reads were counted already (`history check`). A reach map older than the change is the same kind of staleness: picking now stays sound with one (58af5c5).
 
 ## 6. The rate: making the loop itself faster
 
@@ -410,11 +412,20 @@ What the loop would take up first, from today's evidence:
 
 All five are done: 1 and 3 in phase 0; 2 by the exact-numbers work, merged in e4af012; 4 by the experiment `joins` (2173fe9: a goal reads its rows through a later goal with fewer, and the hub triangles at 100,000 edges went from stopped past 60 s to 188 ms); and 5 by the experiment `messages-by-rule` (c78e0ee: one wording per rule, 251 messages to 224, and messages per passed task 5.2 to 4.6).
 
+**The later work is built too**, each judged by the record:
+
+1. **M2, the rules a change puts at risk** (6a5bc26), as above.
+2. **M9, stale evidence** (8176b7c), as above.
+3. **The outside suites** (d018fa3): `packages/metrics/suites/` holds OpenRuleBench's transitive closure, free and bound, Join1, and DBLP, all 4 passed, and SV-COMP's loop tasks `simple_1`, `diamond_1`, and `count_by_1`, 2 of 3 passed. `diamond_1` is a gap: proving x % 2 == y % 2 for every y takes the remainder of an unknown, which the solver cannot reason about. The research model's new idea `remainder-by-literal` (step `59-si-remainder`) would close it, as Lean's omega does.
+4. **The lint that finds a known mistake again** (cc218ba): `lion check` runs lints written as Lion rules over the program read as data, and `bun run variants` asks them of all 1124 programs the repository holds. The mistake agents made most, a list written as a bare array, is found in none, the score `known mistakes found, programs`.
+
+The record's beliefs `later-work-1` and `later-work-2` hold. Observing them found one more problem: with the reach map 26 commits old, picking was unsound for 46 listed mutations, since a test file the map lacks was never picked and a file newer than the map counted as reached. Both are fixed (58af5c5), with properties: picking is sound for all 702 with the same map. The cost shows in the tests' time picked over the last 30 commits, 41% to 71%, until the map is made again.
+
 ## 8. What this plan leaves open
 
 - **Where the improvement record lives.** I recommend a committed lion-reasoning folder, linked to `research/` and `history/` and not merged into either. Merging would undo the line the `research-compounds` and `one-model-of-development` decisions drew. I would ask before folding it into `history/`.
 - **How the pillars are weighted in R.** Equal by default, until you say otherwise.
-- **Which logic and verification suites.** A research run picks them in phase 1B.
+- **Which logic and verification suites.** Picked: OpenRuleBench and SV-COMP's loop tasks, as the research run weighed them (`openrulebench`, `sv-comp benchmarks`). Textbook Dafny and Why3 problems are not added yet.
 - **The solver number gap.** Closed: every number is exact (merged in e4af012), and `bun run oracle` checks the solver against plain code.
 - **The 351 stated assertions and the 173 tests with fixed inputs.** The loop works them down as directions. They stay as they are until a change touches them.
 - **The release-by-release table** applies today's measures to old code. It is accurate for code and vocabulary, but not for grid exceptions.

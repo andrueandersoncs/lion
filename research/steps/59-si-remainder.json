@@ -1,0 +1,9 @@
+["begin",
+  ["fact",
+    ["candidate", "remainder-by-literal", ["quote", "Let the solver decide the remainder and the quotient of an unknown by a literal whole number, as Lean's omega does: x % k becomes x - k * q for a new unknown integer q, with 0 <= x - k * q < |k|, so what is left is linear and the solver decides it as it decides sums"]],
+    ["weighed_in", "remainder-by-literal", "self-improvement"],
+    ["uses", "remainder-by-literal", ["quote", "the omega test without dark and grey shadows"]],
+    ["offers", "remainder-by-literal", ["quote", "division and remainder by a literal number decided"]]
+  ],
+  "recorded"
+]
