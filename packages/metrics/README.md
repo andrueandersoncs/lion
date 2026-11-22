@@ -221,6 +221,27 @@ Median over 30 commits: 98% of the tests' time, 555 of 599 mutations.
 
 The seconds are each test file's own time, added up, from the traced run. "in its files" is what `bun run mutate --in` would choose. Picking chooses more, because it also brings back the mutations whose tests a change reaches.
 
+### By function
+
+The map also holds the named functions each test file ran, as the tests ran and as the imports loaded. [`src/functions.ts`](src/functions.ts) parses a changed script with TypeScript and gives each changed line to the innermost named function around it, as V8 names it: by its own name, or the variable, property, or method it is written as. A test that ran that function reaches the change, and so does a test that loaded the function that built it, since a function made by another has no name of its own. A line of an import, a type, or a comment touches nothing that runs, and a changed constant of the file's own touches the named functions that mention it, through any constants between. A line in an exported constant or any other top-level statement, a file that is no script, and a function no test ran still read the whole file. The rules for it in `src/affected.json` only add to the file-level ones: a file read by function is `touched` rather than `changed`, and keeps every other reason a changed file is picked.
+
+`--map` refuses to write a map when a package's vitest run failed, since a failing test file may have written no trace, and a test the map lacks is never picked. Make the map with nothing else running.
+
+At c85f03c, with a map of f92ef5e, the improvement record's experiment `function-reach` gave:
+
+```
+c85f03c     18     22 of 114     516 of 1249        140 of 651             0
+50a42e4    170    114 of 114    1249 of 1249        651 of 651           107
+d50cf12     22    109 of 114    1248 of 1249        638 of 651            56
+ad80648     14      6 of 114     279 of 1249         59 of 651             0
+
+Median over 30 commits: 60% of the tests' time, 173 of 651 mutations.
+630 of 651 mutations: every test they name is picked for their change.
+Picking is sound for every listed mutation: the tests it picks catch each one.
+```
+
+Read a file at a time, the median was 98%. A change to the metrics package now runs 22 of its 114 test files and checks, and a change to core's evaluator, such as d50cf12, still runs nearly all of them.
+
 ## The improvement loop: `bun run loop`
 
 ```bash

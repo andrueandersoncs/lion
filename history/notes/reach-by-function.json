@@ -1,0 +1,71 @@
+{
+  "claims": [
+    {
+      "quote": "When the map holds the named functions each test ran, a script whose changed lines are all in named functions, or in imports, types, comments, and constants of its own, picks only the tests that ran one of those functions.",
+      "says": {
+        "feature": "affected-by-function",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "A changed line belongs to the innermost named function around it, which a test reaches whenever it reaches the anonymous ones inside",
+      "says": {
+        "behavior": "affected-changed-line",
+        "is": "innermost-named-function",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "a changed constant of the file's own touches the named functions that mention it",
+      "says": {
+        "behavior": "affected-private-constant",
+        "is": "functions-that-mention-it",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "A function no test ran is read as its whole file.",
+      "says": {
+        "behavior": "affected-unran-function",
+        "is": "whole-file",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "No map was written: make the tests pass, with nothing else running, and map again.",
+      "says": {
+        "behavior": "reach-map-after-failed-tests",
+        "is": "refused",
+        "area": "metrics",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "The named functions that ran as the imports loaded, such as those that build the library's functions. A function they built runs in the tests with no name of its own, so a change inside it reaches the tests through the function that built it.",
+      "says": {
+        "behavior": "affected-builder-at-load",
+        "is": "reached",
+        "area": "metrics",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "A name as V8 reports it, read as the parse names the function: without the suffix a bundler adds to keep names apart, the word an accessor or a bound function starts with, or the object a property is written in, as `module.add` is the property `add`.",
+      "says": {
+        "behavior": "affected-v8-property-name",
+        "is": "last-part",
+        "area": "metrics",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "A filter that fails whatever ?x is, such as the tail of an empty list, is refused when the invariant is declared, before the facts or after them.",
+      "says": {
+        "behavior": "invariant-failing-filter-order",
+        "is": "refused-either-way",
+        "area": "logic"
+      }
+    }
+  ]
+}

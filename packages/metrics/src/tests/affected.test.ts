@@ -9,7 +9,7 @@ import {
   type ReachMap,
 } from "../affected.ts";
 import { load } from "../lion.ts";
-import { repositoryPath, sourceOf, testScript } from "../reach.ts";
+import { refusedMap, repositoryPath, sourceOf, testScript } from "../reach.ts";
 import { CORE, REPOSITORY } from "../sources.ts";
 import { between, element, word } from "./generators.ts";
 
@@ -107,6 +107,87 @@ const mutations: Arbitrary.Arbitrary<Checked[]> = Arbitrary.map(
     }))
 );
 
+const NAMES = ["f", "g", "h"];
+const SCRIPTS = FILES.filter((f) => f.endsWith(".ts"));
+
+/** A test that ran some named functions of the scripts it reached. */
+const withFunctions = (
+  r: Arbitrary.Arbitrary<Reached>
+): Arbitrary.Arbitrary<Reached> =>
+  Arbitrary.map(
+    Arbitrary.all({
+      r,
+      ran: someOf(SCRIPTS.flatMap((f) => NAMES.map((n) => [f, n] as const))),
+    }),
+    ({ r: test, ran }) => ({
+      ...test,
+      functions: ran.filter(([f]) => test.reaches.includes(f)),
+    })
+  );
+
+const functionMap: Arbitrary.Arbitrary<ReachMap> = Arbitrary.map(
+  Arbitrary.all({
+    a: withFunctions(reached(TESTS[0] as string)),
+    b: withFunctions(reached(TESTS[1] as string)),
+    c: withFunctions(reached(TESTS[2] as string)),
+    kept: oneOrMore([0, 1, 2]),
+  }),
+  ({ a, b, c, kept }) => ({
+    commit: "c0",
+    tests: kept.map((at) => [a, b, c][at] as Reached),
+  })
+);
+
+/** Changes read by function: a script is changed whole, or in some of its named functions. */
+const functionChanges: Arbitrary.Arbitrary<Change[]> = Arbitrary.map(
+  Arbitrary.all({
+    lists: changes,
+    names: Arbitrary.array(someOf(NAMES), { maxLength: 12, minLength: 12 }),
+  }),
+  ({ lists, names }) =>
+    lists.map((change, at) => {
+      const read = change.files.map((f, k) => ({
+        f,
+        names: f.endsWith(".ts") ? (names[(at * 3 + k) % 12] ?? []) : [],
+        whole:
+          !f.endsWith(".ts") || (names[(at * 3 + k) % 12] ?? []).length === 3,
+      }));
+      return {
+        ...change,
+        functions: read.flatMap((x) =>
+          x.whole ? [] : x.names.map((n) => [x.f, n] as const)
+        ),
+        whole: read.filter((x) => x.whole).map((x) => x.f),
+      };
+    })
+);
+
+/** Mutations whose text is in some named functions of their file, or in none. */
+const functionMutations: Arbitrary.Arbitrary<Checked[]> = Arbitrary.map(
+  Arbitrary.all({
+    list: mutations,
+    names: Arbitrary.array(someOf(NAMES), { maxLength: 3, minLength: 3 }),
+  }),
+  ({ list, names }) =>
+    list.map((x, at) => ({
+      ...x,
+      functions:
+        x.file.endsWith(".ts") && (names[at] ?? []).length > 0
+          ? (names[at] ?? [])
+          : ("whole" as const),
+    }))
+);
+
+/** A mutation as a change read by function, when its functions are known. */
+const functionsOfMutation = (x: Checked) => {
+  if (x.functions === undefined) {
+    return {};
+  }
+  return x.functions === "whole"
+    ? { functions: [], whole: [x.file] }
+    : { functions: x.functions.map((n) => [x.file, n] as const), whole: [] };
+};
+
 /** What the rules should pick, written without them. */
 const model = (
   m: ReachMap,
@@ -120,23 +201,48 @@ const model = (
   const reachedBy = (t: Reached, f: string) =>
     t.reaches.includes(f) || inPackage(f).some((p) => t.packages.includes(p));
   const unmapped = (f: string) => !m.tests.some((t) => reachedBy(t, f));
-  const picks = (t: Reached, f: string) =>
-    reachedBy(t, f) ||
+  // A change read by function: the names it touches in each file it does
+  // not change whole. A function no test ran is read as its whole file.
+  const touches = (change: Change, t: Reached, f: string) => {
+    if (change.functions === undefined || change.whole === undefined) {
+      return t.reaches.includes(f);
+    }
+    if (change.whole.includes(f)) {
+      return t.reaches.includes(f);
+    }
+    return change.functions
+      .filter(([file]) => file === f)
+      .some(
+        ([, n]) =>
+          (t.functions ?? []).some(([g, k]) => g === f && k === n) ||
+          (!m.tests.some((u) =>
+            (u.functions ?? []).some(([g, k]) => g === f && k === n)
+          ) &&
+            t.reaches.includes(f))
+      );
+  };
+  const picksIn = (change: Change, t: Reached, f: string) =>
+    touches(change, t, f) ||
+    inPackage(f).some((p) => t.packages.includes(p)) ||
     t.repository ||
     f === t.test ||
     (unmapped(f) &&
       (inPackage(f).includes(t.package) ||
         !(f.includes("/") || f.endsWith(".md"))));
-  const every = [
+  const every: Change[] = [
     ...asked,
-    ...asMutations.map((x) => ({ files: [x.file], id: x.name })),
+    ...asMutations.map((x) => ({
+      files: [x.file],
+      id: x.name,
+      ...functionsOfMutation(x),
+    })),
   ];
   const tests: Record<string, string[]> = {};
   const mutationsOf: Record<string, string[]> = {};
   const unmappedOf: Record<string, string[]> = {};
   for (const change of every) {
     const picked = m.tests
-      .filter((t) => change.files.some((f) => picks(t, f)))
+      .filter((t) => change.files.some((f) => picksIn(change, t, f)))
       .map((t) => t.test);
     const set = (list: string[]) => [...new Set(list)].sort();
     if (picked.length > 0) {
@@ -189,6 +295,35 @@ describe("the checks a change can reach", () => {
       }),
     { arbitrary: { runs: 200 } }
   );
+
+  it.effect.prop(
+    "read by function, are what the plain model picks: a test that ran a changed function, or reached a file whose changed function no test ran",
+    {
+      asked: functionChanges,
+      kept: someOf([0, 1, 2]),
+      m: functionMap,
+      ms: functionMutations,
+    },
+    ({ asked, kept, m, ms }) =>
+      Effect.gen(function* () {
+        const asMutations = ms.filter((_, at) => kept.includes(at));
+        const got = yield* pick(
+          yield* Effect.promise(() => lion),
+          m,
+          asked,
+          ms,
+          asMutations
+        );
+        const expected = model(m, asked, ms, asMutations);
+        expect(got.tests).toEqual(expected.tests);
+        expect(got.mutations).toEqual(expected.mutations);
+        expect(got.unmapped).toEqual(expected.unmapped);
+        expect([...got.unsound].map((r) => r.join(" ")).sort()).toEqual(
+          expected.unsound.map((r) => r.join(" ")).sort()
+        );
+      }),
+    { arbitrary: { runs: 200 } }
+  );
 });
 
 /** A path of words, such as `src/logic/weights`. */
@@ -198,6 +333,23 @@ const path = Arbitrary.map(
 );
 
 describe("the reach map", () => {
+  it.prop(
+    "is refused when a package's tests failed, naming every such package, and written when all passed",
+    {
+      runs: Arbitrary.array(Arbitrary.all({ folder: path, passed: boolean }), {
+        maxLength: 5,
+      }),
+    },
+    ({ runs }) => {
+      const refused = refusedMap(runs);
+      const failed = runs.filter((run) => !run.passed);
+      expect(refused === undefined).toBe(failed.length === 0);
+      for (const run of failed) {
+        expect(refused).toContain(run.folder);
+      }
+    }
+  );
+
   it.prop(
     "keeps a path inside the repository, from a path or a file URL, and leaves out the rest",
     {

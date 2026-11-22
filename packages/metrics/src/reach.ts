@@ -17,6 +17,7 @@ import {
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Reached, ReachMap } from "./affected.ts";
+import { plainName } from "./functions.ts";
 import { REPOSITORY } from "./sources.ts";
 
 /** Where the map and the traces it is built from are kept. */
@@ -27,7 +28,11 @@ const TRACER = join(import.meta.dirname, "reach-trace.ts");
 
 /** What the tracer wrote for one test file. */
 export interface Traced {
+  /** The named functions that ran as the imports loaded, by script. */
+  readonly atLoad?: Readonly<Record<string, readonly string[]>>;
   readonly commands: readonly string[];
+  /** The named functions the tests ran, by the script they are in. */
+  readonly ran?: Readonly<Record<string, readonly string[]>>;
   readonly read: readonly string[];
   readonly scripts: readonly string[];
   readonly test: string;
@@ -98,9 +103,25 @@ export const reachedOf = (
       packages.add(source.package);
     }
   }
+  const functions = new Set<string>();
+  for (const [location, names] of [
+    ...Object.entries(traced.ran ?? {}),
+    ...Object.entries(traced.atLoad ?? {}),
+  ]) {
+    const path = repositoryPath(root, location);
+    const source = path === undefined ? undefined : sourceOf(path, exists);
+    if (source !== undefined && "file" in source) {
+      for (const name of names) {
+        functions.add(JSON.stringify([source.file, plainName(name)]));
+      }
+    }
+  }
   const test = repositoryPath(root, traced.test) ?? traced.test;
   files.add(test);
   return {
+    functions: [...functions]
+      .sort()
+      .map((pair) => JSON.parse(pair) as [string, string]),
     package: folder,
     packages: [...packages].sort(),
     reaches: [...files].sort(),
@@ -148,7 +169,7 @@ const traceVitest = (
   root: string,
   folder: string,
   log: (line: string) => void
-): Reached[] => {
+): { readonly passed: boolean; readonly reached: Reached[] } => {
   const name = folder.split("/")[1] as string;
   const traces = join(REACH, name);
   rmSync(traces, { force: true, recursive: true });
@@ -184,7 +205,7 @@ const traceVitest = (
     }
   }
   const exists = (path: string) => existsSync(join(root, path));
-  return readdirSync(traces)
+  const reached = readdirSync(traces)
     .filter((file) => file.endsWith(".json"))
     .map((file) => {
       const traced = JSON.parse(
@@ -198,6 +219,21 @@ const traceVitest = (
         exists
       );
     });
+  return { passed: ran.status === 0, reached };
+};
+
+/**
+ * Why a map would be wrong to write: a package whose vitest run failed,
+ * since a test file that failed may have written no trace, and a test the
+ * map lacks is never picked. Nothing when every run passed.
+ */
+export const refusedMap = (
+  runs: readonly { readonly folder: string; readonly passed: boolean }[]
+): string | undefined => {
+  const failed = runs.filter((run) => !run.passed).map((run) => run.folder);
+  return failed.length === 0
+    ? undefined
+    : `The tests of ${failed.join(", ")} failed, so the map would lack what their failing files reached. No map was written: make the tests pass, with nothing else running, and map again.`;
 };
 
 /** Runs one command of a test script, and gives its record: a check every change reaches. */
@@ -226,13 +262,17 @@ const timeCommand = (
   };
 };
 
-/** Runs every package's tests once, traced, and writes the map. */
+/**
+ * Runs every package's tests once, traced, and writes the map, or says why
+ * it wrote none.
+ */
 export const mapReach = (
   root: string = REPOSITORY,
   log: (line: string) => void = console.log
-): ReachMap => {
+): ReachMap | { readonly refused: string } => {
   mkdirSync(REACH, { recursive: true });
   const tests: Reached[] = [];
+  const runs: { folder: string; passed: boolean }[] = [];
   for (const name of readdirSync(join(root, "packages")).sort()) {
     const folder = `packages/${name}`;
     const manifest = join(root, folder, "package.json");
@@ -249,11 +289,17 @@ export const mapReach = (
     }
     const { commands, vitest } = testScript(script);
     if (vitest) {
-      tests.push(...traceVitest(root, folder, log));
+      const traced = traceVitest(root, folder, log);
+      runs.push({ folder, passed: traced.passed });
+      tests.push(...traced.reached);
     }
     for (const command of commands) {
       tests.push(timeCommand(root, folder, command, log));
     }
+  }
+  const refused = refusedMap(runs);
+  if (refused !== undefined) {
+    return { refused };
   }
   const commit = spawnSync("git", ["rev-parse", "HEAD"], {
     cwd: root,

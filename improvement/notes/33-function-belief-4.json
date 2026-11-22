@@ -1,0 +1,53 @@
+{
+  "beliefs": [
+    {
+      "id": "function-4",
+      "tries": "function-reach",
+      "statement": "With a failed test run run again before it counts, the same per-function picking as function-3 is sound, picks 61% of the tests' time over the last 30 commits, as the third run showed, and every requirement holds",
+      "predicts": [
+        {
+          "question": {
+            "tests' time picked": "last 30 commits"
+          },
+          "value": 61
+        },
+        {
+          "question": {
+            "picking unsound": "listed mutations"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}

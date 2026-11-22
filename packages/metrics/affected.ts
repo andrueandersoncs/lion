@@ -14,8 +14,12 @@
 //
 // The map is of the commit it was made at. A file no test reached, such as a
 // new one, picks every test of its package, and a file at the root that is
-// not Markdown, such as bun.lock, picks every test.
+// not Markdown, such as bun.lock, picks every test. When the map holds the
+// named functions each test ran, a script whose changed lines are all in
+// named functions, or in imports, types, comments, and constants of its own,
+// picks only the tests that ran one of those functions.
 import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Effect } from "effect";
 import {
@@ -29,14 +33,22 @@ import {
   type ReachMap,
 } from "./src/affected.ts";
 import { copyWorkingTree, removeCheckout } from "./src/checkout.ts";
+import { hunksOf, touchedBy } from "./src/functions.ts";
 import { load } from "./src/lion.ts";
 import { checkAll, DEFAULT_TESTS, type Mutation } from "./src/mutation.ts";
 import { MUTATIONS } from "./src/mutations.ts";
 import { mapReach, readMap } from "./src/reach.ts";
 import { readArguments } from "./src/report.ts";
 import { CORE, REPOSITORY } from "./src/sources.ts";
+import { logCheck } from "./src/telemetry.ts";
 
 const args = readArguments(process.argv.slice(2), ["against", "replay"]);
+
+/**
+ * Whether changes are read by function: when the map holds the named
+ * functions each test ran, which a map made before them does not.
+ */
+let byFunctions = false;
 
 const git = (...words: string[]) =>
   spawnSync("git", words, { cwd: REPOSITORY, encoding: "utf8" })
@@ -50,6 +62,77 @@ const changedSince = (ref: string) => [
     ...git("ls-files", "--others", "--exclude-standard"),
   ]),
 ];
+
+/** A file's text at a commit, or none where it is not there. */
+const shown = (ref: string, path: string): string | undefined => {
+  const ran = spawnSync("git", ["show", `${ref}:${path}`], {
+    cwd: REPOSITORY,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  return ran.status === 0 ? ran.stdout : undefined;
+};
+
+/** A file's text in the working tree, or none where it is gone. */
+const onDisk = (path: string): string | undefined => {
+  const full = join(REPOSITORY, path);
+  return existsSync(full) ? readFileSync(full, "utf8") : undefined;
+};
+
+/**
+ * A change read by function: the named functions its hunks touch in each
+ * file, and the files it changes whole. `after` is the commit it ends at,
+ * or the working tree when there is none.
+ */
+const byFunction = (
+  id: string,
+  files: readonly string[],
+  before: string,
+  after?: string
+): Change => {
+  const functions: [string, string][] = [];
+  const whole: string[] = [];
+  for (const file of files) {
+    const diff = spawnSync(
+      "git",
+      [
+        "diff",
+        "-U0",
+        before,
+        ...(after === undefined ? [] : [after]),
+        "--",
+        file,
+      ],
+      { cwd: REPOSITORY, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
+    ).stdout;
+    const touched = touchedBy(
+      file,
+      shown(before, file),
+      after === undefined ? onDisk(file) : shown(after, file),
+      hunksOf(diff)
+    );
+    if (touched === "whole") {
+      whole.push(file);
+    } else {
+      functions.push(...touched.map((name): [string, string] => [file, name]));
+    }
+  }
+  return { files, functions, id, whole };
+};
+
+/** The named functions a listed mutation's text is in, at HEAD. */
+const mutationFunctions = (mutation: Mutation): readonly string[] | "whole" => {
+  const text = shown("HEAD", mutation.file);
+  const at = text?.indexOf(mutation.find) ?? -1;
+  if (text === undefined || at === -1) {
+    return "whole";
+  }
+  const start = text.slice(0, at).split("\n").length;
+  const count = mutation.find.split("\n").length;
+  return touchedBy(mutation.file, text, text, [
+    { after: [start, count], before: [start, count] },
+  ]);
+};
 
 const seconds = (tests: readonly Reached[]) =>
   tests.reduce((sum, test) => sum + test.seconds, 0);
@@ -131,10 +214,12 @@ const replay = async (
   count: string
 ) => {
   const commits = git("log", "--first-parent", "--format=%H", "-n", count);
-  const changes = commits.map((commit) => ({
-    files: git("diff", "--name-only", `${commit}^`, commit),
-    id: commit,
-  }));
+  const changes = commits.map((commit) => {
+    const files = git("diff", "--name-only", `${commit}^`, commit);
+    return byFunctions
+      ? byFunction(commit, files, `${commit}^`, commit)
+      : { files, id: commit };
+  });
   const picked = await ask(changes);
   const all = seconds(map.tests);
   const rows = changes.map((change) => {
@@ -166,8 +251,13 @@ const replay = async (
   );
 };
 
-/** Runs the picked test files of each package, and the checks picked. */
+/**
+ * Runs the picked test files of each package, and the checks picked, and
+ * logs each to the telemetry: the check, the tree of the staged files it
+ * ran on, how long it took, and whether it passed.
+ */
 const runPicked = (tests: readonly Reached[]) => {
+  const tree = git("write-tree")[0] ?? "unknown";
   let failed = 0;
   for (const folder of new Set(tests.map((t) => t.package))) {
     const mine = tests.filter((t) => t.package === folder);
@@ -182,11 +272,18 @@ const runPicked = (tests: readonly Reached[]) => {
       ...commands.map((command) => ["sh", "-c", command]),
     ];
     for (const [program, ...words] of runs) {
+      const started = performance.now();
       const ran = spawnSync(program as string, words, {
         cwd: join(REPOSITORY, folder),
         stdio: "inherit",
       });
       failed += ran.status === 0 ? 0 : 1;
+      logCheck({
+        check: `${folder}: ${[program, ...words].join(" ")}`,
+        passed: ran.status === 0,
+        seconds: Math.round((performance.now() - started) / 100) / 10,
+        tree,
+      });
     }
   }
   process.exitCode = failed === 0 ? 0 : 1;
@@ -195,7 +292,10 @@ const runPicked = (tests: readonly Reached[]) => {
 /** Says what the changes since a commit reach, and runs it when asked. */
 const now = async ({ ask, byTest, checked, map }: Context) => {
   const ref = args.option("against") ?? "HEAD";
-  const change = { files: changedSince(ref), id: "now" };
+  const files = changedSince(ref);
+  const change = byFunctions
+    ? byFunction("now", files, ref)
+    : { files, id: "now" };
   if (change.files.length === 0) {
     console.log(`Nothing changed since ${ref}.`);
     return;
@@ -229,6 +329,11 @@ const now = async ({ ask, byTest, checked, map }: Context) => {
 const main = async () => {
   if (args.flag("map")) {
     const map = mapReach();
+    if ("refused" in map) {
+      console.error(`\n${map.refused}`);
+      process.exitCode = 1;
+      return;
+    }
     console.log(
       `\nMapped ${map.tests.length} test files and checks at ${map.commit.slice(0, 7)}: ${Math.round(seconds(map.tests))} s in all.`
     );
@@ -243,7 +348,12 @@ const main = async () => {
     return;
   }
   const lion = await Effect.runPromise(load(join(REPOSITORY, CORE)));
-  const checked = MUTATIONS.map(checkedOf);
+  byFunctions = map.tests.some((t) => t.functions !== undefined);
+  const checked = MUTATIONS.map((mutation) =>
+    byFunctions
+      ? { ...checkedOf(mutation), functions: mutationFunctions(mutation) }
+      : checkedOf(mutation)
+  );
   const context: Context = {
     ask: (changes, asMutations = false) =>
       Effect.runPromise(

@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "The commit hook's `bun run affected --run` logs each check it runs to `out/telemetry.jsonl`: the check, the git tree of the staged files, its seconds, and whether it passed.",
+      "says": {
+        "feature": "check-telemetry",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "A check that passed and failed on the same tree is flaky, since the files did not decide its outcome. `bun run loop flaky` lists them, and the scoreboard counts them as `flaky checks, telemetry`.",
+      "says": {
+        "behavior": "flaky-check",
+        "is": "passed-and-failed-on-one-tree",
+        "area": "metrics"
+      }
+    }
+  ]
+}

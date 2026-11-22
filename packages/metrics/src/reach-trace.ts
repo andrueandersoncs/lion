@@ -1,6 +1,7 @@
 /**
  * A vitest setup file that records what one test file reaches: the source
- * files whose functions its tests ran, the files of the repository it read,
+ * files whose functions its tests ran, and the names of those functions, the
+ * files of the repository it read,
  * and the commands it started. What its imports ran as they loaded is
  * recorded apart, as `loaded`.
  * `bun run affected --map` adds it to each package's tests, one run for the
@@ -60,6 +61,7 @@ const watch = () => {
 
 interface Covered {
   readonly functions: readonly {
+    readonly functionName: string;
     readonly ranges: readonly {
       readonly count: number;
       readonly startOffset: number;
@@ -90,18 +92,40 @@ if (folder !== undefined) {
       (await session.post("Profiler.takePreciseCoverage")) as {
         result: Covered[];
       }
-    ).result
-      .filter(executed)
-      .map((s) => s.url);
+    ).result.filter(executed);
+  /** The named functions of each script that ran since coverage was last taken. */
+  const named = (scripts: readonly Covered[]) =>
+    Object.fromEntries(
+      scripts.map((script) => [
+        script.url,
+        [
+          ...new Set(
+            script.functions
+              .filter(
+                (f) => f.functionName !== "" && (f.ranges[0]?.count ?? 0) > 0
+              )
+              .map((f) => f.functionName)
+          ),
+        ],
+      ])
+    );
   // What the imports ran as they loaded, such as the calls that build the
   // library's functions, is every test's alike, so it is kept apart from
   // what the tests ran.
   let loaded: string[] = [];
+  // The named functions that ran as the imports loaded, such as those that
+  // build the library's functions. A function they built runs in the tests
+  // with no name of its own, so a change inside it reaches the tests through
+  // the function that built it.
+  let atLoad: Record<string, string[]> = {};
   beforeAll(async () => {
-    loaded = await take();
+    const covered = await take();
+    loaded = covered.map((script) => script.url);
+    atLoad = named(covered);
   });
   afterAll(async () => {
-    const scripts = await take();
+    const covered = await take();
+    const scripts = covered.map((script) => script.url);
     await session.post("Profiler.stopPreciseCoverage");
     session.disconnect();
     // biome-ignore lint/suspicious/noMisplacedAssertion: it reads the path of the test file, and asserts nothing
@@ -111,7 +135,9 @@ if (folder !== undefined) {
       join(folder, `${name}.json`),
       JSON.stringify({
         commands: [...started],
+        atLoad,
         loaded,
+        ran: named(covered),
         read: [...read],
         scripts,
         test,

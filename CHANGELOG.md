@@ -35,6 +35,8 @@
 - `bun run capability --graded <run folder>`: an agents' run that finished, graded again at no cost (`capability-graded` added)
 - How often did the loop's predictions come true, for scores, for requirements, and for other questions? (`loop-calibration` added)
 - What is the loop's rate: capability tasks gained, per hour of checks and per dollar agents spent? (`loop-rate` added)
+- When the map holds the named functions each test ran, a script whose changed lines are all in named functions, or in imports, types, comments, and constants of its own, picks only the tests that ran one of those functions. (`affected-by-function` added)
+- The commit hook's `bun run affected --run` logs each check it runs to `out/telemetry.jsonl`: the check, the git tree of the staged files, its seconds, and whether it passed. (`check-telemetry` added)
 
 ### Changed
 
@@ -62,6 +64,11 @@
 - The experiment function-reach stopped after scale: the workload of a rule that invents grew as n^1.3 under a load of 14, with no change to @lionlang/core (`loop-scale-under-load` is `noisy`)
 - A run that fails runs again, and the tasks that fail then are the ones that count: one test's time can pass a limit under the machine's load, and a real failure fails twice. (`loop-failed-tests` is `run-again`)
 - Both runs go to the telemetry, so a run that failed once and passed once is a flaky check there, not a version that breaks a constraint. (`loop-tests-telemetry` is `logged`)
+- A changed line belongs to the innermost named function around it, which a test reaches whenever it reaches the anonymous ones inside (`affected-changed-line` is `innermost-named-function`)
+- a changed constant of the file's own touches the named functions that mention it (`affected-private-constant` is `functions-that-mention-it`)
+- A function no test ran is read as its whole file. (`affected-unran-function` is `whole-file`)
+- A check that passed and failed on the same tree is flaky, since the files did not decide its outcome. `bun run loop flaky` lists them, and the scoreboard counts them as `flaky checks, telemetry`. (`flaky-check` is `passed-and-failed-on-one-tree`)
+- A filter that fails whatever ?x is, such as the tail of an empty list, is refused when the invariant is declared, before the facts or after them. (`invariant-failing-filter-order` is `refused-either-way`)
 
 ### Fixed
 
@@ -70,6 +77,9 @@
 - packages/core/src/modules/tests/index.test.ts checks with @effect/vitest properties that namespaceEntries names each entry of any record by its namespace, in order, and keeps its value, and that the stdlib is every function of every module named by its module (`core-test-framework` is `effect-vitest`)
 - The two committed screen recordings, .artifacts/proof/repl-server-output-dock.webm and packages/repl/artifacts/thicker-black-background-dots.webm, are removed from git (`proof-recordings-in-git` is `none`)
 - The five tests that sat beside their code, packages/typesafe-ai/src/index.test.ts and the editor's document, fixtures, parse, and worker-protocol tests, are in tests folders (`test-file-location` is `tests-folders`)
+- The named functions that ran as the imports loaded, such as those that build the library's functions. A function they built runs in the tests with no name of its own, so a change inside it reaches the tests through the function that built it. (`affected-builder-at-load` is `reached`)
+- A name as V8 reports it, read as the parse names the function: without the suffix a bundler adds to keep names apart, the word an accessor or a bound function starts with, or the object a property is written in, as `module.add` is the property `add`. (`affected-v8-property-name` is `last-part`)
+- No map was written: make the tests pass, with nothing else running, and map again. (`reach-map-after-failed-tests` is `refused`)
 
 ### Documentation
 

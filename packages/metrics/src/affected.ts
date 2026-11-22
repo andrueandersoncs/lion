@@ -20,6 +20,11 @@ import { DEFAULT_TESTS, type Mutation } from "./mutation.ts";
 
 /** What one test file reached when it last ran. */
 export interface Reached {
+  /**
+   * The named functions it ran, as file and name. A map made before these
+   * were kept has none, and its changes are read a file at a time.
+   */
+  readonly functions?: readonly (readonly [string, string])[];
   /** The package it is in, as the folder, such as `packages/core`. */
   readonly package: string;
   /** The packages whose built code it ran where no source file is known. */
@@ -40,18 +45,39 @@ export interface ReachMap {
   readonly tests: readonly Reached[];
 }
 
-/** Some files changed together, under an id. */
+/**
+ * Some files changed together, under an id. `functions` names the named
+ * functions that hold its changed lines, as file and name, and `whole` the
+ * files where a changed line is in no named function, or that are no
+ * script. A change without them is read a file at a time.
+ */
 export interface Change {
   readonly files: readonly string[];
+  readonly functions?: readonly (readonly [string, string])[];
   readonly id: string;
+  readonly whole?: readonly string[];
 }
 
-/** A mutation as the rules see it: the file it breaks and the tests that should catch it. */
+/**
+ * A mutation as the rules see it: the file it breaks and the tests that
+ * should catch it, and, when the file's named functions are known, the
+ * ones its text is in, or `"whole"` when it is in none.
+ */
 export interface Checked {
   readonly file: string;
+  readonly functions?: readonly string[] | "whole";
   readonly name: string;
   readonly tests: readonly string[];
 }
+
+/** A mutation as a change read by function. */
+const functionsOfMutation = (m: Checked) =>
+  m.functions === "whole" || m.functions === undefined
+    ? { functions: [], whole: [m.file] }
+    : {
+        functions: m.functions.map((n) => [m.file, n] as const),
+        whole: [],
+      };
 
 /** What the rules pick. */
 export interface Picked {
@@ -104,10 +130,21 @@ export const programOf = (
       ...map.tests.flatMap((t) => t.packages),
     ]),
   ];
-  const asked = [
+  const asked: Change[] = [
     ...changes,
-    ...asMutations.map((m) => ({ files: [m.file], id: m.name })),
+    ...asMutations.map((m) => ({
+      files: [m.file],
+      id: m.name,
+      ...(m.functions === undefined ? {} : functionsOfMutation(m)),
+    })),
   ];
+  // A change read by function names the files it touches apart from the
+  // files it changes whole; one read a file at a time changes every file.
+  const wholeOf = (c: Change) =>
+    c.whole === undefined || c.functions === undefined ? c.files : c.whole;
+  const touchedOf = (c: Change) =>
+    c.files.filter((f) => !wholeOf(c).includes(f));
+  const touchedFiles = new Set(asked.flatMap(touchedOf));
   return [
     "begin",
     ...rules(),
@@ -133,7 +170,27 @@ export const programOf = (
     ),
     ...fact(
       "changed",
-      asked.flatMap((c) => c.files.map((f) => [c.id, f]))
+      asked.flatMap((c) => wholeOf(c).map((f) => [c.id, f]))
+    ),
+    ...fact(
+      "touched",
+      asked.flatMap((c) => touchedOf(c).map((f) => [c.id, f]))
+    ),
+    ...fact(
+      "function_change",
+      asked.flatMap((c) =>
+        c.whole === undefined || c.functions === undefined
+          ? []
+          : c.functions.map(([f, n]) => [c.id, f, n])
+      )
+    ),
+    ...fact(
+      "reaches_function",
+      map.tests.flatMap((t) =>
+        (t.functions ?? [])
+          .filter(([f]) => touchedFiles.has(f))
+          .map(([f, n]) => [t.test, f, n])
+      )
     ),
     ...fact(
       "mutation",

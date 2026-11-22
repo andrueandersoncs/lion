@@ -1,0 +1,168 @@
+{
+  "observations": [
+    {
+      "id": "function-reach-4-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "function-reach-4"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "function-reach-4",
+      "value": 1
+    },
+    {
+      "id": "function-reach-4-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "function-reach-4",
+      "tries": "function-reach",
+      "value": 3
+    },
+    {
+      "id": "function-reach-4-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "function-reach-4",
+      "value": 0
+    },
+    {
+      "id": "function-reach-4-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "function-reach-4"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "function-reach-4",
+      "value": 0
+    },
+    {
+      "id": "function-reach-4-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "function-reach-4",
+      "value": 0
+    },
+    {
+      "id": "function-reach-4-8",
+      "question": {
+        "flaky checks": "telemetry"
+      },
+      "quote": "flaky checks, telemetry: 0",
+      "source": "function-reach-4",
+      "tries": "function-reach",
+      "value": 0
+    },
+    {
+      "id": "function-reach-4-9",
+      "question": {
+        "seconds of check": "replay",
+        "observation": "function-reach-4"
+      },
+      "quote": "ran replay: bun run affected --replay 30, exit 0, 35 s",
+      "source": "function-reach-4",
+      "value": 35
+    },
+    {
+      "id": "function-reach-4-10",
+      "question": {
+        "tests' time picked": "last 30 commits"
+      },
+      "quote": "tests' time picked, last 30 commits: 60",
+      "source": "function-reach-4",
+      "tries": "function-reach",
+      "value": 60
+    },
+    {
+      "id": "function-reach-4-11",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "function-reach-4"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 48 s",
+      "source": "function-reach-4",
+      "value": 48
+    },
+    {
+      "id": "function-reach-4-12",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "function-reach-4",
+      "value": 0
+    },
+    {
+      "id": "function-reach-4-13",
+      "question": {
+        "seconds of check": "record",
+        "observation": "function-reach-4"
+      },
+      "quote": "ran record: bun run history check, exit 0, 76 s",
+      "source": "function-reach-4",
+      "value": 76
+    },
+    {
+      "id": "function-reach-4-14",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "function-reach-4",
+      "value": "holds"
+    },
+    {
+      "id": "function-reach-4-15",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 96",
+      "source": "function-reach-4",
+      "tries": "function-reach",
+      "value": 96
+    },
+    {
+      "id": "function-reach-4-16",
+      "question": {
+        "seconds of check": "check",
+        "observation": "function-reach-4"
+      },
+      "quote": "ran check: bun run affected --check, exit 0, 488 s",
+      "source": "function-reach-4",
+      "value": 488
+    },
+    {
+      "id": "function-reach-4-17",
+      "question": {
+        "picking unsound": "listed mutations"
+      },
+      "quote": "picking unsound, listed mutations: 0",
+      "source": "function-reach-4",
+      "value": 0
+    },
+    {
+      "id": "function-reach-4-18",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "function-reach-4"
+      },
+      "quote": "ran tests: bun run test, exit 0, 134 s",
+      "source": "function-reach-4",
+      "value": 134
+    },
+    {
+      "id": "function-reach-4-19",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "function-reach-4",
+      "value": 0
+    }
+  ]
+}

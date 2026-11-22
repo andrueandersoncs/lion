@@ -81,7 +81,61 @@
     ["test", "?t", "?_", "?_"]
   ],
 
+  ["relation", "touched", ["change", "file"]],
+  ["relation", "function_change", ["change", "file", "name"]],
+  ["relation", "reaches_function", ["test", "file", "name"]],
+  [
+    "rule",
+    ["in_package", "?c", "?f", "?p"],
+    ["touched", "?c", "?f"],
+    ["package", "?p"],
+    ["string/startsWith", "?f", ["string/concat", "?p", "/"]]
+  ],
+  [
+    "rule",
+    ["reached", "?c", "?f"],
+    ["touched", "?c", "?f"],
+    ["reaches", "?_", "?f"]
+  ],
+  [
+    "rule",
+    ["unmapped", "?c", "?f"],
+    ["touched", "?c", "?f"],
+    ["not", ["reached", "?c", "?f"]]
+  ],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["function_change", "?c", "?f", "?n"],
+    ["reaches_function", "?t", "?f", "?n"]
+  ],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["function_change", "?c", "?f", "?n"],
+    ["not", ["reaches_function", "?_", "?f", "?n"]],
+    ["reaches", "?t", "?f"]
+  ],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["touched", "?c", "?_"],
+    ["reads_repository", "?t"]
+  ],
+  [
+    "rule",
+    ["picked", "?c", "?t"],
+    ["touched", "?c", "?t"],
+    ["test", "?t", "?_", "?_"]
+  ],
+
   ["relation", "picked_mutation", ["change", "mutation"]],
+  [
+    "rule",
+    ["picked_mutation", "?c", "?m"],
+    ["touched", "?c", "?f"],
+    ["mutation", "?m", "?f"]
+  ],
   [
     "rule",
     ["picked_mutation", "?c", "?m"],
@@ -96,6 +150,14 @@
   ],
 
   ["relation", "unsound", ["mutation", "test"]],
+  [
+    "rule",
+    ["unsound", "?m", "?t"],
+    ["mutation", "?m", "?f"],
+    ["touched", "?m", "?f"],
+    ["mutation_test", "?m", "?t"],
+    ["not", ["picked", "?m", "?t"]]
+  ],
   [
     "rule",
     ["unsound", "?m", "?t"],

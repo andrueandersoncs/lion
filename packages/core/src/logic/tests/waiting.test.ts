@@ -415,7 +415,10 @@ describe("an invariant that holds waiting forms", () => {
           { assert: "none" },
         ];
         const first = new LogicDatabase();
-        yield* attempt([["relation", "n", ["x"]], invariant], first);
+        const declared = yield* attempt(
+          [["relation", "n", ["x"]], invariant],
+          first
+        );
         const held: number[] = [];
         const refused: number[] = [];
         for (const input of inputs) {
@@ -438,6 +441,13 @@ describe("an invariant that holds waiting forms", () => {
             ),
             (outcome) => outcome.ok
           );
+        // A filter that fails whatever ?x is, such as the tail of an empty
+        // list, is refused when the invariant is declared, before the facts
+        // or after them.
+        if (!declared.ok) {
+          expect(yield* declaredAfter(inputs)).toBe(false);
+          return;
+        }
         expect(yield* declaredAfter(held)).toBe(true);
         for (const input of refused) {
           expect(yield* declaredAfter([...held, input])).toBe(false);
