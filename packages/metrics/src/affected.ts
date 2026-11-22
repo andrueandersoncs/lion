@@ -42,6 +42,11 @@ export interface Reached {
 /** What every test reached, at a commit. */
 export interface ReachMap {
   readonly commit: string;
+  /**
+   * The files the repository held at the commit, when git still has it. A
+   * file it lacks is new since, so no test was seen to reach it.
+   */
+  readonly files?: readonly string[];
   readonly tests: readonly Reached[];
 }
 
@@ -157,6 +162,13 @@ export const programOf = (
   const touchedOf = (c: Change) =>
     c.files.filter((f) => !wholeOf(c).includes(f));
   const touchedFiles = new Set(asked.flatMap(touchedOf));
+  const held = map.files === undefined ? undefined : new Set(map.files);
+  const newFiles = [
+    ...new Set([
+      ...asked.flatMap((c) => c.files),
+      ...mutations.map((m) => m.file),
+    ]),
+  ].filter((f) => held !== undefined && !held.has(f));
   return [
     "begin",
     ...rules(),
@@ -203,6 +215,10 @@ export const programOf = (
           .filter(([f]) => touchedFiles.has(f))
           .map(([f, n]) => [t.test, f, n])
       )
+    ),
+    ...fact(
+      "new_file",
+      newFiles.map((f) => [f])
     ),
     ...fact(
       "mutation",

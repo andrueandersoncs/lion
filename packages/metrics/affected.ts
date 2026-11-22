@@ -14,8 +14,9 @@
 //   bun run affected --replay 30     the last 30 commits: what picking would
 //                                    have run, beside everything
 //
-// The map is of the commit it was made at. A file no test reached, such as a
-// new one, picks every test of its package, and a file at the root that is
+// The map is of the commit it was made at. A file no test reached, or that
+// the map's commit did not hold, picks every test of its package, a test file
+// the map lacks is picked for every change, and a file at the root that is
 // not Markdown, such as bun.lock, picks every test. When the map holds the
 // named functions each test ran, a script whose changed lines are all in
 // named functions, or in imports, types, comments, and constants of its own,

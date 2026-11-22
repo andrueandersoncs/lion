@@ -8,6 +8,7 @@
   ["relation", "changed", ["change", "file"]],
   ["relation", "mutation", ["mutation", "file"]],
   ["relation", "mutation_test", ["mutation", "test"]],
+  ["relation", "new_file", ["file"]],
 
   ["relation", "in_package", ["change", "file", "package"]],
   [
@@ -38,6 +39,12 @@
     ["unmapped", "?c", "?f"],
     ["changed", "?c", "?f"],
     ["not", ["reached", "?c", "?f"]]
+  ],
+  [
+    "rule",
+    ["unmapped", "?c", "?f"],
+    ["changed", "?c", "?f"],
+    ["new_file", "?f"]
   ],
 
   ["relation", "picked", ["change", "test"]],
@@ -102,6 +109,12 @@
     ["unmapped", "?c", "?f"],
     ["touched", "?c", "?f"],
     ["not", ["reached", "?c", "?f"]]
+  ],
+  [
+    "rule",
+    ["unmapped", "?c", "?f"],
+    ["touched", "?c", "?f"],
+    ["new_file", "?f"]
   ],
   [
     "rule",

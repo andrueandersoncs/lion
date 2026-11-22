@@ -1,0 +1,46 @@
+$ bun run loop scores
+$ bun run --cwd packages/metrics loop scores
+$ bun run loop.ts scores
+ran measure: bun run measure, exit 0, 1 s
+grid exceptions, core: 3
+undocumented grid exceptions, core: 0
+ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s
+instrument lines removed, since the base: 0
+flaky checks, telemetry: 0
+ran stale: bun run stale, exit 0, 32 s
+answers resting on stale probes, research: 213
+ran variants: bun run variants, exit 0, 1 s
+known mistakes found, programs: 0
+ran oracle: bun run oracle, exit 0, 0 s
+solver disagreements, oracle: 0
+ran pairs: bun run pairs, exit 0, 18 s
+surprising pairs, grid: 0
+ran replay: bun run affected --replay 30, exit 0, 32 s
+tests' time picked, last 30 commits: 41
+ran bench: bun run bench, exit 0, 3 s
+bench total ms, every benchmark: 950.5
+ran capability: bun run capability --json, exit 0, 1 s
+capability passed, public, computation: 25
+capability passed, public, logic: 14
+capability passed, public, proofs: 10
+capability passed, public, all: 49
+capability passed, openrulebench, computation: 0
+capability passed, openrulebench, logic: 4
+capability passed, openrulebench, proofs: 0
+capability passed, openrulebench, all: 4
+capability passed, sv-comp, computation: 0
+capability passed, sv-comp, logic: 0
+capability passed, sv-comp, proofs: 2
+capability passed, sv-comp, all: 2
+code lines per passed task, core: 482.6
+messages per passed task, core: 4.6
+ran scale: bun run scale, exit 0, 43 s
+workloads faster than linear, scale: 0
+ran record: bun run history check, exit 0, 74 s
+record check, history: holds
+rules no probe checks, record: 96
+ran check: bun run affected --check, exit 1, 532 s
+picking unsound, listed mutations: 46
+ran tests: bun run test, exit 0, 138 s
+failing test tasks, all packages: 0
+[exit status 0]

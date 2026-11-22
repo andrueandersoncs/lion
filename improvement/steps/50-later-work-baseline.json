@@ -1,0 +1,1112 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran"
+   ],
+   [
+    "quote",
+    "bun run loop scores"
+   ]
+  ],
+  [
+   "about",
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "."
+   ],
+   [
+    "quote",
+    "c74c5e0f74c881b4c3b36b5e2632e1f6642a903d"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-3"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran measure: bun run measure, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "measure",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-4"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "grid exceptions, core: 3"
+   ],
+   [
+    "quote",
+    {
+     "grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-5"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "undocumented grid exceptions, core: 0"
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-6"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "instruments",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-7"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "instrument lines removed, since the base: 0"
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-8"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "flaky checks, telemetry: 0"
+   ],
+   [
+    "quote",
+    {
+     "flaky checks": "telemetry"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-9"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran stale: bun run stale, exit 0, 32 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "stale",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    32
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-10"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "answers resting on stale probes, research: 213"
+   ],
+   [
+    "quote",
+    {
+     "answers resting on stale probes": "research"
+    }
+   ],
+   [
+    "quote",
+    213
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-11"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran variants: bun run variants, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "variants",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-12"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "known mistakes found, programs: 0"
+   ],
+   [
+    "quote",
+    {
+     "known mistakes found": "programs"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-13"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran oracle: bun run oracle, exit 0, 0 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "oracle",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-14"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "solver disagreements, oracle: 0"
+   ],
+   [
+    "quote",
+    {
+     "solver disagreements": "oracle"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-15"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran pairs: bun run pairs, exit 0, 18 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "pairs",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    18
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-16"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "surprising pairs, grid: 0"
+   ],
+   [
+    "quote",
+    {
+     "surprising pairs": "grid"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-17"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran replay: bun run affected --replay 30, exit 0, 32 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "replay",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    32
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-18"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "tests' time picked, last 30 commits: 41"
+   ],
+   [
+    "quote",
+    {
+     "tests' time picked": "last 30 commits"
+    }
+   ],
+   [
+    "quote",
+    41
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-19"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran bench: bun run bench, exit 0, 3 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "bench",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-20"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "bench total ms, every benchmark: 950.5"
+   ],
+   [
+    "quote",
+    {
+     "bench total ms": "every benchmark"
+    }
+   ],
+   [
+    "quote",
+    950.5
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-21"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran capability: bun run capability --json, exit 0, 1 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "capability",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    1
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-22"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, computation: 25"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    25
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-23"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, logic: 14"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    14
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-24"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, proofs: 10"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    10
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-25"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, public, all: 49"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "public",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    49
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-26"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, openrulebench, computation: 0"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-27"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, openrulebench, logic: 4"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    4
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-28"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, openrulebench, proofs: 0"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-29"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, openrulebench, all: 4"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    4
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-30"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, sv-comp, computation: 0"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "computation"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-31"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, sv-comp, logic: 0"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "logic"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-32"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, sv-comp, proofs: 2"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "proofs"
+    }
+   ],
+   [
+    "quote",
+    2
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-33"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "capability passed, sv-comp, all: 2"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    2
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-34"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "code lines per passed task, core: 482.6"
+   ],
+   [
+    "quote",
+    {
+     "code lines per passed task": "core"
+    }
+   ],
+   [
+    "quote",
+    482.6
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-35"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "messages per passed task, core: 4.6"
+   ],
+   [
+    "quote",
+    {
+     "messages per passed task": "core"
+    }
+   ],
+   [
+    "quote",
+    4.6
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-36"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran scale: bun run scale, exit 0, 43 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "scale",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    43
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-37"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "workloads faster than linear, scale: 0"
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-38"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran record: bun run history check, exit 0, 74 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "record",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    74
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-39"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "record check, history: holds"
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-40"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "rules no probe checks, record: 96"
+   ],
+   [
+    "quote",
+    {
+     "rules no probe checks": "record"
+    }
+   ],
+   [
+    "quote",
+    96
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-41"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran check: bun run affected --check, exit 1, 532 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "check",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    532
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-42"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "picking unsound, listed mutations: 46"
+   ],
+   [
+    "quote",
+    {
+     "picking unsound": "listed mutations"
+    }
+   ],
+   [
+    "quote",
+    46
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-43"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "ran tests: bun run test, exit 0, 138 s"
+   ],
+   [
+    "quote",
+    {
+     "seconds of check": "tests",
+     "observation": "later-work-baseline"
+    }
+   ],
+   [
+    "quote",
+    138
+   ]
+  ],
+  [
+   "observed",
+   [
+    "quote",
+    "later-work-baseline-44"
+   ],
+   [
+    "quote",
+    "later-work-baseline"
+   ],
+   [
+    "quote",
+    "failing test tasks, all packages: 0"
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ]
+ ],
+ "recorded"
+]

@@ -927,6 +927,39 @@ const WEIGHTS: readonly Mutation[] = [
 
 export const MUTATIONS: readonly Mutation[] = [
   {
+    name: "a file new since the reach map was made counts as reached by the tests of its package's built code",
+    file: "packages/metrics/src/affected.json",
+    find: '  [\n    "rule",\n    ["unmapped", "?c", "?f"],\n    ["changed", "?c", "?f"],\n    ["new_file", "?f"]\n  ],\n',
+    replace: "",
+    package: "metrics",
+    tests: ["src/tests/affected.test.ts"],
+  },
+  {
+    name: "a file new since the reach map was made counts as reached when read by function",
+    file: "packages/metrics/src/affected.json",
+    find: '  [\n    "rule",\n    ["unmapped", "?c", "?f"],\n    ["touched", "?c", "?f"],\n    ["new_file", "?f"]\n  ],\n',
+    replace: "",
+    package: "metrics",
+    tests: ["src/tests/affected.test.ts"],
+  },
+  {
+    name: "a test file the reach map lacks is picked only for the files it was seen to reach",
+    file: "packages/metrics/src/reach.ts",
+    find: "            repository: true,\n            seconds: slowestIn(folder),",
+    replace:
+      "            repository: false,\n            seconds: slowestIn(folder),",
+    package: "metrics",
+    tests: ["src/tests/affected.test.ts"],
+  },
+  {
+    name: "a test file the reach map lacks costs no time",
+    file: "packages/metrics/src/reach.ts",
+    find: "            seconds: slowestIn(folder),",
+    replace: "            seconds: 0,",
+    package: "metrics",
+    tests: ["src/tests/affected.test.ts"],
+  },
+  {
     name: "an answer rests on a stale probe whatever source its claim comes from",
     file: "research/steps/58-si-stale.json",
     find: '    ["stale_source", "?s", "?_"]',

@@ -1,0 +1,29 @@
+{
+  "claims": [
+    {
+      "quote": "a test file the map lacks, such as one written after the map was made, reaches every change, as a test that runs `git` does, and counts as slow as the slowest mapped test of its package",
+      "says": {
+        "behavior": "picking-test-file-the-map-lacks",
+        "is": "picked-for-every-change",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "so does a file the map's commit did not hold, since no test could have reached it, even where some test ran its package's built code",
+      "says": {
+        "behavior": "picking-file-newer-than-the-map",
+        "is": "every-test-of-its-package",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "with the map 26 commits behind, `--check` found picking unsound for 46 listed mutations, all in test files or source files written after the map, and after them sound for all 702",
+      "says": {
+        "measured": "picking-unsound-with-an-old-map",
+        "before": 46,
+        "after": 0,
+        "area": "metrics"
+      }
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
@@ -10,7 +12,14 @@ import {
 } from "../affected.ts";
 import { LION, pathsOf } from "../at-risk.ts";
 import { load } from "../lion.ts";
-import { refusedMap, repositoryPath, sourceOf, testScript } from "../reach.ts";
+import {
+  refusedMap,
+  repositoryPath,
+  sourceOf,
+  testFiles,
+  testScript,
+  withTestFiles,
+} from "../reach.ts";
 import { CORE, REPOSITORY } from "../sources.ts";
 import { between, element, word } from "./generators.ts";
 
@@ -417,6 +426,134 @@ describe("the rules a change puts at risk", () => {
       expect(pathsOf(program, commands)).toStrictEqual(
         expected.length === 0 ? [LION] : [...new Set(expected)].sort()
       );
+    }
+  );
+});
+
+const IN_SRC = /\/src\//;
+const TEST_NAME = /\.test\.tsx?$/;
+
+/** Test files there can be now: the mapped ones, and two written after the map. */
+const NOW = [
+  ...TESTS,
+  "packages/a/src/tests/four.test.ts",
+  "packages/c/src/tests/five.test.ts",
+];
+
+describe("a file the map's commit did not hold", () => {
+  it.effect.prop(
+    "picks every test of its package, or every test at the root, as a file no test reached does, read a file at a time or by function, and nothing picked without it is lost",
+    {
+      byFile: Arbitrary.all({ asked: changes, m: map }),
+      byFunction: Arbitrary.all({ asked: functionChanges, m: functionMap }),
+      held: someOf(FILES),
+      read: element(["file", "function"]),
+    },
+    ({ byFile, byFunction, held, read }) =>
+      Effect.gen(function* () {
+        const { asked, m } = read === "file" ? byFile : byFunction;
+        const evaluator = yield* Effect.promise(() => lion);
+        const got = yield* pick(evaluator, { ...m, files: held }, asked, []);
+        const before = yield* pick(evaluator, m, asked, []);
+        for (const change of asked) {
+          const picked = got.tests[change.id] ?? [];
+          expect(picked).toEqual(
+            expect.arrayContaining([...(before.tests[change.id] ?? [])])
+          );
+          for (const file of change.files.filter((f) => !held.includes(f))) {
+            const atRoot = !(file.includes("/") || file.endsWith(".md"));
+            const mine = m.tests
+              .filter((t) => atRoot || file.startsWith(`${t.package}/`))
+              .map((t) => t.test);
+            expect(picked).toEqual(expect.arrayContaining(mine));
+          }
+        }
+      }),
+    { arbitrary: { runs: 150 } }
+  );
+});
+
+describe("the test files there are now", () => {
+  it.effect.prop(
+    "a test file the map lacks is picked for every change, as slow as the slowest mapped test of its package, and the mapped tests are picked as the map says",
+    { asked: changes, m: map, now: someOf(NOW) },
+    ({ asked, m, now }) =>
+      Effect.gen(function* () {
+        const evaluator = yield* Effect.promise(() => lion);
+        const got = yield* pick(evaluator, withTestFiles(m, now), asked, []);
+        const mapped = yield* pick(evaluator, m, asked, []);
+        const lacked = now.filter((t) => !m.tests.some((r) => r.test === t));
+        const seconds = (tests: readonly Reached[]) =>
+          Math.max(0, ...tests.map((t) => t.seconds));
+        for (const test of lacked) {
+          const folder = test.split("/").slice(0, 2).join("/");
+          const mine = m.tests.filter((t) => t.package === folder);
+          expect(
+            withTestFiles(m, now).tests.find((t) => t.test === test)?.seconds
+          ).toBe(seconds(mine.length > 0 ? mine : m.tests));
+        }
+        for (const change of asked) {
+          expect(got.tests[change.id] ?? []).toStrictEqual(
+            [...new Set([...(mapped.tests[change.id] ?? []), ...lacked])].sort()
+          );
+        }
+      }),
+    { arbitrary: { runs: 100 } }
+  );
+
+  it.prop(
+    "are the .test.ts and .test.tsx files under each package's src, and no other file",
+    {
+      files: Arbitrary.array(
+        Arbitrary.all({
+          folder: element([
+            "src",
+            "src/tests",
+            "src/a/tests",
+            "e2e",
+            "src/node_modules/x",
+          ]),
+          name: word,
+          pkg: element(["a", "b"]),
+          suffix: element([
+            ".test.ts",
+            ".test.tsx",
+            ".ts",
+            ".spec.ts",
+            ".test.js",
+          ]),
+        }),
+        { maxLength: 6 }
+      ),
+    },
+    ({ files }) => {
+      const root = mkdtempSync(join(tmpdir(), "lion-tests-"));
+      try {
+        mkdirSync(join(root, "packages"));
+        const paths = [
+          ...new Set(
+            files.map(
+              (f) => `packages/${f.pkg}/${f.folder}/${f.name}${f.suffix}`
+            )
+          ),
+        ];
+        for (const path of paths) {
+          mkdirSync(join(root, path, ".."), { recursive: true });
+          writeFileSync(join(root, path), "");
+        }
+        expect(testFiles(root)).toStrictEqual(
+          paths
+            .filter(
+              (p) =>
+                IN_SRC.test(p) &&
+                !p.includes("node_modules") &&
+                TEST_NAME.test(p)
+            )
+            .sort()
+        );
+      } finally {
+        rmSync(root, { force: true, recursive: true });
+      }
     }
   );
 });

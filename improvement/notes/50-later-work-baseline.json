@@ -1,0 +1,407 @@
+{
+  "observations": [
+    {
+      "id": "later-work-baseline-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "later-work-baseline",
+      "value": 1
+    },
+    {
+      "id": "later-work-baseline-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "later-work-baseline",
+      "value": 3
+    },
+    {
+      "id": "later-work-baseline-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-8",
+      "question": {
+        "flaky checks": "telemetry"
+      },
+      "quote": "flaky checks, telemetry: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-9",
+      "question": {
+        "seconds of check": "stale",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran stale: bun run stale, exit 0, 32 s",
+      "source": "later-work-baseline",
+      "value": 32
+    },
+    {
+      "id": "later-work-baseline-10",
+      "question": {
+        "answers resting on stale probes": "research"
+      },
+      "quote": "answers resting on stale probes, research: 213",
+      "source": "later-work-baseline",
+      "value": 213
+    },
+    {
+      "id": "later-work-baseline-11",
+      "question": {
+        "seconds of check": "variants",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran variants: bun run variants, exit 0, 1 s",
+      "source": "later-work-baseline",
+      "value": 1
+    },
+    {
+      "id": "later-work-baseline-12",
+      "question": {
+        "known mistakes found": "programs"
+      },
+      "quote": "known mistakes found, programs: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-13",
+      "question": {
+        "seconds of check": "oracle",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran oracle: bun run oracle, exit 0, 0 s",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-14",
+      "question": {
+        "solver disagreements": "oracle"
+      },
+      "quote": "solver disagreements, oracle: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-15",
+      "question": {
+        "seconds of check": "pairs",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran pairs: bun run pairs, exit 0, 18 s",
+      "source": "later-work-baseline",
+      "value": 18
+    },
+    {
+      "id": "later-work-baseline-16",
+      "question": {
+        "surprising pairs": "grid"
+      },
+      "quote": "surprising pairs, grid: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-17",
+      "question": {
+        "seconds of check": "replay",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran replay: bun run affected --replay 30, exit 0, 32 s",
+      "source": "later-work-baseline",
+      "value": 32
+    },
+    {
+      "id": "later-work-baseline-18",
+      "question": {
+        "tests' time picked": "last 30 commits"
+      },
+      "quote": "tests' time picked, last 30 commits: 41",
+      "source": "later-work-baseline",
+      "value": 41
+    },
+    {
+      "id": "later-work-baseline-19",
+      "question": {
+        "seconds of check": "bench",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran bench: bun run bench, exit 0, 3 s",
+      "source": "later-work-baseline",
+      "value": 3
+    },
+    {
+      "id": "later-work-baseline-20",
+      "question": {
+        "bench total ms": "every benchmark"
+      },
+      "quote": "bench total ms, every benchmark: 950.5",
+      "source": "later-work-baseline",
+      "value": 950.5
+    },
+    {
+      "id": "later-work-baseline-21",
+      "question": {
+        "seconds of check": "capability",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran capability: bun run capability --json, exit 0, 1 s",
+      "source": "later-work-baseline",
+      "value": 1
+    },
+    {
+      "id": "later-work-baseline-22",
+      "question": {
+        "capability passed": "public",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, public, computation: 25",
+      "source": "later-work-baseline",
+      "value": 25
+    },
+    {
+      "id": "later-work-baseline-23",
+      "question": {
+        "capability passed": "public",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, public, logic: 14",
+      "source": "later-work-baseline",
+      "value": 14
+    },
+    {
+      "id": "later-work-baseline-24",
+      "question": {
+        "capability passed": "public",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, public, proofs: 10",
+      "source": "later-work-baseline",
+      "value": 10
+    },
+    {
+      "id": "later-work-baseline-25",
+      "question": {
+        "capability passed": "public",
+        "pillar": "all"
+      },
+      "quote": "capability passed, public, all: 49",
+      "source": "later-work-baseline",
+      "value": 49
+    },
+    {
+      "id": "later-work-baseline-26",
+      "question": {
+        "capability passed": "openrulebench",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, openrulebench, computation: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-27",
+      "question": {
+        "capability passed": "openrulebench",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, openrulebench, logic: 4",
+      "source": "later-work-baseline",
+      "value": 4
+    },
+    {
+      "id": "later-work-baseline-28",
+      "question": {
+        "capability passed": "openrulebench",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, openrulebench, proofs: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-29",
+      "question": {
+        "capability passed": "openrulebench",
+        "pillar": "all"
+      },
+      "quote": "capability passed, openrulebench, all: 4",
+      "source": "later-work-baseline",
+      "value": 4
+    },
+    {
+      "id": "later-work-baseline-30",
+      "question": {
+        "capability passed": "sv-comp",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, sv-comp, computation: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-31",
+      "question": {
+        "capability passed": "sv-comp",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, sv-comp, logic: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-32",
+      "question": {
+        "capability passed": "sv-comp",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, sv-comp, proofs: 2",
+      "source": "later-work-baseline",
+      "value": 2
+    },
+    {
+      "id": "later-work-baseline-33",
+      "question": {
+        "capability passed": "sv-comp",
+        "pillar": "all"
+      },
+      "quote": "capability passed, sv-comp, all: 2",
+      "source": "later-work-baseline",
+      "value": 2
+    },
+    {
+      "id": "later-work-baseline-34",
+      "question": {
+        "code lines per passed task": "core"
+      },
+      "quote": "code lines per passed task, core: 482.6",
+      "source": "later-work-baseline",
+      "value": 482.6
+    },
+    {
+      "id": "later-work-baseline-35",
+      "question": {
+        "messages per passed task": "core"
+      },
+      "quote": "messages per passed task, core: 4.6",
+      "source": "later-work-baseline",
+      "value": 4.6
+    },
+    {
+      "id": "later-work-baseline-36",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 43 s",
+      "source": "later-work-baseline",
+      "value": 43
+    },
+    {
+      "id": "later-work-baseline-37",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    },
+    {
+      "id": "later-work-baseline-38",
+      "question": {
+        "seconds of check": "record",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran record: bun run history check, exit 0, 74 s",
+      "source": "later-work-baseline",
+      "value": 74
+    },
+    {
+      "id": "later-work-baseline-39",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "later-work-baseline",
+      "value": "holds"
+    },
+    {
+      "id": "later-work-baseline-40",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 96",
+      "source": "later-work-baseline",
+      "value": 96
+    },
+    {
+      "id": "later-work-baseline-41",
+      "question": {
+        "seconds of check": "check",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran check: bun run affected --check, exit 1, 532 s",
+      "source": "later-work-baseline",
+      "value": 532
+    },
+    {
+      "id": "later-work-baseline-42",
+      "question": {
+        "picking unsound": "listed mutations"
+      },
+      "quote": "picking unsound, listed mutations: 46",
+      "source": "later-work-baseline",
+      "value": 46
+    },
+    {
+      "id": "later-work-baseline-43",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "later-work-baseline"
+      },
+      "quote": "ran tests: bun run test, exit 0, 138 s",
+      "source": "later-work-baseline",
+      "value": 138
+    },
+    {
+      "id": "later-work-baseline-44",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "later-work-baseline",
+      "value": 0
+    }
+  ]
+}

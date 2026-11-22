@@ -233,13 +233,14 @@ Rules in Lion, in [`src/affected.json`](src/affected.json), pick what a change r
 
 - a test reaches a changed file it ran or read;
 - a test that runs `git` reaches every change;
-- a changed file that no test reached, such as a new one, reaches every test of its package;
+- a changed file that no test reached reaches every test of its package, and so does a file the map's commit did not hold, since no test could have reached it, even where some test ran its package's built code;
+- a test file the map lacks, such as one written after the map was made, reaches every change, as a test that runs `git` does, and counts as slow as the slowest mapped test of its package;
 - a file at the root that configures the build, such as `bun.lock` or `tsconfig.json`, reaches every test when no test reached it, while one of the root's Markdown files, such as `CHANGELOG.md`, reaches only the tests that run `git`;
 - a mutation is reached when its own file changed, or a test it names is reached, so a change that weakens a property brings back the mutations that property catches, which `bun run mutate --in` would not.
 
 With no option, `affected` lists what the changes since HEAD, or since `--against`, reach, and `--run` runs them. `bun run mutate --affected` runs the mutations they reach.
 
-`--check` asks whether picking is sound: it gives each listed mutation as a change to its own file, and lists every test the mutation names that would not be picked for it. A test a mutation names should catch it, so a test that picking skips is one that might catch the break while picking says nothing ran. `--replay n` asks the same rules about each of the last n commits, and says what they would have run beside everything. The map is of the commit it was made at, so make it again after a large change.
+`--check` asks whether picking is sound: it gives each listed mutation as a change to its own file, and lists every test the mutation names that would not be picked for it. A test a mutation names should catch it, so a test that picking skips is one that might catch the break while picking says nothing ran. `--replay n` asks the same rules about each of the last n commits, and says what they would have run beside everything. The map is of the commit it was made at, so make it again after a large change. The last two rules keep picking sound while it is old: on 2026-11-22, with the map 26 commits behind, `--check` found picking unsound for 46 listed mutations, all in test files or source files written after the map, and after them sound for all 702.
 
 At 9d59e05 the map held 107 test files and checks. `--check` gave each of the 599 listed mutations as a change to its file. For 595, every test the mutation names is picked. For 4, picking skips one named test that never ran the mutated file, and the tests it keeps still catch the break:
 

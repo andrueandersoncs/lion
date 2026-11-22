@@ -315,8 +315,97 @@ export const mapReach = (
   return map;
 };
 
-/** The map the last `--map` wrote, or undefined when there is none. */
-export const readMap = (): ReachMap | undefined =>
-  existsSync(MAP)
-    ? (JSON.parse(readFileSync(MAP, "utf8")) as ReachMap)
+/**
+ * The map with the test files there are now: a test file the map lacks,
+ * such as one written after the map was made, may reach any file, as a test
+ * that runs git does, so every change picks it. It counts as slow as the
+ * slowest mapped test of its package, or of all where its package has none,
+ * so a map left stale never makes the time picked look smaller. The rest
+ * are as mapped.
+ */
+export const withTestFiles = (
+  map: ReachMap,
+  tests: readonly string[]
+): ReachMap => {
+  const mapped = new Set(map.tests.map((t) => t.test));
+  const slowest = (tests: readonly Reached[]) =>
+    tests.reduce((most, t) => Math.max(most, t.seconds), 0);
+  const slowestIn = (folder: string) => {
+    const mine = map.tests.filter((t) => t.package === folder);
+    return slowest(mine.length > 0 ? mine : map.tests);
+  };
+  return {
+    commit: map.commit,
+    tests: [
+      ...map.tests,
+      ...tests
+        .filter((test) => !mapped.has(test))
+        .map((test): Reached => {
+          const folder = test.split("/").slice(0, 2).join("/");
+          return {
+            package: folder,
+            packages: [],
+            reaches: [],
+            repository: true,
+            seconds: slowestIn(folder),
+            test,
+          };
+        }),
+    ],
+  };
+};
+
+/** The vitest files of each package, `packages/<p>/src/**\/*.test.ts(x)`, by path from `root`. */
+export const testFiles = (root: string = REPOSITORY): string[] => {
+  const found: string[] = [];
+  const visit = (folder: string) => {
+    for (const entry of readdirSync(join(root, folder), {
+      withFileTypes: true,
+    })) {
+      const path = `${folder}/${entry.name}`;
+      if (entry.isDirectory()) {
+        if (entry.name !== "node_modules") {
+          visit(path);
+        }
+      } else if (TEST_FILE.test(entry.name)) {
+        found.push(path);
+      }
+    }
+  };
+  const packages = join(root, "packages");
+  for (const name of existsSync(packages) ? readdirSync(packages) : []) {
+    if (existsSync(join(packages, name, "src"))) {
+      visit(`packages/${name}/src`);
+    }
+  }
+  return found.sort();
+};
+const TEST_FILE = /\.test\.tsx?$/;
+
+/** The files the repository held at a commit, or undefined when git lacks it. */
+export const filesAt = (commit: string): string[] | undefined => {
+  const listed = spawnSync("git", ["ls-tree", "-r", "--name-only", commit], {
+    cwd: REPOSITORY,
+    encoding: "utf8",
+    maxBuffer: 256 * 1024 * 1024,
+  });
+  return listed.status === 0
+    ? listed.stdout.split("\n").filter((line) => line !== "")
     : undefined;
+};
+
+/**
+ * The map the last `--map` wrote, with the test files there are now and the
+ * files its commit held, or undefined when there is none.
+ */
+export const readMap = (): ReachMap | undefined => {
+  if (!existsSync(MAP)) {
+    return;
+  }
+  const map = withTestFiles(
+    JSON.parse(readFileSync(MAP, "utf8")) as ReachMap,
+    testFiles()
+  );
+  const files = filesAt(map.commit);
+  return files === undefined ? map : { ...map, files };
+};
