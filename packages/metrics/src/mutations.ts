@@ -911,6 +911,30 @@ const WEIGHTS: readonly Mutation[] = [
 ];
 
 export const MUTATIONS: readonly Mutation[] = [
+  {
+    name: "plain code adds decimals as JavaScript does, so 0.1 + 0.2 is 0.30000000000000004",
+    file: core("numbers/exact.ts"),
+    find: "    const result = a + b;\n    if (\n      Number.isSafeInteger(a) &&\n      Number.isSafeInteger(b) &&\n      Number.isSafeInteger(result)\n    ) {",
+    replace: "    const result = a + b;\n    if (Number.isFinite(result)) {",
+    package: "metrics",
+    tests: ["src/tests/oracle.test.ts"],
+  },
+  {
+    name: "a proof plain code contradicts is not a disagreement",
+    file: "packages/metrics/src/oracle.ts",
+    find: "  if (proved && met.length > 0) {",
+    replace: "  if (proved && met.length > 9) {",
+    package: "metrics",
+    tests: ["src/tests/oracle.test.ts"],
+  },
+  {
+    name: "a value the solver gives that plain code refuses is not a disagreement",
+    file: "packages/metrics/src/oracle.ts",
+    find: "  if (wrong.length > 0) {",
+    replace: "  if (wrong.length > 9) {",
+    package: "metrics",
+    tests: ["src/tests/oracle.test.ts"],
+  },
   // One rule, one wording: where a rule is broken in several places, the
   // message says it in the same words.
   {

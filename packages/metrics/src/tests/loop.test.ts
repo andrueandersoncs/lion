@@ -15,6 +15,7 @@ import {
   readCapability,
   readMeasure,
   readMutate,
+  readOracle,
   readPairs,
   readRemoved,
   readScale,
@@ -244,6 +245,14 @@ describe("the loop's scoreboard", () => {
         ...lines,
       ].join("\n");
       expect(readPairs(printed)).toBe(count < 0 ? undefined : count);
+      expect(
+        readOracle(
+          printed.replace(
+            "surprising pairs, grid",
+            "solver disagreements, oracle"
+          )
+        )
+      ).toBe(count < 0 ? undefined : count);
     }
   );
 
@@ -345,6 +354,7 @@ describe("the loop's scoreboard", () => {
             QUESTIONS.benchTotal,
             QUESTIONS.surprising,
             QUESTIONS.flaky,
+            QUESTIONS.solverDisagreements,
           ].some((q) => q.question === o.question);
         expect(o.tries).toBe(tries && score ? "d" : undefined);
       }

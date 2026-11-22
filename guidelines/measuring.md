@@ -56,6 +56,7 @@ How to use the numbers:
 
 - **Pay for what you add.** A feature usually adds code. Pay for it in the same change: find the rule that makes special cases redundant, and delete them. The waiting rule and the asking rule each replaced a list of cases this way.
 - **Keep the grid's exceptions at the documented ones.** A new exception fails the tests of `packages/metrics`. Fix the feature rather than add to `KNOWN`.
+- **Keep the solver and plain code agreeing.** `bun run oracle` asks the solver about goals on one number and runs them in plain code at decimals, a fraction, and integers past 2^53. A proof plain code contradicts is a disagreement; keep the count at 0.
 - **Keep pairs unsurprising.** `bun run pairs` writes each row of the grid inside every other, in every place. A pair's exception where neither row has one is a surprise: two features that fail together. Its count should stay at 0; fix the interaction that makes one.
 - **Never buy a lower number with a worse Lion.** Do not remove a feature, a test, or a message a user needs, and do not squeeze code until it is hard to read.
 - **Check the speed.** Run `bun run bench --against main` twice, since times move by a few percent between runs, and report any benchmark that got slower.

@@ -42,6 +42,7 @@ Each score requires the constraints:
 | tests' time picked, last 30 commits | lower, picking sound | `bun run affected --replay 30` and `--check` |
 | bench total ms, every benchmark | lower | `bun run bench` |
 | surprising pairs, grid | lower | `bun run pairs` |
+| solver disagreements, oracle | lower | `bun run oracle` |
 | flaky checks, telemetry | lower | what the commit hook logged to `out/telemetry.jsonl` |
 | capability passed by agents, per pillar and in all | higher | `bun run loop --agents`, which costs money |
 | agents' first tries that ran | higher | the same |

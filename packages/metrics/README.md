@@ -122,6 +122,23 @@ surprising pairs, grid: 0
 
 Every exception is one a single row already has. The inner row's own variables and the relations it declares are renamed apart first, since a string names what is bound by that name, and a pair whose plain code fails, or gives what is no data, such as a host function's NaN or an exact fraction JSON cannot write, such as 4/3, is left out. `--json` prints every surprise. The properties in `src/tests/pairs.test.ts` run sixty random pairs each time, so a change that makes two features fail together fails the tests. A row you add to the grid is paired with every other.
 
+### The solver against plain code: `bun run oracle`
+
+```bash
+bun run oracle
+```
+
+Checks the solver against plain code, as [`src/oracle.ts`](src/oracle.ts) lays out. Each case is a goal on one number, bounded on both sides and typed by `value/number?` or `value/integer?`, such as "adding a and taking it away gives other than x" for 0 < x < 1. The solver decides whether any value meets it, and where only a few do, which. Plain code runs the same goal with sample points written in: decimals such as 0.1, the fraction one third, integers past 2^53, and 1e-10, where exact arithmetic and a double's part. A case disagrees when the solver proves that no value meets the goal and plain code finds a sample that does, or when a value the solver gives is one plain code refuses. With exact numbers, on 2026-11-22, it printed:
+
+```
+Solver against plain code: 720 cases
+  agree       720
+  undecided   0
+solver disagreements, oracle: 0
+```
+
+The solver proved that no value meets the goal in 465 of the cases, and plain code ran 3,168 sample points. Before numbers were exact, plain code at 0.1 gave (x + 0.2) - 0.2 as 0.10000000000000003, which such a proof contradicts. The properties in `src/tests/oracle.test.ts` judge 120 random cases each run, and the listed mutation that makes plain code add decimals as JavaScript does fails them. The improvement loop scores it as `solver disagreements, oracle`.
+
 ## Speed: `bun run bench`
 
 ```bash

@@ -1,0 +1,24 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run oracle` checks the solver against plain code: goals on one number, bounded and typed by a schema, that the solver decides, run again by plain code at sample points inside the bounds",
+      "says": { "feature": "solver-oracle", "kind": "command", "present": true }
+    },
+    {
+      "quote": "A case disagrees when the solver proves that no value meets the goal and plain code finds a sample that does, or when a value the solver gives is one plain code refuses.",
+      "says": {
+        "behavior": "solver-disagreements",
+        "is": "none",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "solver disagreements, oracle",
+      "says": {
+        "feature": "loop-oracle",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

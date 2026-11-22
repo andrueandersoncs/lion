@@ -79,6 +79,9 @@ bun run capability --agents --budget 25
 # The interop grid over pairs of its rows: features that fail together
 bun run pairs
 
+# The solver checked against plain code at decimals, fractions, and past 2^53
+bun run oracle
+
 # Measure complexity, speed, growth, and how well the tests catch broken code
 bun run measure --against main
 bun run bench --against main

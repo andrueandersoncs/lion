@@ -74,6 +74,10 @@ export const QUESTIONS = {
     label: "record check, history",
     question: { "record check": "history" },
   },
+  solverDisagreements: {
+    label: "solver disagreements, oracle",
+    question: { "solver disagreements": "oracle" },
+  },
   surprising: {
     label: "surprising pairs, grid",
     question: { "surprising pairs": "grid" },
@@ -236,6 +240,13 @@ export const readAgents = (printed: string): Record<string, AgentsRead> => {
 };
 
 const SURPRISING = /^surprising pairs, grid: (\d+)$/m;
+const DISAGREEING = /^solver disagreements, oracle: (\d+)$/m;
+
+/** How many of the oracle's cases the solver and plain code disagree on, from what `bun run oracle` printed. */
+export const readOracle = (printed: string): number | undefined => {
+  const found = DISAGREEING.exec(printed);
+  return found === null ? undefined : Number(found[1]);
+};
 
 /** How many of the pair grid's cells surprise, from what `bun run pairs` printed. */
 export const readPairs = (printed: string): number | undefined => {
@@ -392,6 +403,7 @@ const SCORED = new Set<string>([
     QUESTIONS.benchTotal,
     QUESTIONS.surprising,
     QUESTIONS.flaky,
+    QUESTIONS.solverDisagreements,
   ].map((q) => q.label),
 ]);
 
