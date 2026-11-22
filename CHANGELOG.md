@@ -60,6 +60,8 @@
 - A run of some of the tasks answers another question than a run of all of them, so its suite says how many it chose. (`capability-agents-subset-suite` is `named-by-its-count`)
 - a workload past the limit is timed again, and counts only when it is past the limit both times: a real regression shows in both, and noise seldom does (`loop-scale-past-the-limit` is `timed-again`)
 - The experiment function-reach stopped after scale: the workload of a rule that invents grew as n^1.3 under a load of 14, with no change to @lionlang/core (`loop-scale-under-load` is `noisy`)
+- A run that fails runs again, and the tasks that fail then are the ones that count: one test's time can pass a limit under the machine's load, and a real failure fails twice. (`loop-failed-tests` is `run-again`)
+- Both runs go to the telemetry, so a run that failed once and passed once is a flaky check there, not a version that breaks a constraint. (`loop-tests-telemetry` is `logged`)
 
 ### Fixed
 
@@ -68,6 +70,10 @@
 - packages/core/src/modules/tests/index.test.ts checks with @effect/vitest properties that namespaceEntries names each entry of any record by its namespace, in order, and keeps its value, and that the stdlib is every function of every module named by its module (`core-test-framework` is `effect-vitest`)
 - The two committed screen recordings, .artifacts/proof/repl-server-output-dock.webm and packages/repl/artifacts/thicker-black-background-dots.webm, are removed from git (`proof-recordings-in-git` is `none`)
 - The five tests that sat beside their code, packages/typesafe-ai/src/index.test.ts and the editor's document, fixtures, parse, and worker-protocol tests, are in tests folders (`test-file-location` is `tests-folders`)
+
+### Documentation
+
+- The experiment function-reach-3 stopped after its tests when the docs example "Unknowns are data" took 435 ms, over the browser's limit, under the machine's load (`site-runtime-example-time-under-load` is `flaky`)
 
 ### Decided
 

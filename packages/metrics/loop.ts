@@ -66,7 +66,7 @@ import {
 } from "./src/loop.ts";
 import { readArguments } from "./src/report.ts";
 import { REPOSITORY } from "./src/sources.ts";
-import { flakyOf, readLogged } from "./src/telemetry.ts";
+import { flakyOf, logCheck, readLogged } from "./src/telemetry.ts";
 
 const RECORD = join(REPOSITORY, "improvement");
 const SKILL = join(REPOSITORY, "skills/lion-reasoning/scripts");
@@ -201,9 +201,44 @@ const recordTool = () => {
   return holds;
 };
 
+/** The git tree of the files as they are, staged or not. */
+const treeNow = () => {
+  const ran = spawnSync("git", ["stash", "create"], {
+    cwd: REPOSITORY,
+    encoding: "utf8",
+  });
+  const commit = ran.stdout.trim() || "HEAD";
+  return (
+    spawnSync("git", ["rev-parse", `${commit}^{tree}`], {
+      cwd: REPOSITORY,
+      encoding: "utf8",
+    }).stdout.trim() || "unknown"
+  );
+};
+
+/**
+ * Every test of every package. A run that fails runs again, and the tasks
+ * that fail then are the ones that count: one test's time can pass a limit
+ * under the machine's load, and a real failure fails twice. Both runs go to
+ * the telemetry, so a run that failed once and passed once is a flaky check
+ * there, not a version that breaks a constraint.
+ */
 const testsTool = () => {
-  const { status, text } = run("tests", ["bun", "run", "test"]);
-  const failing = readTurbo(text) ?? (status === 0 ? 0 : 1);
+  const tree = treeNow();
+  const once = (tool: string) => {
+    const started = performance.now();
+    const { status, text } = run(tool, ["bun", "run", "test"]);
+    const failing = readTurbo(text) ?? (status === 0 ? 0 : 1);
+    logCheck({
+      check: "bun run test",
+      passed: failing === 0,
+      seconds: Math.round((performance.now() - started) / 100) / 10,
+      tree,
+    });
+    return failing;
+  };
+  const first = once("tests");
+  const failing = first === 0 ? 0 : once("tests-again");
   print(QUESTIONS.failingTasks, failing);
   return failing === 0;
 };

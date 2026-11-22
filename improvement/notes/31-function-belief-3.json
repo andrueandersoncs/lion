@@ -1,0 +1,18 @@
+{
+  "beliefs": [
+    {
+      "id": "function-3",
+      "tries": "function-reach",
+      "statement": "With the functions that build the library's functions counted as reached at load, and V8's names read as the parse names them, picking by function is sound for every listed mutation and picks about 60% of the tests' time over the last 30 commits, while every requirement holds",
+      "predicts": [
+        { "question": { "tests' time picked": "last 30 commits" }, "value": 60 },
+        { "question": { "picking unsound": "listed mutations" }, "value": 0 },
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 }
+      ]
+    }
+  ]
+}

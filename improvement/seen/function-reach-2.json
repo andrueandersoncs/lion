@@ -1,0 +1,7 @@
+{
+ "hashes": {
+  ".": "d138d27343e806c2a7c23763924433cc03295c46"
+ },
+ "kind": "ran",
+ "what": "bun run loop scores \"--skip\" \"bench,capability,pairs\" \"--fail-fast\""
+}

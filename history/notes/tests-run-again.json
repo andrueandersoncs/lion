@@ -1,0 +1,28 @@
+{
+  "claims": [
+    {
+      "quote": "A run that fails runs again, and the tasks that fail then are the ones that count: one test's time can pass a limit under the machine's load, and a real failure fails twice.",
+      "says": {
+        "behavior": "loop-failed-tests",
+        "is": "run-again",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "Both runs go to the telemetry, so a run that failed once and passed once is a flaky check there, not a version that breaks a constraint.",
+      "says": {
+        "behavior": "loop-tests-telemetry",
+        "is": "logged",
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "The experiment function-reach-3 stopped after its tests when the docs example \"Unknowns are data\" took 435 ms, over the browser's limit, under the machine's load",
+      "says": {
+        "behavior": "site-runtime-example-time-under-load",
+        "is": "flaky",
+        "area": "site"
+      }
+    }
+  ]
+}

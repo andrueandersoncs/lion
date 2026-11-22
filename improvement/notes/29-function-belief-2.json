@@ -1,0 +1,18 @@
+{
+  "beliefs": [
+    {
+      "id": "function-2",
+      "tries": "function-reach",
+      "statement": "Read by function, with a map refused when a package's tests fail and a scale workload timed again before it fails a version, the tests' time picked over the last 30 commits stays at the 61% the first run of this direction showed, picking stays sound, and every requirement holds",
+      "predicts": [
+        { "question": { "tests' time picked": "last 30 commits" }, "value": 61 },
+        { "question": { "picking unsound": "listed mutations" }, "value": 0 },
+        { "question": { "failing test tasks": "all packages" }, "value": 0 },
+        { "question": { "record check": "history" }, "value": "holds" },
+        { "question": { "instrument lines removed": "since the base" }, "value": 0 },
+        { "question": { "undocumented grid exceptions": "core" }, "value": 0 },
+        { "question": { "workloads faster than linear": "scale" }, "value": 0 }
+      ]
+    }
+  ]
+}
