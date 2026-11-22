@@ -1,0 +1,13 @@
+{
+  "ships": [
+    {
+      "name": "@lionlang/core",
+      "version": "0.16.0"
+    },
+    {
+      "name": "@lionlang/cli",
+      "version": "0.15.0"
+    }
+  ],
+  "summary": "Every number is exact, as Scheme's exact numbers are: a number a program writes is the value its digits write, arithmetic, sums, and means are exact, `[\"number/add\", 0.1, 0.2]` is 0.3, no sum or product overflows past 2^53, and `[\"number/divide\", 1, 3]` is the fraction 1/3, which `number/toString` writes as `1/3`; so what the solver proves about numbers holds of what plain code computes. `array/zip` pairs up lists, `number/round` takes decimal places, `func/apply` spreads its last list as Scheme's `apply` does, a lambda written with one name in place of its parameters takes any number of arguments, and `and` and `or` of no goals and `number/add` and `number/multiply` of no arguments give Scheme's results. `lion check` also runs lints written in Lion, the first of which warns of a list written as a bare array in a rule, a find, or a query. Each rule a message states is told in one wording wherever it is broken, a relation goal finds its rows through the later goal with fewer rows when that is cheaper, and a message shows a value a host function gives that JSON cannot hold as its kind, such as `<Map>` or `<bigint>`, where a bigint made the message fail before. Breaking: integers past 2^53 - 1 and decimals compute exactly instead of failing or rounding, a fraction no decimal writes has no JSON text, and `array/head` and `array/tail` fail on an empty list."
+}

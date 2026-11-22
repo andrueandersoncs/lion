@@ -2,7 +2,9 @@
 
 # Changelog
 
-## Unreleased
+## 2026-11-22 — @lionlang/core 0.16.0, @lionlang/cli 0.15.0
+
+Every number is exact, as Scheme's exact numbers are: a number a program writes is the value its digits write, arithmetic, sums, and means are exact, `["number/add", 0.1, 0.2]` is 0.3, no sum or product overflows past 2^53, and `["number/divide", 1, 3]` is the fraction 1/3, which `number/toString` writes as `1/3`; so what the solver proves about numbers holds of what plain code computes. `array/zip` pairs up lists, `number/round` takes decimal places, `func/apply` spreads its last list as Scheme's `apply` does, a lambda written with one name in place of its parameters takes any number of arguments, and `and` and `or` of no goals and `number/add` and `number/multiply` of no arguments give Scheme's results. `lion check` also runs lints written in Lion, the first of which warns of a list written as a bare array in a rule, a find, or a query. Each rule a message states is told in one wording wherever it is broken, a relation goal finds its rows through the later goal with fewer rows when that is cheaper, and a message shows a value a host function gives that JSON cannot hold as its kind, such as `<Map>` or `<bigint>`, where a bigint made the message fail before. Breaking: integers past 2^53 - 1 and decimals compute exactly instead of failing or rounding, a fraction no decimal writes has no JSON text, and `array/head` and `array/tail` fail on an empty list.
 
 ### Breaking
 
@@ -98,6 +100,9 @@
 - a lambda that takes its arguments as a list gave its own body back as data when one of its arguments was a relation call, found by the pairs of the interop grid (`rest-parameter-goal-argument-before` is `body-as-data`)
 - Every cause the rules know is printed, 0 where no try failed so, so a cause that went away answers its question. (`loop-agent-cause-absent` is `zero`)
 - The message of a goal that cannot run says so when it holds such a call: `["in", ["?a", "?b"], ["quote", [[1, 2], [3, 4]]]]` is refused with `["?a","?b"] calls "?a", since an array is always a call. To match a list, write ["array/make","?a","?b"].` (`unsafe-goal-list-written-as-call` is `says-how-to-write-the-list`)
+- With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
+- number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
+- The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
 - A relation goal finds its rows through an index on the values it knows, or, when a later relation goal holds every variable it binds and has fewer rows for the answer, through that goal's rows (`join-through-later-goal` is `fewest-rows`)
 - It changes what an answer costs, never which answers come or the order they come in. (`join-through-later-goal-answers` is `unchanged`)
 - A filter between the two still runs on every answer of the goals before it (`join-through-later-goal-past-filter` is `not-read-early`)
@@ -133,9 +138,6 @@
 - `=` is true of it only for the same value, as Racket's `equal?` compares values it cannot look into (`host-value-equality` is `identity`)
 - What the logic database holds, a fact or a derived row, and what a question answers, a `query` or a `find`, stay data, as they are for a function: such a value there fails with Lion's error. (`host-value-in-answer` is `error`; `host-value-in-fact` is `error`)
 - `packages/examples/CLAUDE.md` says the tests use Vitest with `@effect/vitest` and run with `bun run test`, as AGENTS.md does, and no longer says to use `bun test` (`test-runner` is `vitest`)
-- With every number exact, Newton's square root of 1,000,000 from the guess 1 took 4 seconds, its fractions doubling their digits each step, as exact numbers do in Scheme; the reference program rounds each guess to 12 places and takes milliseconds (`newton-square-root-exact` is `rounds-each-guess`)
-- number/add and number/multiply keep Scheme's results for no arguments, 0 and 1, over exact numbers (`number-add-of-none-exact` is `zero`)
-- The probe si-number-gap, run again after the merge, finds plain code agrees with the solver: (0.1 + 0.2) - 0.2 is 0.1, and 2^53 + 1 is not 2^53, so the research model now calls the solver checked against plain code worth adopting (`research-differential-oracles` is `worth-adopting`)
 
 ### Fixed
 
@@ -148,12 +150,12 @@
 - A name as V8 reports it, read as the parse names the function: without the suffix a bundler adds to keep names apart, the word an accessor or a bound function starts with, or the object a property is written in, as `module.add` is the property `add`. (`affected-v8-property-name` is `last-part`)
 - No map was written: make the tests pass, with nothing else running, and map again. (`reach-map-after-failed-tests` is `refused`)
 - The list is what `array/make` gives with the arguments: a goal among them is asked, so `[["lambda", "args", "args"], ["small", 1]]` gives `[true]` when `small` holds 1 (`rest-parameter-goal-argument` is `asked`)
+- With exact numbers merged, the corpus task sicp-1.2.1-factorial-exact is no gap: its reference program gives 25! as 15511210043330985984000000, and the public corpus passes 49 of 55 tasks (`corpus-factorial-exact` is `passed`)
+- An exact fraction no decimal writes, as 4/3, is a value JSON cannot hold, and its JSON fails. (`grid-pairs-fraction` is `no-data`)
 - A program of strings and integers; -0 is 0, as JSON writes it. (`variants-property-negative-zero` is `normalized`)
 - A test that runs git in a folder of its own, and the lion-reasoning skill's scripts, clear the variables a git hook sets to name its repository, so a test the commit hook runs no longer writes `core.bare`, a test identity, or commits to the repository being committed (`git-in-a-hook-for-another-folder` is `own-folder`, was `hook-repository`)
 - A message shows such a value as its kind in angle brackets, as it shows a function as `<function>`: `<Map>`, `<Date>`, `<bigint>`, `<undefined>`, `<NaN>`. (`host-value-in-message` is `kind-in-angle-brackets`, was `json-text-or-crash`)
 - A test that runs git in a folder of its own, and the lion-reasoning skill's scripts, clear the variables a git hook sets to name its repository (`reasoning-skill-git-in-a-hook` is `own-folder`, was `hook-repository`)
-- With exact numbers merged, the corpus task sicp-1.2.1-factorial-exact is no gap: its reference program gives 25! as 15511210043330985984000000, and the public corpus passes 49 of 55 tasks (`corpus-factorial-exact` is `passed`)
-- An exact fraction no decimal writes, as 4/3, is a value JSON cannot hold, and its JSON fails. (`grid-pairs-fraction` is `no-data`)
 
 ### Documentation
 
