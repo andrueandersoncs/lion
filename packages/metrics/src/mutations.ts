@@ -12,6 +12,8 @@ const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 /** The properties that a rule broken in several places is told in one wording. */
 const WORDING_TESTS = "src/logic/tests/wordings.test.ts";
+/** The properties of values a host function gives that JSON cannot hold. */
+const HOST_VALUE_TESTS = "src/evaluation/tests/host-values.test.ts";
 /** The properties of what a string means, by the scopes it is written in. */
 const SCOPE_TESTS = "src/evaluation/tests/scopes.test.ts";
 /** The properties of the analysis, checked against the evaluator. */
@@ -1523,6 +1525,22 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: EXISTENTIAL_TESTS,
   },
 
+  {
+    name: "a message shows a host value JSON cannot hold as JSON text",
+    file: core("logic/terms.ts"),
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    find: "    return callee ?? `<${kindOf(value)}>`;",
+    replace:
+      '    return callee ?? (typeof value === "function" ? "<function>" : value);',
+    tests: [HOST_VALUE_TESTS],
+  },
+  {
+    name: "a message calls every host object an object",
+    file: core("logic/terms.ts"),
+    find: '    return Object.getPrototypeOf(value)?.constructor?.name ?? "object";',
+    replace: '    return "object";',
+    tests: [HOST_VALUE_TESTS],
+  },
   {
     name: "a string that starts with a control character reads as an unknown",
     file: core("logic/terms.ts"),
@@ -4100,6 +4118,30 @@ export const MUTATIONS: readonly Mutation[] = [
     '"label"',
     "outputs.json"
   ),
+  {
+    name: "the record reads the repository a git hook names, not the folder's",
+    file: "packages/history/src/git.ts",
+    find: "      env: ownEnvironment(),\n",
+    replace: "",
+    package: "history",
+    tests: ["src/tests/git.test.ts"],
+  },
+  {
+    name: "git for a folder keeps the variables that name another repository",
+    file: "packages/history/src/git.ts",
+    find: "      ([variable]) => !REPOSITORY_VARIABLES.has(variable)",
+    replace: "      ([variable]) => variable !== undefined",
+    package: "history",
+    tests: ["src/tests/git.test.ts"],
+  },
+  {
+    name: "the reasoning skill's git keeps the variables that name another repository",
+    file: "skills/lion-reasoning/scripts/lib.mjs",
+    find: "      ([variable]) => !REPOSITORY_VARIABLES.has(variable)",
+    replace: "      ([variable]) => variable !== undefined",
+    package: "metrics",
+    tests: ["src/tests/reasoning-skill.test.ts"],
+  },
   {
     name: "a renamed file of the record is traced to the commit that renamed it",
     file: "packages/history/src/git.ts",

@@ -19,7 +19,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "@effect/vitest";
-import { Arbitrary, Effect } from "effect";
+import { Arbitrary, Effect, Schema } from "effect";
 import { canonical, evaluate, load } from "../lion.ts";
 import { CORE, REPOSITORY } from "../sources.ts";
 import { between, element, oneOf, text, word } from "./generators.ts";
@@ -1825,6 +1825,7 @@ interface Versions {
 
 const library = scripts<Versions>("lib.mjs");
 const ignoring = scripts<{
+  readonly ownEnvironment: () => NodeJS.ProcessEnv;
   readonly hasherFor: (
     root: string,
     paths: readonly string[]
@@ -2022,34 +2023,73 @@ describe("the reasoning skill's versions", () => {
   );
 
   it.effect.prop(
-    "hash a path git ignores from the disk, as it is now, in every version",
-    { after: between(0, 2), before: between(1, 2) },
-    ({ after, before }) =>
+    "hash a path git ignores from the disk, as it is now, in every version, whatever repository the environment names",
+    {
+      after: between(0, 2),
+      before: between(1, 2),
+      named: Arbitrary.array(
+        Arbitrary.schema(
+          Schema.Literals(["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"])
+        ),
+        { maxLength: 3 }
+      ),
+    },
+    ({ after, before, named }) =>
       Effect.gen(function* () {
-        const { hasherFor } = yield* Effect.promise(() => ignoring);
+        const { hasherFor, ownEnvironment } = yield* Effect.promise(
+          () => ignoring
+        );
         const root = join(scratch, "ignoring");
         rmSync(root, { force: true, recursive: true });
         mkdirSync(join(root, "dist"), { recursive: true });
-        spawnSync("git", ["init", "-q"], { cwd: root });
+        spawnSync("git", ["init", "-q"], { cwd: root, env: ownEnvironment() });
         writeFileSync(join(root, ".gitignore"), "dist/\n");
         writeFileSync(join(root, "dist/out.js"), `built ${before}`);
-        const then = hasherFor(root, ["dist"])({}, "dist");
-        if (after === 0) {
-          rmSync(join(root, "dist"), { force: true, recursive: true });
-        } else {
-          writeFileSync(join(root, "dist/out.js"), `built ${after}`);
+        // A repository that ignores nothing, which a git hook would name.
+        const decoy = join(scratch, "decoy");
+        rmSync(decoy, { force: true, recursive: true });
+        mkdirSync(decoy, { recursive: true });
+        spawnSync("git", ["init", "-q"], { cwd: decoy, env: ownEnvironment() });
+        const decoyConfig = readFileSync(join(decoy, ".git", "config"), "utf8");
+        const values: Record<string, string> = {
+          GIT_DIR: join(decoy, ".git"),
+          GIT_INDEX_FILE: join(decoy, ".git", "index"),
+          GIT_WORK_TREE: decoy,
+        };
+        const saved = new Map(named.map((n) => [n, process.env[n]]));
+        for (const n of named) {
+          process.env[n] = values[n];
         }
-        const hash = hasherFor(root, ["dist"]);
-        expect({
-          inAnyVersion:
-            hash({ "dist/out.js": "x" }, "dist") === hash({}, "dist"),
-          same: hash({}, "dist") === then,
-          gone: hash({}, "dist") === null,
-        }).toEqual({
-          gone: after === 0,
-          inAnyVersion: true,
-          same: after === before,
-        });
+        try {
+          const then = hasherFor(root, ["dist"])({}, "dist");
+          if (after === 0) {
+            rmSync(join(root, "dist"), { force: true, recursive: true });
+          } else {
+            writeFileSync(join(root, "dist/out.js"), `built ${after}`);
+          }
+          const hash = hasherFor(root, ["dist"]);
+          expect({
+            inAnyVersion:
+              hash({ "dist/out.js": "x" }, "dist") === hash({}, "dist"),
+            same: hash({}, "dist") === then,
+            gone: hash({}, "dist") === null,
+          }).toEqual({
+            gone: after === 0,
+            inAnyVersion: true,
+            same: after === before,
+          });
+        } finally {
+          for (const [n, value] of saved) {
+            if (value === undefined) {
+              delete process.env[n];
+            } else {
+              process.env[n] = value;
+            }
+          }
+        }
+        expect(readFileSync(join(decoy, ".git", "config"), "utf8")).toBe(
+          decoyConfig
+        );
       }),
     { arbitrary: { runs: 30 } }
   );

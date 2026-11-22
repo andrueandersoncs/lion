@@ -38,11 +38,46 @@ const LEADING_NEWLINE = /^\n/;
 const TRAILING_NEWLINES = /\n+$/;
 const RECORD = "\u001e";
 
+/**
+ * The variables that name a repository, as `git rev-parse --local-env-vars`
+ * lists them. A git hook sets some of them for the repository it runs in.
+ */
+const REPOSITORY_VARIABLES = new Set([
+  "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+  "GIT_COMMON_DIR",
+  "GIT_CONFIG",
+  "GIT_CONFIG_COUNT",
+  "GIT_CONFIG_PARAMETERS",
+  "GIT_DIR",
+  "GIT_GRAFT_FILE",
+  "GIT_IMPLICIT_WORK_TREE",
+  "GIT_INDEX_FILE",
+  "GIT_NO_REPLACE_OBJECTS",
+  "GIT_OBJECT_DIRECTORY",
+  "GIT_PREFIX",
+  "GIT_REPLACE_REF_BASE",
+  "GIT_SHALLOW_FILE",
+  "GIT_WORK_TREE",
+]);
+
+/**
+ * The environment without the variables that name a repository, so that git
+ * run in a folder reads and writes the repository of that folder, also
+ * inside a git hook, which names its own.
+ */
+export const ownEnvironment = (): NodeJS.ProcessEnv =>
+  Object.fromEntries(
+    Object.entries(process.env).filter(
+      ([variable]) => !REPOSITORY_VARIABLES.has(variable)
+    )
+  );
+
 const git = (repository: string, ...args: string[]): string => {
   try {
     return execFileSync("git", ["-c", "core.quotePath=false", ...args], {
       cwd: repository,
       encoding: "utf8",
+      env: ownEnvironment(),
       maxBuffer: 256 * 1024 * 1024,
       stdio: ["ignore", "pipe", "pipe"],
     });

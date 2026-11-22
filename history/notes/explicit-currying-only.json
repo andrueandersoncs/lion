@@ -1,0 +1,93 @@
+{
+  "title": "Lion curries only when a program asks: a call with too few arguments fails",
+  "context": "In December 2025 the first evaluator gave a curried function for a special form called with no arguments, so `[\"quote\"]` and `[\"eval\"]` gave functions that took them. A commit soon after made both fail instead and rewrote their tests, still named 'should return a curried function', to expect the error; no commit withdrew the rule, so the project record still held it in force and found Lion breaking it. Since then every function takes as many arguments as it says: a lambda, a library function, a relation, a schema, and a graph algorithm each fail a call with fewer, in one form of message, and `func/partial` gives a function the arguments it has and takes the rest later.",
+  "decision": "Lion does not curry by itself. A call with fewer arguments than its function takes fails, for a special form, a lambda, and a library function alike. A program that wants a function of the arguments still to come asks for one, with `func/partial` or a lambda: `[[\"func/partial\", \"number/subtract\", 10], 3]` gives `7`.",
+  "consequences": "A missing argument fails where the call is written, instead of becoming a function that travels on and fails, or gives a wrong value, somewhere else. `[\"quote\"]` and `[\"eval\"]` fail as any other call with too few arguments does. Currying is still one call away, and reads as what it is.",
+  "alternatives": [
+    {
+      "option": "Curry automatically: a function given fewer arguments than it takes gives a function of the rest",
+      "rejected": "A forgotten argument then gives a function where a value was meant, and the error shows far from its cause; Scheme and Racket fail such a call too, and curry only when asked."
+    },
+    {
+      "option": "Curry only special forms given no arguments, as the first evaluator did",
+      "rejected": "It is a rule for a few forms that no other function follows, so a reader has to know which calls curry."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Lion does not curry by itself. A call with fewer arguments than its function takes fails, for a special form, a lambda, and a library function alike.",
+      "says": {
+        "decision": "too-few-arguments",
+        "chose": "error",
+        "over": ["automatic-currying", "curried-special-forms"],
+        "because": "a missing argument should fail where the call is written, and a program that wants a curried function asks for one",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "Lion does not curry by itself.",
+      "says": {
+        "rule": "automatic-currying",
+        "holds": false,
+        "statement": "A special form given no arguments gives a curried function that takes them",
+        "area": "forms",
+        "replaced_by": "explicit-currying"
+      }
+    },
+    {
+      "quote": "A call with fewer arguments than its function takes fails, for a special form, a lambda, and a library function alike. A program that wants a function of the arguments still to come asks for one, with `func/partial` or a lambda",
+      "says": {
+        "rule": "explicit-currying",
+        "holds": true,
+        "statement": "A call with fewer arguments than its function takes fails, and a program curries a function only by asking, with func/partial or a lambda",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "quote-no-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "eval-no-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "lambda-missing-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "library-function-missing-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "func-partial-call",
+            "is": "call-to-wrapped-function"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`[\"quote\"]` and `[\"eval\"]` fail as any other call with too few arguments does.",
+      "says": {
+        "behavior": "quote-no-arguments",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "`[\"quote\"]` and `[\"eval\"]` fail as any other call with too few arguments does.",
+      "says": {
+        "behavior": "eval-no-arguments",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "`[[\"func/partial\", \"number/subtract\", 10], 3]` gives `7`",
+      "says": {
+        "behavior": "func-partial-call",
+        "is": "call-to-wrapped-function",
+        "area": "library"
+      }
+    }
+  ]
+}

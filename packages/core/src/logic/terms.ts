@@ -877,6 +877,25 @@ export const quoted =
       : value;
   };
 
+/**
+ * What a value JSON cannot hold is called where people read it, in angle
+ * brackets as a function is: an object by its class, such as `<Map>`, a
+ * number by its text, such as `<NaN>`, and anything else by its type, such
+ * as `<bigint>` or `<undefined>`.
+ */
+const kindOf = (value: unknown): string => {
+  if (typeof value === "function") {
+    return "function";
+  }
+  if (typeof value === "number") {
+    return String(value);
+  }
+  if (typeof value === "object" && value !== null) {
+    return Object.getPrototypeOf(value)?.constructor?.name ?? "object";
+  }
+  return typeof value;
+};
+
 const DISPLAY: Writer = {
   variable: shownName,
   data: quoted(),
@@ -885,7 +904,7 @@ const DISPLAY: Writer = {
     if (info !== undefined) {
       return lambdaForm(info);
     }
-    return callee ?? (typeof value === "function" ? "<function>" : value);
+    return callee ?? `<${kindOf(value)}>`;
   },
 };
 

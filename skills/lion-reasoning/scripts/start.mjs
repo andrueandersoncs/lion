@@ -18,7 +18,14 @@ import {
   readFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { isMain, projectRoot, SKILL, snapshot, TASKS } from "./lib.mjs";
+import {
+  isMain,
+  ownEnvironment,
+  projectRoot,
+  SKILL,
+  snapshot,
+  TASKS,
+} from "./lib.mjs";
 import { replay } from "./replay.mjs";
 
 const NAME = /^[a-z0-9][a-z0-9-]*$/;
@@ -27,6 +34,7 @@ const NAME = /^[a-z0-9][a-z0-9-]*$/;
 const ignoreTasks = () => {
   const git = spawnSync("git", ["rev-parse", "--git-path", "info/exclude"], {
     encoding: "utf8",
+    env: ownEnvironment(),
   });
   if (git.status !== 0) {
     return;

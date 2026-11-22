@@ -1,0 +1,36 @@
+{
+  "claims": [
+    {
+      "quote": "`packages/examples/CLAUDE.md` says the tests use Vitest with `@effect/vitest` and run with `bun run test`, as AGENTS.md does, and no longer says to use `bun test`",
+      "says": {
+        "rule": "use-bun-test-runner",
+        "holds": false,
+        "statement": "Tests run with bun test instead of jest or vitest",
+        "area": "tests",
+        "replaced_by": "tests-use-vitest-effect"
+      }
+    },
+    {
+      "quote": "`packages/examples/CLAUDE.md` says the tests use Vitest with `@effect/vitest` and run with `bun run test`, as AGENTS.md does, and no longer says to use `bun test`",
+      "says": { "behavior": "test-runner", "is": "vitest", "area": "tests" }
+    },
+    {
+      "quote": "The editor's `DESIGN.md` says the system is crease-first, and what can be manipulated is lifted with weight: graph nodes, the command strip, graph controls, and the overview map cast shadows",
+      "says": {
+        "rule": "crease-first-lightly-lifted",
+        "holds": true,
+        "statement": "The system is crease-first, and what can be manipulated is lifted with weight",
+        "area": "editor",
+        "predicts": [{ "behavior": "graph-node-shadow", "is": "weighty" }]
+      }
+    },
+    {
+      "quote": "The lion-reasoning tests' plain model says a belief that explains no problem is judged in the version it was formed in and every later one, as the skill's core does",
+      "says": {
+        "behavior": "reasoning-non-explaining-belief-judged",
+        "is": "from-formed-version",
+        "area": "skills"
+      }
+    }
+  ]
+}

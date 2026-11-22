@@ -20,6 +20,11 @@ const CASE = join(
   "skills/lion-reasoning/evals/rechecks-what-changed"
 );
 
+/** The skill's environment for git, which names no repository of its own. */
+const skillLibrary = import(
+  join(REPOSITORY, "skills/lion-reasoning/scripts/lib.mjs")
+) as Promise<{ readonly ownEnvironment: () => NodeJS.ProcessEnv }>;
+
 interface Prompt {
   readonly doc: number;
   readonly name: string;
@@ -164,6 +169,7 @@ describe("the rechecks-what-changed eval's world", () => {
           scoreOf,
           writeProject,
         } = yield* Effect.promise(() => worldModule);
+        const { ownEnvironment } = yield* Effect.promise(() => skillLibrary);
         const world = buildWorld(n, seed);
         const ref = reference(world);
         const dir = mkdtempSync(join(tmpdir(), "rechecks-world-"));
@@ -173,6 +179,7 @@ describe("the rechecks-what-changed eval's world", () => {
             execFileSync("git", ["status", "--short"], {
               cwd: dir,
               encoding: "utf8",
+              env: ownEnvironment(),
             });
           const before = status();
           const atFirst = [

@@ -1,0 +1,104 @@
+{
+  "title": "A host function may give any value, and plain code carries it as it is; the database and a question's answers hold data",
+  "context": "In December 2025 the first evaluator failed on any value a call gave that was neither JSON nor a function. A commit soon after let a host function's `undefined` through, and no decision said what such a value is. In November 2026 the standard library was made to give only JSON values, never `undefined`, `NaN`, or `Infinity`, and query answers and derived rows were made to hold data only. Lion already had values JSON cannot hold besides functions: a promise `delay` makes, an unknown a rule invents, a fraction, an instance `object/new` makes, and the predicates `value/undefined?` and `value/symbol?`. A host's own values are often of that kind: a Date, a Map with keys that are not strings, a class instance with methods, a handle to a file or a connection. Run on Lion at the time, plain code carried each of them, in names, lists, records, and lambdas, and `=` compared them by identity; facts, derived rows, and answers refused them. But a message that showed such a value showed a Map as `{}` and `NaN` as `null`, and one that showed a bigint failed with JavaScript's own `TypeError: JSON.stringify cannot serialize BigInt` instead of Lion's error.",
+  "decision": "A host function may give any value, and Lion checks none. Plain code carries a value JSON cannot hold as it is: a name, a list, a record, a lambda's argument, and a function's result give back the very value, and `=` is true of it only for the same value, as Racket's `equal?` compares values it cannot look into. The standard library still gives only JSON values. What the logic database holds, a fact or a derived row, and what a question answers, a `query` or a `find`, stay data, as they are for a function: such a value there fails with Lion's error. A message shows such a value as its kind in angle brackets, as it shows a function as `<function>`: `<Map>`, `<Date>`, `<bigint>`, `<undefined>`, `<NaN>`.",
+  "consequences": "A host can pass its own values through a Lion program without converting them and losing what they are, and a call costs no check of what it gave. Such a value fails where it reaches the database, an answer, a condition, or a library function that needs data, not at the call that made it, and the message names its kind there. Two Maps with the same entries are not `=`. Every message can show every value. A program that keeps a host value keeps it in memory: it cannot be printed as JSON or saved in a snapshot.",
+  "alternatives": [
+    {
+      "option": "Fail at the call on any value that is not JSON or a function, as the first evaluator did",
+      "rejected": "A Date, a Map, a class instance, or a handle has no JSON form that keeps what it is, and `object/new` already makes instances; a host would have to convert every value it hands Lion, and every call would pay a deep check of what it gave."
+    },
+    {
+      "option": "Convert at the call: a Date to its text, a Map to a record, undefined to null",
+      "rejected": "Converting loses identity, methods, and keys that are not strings, and the value a program hands back to the host is no longer the one it was given."
+    },
+    {
+      "option": "Allow such values in facts, derived rows, and answers too",
+      "rejected": "A row is compared by value, indexed, and saved in a snapshot, which a host value cannot be in general; and among a relation call's arguments a value that is not data reads as a schema, so a host value there would be ambiguous."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A host function may give any value, and Lion checks none.",
+      "says": {
+        "decision": "host-function-results",
+        "chose": "any-value-at-runtime",
+        "over": [
+          "json-or-function-only",
+          "converted-to-json",
+          "any-value-everywhere"
+        ],
+        "because": "some host values have no JSON form that keeps what they are, and a row must be data to be compared, indexed, and saved",
+        "area": "host"
+      }
+    },
+    {
+      "quote": "A host function may give any value, and Lion checks none. Plain code carries a value JSON cannot hold as it is",
+      "says": {
+        "rule": "values-are-json",
+        "holds": true,
+        "statement": "The standard library gives only JSON values, and the logic database and a question's answers hold data only; a value a host function gives is carried by plain code as it is",
+        "area": "evaluation",
+        "predicts": [
+          { "behavior": "host-function-returns-undefined", "is": "undefined" },
+          { "behavior": "host-value-carried", "is": "same-value" },
+          { "behavior": "host-value-in-fact", "is": "error" },
+          { "behavior": "host-value-in-answer", "is": "error" },
+          { "behavior": "query-answer-non-json", "is": "error" },
+          { "behavior": "derived-row-non-json", "is": "error" }
+        ]
+      }
+    },
+    {
+      "quote": "A host function may give any value, and Lion checks none.",
+      "says": {
+        "behavior": "host-function-returns-undefined",
+        "is": "undefined",
+        "area": "host"
+      }
+    },
+    {
+      "quote": "a name, a list, a record, a lambda's argument, and a function's result give back the very value",
+      "says": {
+        "behavior": "host-value-carried",
+        "is": "same-value",
+        "area": "host"
+      }
+    },
+    {
+      "quote": "`=` is true of it only for the same value, as Racket's `equal?` compares values it cannot look into",
+      "says": {
+        "behavior": "host-value-equality",
+        "is": "identity",
+        "area": "host",
+        "follows": "racket"
+      }
+    },
+    {
+      "quote": "What the logic database holds, a fact or a derived row, and what a question answers, a `query` or a `find`, stay data, as they are for a function: such a value there fails with Lion's error.",
+      "says": {
+        "behavior": "host-value-in-fact",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "What the logic database holds, a fact or a derived row, and what a question answers, a `query` or a `find`, stay data, as they are for a function: such a value there fails with Lion's error.",
+      "says": {
+        "behavior": "host-value-in-answer",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A message shows such a value as its kind in angle brackets, as it shows a function as `<function>`: `<Map>`, `<Date>`, `<bigint>`, `<undefined>`, `<NaN>`.",
+      "says": {
+        "behavior": "host-value-in-message",
+        "is": "kind-in-angle-brackets",
+        "area": "errors",
+        "fixes": true,
+        "was": "json-text-or-crash"
+      }
+    }
+  ]
+}

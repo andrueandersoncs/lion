@@ -14,6 +14,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, utimesSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { ownEnvironment } from "../../scripts/lib.mjs";
 
 const SALT = "golden-set-v3:7f1c";
 
@@ -374,12 +375,14 @@ export const writeProject = (world, dir, service) => {
     join(dir, "package.json"),
     `${JSON.stringify({ name: "prompts", private: true, scripts: { eval: "node bin/eval.mjs" }, type: "module" }, null, 2)}\n`
   );
-  execFileSync("git", ["init", "-q", "-b", "main"], { cwd: dir });
-  execFileSync("git", ["add", "-A"], { cwd: dir });
+  // The project's own repository, also when a git hook runs this.
+  const own = { cwd: dir, env: ownEnvironment() };
+  execFileSync("git", ["init", "-q", "-b", "main"], own);
+  execFileSync("git", ["add", "-A"], own);
   execFileSync(
     "git",
     [...OWNER, "commit", "-qm", "prompts as of the last eval run"],
-    { cwd: dir }
+    own
   );
   write(
     (p) => p.text,

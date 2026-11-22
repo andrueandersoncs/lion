@@ -5,12 +5,18 @@
  * working tree. Each commit comes back with its message and its parents.
  */
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Schema } from "effect";
-import { readHistory, WORKING_TREE } from "../git.ts";
+import { ownEnvironment, readHistory, WORKING_TREE } from "../git.ts";
 
 const NAMES = ["a", "b", "c", "d"];
 
@@ -77,7 +83,12 @@ const steps = Arbitrary.map(
 const pathOf = (n: string) => `history/changes/${n}.json`;
 
 const git = (cwd: string, ...args: string[]) =>
-  execFileSync("git", args, { cwd, encoding: "utf8", stdio: "pipe" }).trim();
+  execFileSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    env: ownEnvironment(),
+    stdio: "pipe",
+  }).trim();
 
 /**
  * The commit that added each file of `after`, given the files of `before`
@@ -190,5 +201,104 @@ describe("readHistory", () => {
       }
     },
     { arbitrary: { runs: 100 }, timeout: 300_000 }
+  );
+});
+
+/**
+ * The variables a git hook sets, which name a repository: a test that runs
+ * git in a folder of its own inside a hook must not reach that one.
+ */
+const LOCATIONS = [
+  "GIT_DIR",
+  "GIT_WORK_TREE",
+  "GIT_INDEX_FILE",
+  "GIT_COMMON_DIR",
+  "GIT_OBJECT_DIRECTORY",
+] as const;
+
+const locations = Arbitrary.map(
+  Arbitrary.array(Arbitrary.schema(Schema.Literals(LOCATIONS)), {
+    maxLength: LOCATIONS.length,
+    minLength: 1,
+  }),
+  (names) => [...new Set(names)]
+);
+
+/** The environment with none of git's repository variables, for the decoy. */
+const plain = () =>
+  Object.fromEntries(
+    Object.entries(process.env).filter(
+      ([variable]) => !variable.startsWith("GIT_")
+    )
+  );
+
+/** A repository with one commit, which the environment will name. */
+const decoyRepository = () => {
+  const root = mkdtempSync(join(tmpdir(), "lion-decoy-"));
+  const run = (...args: string[]) =>
+    execFileSync("git", args, { cwd: root, encoding: "utf8", env: plain() });
+  run("init", "-q", "-b", "main");
+  writeFileSync(join(root, "kept.txt"), "kept\n");
+  run("add", "kept.txt");
+  run(
+    "-c",
+    "user.name=Decoy",
+    "-c",
+    "user.email=decoy@example.com",
+    "commit",
+    "-q",
+    "-m",
+    "decoy"
+  );
+  const values: Record<(typeof LOCATIONS)[number], string> = {
+    GIT_COMMON_DIR: join(root, ".git"),
+    GIT_DIR: join(root, ".git"),
+    GIT_INDEX_FILE: join(root, ".git", "index"),
+    GIT_OBJECT_DIRECTORY: join(root, ".git", "objects"),
+    GIT_WORK_TREE: root,
+  };
+  const state = () => ({
+    config: readFileSync(join(root, ".git", "config"), "utf8"),
+    head: run("rev-parse", "HEAD").trim(),
+    index: readFileSync(join(root, ".git", "index")).toString("hex"),
+  });
+  return { root, state, values };
+};
+
+describe("git run for a folder, inside a git hook", () => {
+  it.prop(
+    "reads and writes the folder's own repository, whatever repository the environment names",
+    { names: locations, steps },
+    ({ names, steps }) => {
+      const decoy = decoyRepository();
+      const before = decoy.state();
+      const saved = new Map(names.map((n) => [n, process.env[n]]));
+      for (const n of names) {
+        process.env[n] = decoy.values[n];
+      }
+      let root: string | undefined;
+      try {
+        const built = build(steps);
+        root = built.root;
+        const history = readHistory(built.root, "history");
+        expect(history.commits.slice(0, -1).reverse()).toEqual(
+          built.commits.map((c) => expect.objectContaining(c))
+        );
+      } finally {
+        for (const [n, value] of saved) {
+          if (value === undefined) {
+            delete process.env[n];
+          } else {
+            process.env[n] = value;
+          }
+        }
+        if (root !== undefined) {
+          rmSync(root, { force: true, recursive: true });
+        }
+      }
+      expect(decoy.state()).toEqual(before);
+      rmSync(decoy.root, { force: true, recursive: true });
+    },
+    { arbitrary: { runs: 20 }, timeout: 300_000 }
   );
 });

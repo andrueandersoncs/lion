@@ -1,0 +1,24 @@
+{
+  "claims": [
+    {
+      "quote": "A test that runs git in a folder of its own, and the lion-reasoning skill's scripts, clear the variables a git hook sets to name its repository, so a test the commit hook runs no longer writes `core.bare`, a test identity, or commits to the repository being committed",
+      "says": {
+        "behavior": "git-in-a-hook-for-another-folder",
+        "is": "own-folder",
+        "area": "tests",
+        "fixes": true,
+        "was": "hook-repository"
+      }
+    },
+    {
+      "quote": "A test that runs git in a folder of its own, and the lion-reasoning skill's scripts, clear the variables a git hook sets to name its repository",
+      "says": {
+        "behavior": "reasoning-skill-git-in-a-hook",
+        "is": "own-folder",
+        "area": "skills",
+        "fixes": true,
+        "was": "hook-repository"
+      }
+    }
+  ]
+}

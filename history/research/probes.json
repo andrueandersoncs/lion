@@ -1,5 +1,176 @@
 [
   {
+    "case": "host-function-returns-undefined",
+    "area": "host",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "host-values"], "output"],
+          ["quote", "a host function that gives undefined, called: undefined\n"]
+        ],
+        ["quote", "undefined"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "host-value-carried",
+    "area": "host",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "host-values"], "output"],
+          [
+            "quote",
+            "each value, through a name, a lambda, a list, a record, and func/partial: the same value\n"
+          ]
+        ],
+        ["quote", "same-value"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "host-value-equality",
+    "area": "host",
+    "program": [
+      "cond",
+      [
+        [
+          "boolean/and",
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "host-values"], "output"],
+            ["quote", "a Map = itself: true\n"]
+          ],
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "host-values"], "output"],
+            ["quote", "a Map = another Map with the same entries: false\n"]
+          ]
+        ],
+        ["quote", "identity"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "host-value-in-fact",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "boolean/and",
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "host-values"], "output"],
+            ["quote", "Map in a fact: fails with LogicError"]
+          ],
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "host-values"], "output"],
+            ["quote", "bigint in a fact: fails with LogicError"]
+          ]
+        ],
+        ["quote", "error"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "host-value-in-answer",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "boolean/and",
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "host-values"], "output"],
+            ["quote", "Map in an answer of find: fails with LogicError"]
+          ],
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "host-values"], "output"],
+            ["quote", "bigint in an answer of find: fails with LogicError"]
+          ]
+        ],
+        ["quote", "error"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "host-value-in-message",
+    "area": "errors",
+    "program": [
+      "cond",
+      [
+        [
+          "boolean/and",
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "host-values"], "output"],
+            ["quote", "is \"<Map>\", which is not data"]
+          ],
+          [
+            "boolean/and",
+            [
+              "string/includes",
+              ["object/get", ["repo/run", "host-values"], "output"],
+              ["quote", "but got \"<bigint>\""]
+            ],
+            [
+              "string/includes",
+              ["object/get", ["repo/run", "host-values"], "output"],
+              ["quote", "is \"<undefined>\""]
+            ]
+          ]
+        ],
+        ["quote", "kind-in-angle-brackets"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "func-partial-call",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["=", [["func/partial", "number/subtract", 10], 3], 7],
+        ["quote", "call-to-wrapped-function"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "feature": "array/head",
+    "kind": "function",
+    "program": ["value/function?", "array/head"]
+  },
+  {
+    "feature": "array/tail",
+    "kind": "function",
+    "program": ["value/function?", "array/tail"]
+  },
+  {
+    "feature": "first",
+    "kind": "function",
+    "program": ["value/function?", "first"]
+  },
+  {
+    "feature": "rest",
+    "kind": "function",
+    "program": ["value/function?", "rest"]
+  },
+  {
     "feature": "scale-hub-join",
     "kind": "capability",
     "program": [
@@ -18658,7 +18829,7 @@
                 ["repo/read", "packages/history/src/pages.ts"],
                 [
                   "quote",
-                  "      ...outOfDate.map(\n        (name) =>\n          `\u2717 ${name} is not what the model writes. Run: bun run history write`\n      ),\n    ];\n    const ok = failed.length === 0;"
+                  "      ...outOfDate.map(\n        (name) =>\n          `✗ ${name} is not what the model writes. Run: bun run history write`\n      ),\n    ];\n    const ok = failed.length === 0;"
                 ]
               ]
             ]
@@ -18768,7 +18939,7 @@
               [
                 "string/includes",
                 ["repo/read", "packages/history/src/pages.ts"],
-                ["quote", "      ...section(\"\u2717\", checks.fail),\n"]
+                ["quote", "      ...section(\"✗\", checks.fail),\n"]
               ],
               [
                 "string/includes",
@@ -19055,7 +19226,7 @@
               [
                 "string/includes",
                 ["repo/read", "packages/history/src/pages.ts"],
-                ["quote", "      ...section(\"\u2717\", checks.fail),\n"]
+                ["quote", "      ...section(\"✗\", checks.fail),\n"]
               ],
               [
                 "string/includes",
@@ -19200,7 +19371,7 @@
               [
                 "string/includes",
                 ["repo/read", "packages/history/src/pages.ts"],
-                ["quote", "      ...section(\"\u2717\", checks.fail),\n"]
+                ["quote", "      ...section(\"✗\", checks.fail),\n"]
               ],
               [
                 "string/includes",
@@ -19417,7 +19588,7 @@
                 ["repo/read", "packages/history/src/pages.ts"],
                 [
                   "quote",
-                  "      ...section(\"\u2717\", {\n        [`New findings: list each in ${RESEARCH}/known.json with a note, or settle it`]:\n          witnessed(found.fresh),"
+                  "      ...section(\"✗\", {\n        [`New findings: list each in ${RESEARCH}/known.json with a note, or settle it`]:\n          witnessed(found.fresh),"
                 ]
               ],
               [
@@ -24618,14 +24789,8 @@
     "area": "library",
     "program": [
       "cond",
-      [
-        ["number/equals?", ["string/length", "\ud834\udd1e"], 1],
-        ["quote", "one"]
-      ],
-      [
-        ["number/equals?", ["string/length", "\ud834\udd1e"], 2],
-        ["quote", "two"]
-      ],
+      [["number/equals?", ["string/length", "𝄞"], 1], ["quote", "one"]],
+      [["number/equals?", ["string/length", "𝄞"], 2], ["quote", "two"]],
       ["else", ["quote", "other"]]
     ]
   },

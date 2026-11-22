@@ -1,0 +1,123 @@
+[
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-code-lines",
+      "from": "c380ce7",
+      "to": "500bac2",
+      "ended": 6035,
+      "started": 6071
+    },
+    "reason": "500bac2 gave its starting core-code-lines (6071) as main measured on its own, not where c380ce7 ended (6035): the baseline was main, not the commit the last figure came from. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-kind-tests",
+      "from": "c380ce7",
+      "to": "500bac2",
+      "ended": 70,
+      "started": 97
+    },
+    "reason": "500bac2 gave its starting core-kind-tests (97) as main measured on its own, not where c380ce7 ended (70): the baseline was main, not the commit the last figure came from. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "grid-exceptions",
+      "from": "500bac2",
+      "to": "fbc25a1",
+      "ended": 2,
+      "started": 3
+    },
+    "reason": "fbc25a1 gave its starting grid-exceptions (3) as main measured on its own, not where 500bac2 ended (2): the baseline was main, not the commit the last figure came from. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "grid-cells-like-plain-code",
+      "from": "500bac2",
+      "to": "fbc25a1",
+      "ended": 324,
+      "started": 336
+    },
+    "reason": "fbc25a1 gave its starting grid-cells-like-plain-code (336) as main measured on its own, larger grid, not where 500bac2 ended (324) on the grid before: the two figures count different cells. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "grid-cells-like-plain-code",
+      "from": "fbc25a1",
+      "to": "356e74a",
+      "ended": 487,
+      "started": 498
+    },
+    "reason": "356e74a gave its starting grid-cells-like-plain-code (498) as main measured on its own, larger grid, not where fbc25a1 ended (487) on the grid before: the two figures count different cells. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "grid-cells-like-plain-code",
+      "from": "356e74a",
+      "to": "841b511",
+      "ended": 509,
+      "started": 520
+    },
+    "reason": "841b511 gave its starting grid-cells-like-plain-code (520) as main measured on its own, larger grid, not where 356e74a ended (509) on the grid before: the two figures count different cells. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-kind-tests",
+      "from": "786fdc0",
+      "to": "1d5800a",
+      "ended": 120,
+      "started": 122
+    },
+    "reason": "1d5800a started core-kind-tests at 122, where 786fdc0 had ended at 120, and b030d8a between them gave no figure: a commit in the chain recorded none, so the change it made is in no figure. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-code-lines",
+      "from": "b030d8a",
+      "to": "1d5800a",
+      "ended": 9484,
+      "started": 9489
+    },
+    "reason": "1d5800a said it measured against the previous commit, but its starting core-code-lines (9489) is not where b030d8a ended (9484): one of the two was measured on a working tree that held changes its commit did not. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-functions",
+      "from": "b030d8a",
+      "to": "1d5800a",
+      "ended": 1118,
+      "started": 1120
+    },
+    "reason": "1d5800a said it measured against the previous commit, but its starting core-functions (1120) is not where b030d8a ended (1118): one of the two was measured on a working tree that held changes its commit did not. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-paths",
+      "from": "b030d8a",
+      "to": "1d5800a",
+      "ended": 2469,
+      "started": 2474
+    },
+    "reason": "1d5800a said it measured against the previous commit, but its starting core-paths (2474) is not where b030d8a ended (2469): one of the two was measured on a working tree that held changes its commit did not. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-nesting-decisions",
+      "from": "b030d8a",
+      "to": "1d5800a",
+      "ended": 1692,
+      "started": 1695
+    },
+    "reason": "1d5800a said it measured against the previous commit, but its starting core-nesting-decisions (1695) is not where b030d8a ended (1692): one of the two was measured on a working tree that held changes its commit did not. A procedural error, never to be repeated: a figure recorded in a commit starts where the last figure of the same measure ended, measured with the same tools, on the tree the commit holds, against the commit before it, as guidelines/measuring.md says."
+  }
+]

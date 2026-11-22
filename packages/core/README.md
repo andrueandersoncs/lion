@@ -1457,6 +1457,8 @@ Evaluates to `{"speed": {"value": 15, "unit": {"m": 1, "s": -1}}, "no unit left"
 
 `func/reset` and `func/shift` are delimited continuations, as Racket's `reset` and `shift` are: `func/reset` runs a function of no arguments, the delimited part, and `func/shift`, inside it, stops the delimited part where it stands and has the reset give what its handler gives, called with `k`, the rest of the delimited part. A call of `k` with a value resumes it there, as the value of the shift, and gives what the rest gives: the example above is `60`, ten times one more than 5. Generators, coroutines, and early exits are each one use of the two. Unlike Racket's, a continuation resumes once: a second call of one `k` fails, `A continuation was resumed a second time: …`, since the delimited part runs in a fiber of its own that can only go on once.
 
+`func/partial` is how a program curries a function: it gives a function of the arguments still to come, so `[["func/partial", "number/subtract", 10], 3]` is `7`. Lion never curries by itself; a call with fewer arguments than its function takes fails, as it does in Scheme.
+
 `func/apply` calls a function with `obj` as `this`, the arguments given, and then the items of its last argument, a list, as Scheme's `apply` and JavaScript's `Function.prototype.apply` spread it: `["func/apply", "number/add", null, 1, ["array/make", 2, 3]]` is `6`, as `["number/add", 1, 2, 3]` is. A last argument that is not a list fails, as in `"func/apply" takes a list as argument 4 but got 3.`
 
 `func/callback` is especially useful for turning Lion lambdas into JavaScript callbacks while preserving access to the Lion environment.
@@ -1529,6 +1531,20 @@ Then Lion code in [`packages/agent/src/agent.json`](https://github.com/andrueand
 - `match`, `cond`, `begin`, and `define` to orchestrate application flow
 
 That lets Lion drive a non-trivial terminal UI agent entirely from JSON.
+
+### Host values
+
+A host function may give any value, also one JSON cannot hold, such as a `Date`, a `Map`, a `bigint`, an instance of a class, or `undefined`, and Lion checks none. Plain code carries such a value as it is: a name, a list, a record, a lambda's argument, and a function's result give back the very value, and `=` is true of it only for the same value, as Racket's `equal?` is of values it cannot look into. What the logic database holds and what a question answers stay data, as they do for a function, so a fact, a derived row, or an answer of `query` or `find` that holds such a value fails, and a message shows the value as its kind in angle brackets, as it shows a function as `<function>`:
+
+```ts
+const env = { ...stdlib, "host/now": () => new Date(0) };
+// ["begin", ["define", "now", ["host/now"]], ["array/make", "now", ["=", "now", "now"]]]
+//   gives [the very Date, true]
+// ["begin", ["relation", "seen", ["at"]], ["fact", ["seen", ["host/now"]]]]
+//   fails: Facts may only contain data, but the "at" of ["seen","<Date>"] is "<Date>", which is not data.
+```
+
+The standard library itself gives only JSON values.
 
 ### Host functions in rules
 

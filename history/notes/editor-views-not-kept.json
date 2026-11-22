@@ -1,0 +1,48 @@
+{
+  "title": "The graph editor keeps no outline, inspector, or source view, for now",
+  "context": "In September 2026 the graph editor lost its source view, in f27e671, and then its outline and inspector panes, in a564abc, when the semantic graph took the full width of the workspace. No decision was recorded, and when the README was corrected to say the editor no longer has them, the project record found three removals with no decision behind them.",
+  "decision": "The graph editor has no outline pane, inspector pane, or source view. They were not worth their upkeep for now, beside the graph that shows the same program. This may be reversed later, by a decision on the same question.",
+  "consequences": "The editor has one view of a program, the graph, to keep working with every feature of Lion. A reader who wants the program's JSON reads the file. Bringing a view back is a decision that reverses this one, with the upkeep it costs said there.",
+  "alternatives": [
+    {
+      "option": "Keep the outline, the inspector, and the source view beside the graph",
+      "rejected": "Each needed upkeep with every change to the editor and to Lion's forms, for what the graph already shows."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "The graph editor has no outline pane, inspector pane, or source view. They were not worth their upkeep for now",
+      "says": {
+        "decision": "editor-views",
+        "chose": "graph-only",
+        "over": ["outline-inspector-and-source-views"],
+        "because": "the views were not worth their upkeep for now, beside the graph that shows the same program; this may be reversed later",
+        "area": "editor"
+      }
+    },
+    {
+      "quote": "The graph editor has no outline pane, inspector pane, or source view.",
+      "says": {
+        "feature": "editor-outline-pane",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "quote": "The graph editor has no outline pane, inspector pane, or source view.",
+      "says": {
+        "feature": "editor-inspector-pane",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "quote": "The graph editor has no outline pane, inspector pane, or source view.",
+      "says": {
+        "feature": "editor-source-view",
+        "kind": "capability",
+        "present": false
+      }
+    }
+  ]
+}

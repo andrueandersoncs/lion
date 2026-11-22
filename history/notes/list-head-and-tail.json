@@ -1,0 +1,62 @@
+{
+  "title": "A list's first item and the items after it are its head and its tail",
+  "context": "In December 2025 the list module's `first` and `rest` were renamed `head` and `tail`, in 3dc63b1, a commit that gave no reason. They are `array/head` and `array/tail` since the library's names took their modules: `[\"array/head\", [\"array/make\", 1, 2, 3]]` gives `1`, and `array/tail` gives `[2, 3]`. Scheme names them `car` and `cdr`, the parts of a pair; Racket's `racket/list` adds `first` and `rest`; Haskell, Elm, Scala, and F# call them head and tail. The project record found the removal of `first` and `rest` with no decision behind it.",
+  "decision": "Lion keeps `array/head` and `array/tail`. They do what Racket's `first` and `rest` and Scheme's `car` and `cdr` do on a list that has an item, and fail on one that has none.",
+  "consequences": "The names are the ones most languages with lists use for these two functions. A Scheme or Racket programmer looks them up once. Programs that use `array/head` and `array/tail` keep working.",
+  "alternatives": [
+    {
+      "option": "Name them `array/car` and `array/cdr`, as Scheme does",
+      "rejected": "They name the two parts of a pair, and a Lion list is a JSON array, not a chain of pairs."
+    },
+    {
+      "option": "Name them `array/first` and `array/rest`, as Racket does",
+      "rejected": "Renaming them back would break every program that uses `array/head` and `array/tail`, for names no clearer than these."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Lion keeps `array/head` and `array/tail`.",
+      "says": {
+        "decision": "list-head-and-tail-names",
+        "chose": "head-tail",
+        "over": ["car-cdr", "first-rest"],
+        "because": "head and tail are the names most languages with lists use, a Lion list is an array rather than pairs, and renaming them back would break programs",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "In December 2025 the list module's `first` and `rest` were renamed `head` and `tail`",
+      "says": {
+        "feature": "first",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "head"
+      }
+    },
+    {
+      "quote": "In December 2025 the list module's `first` and `rest` were renamed `head` and `tail`",
+      "says": {
+        "feature": "rest",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "tail"
+      }
+    },
+    {
+      "quote": "Lion keeps `array/head` and `array/tail`.",
+      "says": {
+        "feature": "array/head",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "Lion keeps `array/head` and `array/tail`.",
+      "says": {
+        "feature": "array/tail",
+        "kind": "function",
+        "present": true
+      }
+    }
+  ]
+}

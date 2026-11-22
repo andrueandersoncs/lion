@@ -17,6 +17,16 @@ const env = {
 await Effect.runPromise(run(["text/upper", "lion"], env)); // => "LION"
 </code-block>
 <p>Return an Effect for anything asynchronous or anything that can fail, so Lion can wait for it and report failures as typed errors.</p>
+<p>A function may return any value, also one JSON cannot hold, such as a <code>Date</code>, a <code>Map</code>, a <code>bigint</code>, an instance of a class, or <code>undefined</code>. Plain code carries it as it is, through names, lists, records, and lambdas, and <code>=</code> is true of it only for the same value. The logic database and a question's answers hold data only, so a fact, a derived row, or an answer that holds such a value fails, and the message shows the value as its kind, as it shows a function as <code>&lt;function&gt;</code>:</p>
+<code-block lang="ts">
+const env = { ...stdlib, "host/now": () => new Date(0) };
+
+await Effect.runPromise(run(["array/make", ["host/now"]], env)); // => [the Date itself]
+await Effect.runPromise(
+  run(["begin", ["relation", "seen", ["at"]], ["fact", ["seen", ["host/now"]]]], env)
+);
+// fails: Facts may only contain data, but the "at" of ["seen","<Date>"] is "<Date>", which is not data.
+</code-block>
 
 <h2>Add a module of functions</h2>
 <p><code>namespaceEntries</code> prefixes every key of a record, the way the standard library is built:</p>

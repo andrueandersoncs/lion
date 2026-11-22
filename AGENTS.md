@@ -124,7 +124,7 @@ turbo typecheck --filter=@lionlang/core
 ## Commit Guidelines
 
 - Use conventional commit format when possible
-- For a change to `@lionlang/core`, state the measured change in complexity and speed in the commit message
+- For a change to `@lionlang/core`, state the measured change in complexity and speed in the commit message, measured against the commit before it on the tree you commit, so each figure starts where the last one ended (see [Measuring Complexity](guidelines/measuring.md#measuring-complexity))
 - Run tests and linting before committing
 - Ensure type checking passes
 - For multi-package changes, test both packages

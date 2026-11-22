@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 231 questions have been decided, 105 records explain them, and of what the records assert, 686 hold when Lion is run, 2 are broken, 388 are stated but not checked by running Lion, and 34 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 235 questions have been decided, 109 records explain them, and of what the records assert, 703 hold when Lion is run, 0 are broken, 396 are stated but not checked by running Lion, and 34 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -237,6 +237,10 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`lambda-rest-parameter`](#lambda-rest-parameter) | `one-name-for-all` | [A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme](#lambda-rest-parameter) |
 | 2026-11-21 | [`fixing-pays-off`](#fixing-pays-off) | `fix-or-improve` | [An experiment pays off when it fixes a problem it targets, as when it improves a score](#fixing-pays-off) |
 | 2026-11-21 | [`scale-hub-join`](#scale-hub-join) | `scale-workload` | [The scale times the triangles of a graph whose nodes all link to two hubs](#scale-hub-join) |
+| 2026-11-22 | [`editor-views`](#editor-views) | `graph-only` | [The graph editor keeps no outline, inspector, or source view, for now](#editor-views-not-kept) |
+| 2026-11-22 | [`host-function-results`](#host-function-results) | `any-value-at-runtime` | [A host function may give any value, and plain code carries it as it is; the database and a question's answers hold data](#host-values-at-runtime) |
+| 2026-11-22 | [`list-head-and-tail-names`](#list-head-and-tail-names) | `head-tail` | [A list's first item and the items after it are its head and its tail](#list-head-and-tail) |
+| 2026-11-22 | [`too-few-arguments`](#too-few-arguments) | `error` | [Lion curries only when a program asks: a call with too few arguments fails](#explicit-currying-only) |
 
 <a id="program-representation"></a>
 
@@ -3063,7 +3067,7 @@ Recorded 2026-11-15 in `history/notes/score-improves-past-noise.json`.
 
 **Decision.** A score's runs in a version are its range, and what the version is sure to give is its worst run. The best a score has been is the best of those across versions. A version improves a score when its worst run beats the best that the versions which appeared before it were sure to give; which came before is the order the files first held each state. With one run each this is beating the best so far. Runs of a score that differ are its spread, so `disputed` leaves scores out. The files as they are now have regressed when every run on them is worse than the best.
 
-**Consequences.** Best, improvement, and regression rest on the one notion of what a version is sure to give, so a lucky run counts on neither side. Another run of the new version can only lower what it is sure to give, and another run of an earlier version can only raise what came before, which takes an improvement back: the verdicts follow the evidence, not the order it came in. In the first trial an agent's dropped change ran 11, 11, and 22 ms; a rule that took the best from any single run named it the best on its 11, and under this rule the best is 13, the worst run of the version the agent kept. The skill asks for the same number of runs on each version, since a version run once has only the one run to be sure of. `why` on an improvement ends in the runs it compared and a check such as `["number/lessThan", 62, 117]`, because the rules compare the values as recorded: one rule each for lower and higher, where negating lower-is-better scores would have saved three rules and shown `-62 > -117`.
+**Consequences.** Best, improvement, and regression rest on the one notion of what a version is sure to give, so a lucky run counts on neither side. Another run of a version can only leave what it is sure to give as it was or make it worse. On the new version, that can take an improvement back. On an earlier version, it can only keep an improvement or make it larger, and only the first run of an earlier version that had none can take one back: the verdicts follow the evidence, not the order it came in. In the first trial an agent's dropped change ran 11, 11, and 22 ms; a rule that took the best from any single run named it the best on its 11, and under this rule the best is 13, the worst run of the version the agent kept. The skill asks for the same number of runs on each version, since a version run once has only the one run to be sure of. `why` on an improvement ends in the runs it compared and a check such as `["number/lessThan", 62, 117]`, because the rules compare the values as recorded: one rule each for lower and higher, where negating lower-is-better scores would have saved three rules and shown `-62 > -117`.
 
 **Alternatives considered.**
 
@@ -3078,13 +3082,13 @@ Recorded 2026-11-15 in `history/notes/score-improves-past-noise.json`.
 - Holds when Lion is run: `reasoning-why-improvement` is `runs-and-check`. "`why` on an improvement ends in the runs it compared and a check such as `["number/lessThan", 62, 117]`"
 - Stated, not checked by running Lion: decided `score-direction`: `rule-per-direction`. "one rule each for lower and higher, where negating lower-is-better scores would have saved three rules and shown `-62 > -117`"
 - Stated, not checked by running Lion: `reasoning-experiment-loop` exists. "The reasoning skill now keeps the record of an experiment loop"
-- Broken: Lion does otherwise: rule `score-improves-past-noise` holds. "A version improves a score when its worst run beats the best that any earlier version was sure to give"
+- Holds when Lion is run: rule `score-improves-past-noise` holds. "A version improves a score when its worst run beats the best that any earlier version was sure to give"
 - Holds when Lion is run: `reasoning-score-sure-to-give` is `worst-run`. "what the version is sure to give is its worst run"
 - Holds when Lion is run: `reasoning-score-best` is `best-sure-to-give-across-versions`. "The best a score has been is the best of those across versions."
 - Holds when Lion is run: `reasoning-score-one-run-each` is `beats-best-so-far`. "With one run each this is beating the best so far."
 - Holds when Lion is run: `reasoning-score-runs-differ` is `spread-not-dispute`. "Runs of a score that differ are its spread, so `disputed` leaves scores out."
 - Holds when Lion is run: `reasoning-current-runs-all-worse-than-best` is `regressed`. "The files as they are now have regressed when every run on them is worse than the best."
-- Broken: Lion does otherwise: `reasoning-improvement-after-better-earlier-run` is `taken-back`. "another run of an earlier version can only raise what came before, which takes an improvement back"
+- Holds when Lion is run: `reasoning-improvement-after-better-earlier-run` is `kept`. "On an earlier version, it can only keep an improvement or make it larger"
 - Holds when Lion is run: `reasoning-runs-per-version` is `same-number`. "The skill asks for the same number of runs on each version"
 
 <a id="score-improvement"></a>
@@ -5306,3 +5310,138 @@ Recorded 2026-11-21 in `history/notes/scale-hub-join.json`.
 
 - Stated, not checked by running Lion: decided `scale-hub-join`: `scale-workload`. "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs, laid out as the join-gap run's generator lays them."
 - Holds when Lion is run: `scale-hub-join` exists. "`bun run scale` times a second join, the triangles among n edges with each node linked to and from two hubs"
+
+<a id="editor-views"></a>
+
+## editor-views
+
+Now: `graph-only`.
+
+- 2026-11-22 `editor-views`: `graph-only` over `outline-inspector-and-source-views`: "The graph editor has no outline pane, inspector pane, or source view. They were not worth their upkeep for now" (`editor-views-not-kept.json`)
+
+<a id="editor-views-not-kept"></a>
+
+### The graph editor keeps no outline, inspector, or source view, for now
+
+Recorded 2026-11-22 in `history/notes/editor-views-not-kept.json`.
+
+**Context.** In September 2026 the graph editor lost its source view, in f27e671, and then its outline and inspector panes, in a564abc, when the semantic graph took the full width of the workspace. No decision was recorded, and when the README was corrected to say the editor no longer has them, the project record found three removals with no decision behind them.
+
+**Decision.** The graph editor has no outline pane, inspector pane, or source view. They were not worth their upkeep for now, beside the graph that shows the same program. This may be reversed later, by a decision on the same question.
+
+**Consequences.** The editor has one view of a program, the graph, to keep working with every feature of Lion. A reader who wants the program's JSON reads the file. Bringing a view back is a decision that reverses this one, with the upkeep it costs said there.
+
+**Alternatives considered.**
+
+- Keep the outline, the inspector, and the source view beside the graph. Each needed upkeep with every change to the editor and to Lion's forms, for what the graph already shows.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `editor-views`: `graph-only`. "The graph editor has no outline pane, inspector pane, or source view. They were not worth their upkeep for now"
+- Stated, not checked by running Lion: `editor-outline-pane` is removed. "The graph editor has no outline pane, inspector pane, or source view."
+- Stated, not checked by running Lion: `editor-inspector-pane` is removed. "The graph editor has no outline pane, inspector pane, or source view."
+- Stated, not checked by running Lion: `editor-source-view` is removed. "The graph editor has no outline pane, inspector pane, or source view."
+
+<a id="host-function-results"></a>
+
+## host-function-results
+
+Now: `any-value-at-runtime`.
+
+- 2026-11-22 `host-function-results`: `any-value-at-runtime` over `json-or-function-only`, `converted-to-json`, `any-value-everywhere`: "A host function may give any value, and Lion checks none." (`host-values-at-runtime.json`)
+
+<a id="host-values-at-runtime"></a>
+
+### A host function may give any value, and plain code carries it as it is; the database and a question's answers hold data
+
+Recorded 2026-11-22 in `history/notes/host-values-at-runtime.json`.
+
+**Context.** In December 2025 the first evaluator failed on any value a call gave that was neither JSON nor a function. A commit soon after let a host function's `undefined` through, and no decision said what such a value is. In November 2026 the standard library was made to give only JSON values, never `undefined`, `NaN`, or `Infinity`, and query answers and derived rows were made to hold data only. Lion already had values JSON cannot hold besides functions: a promise `delay` makes, an unknown a rule invents, a fraction, an instance `object/new` makes, and the predicates `value/undefined?` and `value/symbol?`. A host's own values are often of that kind: a Date, a Map with keys that are not strings, a class instance with methods, a handle to a file or a connection. Run on Lion at the time, plain code carried each of them, in names, lists, records, and lambdas, and `=` compared them by identity; facts, derived rows, and answers refused them. But a message that showed such a value showed a Map as `{}` and `NaN` as `null`, and one that showed a bigint failed with JavaScript's own `TypeError: JSON.stringify cannot serialize BigInt` instead of Lion's error.
+
+**Decision.** A host function may give any value, and Lion checks none. Plain code carries a value JSON cannot hold as it is: a name, a list, a record, a lambda's argument, and a function's result give back the very value, and `=` is true of it only for the same value, as Racket's `equal?` compares values it cannot look into. The standard library still gives only JSON values. What the logic database holds, a fact or a derived row, and what a question answers, a `query` or a `find`, stay data, as they are for a function: such a value there fails with Lion's error. A message shows such a value as its kind in angle brackets, as it shows a function as `<function>`: `<Map>`, `<Date>`, `<bigint>`, `<undefined>`, `<NaN>`.
+
+**Consequences.** A host can pass its own values through a Lion program without converting them and losing what they are, and a call costs no check of what it gave. Such a value fails where it reaches the database, an answer, a condition, or a library function that needs data, not at the call that made it, and the message names its kind there. Two Maps with the same entries are not `=`. Every message can show every value. A program that keeps a host value keeps it in memory: it cannot be printed as JSON or saved in a snapshot.
+
+**Alternatives considered.**
+
+- Fail at the call on any value that is not JSON or a function, as the first evaluator did. A Date, a Map, a class instance, or a handle has no JSON form that keeps what it is, and `object/new` already makes instances; a host would have to convert every value it hands Lion, and every call would pay a deep check of what it gave.
+- Convert at the call: a Date to its text, a Map to a record, undefined to null. Converting loses identity, methods, and keys that are not strings, and the value a program hands back to the host is no longer the one it was given.
+- Allow such values in facts, derived rows, and answers too. A row is compared by value, indexed, and saved in a snapshot, which a host value cannot be in general; and among a relation call's arguments a value that is not data reads as a schema, so a host value there would be ambiguous.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `host-function-results`: `any-value-at-runtime`. "A host function may give any value, and Lion checks none."
+- Holds when Lion is run: rule `values-are-json` holds. "A host function may give any value, and Lion checks none. Plain code carries a value JSON cannot hold as it is"
+- Holds when Lion is run: `host-function-returns-undefined` is `undefined`. "A host function may give any value, and Lion checks none."
+- Holds when Lion is run: `host-value-carried` is `same-value`. "a name, a list, a record, a lambda's argument, and a function's result give back the very value"
+- Holds when Lion is run: `host-value-equality` is `identity`. "`=` is true of it only for the same value, as Racket's `equal?` compares values it cannot look into"
+- Holds when Lion is run: `host-value-in-fact` is `error`. "What the logic database holds, a fact or a derived row, and what a question answers, a `query` or a `find`, stay data, as they are for a function: such a value there fails with Lion's error."
+- Holds when Lion is run: `host-value-in-answer` is `error`. "What the logic database holds, a fact or a derived row, and what a question answers, a `query` or a `find`, stay data, as they are for a function: such a value there fails with Lion's error."
+- Holds when Lion is run: `host-value-in-message` is `kind-in-angle-brackets`. "A message shows such a value as its kind in angle brackets, as it shows a function as `<function>`: `<Map>`, `<Date>`, `<bigint>`, `<undefined>`, `<NaN>`."
+
+<a id="list-head-and-tail-names"></a>
+
+## list-head-and-tail-names
+
+Now: `head-tail`.
+
+- 2026-11-22 `list-head-and-tail-names`: `head-tail` over `car-cdr`, `first-rest`: "Lion keeps `array/head` and `array/tail`." (`list-head-and-tail.json`)
+
+<a id="list-head-and-tail"></a>
+
+### A list's first item and the items after it are its head and its tail
+
+Recorded 2026-11-22 in `history/notes/list-head-and-tail.json`.
+
+**Context.** In December 2025 the list module's `first` and `rest` were renamed `head` and `tail`, in 3dc63b1, a commit that gave no reason. They are `array/head` and `array/tail` since the library's names took their modules: `["array/head", ["array/make", 1, 2, 3]]` gives `1`, and `array/tail` gives `[2, 3]`. Scheme names them `car` and `cdr`, the parts of a pair; Racket's `racket/list` adds `first` and `rest`; Haskell, Elm, Scala, and F# call them head and tail. The project record found the removal of `first` and `rest` with no decision behind it.
+
+**Decision.** Lion keeps `array/head` and `array/tail`. They do what Racket's `first` and `rest` and Scheme's `car` and `cdr` do on a list that has an item, and fail on one that has none.
+
+**Consequences.** The names are the ones most languages with lists use for these two functions. A Scheme or Racket programmer looks them up once. Programs that use `array/head` and `array/tail` keep working.
+
+**Alternatives considered.**
+
+- Name them `array/car` and `array/cdr`, as Scheme does. They name the two parts of a pair, and a Lion list is a JSON array, not a chain of pairs.
+- Name them `array/first` and `array/rest`, as Racket does. Renaming them back would break every program that uses `array/head` and `array/tail`, for names no clearer than these.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `list-head-and-tail-names`: `head-tail`. "Lion keeps `array/head` and `array/tail`."
+- Holds when Lion is run: `first` is removed. "In December 2025 the list module's `first` and `rest` were renamed `head` and `tail`"
+- Holds when Lion is run: `rest` is removed. "In December 2025 the list module's `first` and `rest` were renamed `head` and `tail`"
+- Holds when Lion is run: `array/head` exists. "Lion keeps `array/head` and `array/tail`."
+- Holds when Lion is run: `array/tail` exists. "Lion keeps `array/head` and `array/tail`."
+
+<a id="too-few-arguments"></a>
+
+## too-few-arguments
+
+Now: `error`.
+
+- 2026-11-22 `too-few-arguments`: `error` over `automatic-currying`, `curried-special-forms`: "Lion does not curry by itself. A call with fewer arguments than its function takes fails, for a special form, a lambda, and a library function alike." (`explicit-currying-only.json`)
+
+<a id="explicit-currying-only"></a>
+
+### Lion curries only when a program asks: a call with too few arguments fails
+
+Recorded 2026-11-22 in `history/notes/explicit-currying-only.json`.
+
+**Context.** In December 2025 the first evaluator gave a curried function for a special form called with no arguments, so `["quote"]` and `["eval"]` gave functions that took them. A commit soon after made both fail instead and rewrote their tests, still named 'should return a curried function', to expect the error; no commit withdrew the rule, so the project record still held it in force and found Lion breaking it. Since then every function takes as many arguments as it says: a lambda, a library function, a relation, a schema, and a graph algorithm each fail a call with fewer, in one form of message, and `func/partial` gives a function the arguments it has and takes the rest later.
+
+**Decision.** Lion does not curry by itself. A call with fewer arguments than its function takes fails, for a special form, a lambda, and a library function alike. A program that wants a function of the arguments still to come asks for one, with `func/partial` or a lambda: `[["func/partial", "number/subtract", 10], 3]` gives `7`.
+
+**Consequences.** A missing argument fails where the call is written, instead of becoming a function that travels on and fails, or gives a wrong value, somewhere else. `["quote"]` and `["eval"]` fail as any other call with too few arguments does. Currying is still one call away, and reads as what it is.
+
+**Alternatives considered.**
+
+- Curry automatically: a function given fewer arguments than it takes gives a function of the rest. A forgotten argument then gives a function where a value was meant, and the error shows far from its cause; Scheme and Racket fail such a call too, and curry only when asked.
+- Curry only special forms given no arguments, as the first evaluator did. It is a rule for a few forms that no other function follows, so a reader has to know which calls curry.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `too-few-arguments`: `error`. "Lion does not curry by itself. A call with fewer arguments than its function takes fails, for a special form, a lambda, and a library function alike."
+- Stated, not checked by running Lion: rule `automatic-currying` is withdrawn. "Lion does not curry by itself."
+- Holds when Lion is run: rule `explicit-currying` holds. "A call with fewer arguments than its function takes fails, for a special form, a lambda, and a library function alike. A program that wants a function of the arguments still to come asks for one, with `func/partial` or a lambda"
+- Holds when Lion is run: `quote-no-arguments` is `error`. "`["quote"]` and `["eval"]` fail as any other call with too few arguments does."
+- Holds when Lion is run: `eval-no-arguments` is `error`. "`["quote"]` and `["eval"]` fail as any other call with too few arguments does."
+- Holds when Lion is run: `func-partial-call` is `call-to-wrapped-function`. "`[["func/partial", "number/subtract", 10], 3]` gives `7`"

@@ -7,6 +7,10 @@
     "cwd": "packages/cli",
     "command": ["bun", "../history/commands/cli-database.mjs"]
   },
+  "host-values": {
+    "cwd": "packages/history",
+    "command": ["bun", "commands/host-values.mjs"]
+  },
   "host-run": {
     "cwd": "packages/history",
     "command": ["bun", "commands/host-run.mjs"]
