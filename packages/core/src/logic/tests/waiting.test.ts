@@ -174,7 +174,7 @@ describe("an expression that mentions a logic variable", () => {
         ]);
         expect(actual.ok).toBe(false);
         if (model.ok && !actual.ok) {
-          expect(actual.message).toContain("A filter must be true or false");
+          expect(actual.message).toContain("A condition must be true or false");
         }
       }),
     OPTIONS

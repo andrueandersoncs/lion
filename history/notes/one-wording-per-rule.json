@@ -1,0 +1,166 @@
+{
+  "claims": [
+    {
+      "quote": "`in` over a value that is not a list says one thing in plain code and in a rule, naming the expression and its value: `[\"begin\", [\"define\", \"xs\", 5], [\"in\", 1, \"xs\"]]` fails with `\"in\" expects a list, but \"xs\" is 5.`, as a rule whose `?xs` is 5 fails with `\"in\" expects a list, but \"?xs\" is 5.`",
+      "says": {
+        "behavior": "in-over-non-list-message",
+        "is": "names-expression-and-value",
+        "was": "value-only-in-plain-code",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A call in a rule whose function waited for a variable that is not a function says what a call says, and names the call: `5 is not a function, so it cannot be called in [5,1].`",
+      "says": {
+        "behavior": "waiting-call-not-a-function-message",
+        "is": "same-as-plain-code",
+        "was": "own-wording",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A `find`, a rule, and a query that give something other than data say so in the same words: `... produced a value that is not data: ...`, where the query said it produced an answer and the `find` that it found a value.",
+      "says": {
+        "behavior": "not-data-message",
+        "is": "one-wording",
+        "was": "three-wordings",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A schema declared again differently is told as a relation is: `Schema \"S\" is already declared with the shape \"value/number?\".`",
+      "says": {
+        "behavior": "schema-declared-again-message",
+        "is": "same-as-relation",
+        "was": "own-wording",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A relation whose columns or key repeat a name names the column: `Relation \"r\" repeats the column \"a\" in its key.`",
+      "says": {
+        "behavior": "repeated-column-message",
+        "is": "names-column",
+        "was": "no-column-named",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A key or a merge that names a column the relation lacks is told in one wording: `Relation \"r\" has no column \"c\" for its key. Its columns are [\"a\",\"b\"].`",
+      "says": {
+        "behavior": "missing-column-message",
+        "is": "one-wording",
+        "was": "two-wordings",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A fact and a rule for a relation a graph algorithm computes are told the same thing: `[\"graph/pageRank\",\"road\"] is computed from its inputs, so a rule cannot add to it.`",
+      "says": {
+        "behavior": "computed-relation-added-to-message",
+        "is": "one-wording",
+        "was": "two-wordings",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A rule head that invents and aggregates is told what a rule that invents for a relation whose rules aggregate is told: `Rule head ... invents a value for \"c\", whose rules aggregate. A rule that invents values cannot give a row of a relation that aggregates.`",
+      "says": {
+        "behavior": "existential-rule-aggregate-message",
+        "is": "one-wording",
+        "was": "two-wordings",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`exists` and `some` whose goal does not mention the variable they own say it the same way: `exists owns \"?q\", but its goal does not mention it: [\"m\",\"a\",\"?r\"].`",
+      "says": {
+        "behavior": "owned-variable-unmentioned-message",
+        "is": "one-wording",
+        "was": "two-wordings",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A `fact` or `retract` form among the changes of `assuming` says what the form says on its own of what is no relation call, `fact expects relation calls, but found 5.`, and an `assuming` with no change or no expression is told as any form of the wrong shape is: `[\"assuming\",true] is not a well-formed assuming form: assuming takes one or more fact, retract, and rule forms, then an expression, ...`",
+      "says": {
+        "behavior": "assuming-change-not-a-call-message",
+        "is": "same-as-the-form",
+        "was": "own-wording",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A schema that cannot stand for each value it allows gives a listing and the solver the same reason, from one module, `logic/reasons.ts`: a predicate, a schema that names itself, `schema/open` without the schema of its rest, `schema/arrayOf` without the most items, and a shape `schema/open` cannot use.",
+      "says": {
+        "behavior": "schema-standing-reasons",
+        "is": "one-wording",
+        "was": "two-wordings",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "The solver says of a division by zero what plain code says, that it `has no finite result`, of a list of unknown length that it goes `over` one, and of a call of a function no goal binds that it is `a call of a function no goal binds`.",
+      "says": {
+        "behavior": "solver-refusal-wordings",
+        "is": "one-wording",
+        "was": "own-wordings",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A goal of a rule or query that gives neither true nor false says what a condition of `cond` says in plain code: `A condition must be true or false, but [\"string/indexOf\",\"apple\",\"a\"] is 0.`, where it said `A filter must be true or false, ...`.",
+      "says": {
+        "behavior": "filter-not-truth-message",
+        "is": "same-as-cond",
+        "was": "own-wording",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`exists` in a rule head and `some` in a goal, given an expression that computes with a variable they own, say it in one wording: `... computes with a variable that \"exists\" owns. An unknown can stand as an argument, or inside a record or list, but nothing can compute with it.`",
+      "says": {
+        "behavior": "computes-with-unknown-message",
+        "is": "one-wording",
+        "was": "two-wordings",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A question asked while its own rows are being derived ends in the sentence a rule that asks through recursion ends in: `A question, such as a goal under \"not\", cannot go through recursion.`",
+      "says": {
+        "behavior": "question-through-recursion-message",
+        "is": "one-sentence",
+        "was": "two-sentences",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "messages 251 224 -27 (-10.8%)",
+      "says": {
+        "measured": "messages",
+        "before": 251,
+        "after": 224,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "The 224 messages of the core state 163 rules in 22 topics; no rule is stated in several wordings that nothing keeps, and 33 are kept so on purpose.",
+      "says": {
+        "measured": "core-message-rules-to-unify",
+        "before": 27,
+        "after": 0,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "code lines 23,140 23,241 +101 (+0.4%)",
+      "says": {
+        "measured": "core-code-lines",
+        "before": 23140,
+        "after": 23241,
+        "area": "metrics"
+      }
+    }
+  ]
+}

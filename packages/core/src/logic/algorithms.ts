@@ -12,7 +12,7 @@
  * the algorithm runs once for each value a rule or query gives it.
  */
 import { Effect } from "effect";
-import { logicError, takes } from "@/errors/evaluation";
+import { expectsFor, logicError, takes } from "@/errors/evaluation";
 import {
   Atom,
   isGroundValue,
@@ -20,7 +20,6 @@ import {
   logicFunction,
   type RelationInfo,
   relationOf,
-  show,
 } from "@/logic/terms";
 
 export interface AlgorithmInput {
@@ -87,7 +86,7 @@ export const defineAlgorithm = (algorithm: Algorithm) =>
               values.push(arg);
             } else {
               return yield* logicError(
-                `${algorithm.name} expects a ${kind} for "${name}", but found ${show(arg)}.`
+                expectsFor(algorithm.name, kind, name, arg)
               );
             }
           }

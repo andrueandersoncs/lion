@@ -1,0 +1,7 @@
+{
+ "hashes": {
+  ".": "efb2eba5e0e7e582aa31ff95656aae576bfe2d0f"
+ },
+ "kind": "ran",
+ "what": "bun run loop scores \"--skip\" \"pairs,bench,replay,check\" \"--mutations\" \"a goal that is neither true nor false says it in words of its own|some over an expression that computes with its unknown says it in words of its own|in over a value that is not a list in plain code does not name its expression|in over a value that is not a list in a rule does not name its expression|a waiting call of a value that is not a function names the call as the value|a query that gives something other than data says it in words of its own|a relation declared under a schema's name is told the name is a relation|a relation whose columns repeat a name names a column that is not the one repeated|a key that repeats a column is told as the columns would be|a merge that names a column the relation lacks is told as a key would be|a rule for a relation a graph algorithm computes is told as a fact is|a rule head that invents and aggregates names no relation|exists whose goal does not mention its variable is told as some is|a fact form among the changes of assuming is told in words of its own|an assuming with one change and no expression takes the change for its expression|a listing gives a reason of its own for a predicate|the solver gives a reason of its own for schema/open without a rest\""
+}

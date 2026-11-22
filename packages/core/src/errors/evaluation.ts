@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import { show } from "@/logic/terms";
+import { sameValue, show } from "@/logic/terms";
 import { isSpecialFormName } from "@/schemas/evaluation";
 import { ExactExpressionSchema } from "@/schemas/lion-expression";
 
@@ -28,15 +28,13 @@ export class UnboundNameError extends Schema.TaggedError<UnboundNameError>()(
   }
 ) {
   override get message() {
-    if (this.why !== undefined) {
-      return `Nothing is bound to "${this.unbound}". ${this.why}`;
-    }
     const module = this.unbound.slice(0, this.unbound.indexOf("/") + 1);
-    const why =
+    const misspelled =
       this.nearest === null
         ? `Other names begin with "${module}", so it reads as a misspelled name.`
         : `Did you mean "${this.nearest}"?`;
-    return `Nothing is bound to "${this.unbound}". ${why} ${asString(this.unbound)}`;
+    const why = this.why ?? `${misspelled} ${asString(this.unbound)}`;
+    return `Nothing is bound to "${this.unbound}". ${why}`;
   }
 }
 
@@ -82,6 +80,75 @@ export class MalformedFormError extends Schema.TaggedError<MalformedFormError>()
     return `${show(this.expression)} is not a well-formed ${this.form} form: ${this.usage}`;
   }
 }
+
+/**
+ * What an expression gave, beside the expression when they differ: a
+ * message says "found 0" of a value written as it is, and names the
+ * expression that gave it otherwise.
+ */
+const butFound = (expression: unknown, value: unknown, shown = show(value)) =>
+  sameValue(expression, value)
+    ? `found ${shown}`
+    : `${show(expression)} is ${shown}`;
+
+/**
+ * What a condition that is not true or false is told, wherever a condition
+ * stands: a case of `cond`, a filter in a rule or query, and a condition the
+ * solver reasons over. `shown` says what the value is when it is not one.
+ */
+export const notTruth = (condition: unknown, value: unknown, shown?: string) =>
+  `A condition must be true or false, but ${butFound(condition, value, shown)}.`;
+
+/** What `in` is told of a list that is not one, in plain code and in a rule. */
+export const notList = (list: unknown, value: unknown) =>
+  `"in" expects a list, but ${butFound(list, value)}.`;
+
+/**
+ * What a call of a value that is not a function is told: by a call, by a
+ * case of `match`, and by a call that waited for its function, which it
+ * names.
+ */
+export const notAFunction = (fn: unknown, call?: unknown) =>
+  `${show(fn)} is not a function, so it cannot be called${call === undefined ? "" : ` in ${show(call)}`}.`;
+
+/**
+ * What a find, a rule, or a query that gave something other than data is
+ * told: the logic database holds only data, so each says it the same way.
+ */
+export const producedNonData = (what: string, value: unknown) =>
+  `${what} produced a value that is not data: ${show(value)}.`;
+
+/**
+ * What a fact or a rule for a relation a graph algorithm computes is told:
+ * its rows come from its inputs alone.
+ */
+export const computedAddedTo = (call: string, what: string) =>
+  `${call} is computed from its inputs, so ${what} cannot add to it.`;
+
+/**
+ * What a rule that invents values for a relation that aggregates is told,
+ * whether the rule itself aggregates or another rule for the relation does.
+ */
+export const inventsIntoAggregate = (rule: string, relation: string) =>
+  `${rule} invents a value for "${relation}", whose rules aggregate. A rule that invents values cannot give a row of a relation that aggregates.`;
+
+/**
+ * What `exists` in a rule head and `some` in a goal say of an expression
+ * that computes with an unknown they own.
+ */
+export const computesWithUnknown = (what: string, form: "exists" | "some") =>
+  `${what} computes with a variable that "${form}" owns. An unknown can stand as an argument, or inside a record or list, but nothing can compute with it.`;
+
+/**
+ * What a graph algorithm given the wrong kind of value for one of its
+ * columns is told, as it is called and as its relation is asked.
+ */
+export const expectsFor = (
+  who: unknown,
+  kind: string,
+  column: unknown,
+  value: unknown
+) => `${who} expects a ${kind} for "${column}", but found ${show(value)}.`;
 
 /**
  * How to write a string that is a name, so that it stays a string: said

@@ -17,7 +17,7 @@
  * string function on one, is refused by name.
  */
 import { Effect } from "effect";
-import { KeyNotFoundError, logicError } from "@/errors/evaluation";
+import { KeyNotFoundError, logicError, notTruth } from "@/errors/evaluation";
 import { type Environment, lookup, UNBOUND } from "@/evaluation/environment";
 import { call } from "@/evaluation/special-forms/function";
 import { fits } from "@/logic/fit";
@@ -105,9 +105,9 @@ const truthOf = (sym: Sym, what: unknown) => {
   if (sym.kind === "truth") {
     return Effect.succeed(sym.formula);
   }
-  return logicError(
-    `A condition must be true or false, but ${show(what)} is ${sym.kind === "value" ? show(sym.value) : `a ${sym.kind}`}.`
-  );
+  return sym.kind === "value"
+    ? logicError(notTruth(what, sym.value))
+    : logicError(notTruth(what, sym, `a ${sym.kind}`));
 };
 
 type Result = Effect.Effect<Cases, Error>;
@@ -220,7 +220,7 @@ const LIBRARY: Readonly<
           return refused(`${name} by an unknown`);
         }
         return isZero(b.constant)
-          ? logicError(`${name} by zero has no number for its result.`)
+          ? logicError(`${name} by zero has no finite result.`)
           : Effect.succeed(
               one(numberSym(times(a as Linear, divide(ONE, b.constant))))
             );
@@ -300,12 +300,18 @@ const LIBRARY: Readonly<
   },
 };
 
+/** What the solver says of a list it goes over whose length it does not know. */
+const unknownLength = (name: string) =>
+  refused(`${name} over a list whose length the solver does not know`);
+
+/** What the solver says of a function no goal binds that something calls. */
+const unboundFunction = (name: string) =>
+  refused(`${name} of a function no goal binds`);
+
 /** The items of a list, or a refusal when the value is not one of known length. */
 const listOf = (sym: Sym | undefined, name: string) => {
   const items = sym === undefined ? undefined : itemsOf(sym);
-  return items === undefined
-    ? refused(`${name} of a list whose length the solver does not know`)
-    : Effect.succeed(items);
+  return items === undefined ? unknownLength(name) : Effect.succeed(items);
 };
 
 /** A function a library call is given: a known one, or a lambda the solver runs. */
@@ -315,7 +321,7 @@ const functionOf = (sym: Sym | undefined, name: string) => {
   }
   return sym?.kind === "value" && typeof sym.value === "function"
     ? Effect.succeed<unknown>(sym.value)
-    : refused(`${name} of a function no goal binds`);
+    : unboundFunction(name);
 };
 
 const isClosure = (fn: unknown): fn is Extract<Sym, { kind: "closure" }> =>
@@ -513,7 +519,7 @@ export const members = (name: string, lists: Cases, context: Context) => {
   for (const { sym, when } of lists) {
     const items = itemsOf(sym);
     if (items === undefined) {
-      return refused("in over a list whose length the solver does not know");
+      return unknownLength("in");
     }
     for (const [at, item] of items.entries()) {
       const pinned = and(when, [
@@ -901,7 +907,7 @@ export const term = (value: unknown, context: Context, depth = 0): Result => {
       );
     }
     if (mentions(value.fn, context)) {
-      return refused("a call of a function made from a value no goal binds");
+      return unboundFunction("a call");
     }
     return Effect.flatMap(
       Effect.forEach(value.args, (arg) => term(arg, context, depth)),

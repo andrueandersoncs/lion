@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { logicError } from "@/errors/evaluation";
+import { logicError, notTruth } from "@/errors/evaluation";
 import { answer, isWriting } from "@/evaluation/asking";
 import {
   andThen,
@@ -14,14 +14,8 @@ import {
 } from "@/evaluation/environment";
 import { compile } from "@/evaluation/evaluate";
 import { suspend } from "@/evaluation/special-forms/lambda";
-import { isWaiting, LogicValue, sameValue, show } from "@/logic/terms";
+import { isWaiting, LogicValue } from "@/logic/terms";
 import type { CondFormSchema } from "@/schemas/evaluation";
-
-/** What a condition that is not true or false is told. */
-export const notTruth = (condition: unknown, value: unknown) =>
-  sameValue(condition, value)
-    ? `A condition must be true or false, but found ${show(value)}.`
-    : `A condition must be true or false, but ${show(condition)} is ${show(value)}.`;
 
 /**
  * Returns the result of the first case whose condition holds, or null. A

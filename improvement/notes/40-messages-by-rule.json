@@ -1,0 +1,366 @@
+{
+  "observations": [
+    {
+      "id": "messages-by-rule-3",
+      "question": {
+        "seconds of check": "measure",
+        "observation": "messages-by-rule"
+      },
+      "quote": "ran measure: bun run measure, exit 0, 1 s",
+      "source": "messages-by-rule",
+      "value": 1
+    },
+    {
+      "id": "messages-by-rule-4",
+      "question": {
+        "grid exceptions": "core"
+      },
+      "quote": "grid exceptions, core: 3",
+      "source": "messages-by-rule",
+      "tries": "messages-by-rule",
+      "value": 3
+    },
+    {
+      "id": "messages-by-rule-5",
+      "question": {
+        "undocumented grid exceptions": "core"
+      },
+      "quote": "undocumented grid exceptions, core: 0",
+      "source": "messages-by-rule",
+      "value": 0
+    },
+    {
+      "id": "messages-by-rule-6",
+      "question": {
+        "seconds of check": "instruments",
+        "observation": "messages-by-rule"
+      },
+      "quote": "ran instruments: git diff --numstat HEAD -- packages/metrics/src/grid-cases.ts packages/metrics/src/mutations.ts packages/metrics/src/workloads.ts packages/metrics/src/benchmarks.ts packages/metrics/src/code.ts packages/metrics/src/vocabulary.ts packages/metrics/src/affected.json packages/metrics/src/loop.ts packages/metrics/corpus packages/metrics/src/capability.ts history/research/probes.json improvement/steps/00-core.json skills/lion-reasoning/scripts improvement/notes/01-frame.json, exit 0, 0 s",
+      "source": "messages-by-rule",
+      "value": 0
+    },
+    {
+      "id": "messages-by-rule-7",
+      "question": {
+        "instrument lines removed": "since the base"
+      },
+      "quote": "instrument lines removed, since the base: 0",
+      "source": "messages-by-rule",
+      "value": 0
+    },
+    {
+      "id": "messages-by-rule-8",
+      "question": {
+        "flaky checks": "telemetry"
+      },
+      "quote": "flaky checks, telemetry: 0",
+      "source": "messages-by-rule",
+      "tries": "messages-by-rule",
+      "value": 0
+    },
+    {
+      "id": "messages-by-rule-9",
+      "question": {
+        "seconds of check": "capability",
+        "observation": "messages-by-rule"
+      },
+      "quote": "ran capability: bun run capability --json, exit 0, 1 s",
+      "source": "messages-by-rule",
+      "value": 1
+    },
+    {
+      "id": "messages-by-rule-10",
+      "question": {
+        "capability passed": "public",
+        "pillar": "computation"
+      },
+      "quote": "capability passed, public, computation: 25",
+      "source": "messages-by-rule",
+      "tries": "messages-by-rule",
+      "value": 25
+    },
+    {
+      "id": "messages-by-rule-11",
+      "question": {
+        "capability passed": "public",
+        "pillar": "logic"
+      },
+      "quote": "capability passed, public, logic: 14",
+      "source": "messages-by-rule",
+      "tries": "messages-by-rule",
+      "value": 14
+    },
+    {
+      "id": "messages-by-rule-12",
+      "question": {
+        "capability passed": "public",
+        "pillar": "proofs"
+      },
+      "quote": "capability passed, public, proofs: 10",
+      "source": "messages-by-rule",
+      "tries": "messages-by-rule",
+      "value": 10
+    },
+    {
+      "id": "messages-by-rule-13",
+      "question": {
+        "capability passed": "public",
+        "pillar": "all"
+      },
+      "quote": "capability passed, public, all: 49",
+      "source": "messages-by-rule",
+      "tries": "messages-by-rule",
+      "value": 49
+    },
+    {
+      "id": "messages-by-rule-14",
+      "question": {
+        "code lines per passed task": "core"
+      },
+      "quote": "code lines per passed task, core: 474.3",
+      "source": "messages-by-rule",
+      "tries": "messages-by-rule",
+      "value": 474.3
+    },
+    {
+      "id": "messages-by-rule-15",
+      "question": {
+        "messages per passed task": "core"
+      },
+      "quote": "messages per passed task, core: 4.6",
+      "source": "messages-by-rule",
+      "tries": "messages-by-rule",
+      "value": 4.6
+    },
+    {
+      "id": "messages-by-rule-16",
+      "question": {
+        "seconds of check": "scale",
+        "observation": "messages-by-rule"
+      },
+      "quote": "ran scale: bun run scale, exit 0, 41 s",
+      "source": "messages-by-rule",
+      "value": 41
+    },
+    {
+      "id": "messages-by-rule-17",
+      "question": {
+        "workloads faster than linear": "scale"
+      },
+      "quote": "workloads faster than linear, scale: 0",
+      "source": "messages-by-rule",
+      "value": 0
+    },
+    {
+      "id": "messages-by-rule-18",
+      "question": {
+        "seconds of check": "record",
+        "observation": "messages-by-rule"
+      },
+      "quote": "ran record: bun run history check, exit 0, 73 s",
+      "source": "messages-by-rule",
+      "value": 73
+    },
+    {
+      "id": "messages-by-rule-19",
+      "question": {
+        "record check": "history"
+      },
+      "quote": "record check, history: holds",
+      "source": "messages-by-rule",
+      "value": "holds"
+    },
+    {
+      "id": "messages-by-rule-20",
+      "question": {
+        "rules no probe checks": "record"
+      },
+      "quote": "rules no probe checks, record: 96",
+      "source": "messages-by-rule",
+      "tries": "messages-by-rule",
+      "value": 96
+    },
+    {
+      "id": "messages-by-rule-21",
+      "question": {
+        "seconds of check": "tests",
+        "observation": "messages-by-rule"
+      },
+      "quote": "ran tests: bun run test, exit 0, 161 s",
+      "source": "messages-by-rule",
+      "value": 161
+    },
+    {
+      "id": "messages-by-rule-22",
+      "question": {
+        "failing test tasks": "all packages"
+      },
+      "quote": "failing test tasks, all packages: 0",
+      "source": "messages-by-rule",
+      "value": 0
+    },
+    {
+      "id": "messages-by-rule-23",
+      "question": {
+        "seconds of check": "mutations-0",
+        "observation": "messages-by-rule"
+      },
+      "quote": "ran mutations-0: bun run mutate a goal that is neither true nor false says it in words of its own some over an expression that computes with its unknown says it in words of its own in over a value that is not a list in plain code does not name its expression in over a value that is not a list in a rule does not name its expression a waiting call of a value that is not a function names the call as the value a query that gives something other than data says it in words of its own a relation declared under a schema's name is told the name is a relation a relation whose columns repeat a name names a column that is not the one repeated a key that repeats a column is told as the columns would be a merge that names a column the relation lacks is told as a key would be a rule for a relation a graph algorithm computes is told as a fact is a rule head that invents and aggregates names no relation exists whose goal does not mention its variable is told as some is a fact form among the changes of assuming is told in words of its own an assuming with one change and no expression takes the change for its expression a listing gives a reason of its own for a predicate the solver gives a reason of its own for schema/open without a rest, exit 0, 24 s",
+      "source": "messages-by-rule",
+      "value": 24
+    },
+    {
+      "id": "messages-by-rule-24",
+      "question": {
+        "mutation": "a goal that is neither true nor false says it in words of its own"
+      },
+      "quote": "mutation, a goal that is neither true nor false says it in words of its own: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-25",
+      "question": {
+        "mutation": "some over an expression that computes with its unknown says it in words of its own"
+      },
+      "quote": "mutation, some over an expression that computes with its unknown says it in words of its own: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-26",
+      "question": {
+        "mutation": "in over a value that is not a list in plain code does not name its expression"
+      },
+      "quote": "mutation, in over a value that is not a list in plain code does not name its expression: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-27",
+      "question": {
+        "mutation": "in over a value that is not a list in a rule does not name its expression"
+      },
+      "quote": "mutation, in over a value that is not a list in a rule does not name its expression: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-28",
+      "question": {
+        "mutation": "a waiting call of a value that is not a function names the call as the value"
+      },
+      "quote": "mutation, a waiting call of a value that is not a function names the call as the value: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-29",
+      "question": {
+        "mutation": "a query that gives something other than data says it in words of its own"
+      },
+      "quote": "mutation, a query that gives something other than data says it in words of its own: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-30",
+      "question": {
+        "mutation": "a relation declared under a schema's name is told the name is a relation"
+      },
+      "quote": "mutation, a relation declared under a schema's name is told the name is a relation: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-31",
+      "question": {
+        "mutation": "a relation whose columns repeat a name names a column that is not the one repeated"
+      },
+      "quote": "mutation, a relation whose columns repeat a name names a column that is not the one repeated: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-32",
+      "question": {
+        "mutation": "a key that repeats a column is told as the columns would be"
+      },
+      "quote": "mutation, a key that repeats a column is told as the columns would be: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-33",
+      "question": {
+        "mutation": "a merge that names a column the relation lacks is told as a key would be"
+      },
+      "quote": "mutation, a merge that names a column the relation lacks is told as a key would be: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-34",
+      "question": {
+        "mutation": "a rule for a relation a graph algorithm computes is told as a fact is"
+      },
+      "quote": "mutation, a rule for a relation a graph algorithm computes is told as a fact is: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-35",
+      "question": {
+        "mutation": "a rule head that invents and aggregates names no relation"
+      },
+      "quote": "mutation, a rule head that invents and aggregates names no relation: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-36",
+      "question": {
+        "mutation": "exists whose goal does not mention its variable is told as some is"
+      },
+      "quote": "mutation, exists whose goal does not mention its variable is told as some is: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-37",
+      "question": {
+        "mutation": "a fact form among the changes of assuming is told in words of its own"
+      },
+      "quote": "mutation, a fact form among the changes of assuming is told in words of its own: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-38",
+      "question": {
+        "mutation": "an assuming with one change and no expression takes the change for its expression"
+      },
+      "quote": "mutation, an assuming with one change and no expression takes the change for its expression: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-39",
+      "question": {
+        "mutation": "a listing gives a reason of its own for a predicate"
+      },
+      "quote": "mutation, a listing gives a reason of its own for a predicate: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    },
+    {
+      "id": "messages-by-rule-40",
+      "question": {
+        "mutation": "the solver gives a reason of its own for schema/open without a rest"
+      },
+      "quote": "mutation, the solver gives a reason of its own for schema/open without a rest: caught",
+      "source": "messages-by-rule",
+      "value": "caught"
+    }
+  ]
+}

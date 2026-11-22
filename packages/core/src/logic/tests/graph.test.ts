@@ -254,7 +254,9 @@ describe("graph algorithm checks", () => {
             ["road", "?n", "?_", "?_"],
           ])
         )
-      ).toContain("Rules cannot add to");
+      ).toContain(
+        '["graph/pageRank","road"] is computed from its inputs, so a rule cannot add to it.'
+      );
       expect(
         yield* errorMessage(
           graph(

@@ -164,7 +164,7 @@ describe("relation options", () => {
       expect(yield* declare({ key: ["c"] })).toContain('has no column "c"');
       expect(yield* declare({ key: [] })).toContain("at least one key column");
       expect(yield* declare({ key: ["a", "a"] })).toContain(
-        "repeats a key column"
+        'repeats the column "a" in its key'
       );
       expect(yield* declare({ unique: ["a"] })).toContain(
         'Unknown relation option "unique"'

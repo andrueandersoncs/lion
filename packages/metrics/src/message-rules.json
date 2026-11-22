@@ -1177,12 +1177,7 @@
       ],
       "array-is-call"
     ],
-    [
-      "reads",
-      ["quote", "\"in\" expects a list, but found …."],
-      "in-takes-list"
-    ],
-    ["reads", ["quote", "\"in\" expects a list, but … is …."], "in-takes-list"],
+    ["reads", ["quote", "\"in\" expects a list, but …."], "in-takes-list"],
     [
       "reads",
       [
@@ -1206,11 +1201,6 @@
     ],
     [
       "reads",
-      ["quote", "\"…\" is a relation here, so it cannot also name a schema."],
-      "one-name-one-kind"
-    ],
-    [
-      "reads",
       [
         "quote",
         "\"…\" is a relation; bind the value with the relation goal [\"…\", value] instead"
@@ -1219,7 +1209,7 @@
     ],
     [
       "reads",
-      ["quote", "\"…\" is a schema here, so it cannot also name a relation."],
+      ["quote", "\"…\" is a … here, so it cannot also name a …."],
       "one-name-one-kind"
     ],
     [
@@ -1275,14 +1265,9 @@
     ],
     [
       "reads",
-      ["quote", "\"…\" names itself, so it allows values of any size"],
-      "self-naming-unbounded"
-    ],
-    [
-      "reads",
       [
         "quote",
-        "\"…\" was asked about while its own rows were being derived. A question cannot go through recursion."
+        "\"…\" was asked about while its own rows were being derived. A question, such as a goal under \"not\", cannot go through recursion."
       ],
       "question-through-recursion"
     ],
@@ -1310,12 +1295,7 @@
     ],
     [
       "reads",
-      ["quote", "A condition must be true or false, but found …."],
-      "condition-is-boolean"
-    ],
-    [
-      "reads",
-      ["quote", "A condition must be true or false, but … is …."],
+      ["quote", "A condition must be true or false, but …."],
       "condition-is-boolean"
     ],
     [
@@ -1325,11 +1305,6 @@
         "A continuation was resumed a second time: the one func/shift gives goes on once."
       ],
       "continuation-once"
-    ],
-    [
-      "reads",
-      ["quote", "A filter must be true or false, but … is …."],
-      "condition-is-boolean"
     ],
     [
       "reads",
@@ -1523,7 +1498,6 @@
       "database-available"
     ],
     ["reads", ["quote", "Nothing is bound to \"…\". …"], "unbound-name"],
-    ["reads", ["quote", "Nothing is bound to \"…\". … …"], "unbound-name"],
     [
       "reads",
       [
@@ -1544,22 +1518,9 @@
       "reads",
       [
         "quote",
-        "Relation \"…\" has no column \"…\" to merge. Its columns are …."
+        "Relation \"…\" has no column \"…\" for its …. Its columns are …."
       ],
       "column-exists"
-    ],
-    [
-      "reads",
-      [
-        "quote",
-        "Relation \"…\" has no column \"…\" to use as a key. Its columns are …."
-      ],
-      "column-exists"
-    ],
-    [
-      "reads",
-      ["quote", "Relation \"…\" is already declared with …."],
-      "declared-once"
     ],
     [
       "reads",
@@ -1597,29 +1558,8 @@
     ],
     [
       "reads",
-      ["quote", "Relation \"…\" repeats a column name."],
+      ["quote", "Relation \"…\" repeats the column \"…\"…."],
       "columns-distinct"
-    ],
-    [
-      "reads",
-      ["quote", "Relation \"…\" repeats a key column."],
-      "columns-distinct"
-    ],
-    [
-      "reads",
-      [
-        "quote",
-        "Rule head … both aggregates and lists variables in \"exists\". A rule that invents values cannot aggregate."
-      ],
-      "no-invent-into-aggregate"
-    ],
-    [
-      "reads",
-      [
-        "quote",
-        "Rule head … computes with a variable that \"exists\" lists. An unknown can stand as an argument, or inside a record or list, but nothing can compute with it."
-      ],
-      "no-compute-with-unknown"
     ],
     [
       "reads",
@@ -1649,19 +1589,6 @@
       "reads",
       [
         "quote",
-        "Rule … invents a value for \"…\", whose rules aggregate. A rule that invents values cannot give a row of a relation that aggregates."
-      ],
-      "no-invent-into-aggregate"
-    ],
-    [
-      "reads",
-      ["quote", "Rule … produced a value that is not data: …."],
-      "only-data"
-    ],
-    [
-      "reads",
-      [
-        "quote",
         "Rule … … in its head while recursing, which may never finish. …"
       ],
       "new-value-in-recursion"
@@ -1669,21 +1596,11 @@
     ["reads", ["quote", "Rule …: aggregate/… ….…"], "aggregate-value-kind"],
     [
       "reads",
-      ["quote", "Rules cannot add to …: it is computed from its inputs."],
-      "computed-no-rows-of-its-own"
-    ],
-    [
-      "reads",
       [
         "quote",
         "Schema \"…\" asks whether … fits it while checking …. A schema may ask about itself again only about a smaller value, so that its check ends."
       ],
       "schema-self-smaller"
-    ],
-    [
-      "reads",
-      ["quote", "Schema \"…\" is already declared as …."],
-      "declared-once"
     ],
     [
       "reads",
@@ -1746,11 +1663,6 @@
         "The query option \"order\" must be a variable name or a list of them, such as [\"-points\", \"name\"], but found …."
       ],
       "order-option-shape"
-    ],
-    [
-      "reads",
-      ["quote", "The query produced an answer that is not data: …."],
-      "only-data"
     ],
     [
       "reads",
@@ -1892,11 +1804,6 @@
       ],
       "schema-self-paradox"
     ],
-    [
-      "reads",
-      ["quote", "a call of a function made from a value no goal binds"],
-      "solver-unbound-function"
-    ],
     ["reads", ["quote", "a call of …"], "solver-call"],
     ["reads", ["quote", "a function that calls itself"], "solver-recursion"],
     ["reads", ["quote", "a lambda with a contract"], "solver-contract"],
@@ -1948,22 +1855,9 @@
       "reads",
       [
         "quote",
-        "assuming takes fact, retract, and rule forms, then the expression to evaluate as if they were made, as in [\"assuming\", [\"fact\", [\"edge\", \"c\", \"d\"]], [\"path\", \"a\", \"d\"]]."
-      ],
-      "shape-of-assuming"
-    ],
-    [
-      "reads",
-      [
-        "quote",
         "assuming takes one or more fact, retract, and rule forms, then an expression, as in [\"assuming\", [\"fact\", [\"edge\", \"c\", \"d\"]], [\"find\", \"?t\", [\"edge\", \"c\", \"?t\"]]]."
       ],
       "shape-of-assuming"
-    ],
-    [
-      "reads",
-      ["quote", "assuming takes relation calls in its … forms, but found …."],
-      "fact-takes-calls"
     ],
     [
       "reads",
@@ -1973,12 +1867,7 @@
       ],
       "shape-of-begin"
     ],
-    ["reads", ["quote", "computes a new value"], "new-value-in-recursion"],
-    [
-      "reads",
-      ["quote", "computes a new value for …"],
-      "new-value-in-recursion"
-    ],
+    ["reads", ["quote", "computes a new value…"], "new-value-in-recursion"],
     [
       "reads",
       [
@@ -2010,11 +1899,6 @@
         "eval takes one expression, whose value it evaluates, as in [\"eval\", [\"quote\", [\"number/add\", 1, 2]]]."
       ],
       "shape-of-eval"
-    ],
-    [
-      "reads",
-      ["quote", "exists lists \"?…\", but its goal does not mention it: …."],
-      "owned-var-in-goal"
     ],
     [
       "reads",
@@ -2090,11 +1974,6 @@
       "reads",
       ["quote", "has no finite result, or would have more than … digits"],
       "arithmetic-finite"
-    ],
-    [
-      "reads",
-      ["quote", "in over a list whose length the solver does not know"],
-      "solver-list-length"
     ],
     [
       "reads",
@@ -2212,30 +2091,9 @@
       "reads",
       [
         "quote",
-        "schema/arrayOf with no most length allows lists of any length"
-      ],
-      "array-length-unbounded"
-    ],
-    [
-      "reads",
-      [
-        "quote",
         "schema/includes? cannot say whether every value … allows fits …: …"
       ],
       "includes-undecided"
-    ],
-    [
-      "reads",
-      ["quote", "schema/open is not given a record or a list of schemas"],
-      "open-takes-shape"
-    ],
-    [
-      "reads",
-      [
-        "quote",
-        "schema/open with no schema for the rest allows any other keys or items"
-      ],
-      "open-rest-unbounded"
     ],
     [
       "reads",
@@ -2265,19 +2123,6 @@
       "reads",
       ["quote", "snapshot takes nothing, as in [\"snapshot\"]."],
       "shape-of-snapshot"
-    ],
-    [
-      "reads",
-      [
-        "quote",
-        "some expects a relation call, or an \"and\" of them, but found …."
-      ],
-      "described-by-calls"
-    ],
-    [
-      "reads",
-      ["quote", "some stands for \"…\", but its goal does not mention it: …."],
-      "owned-var-in-goal"
     ],
     [
       "reads",
@@ -2342,6 +2187,11 @@
     ],
     [
       "reads",
+      ["quote", "… \"…\" is already declared with …."],
+      "declared-once"
+    ],
+    [
+      "reads",
       [
         "quote",
         "… allows any other keys or items; give it the schema of the rest"
@@ -2369,14 +2219,14 @@
     ["reads", ["quote", "… by an unknown"], "solver-decides-linear"],
     [
       "reads",
-      ["quote", "… by zero has no number for its result."],
+      ["quote", "… by zero has no finite result."],
       "arithmetic-finite"
     ],
     [
       "reads",
       [
         "quote",
-        "… computes with a variable that \"some\" owns. An unknown is described by relation calls whose arguments are values, its variables, or records and lists of those."
+        "… computes with a variable that \"…\" owns. An unknown can stand as an argument, or inside a record or list, but nothing can compute with it."
       ],
       "no-compute-with-unknown"
     ],
@@ -2396,11 +2246,6 @@
     ],
     [
       "reads",
-      ["quote", "… expects a value for \"…\", but found …."],
-      "algorithm-argument-kind"
-    ],
-    [
-      "reads",
       ["quote", "… expects a … for \"…\", but found …."],
       "algorithm-argument-kind"
     ],
@@ -2414,7 +2259,6 @@
       ["quote", "… expects relation calls, but found …."],
       "fact-takes-calls"
     ],
-    ["reads", ["quote", "… found a value that is not data: …."], "only-data"],
     ["reads", ["quote", "… has no JSON text."], "json-text"],
     ["reads", ["quote", "… has no value here."], "inclusion-no-value"],
     [
@@ -2424,6 +2268,14 @@
         "… has no value yet: it waits for a logic variable, or for the rule it is part of to run."
       ],
       "value-waits"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… invents a value for \"…\", whose rules aggregate. A rule that invents values cannot give a row of a relation that aggregates."
+      ],
+      "no-invent-into-aggregate"
     ],
     [
       "reads",
@@ -2443,11 +2295,6 @@
     ],
     [
       "reads",
-      ["quote", "… is a predicate, which does not say which values it accepts"],
-      "predicate-says-nothing"
-    ],
-    [
-      "reads",
       [
         "quote",
         "… is a predicate, which says neither which values it accepts nor what kind they are"
@@ -2456,7 +2303,7 @@
     ],
     [
       "reads",
-      ["quote", "… is computed from its inputs, so it cannot have facts."],
+      ["quote", "… is computed from its inputs, so … cannot add to it."],
       "computed-no-rows-of-its-own"
     ],
     [
@@ -2475,13 +2322,8 @@
     ],
     [
       "reads",
-      ["quote", "… is not a function, so … cannot run."],
+      ["quote", "… is not a function, so it cannot be called…."],
       "call-head-function"
-    ],
-    [
-      "reads",
-      ["quote", "… is not a record or a list of schemas"],
-      "open-takes-shape"
     ],
     [
       "reads",
@@ -2535,11 +2377,6 @@
       ["quote", "… of a function no goal binds"],
       "solver-unbound-function"
     ],
-    [
-      "reads",
-      ["quote", "… of a list whose length the solver does not know"],
-      "solver-list-length"
-    ],
     ["reads", ["quote", "… of two unknowns"], "solver-decides-linear"],
     ["reads", ["quote", "… options are …."], "option-known"],
     [
@@ -2550,8 +2387,23 @@
     ["reads", ["quote", "… or more arguments"], "arity"],
     [
       "reads",
+      ["quote", "… over a list whose length the solver does not know"],
+      "solver-list-length"
+    ],
+    [
+      "reads",
+      ["quote", "… owns \"…\", but its goal does not mention it: …."],
+      "owned-var-in-goal"
+    ],
+    [
+      "reads",
       ["quote", "… produced a row that is not … JSON values: …."],
       "computed-row-shape"
+    ],
+    [
+      "reads",
+      ["quote", "… produced a value that is not data: …."],
+      "only-data"
     ],
     [
       "reads",
@@ -2601,6 +2453,11 @@
     ],
     [
       "kept",
+      "arithmetic-finite",
+      ["quote", "one names the digits a power may have"]
+    ],
+    [
+      "kept",
       "arity",
       ["quote", "one is the message, the others the counts and calls it names"]
     ],
@@ -2616,6 +2473,19 @@
         "quote",
         "each names what is unbound where: the changes of an assuming, the template of a find, a goal"
       ]
+    ],
+    [
+      "kept",
+      "call-head-function",
+      [
+        "quote",
+        "one is an array whose first element is no function as written, the other a first element whose value is not one"
+      ]
+    ],
+    [
+      "kept",
+      "condition-is-boolean",
+      ["quote", "the advice for a question used as a goal"]
     ],
     [
       "kept",
@@ -2691,10 +2561,26 @@
     ],
     [
       "kept",
+      "new-value-in-recursion",
+      [
+        "quote",
+        "the message, the advice for an invented value or a computed one, and what the head makes"
+      ]
+    ],
+    [
+      "kept",
       "one-merge",
       [
         "quote",
         "one compares a rule with the declared merge, the other with an earlier rule"
+      ]
+    ],
+    [
+      "kept",
+      "only-data",
+      [
+        "quote",
+        "the fact form names the column and how to write a string that is a name; the parts fill it"
       ]
     ],
     [
@@ -2717,6 +2603,14 @@
     ],
     [
       "kept",
+      "question-through-recursion",
+      [
+        "quote",
+        "one is found while the rules are read, the other while a question runs; both end in the rule's one sentence"
+      ]
+    ],
+    [
+      "kept",
       "schema-being-declared",
       [
         "quote",
@@ -2730,6 +2624,11 @@
         "quote",
         "one is a schema option that is no name, the other a name no schema is declared under"
       ]
+    ],
+    [
+      "kept",
+      "shape-of-assuming",
+      ["quote", "one names the part that is not a change"]
     ],
     [
       "kept",

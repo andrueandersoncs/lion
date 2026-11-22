@@ -15,6 +15,7 @@ import {
   LogicError,
   logicError,
   MalformedFormError,
+  notTruth,
   UndefinedYetError,
   unboundSet,
   wrongCount,
@@ -35,7 +36,6 @@ import {
 } from "@/evaluation/environment";
 import { declaredIn, definedIn } from "@/evaluation/hoisting";
 import { isBegin } from "@/evaluation/special-forms/begin";
-import { notTruth } from "@/evaluation/special-forms/cond";
 import { Delayed } from "@/evaluation/special-forms/delay";
 import {
   argumentList,

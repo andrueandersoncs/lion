@@ -16,8 +16,14 @@
 import { Effect, Result } from "effect";
 import {
   ArithmeticError,
+  computesWithUnknown,
+  expectsFor,
   LogicError,
   logicError,
+  notAFunction,
+  notList,
+  notTruth,
+  producedNonData,
   steers,
 } from "@/errors/evaluation";
 import { aggregator } from "@/logic/aggregates";
@@ -687,9 +693,7 @@ const run = (
   Effect.gen(function* () {
     const fn = yield* term(model, waiting.fn, vars);
     if (typeof fn !== "function") {
-      return yield* logicError(
-        `${show(fn)} is not a function, so ${show(instantiate(waiting, vars))} cannot run.`
-      );
+      return yield* logicError(notAFunction(fn, instantiate(waiting, vars)));
     }
     const args = yield* tupleOf(model, waiting.args, vars);
     const value = yield* invoke(
@@ -819,9 +823,7 @@ const described = (
       );
     }
     return arg.variables.some((name) => own.has(name))
-      ? logicError(
-          `${show(arg)} computes with a variable that "some" owns. An unknown is described by relation calls whose arguments are values, its variables, or records and lists of those.`
-        )
+      ? logicError(computesWithUnknown(show(arg), "some"))
       : term(model, arg, vars);
   };
   const calls = callsOf(goal) ?? [];
@@ -936,7 +938,12 @@ const candidates = (
       known.push(value);
     } else if (position < inputs) {
       // An input is a value the computation is given, not a schema for one.
-      return `${computed?.callee} expects a value for "${atom.relation.columns[position]}", but found ${show(value)}.`;
+      return expectsFor(
+        computed?.callee,
+        "value",
+        atom.relation.columns[position],
+        value
+      );
     } else {
       patterns.push([position, value]);
     }
@@ -1004,7 +1011,7 @@ const listOf = (model: Model, list: unknown, vars: Vars) =>
   Effect.flatMap(term(model, list, vars), (items) =>
     Array.isArray(items)
       ? Effect.succeed(items as readonly unknown[])
-      : logicError(`"in" expects a list, but ${show(list)} is ${show(items)}.`)
+      : logicError(notList(list, items))
   );
 
 /** A key that is equal for answers that bind the same variables alike. */
@@ -1056,7 +1063,7 @@ export const found = (
       const value = yield* term(model, template, match);
       if (!isGroundValue(value)) {
         return yield* logicError(
-          `${show(instantiate(find, vars))} found a value that is not data: ${show(value)}.`
+          producedNonData(show(instantiate(find, vars)), value)
         );
       }
       values.push(value);
@@ -1183,9 +1190,7 @@ export const holds = (
       return Effect.flatMap(term(model, goal, vars), (value) =>
         typeof value === "boolean"
           ? Effect.succeed(value)
-          : logicError(
-              `A filter must be true or false, but ${show(instantiate(goal, vars))} is ${show(value)}.`
-            )
+          : logicError(notTruth(instantiate(goal, vars), value))
       );
   }
 };
@@ -2195,7 +2200,10 @@ export const rowProblem = (rule: CompiledRule, tuple: readonly unknown[]) => {
   return rule.demand
     ? UNDIRECTED
     : new LogicError({
-        message: `Rule ${show(rule.source)} produced a value that is not data: ${show([rule.head.relation.name, ...tuple])}.`,
+        message: producedNonData(`Rule ${show(rule.source)}`, [
+          rule.head.relation.name,
+          ...tuple,
+        ]),
       });
 };
 
@@ -2791,7 +2799,7 @@ const deriving = (
   }
   return state === "running"
     ? logicError(
-        `"${originalName(name)}" was asked about while its own rows were being derived. A question cannot go through recursion.`
+        `"${originalName(name)}" was asked about while its own rows were being derived. A question, such as a goal under "not", cannot go through recursion.`
       )
     : Effect.andThen(
         derive(model, stratum),
