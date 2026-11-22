@@ -66,6 +66,17 @@ How much a Lion programmer has to know, counted three ways.
 - **Messages.** The distinct messages the evaluator can answer a program with instead of a value. Nearly every one states a rule a program can break, so fewer rules means fewer messages.
 - **The interop grid.** Every kind of expression, in every place an expression can stand.
 
+### Messages by rule: `bun run measure --messages`
+
+A count of messages says how many there are, not whether two of them say the same thing. `src/message-rules.json` is a Lion program that groups them: each rule a message can state, with its topic and one sentence of what it says, the rule each message reads as, and the rules kept in several wordings on purpose, with why each wording stays. `--messages` gives it the messages of the working tree as `bun run measure` counts them, as facts, and prints what its rules derive:
+
+- the rules stated in several wordings that nothing keeps, which are the messages to unify;
+- the rules kept in several wordings, and why;
+- how many rules and messages each topic has;
+- the messages no reading covers yet, and the readings of messages the source no longer has, so a change that adds or rewords a message shows where the model needs a reading.
+
+When you add or reword a message, add its reading as a `reads` fact, and a `stated` fact for a rule it is the first to state.
+
 Lion has two rules for how plain code meets the logic layer: whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it. So an expression gives, in a rule head, a filter, a `find`, or anywhere else, what plain code gives with the variable's value written in. The grid checks that. Its rows are kinds of expression over `?x`, such as a function call, a `cond`, a record, a `find`, or a goal used as a value. Its columns are places: a query, a rule head, a rule body, an argument of a relation, a filter, under `not`, a `find`, an aggregate, inside a waiting `cond`, an invariant, after a snapshot is reloaded, a goal-directed query, and `why`.
 
 Each cell is one of:
@@ -402,4 +413,4 @@ The tools are tested with properties, like the rest of Lion:
 
 - the code measures, against generated functions whose shape says what each measure must be;
 - the grid, for generated facts: every cell gives what plain code gives or is a documented exception, and every documented exception is still one;
-- applying a mutation, counting messages, and printing changes, each against a simpler way of doing the same.
+- applying a mutation, counting messages, grouping them by rule, and printing changes, each against a simpler way of doing the same.

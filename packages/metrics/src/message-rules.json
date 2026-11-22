@@ -1,0 +1,2774 @@
+[
+  "begin",
+  ["relation", "message", ["text"]],
+  ["relation", "stated", ["rule", "topic", "says"]],
+  ["relation", "reads", ["text", "rule"]],
+  ["relation", "kept", ["rule", "because"]],
+  ["relation", "wordings", ["rule", "texts"]],
+  [
+    "rule",
+    ["wordings", "?r", ["aggregate/collect", "?t"]],
+    ["reads", "?t", "?r"],
+    ["message", "?t"]
+  ],
+  ["relation", "several", ["rule", "topic", "says", "texts"]],
+  [
+    "rule",
+    ["several", "?r", "?k", "?s", "?ts"],
+    ["wordings", "?r", "?ts"],
+    ["number/greaterThan", ["array/length", "?ts"], 1],
+    ["stated", "?r", "?k", "?s"]
+  ],
+  ["relation", "to_unify", ["rule", "topic", "says", "texts"]],
+  [
+    "rule",
+    ["to_unify", "?r", "?k", "?s", "?ts"],
+    ["several", "?r", "?k", "?s", "?ts"],
+    ["not", ["kept", "?r", "?_"]]
+  ],
+  ["relation", "topic_size", ["topic", "rules", "messages"]],
+  [
+    "rule",
+    [
+      "topic_size",
+      "?k",
+      ["aggregate/countUnique", "?r"],
+      ["aggregate/count", "?t"]
+    ],
+    ["stated", "?r", "?k", "?_"],
+    ["reads", "?t", "?r"],
+    ["message", "?t"]
+  ],
+  ["relation", "unread", ["text"]],
+  ["rule", ["unread", "?t"], ["message", "?t"], ["not", ["reads", "?t", "?_"]]],
+  ["relation", "gone", ["text", "rule"]],
+  [
+    "rule",
+    ["gone", "?t", "?r"],
+    ["reads", "?t", "?r"],
+    ["not", ["message", "?t"]]
+  ],
+  ["relation", "unstated", ["rule"]],
+  [
+    "rule",
+    ["unstated", "?r"],
+    ["reads", "?_", "?r"],
+    ["not", ["stated", "?r", "?_", "?_"]]
+  ],
+  ["relation", "kept_alone", ["rule"]],
+  [
+    "rule",
+    ["kept_alone", "?r"],
+    ["kept", "?r", "?_"],
+    ["not", ["several", "?r", "?_", "?_", "?_"]]
+  ],
+  [
+    "fact",
+    [
+      "stated",
+      "aggregate-converges",
+      "recursion",
+      ["quote", "A lattice aggregate through recursion must stop improving"]
+    ],
+    [
+      "stated",
+      "aggregate-cycle",
+      "recursion",
+      [
+        "quote",
+        "Every relation in a recursive cycle through an aggregate aggregates with a lattice aggregate"
+      ]
+    ],
+    [
+      "stated",
+      "aggregate-through-recursion",
+      "recursion",
+      ["quote", "Only a lattice aggregate can go through recursion"]
+    ],
+    [
+      "stated",
+      "aggregate-value-kind",
+      "aggregates",
+      [
+        "quote",
+        "An aggregate combines values of the kind it takes: numbers, lists, or all numbers or all strings"
+      ]
+    ],
+    [
+      "stated",
+      "aggregate-whole-argument",
+      "aggregates",
+      [
+        "quote",
+        "An aggregate combines a rule's matches only as a whole argument of the rule's head"
+      ]
+    ],
+    [
+      "stated",
+      "algorithm-argument-kind",
+      "calls",
+      ["quote", "A graph algorithm's argument is the kind its column takes"]
+    ],
+    [
+      "stated",
+      "all-of-no-kind",
+      "standing",
+      [
+        "quote",
+        "schema/allOf says what kind its values are only through a part that does"
+      ]
+    ],
+    [
+      "stated",
+      "all-of-none",
+      "standing",
+      ["quote", "schema/allOf of no schemas allows every value"]
+    ],
+    [
+      "stated",
+      "argument-fits",
+      "calls",
+      ["quote", "Each argument fits the schema its function takes"]
+    ],
+    [
+      "stated",
+      "argument-is-class",
+      "objects",
+      ["quote", "object/new is given a class"]
+    ],
+    [
+      "stated",
+      "argument-is-object",
+      "objects",
+      ["quote", "A method is called on an object"]
+    ],
+    [
+      "stated",
+      "arithmetic-finite",
+      "numbers",
+      ["quote", "An arithmetic function has a finite result"]
+    ],
+    [
+      "stated",
+      "arity",
+      "calls",
+      ["quote", "A call gives a function as many arguments as it takes"]
+    ],
+    [
+      "stated",
+      "array-is-call",
+      "goals",
+      [
+        "quote",
+        "An array is always a call; a list pattern is written with array/make"
+      ]
+    ],
+    [
+      "stated",
+      "array-length-unbounded",
+      "standing",
+      [
+        "quote",
+        "schema/arrayOf without the most items allows lists of any length"
+      ]
+    ],
+    [
+      "stated",
+      "assert-none",
+      "invariants",
+      ["quote", "A query asserting none finds no answer"]
+    ],
+    [
+      "stated",
+      "assert-option",
+      "invariants",
+      ["quote", "An invariant asserts some or none"]
+    ],
+    [
+      "stated",
+      "assert-some",
+      "invariants",
+      ["quote", "A query asserting some finds an answer"]
+    ],
+    [
+      "stated",
+      "bound-before-use",
+      "binding",
+      [
+        "quote",
+        "A variable is bound by a relation, =, in, or schema/fits?, or typed by a schema, before a goal needs it"
+      ]
+    ],
+    [
+      "stated",
+      "call-head-function",
+      "calls",
+      ["quote", "Only a function can be called"]
+    ],
+    [
+      "stated",
+      "column-exists",
+      "declarations",
+      ["quote", "A key or a merge names a column of the relation"]
+    ],
+    [
+      "stated",
+      "columns-distinct",
+      "declarations",
+      ["quote", "A relation's columns, and its key's columns, are distinct"]
+    ],
+    [
+      "stated",
+      "computed-no-rows-of-its-own",
+      "data",
+      ["quote", "A computed relation has no facts and no rules of its own"]
+    ],
+    [
+      "stated",
+      "computed-not-recursive",
+      "recursion",
+      ["quote", "A computed relation cannot be part of a recursive cycle"]
+    ],
+    [
+      "stated",
+      "computed-row-shape",
+      "data",
+      [
+        "quote",
+        "A computed relation gives rows of as many JSON values as its outputs"
+      ]
+    ],
+    [
+      "stated",
+      "condition-is-boolean",
+      "goals",
+      [
+        "quote",
+        "A condition, a filter, and an expression used as a goal are true or false"
+      ]
+    ],
+    [
+      "stated",
+      "continuation-once",
+      "library",
+      ["quote", "A continuation func/shift gives goes on once"]
+    ],
+    [
+      "stated",
+      "database-available",
+      "data",
+      ["quote", "A question needs a logic database"]
+    ],
+    [
+      "stated",
+      "declare-before-naming",
+      "declarations",
+      [
+        "quote",
+        "A schema is declared before a shape names it, or with it in one form"
+      ]
+    ],
+    [
+      "stated",
+      "declared-once",
+      "declarations",
+      [
+        "quote",
+        "A relation or schema is declared again only as it was declared"
+      ]
+    ],
+    [
+      "stated",
+      "denominator-not-zero",
+      "numbers",
+      ["quote", "A rational's denominator is not 0"]
+    ],
+    [
+      "stated",
+      "described-by-calls",
+      "unknowns",
+      [
+        "quote",
+        "some and exists describe with relation calls, or an and of them"
+      ]
+    ],
+    [
+      "stated",
+      "describes-taken",
+      "calls",
+      [
+        "quote",
+        "A message says what a function takes in the words of its schema"
+      ]
+    ],
+    [
+      "stated",
+      "exists-var-fresh",
+      "unknowns",
+      ["quote", "A variable exists lists is not bound by the body too"]
+    ],
+    [
+      "stated",
+      "fact-takes-calls",
+      "unknowns",
+      ["quote", "fact, retract, and why take relation calls"]
+    ],
+    [
+      "stated",
+      "filter-function-boolean",
+      "goals",
+      ["quote", "The function a filter is given gives true or false"]
+    ],
+    [
+      "stated",
+      "fits-extra",
+      "fitting",
+      ["quote", "A value has no key or item its shape does not expect"]
+    ],
+    [
+      "stated",
+      "fits-missing",
+      "fitting",
+      ["quote", "A value has every key and item its shape requires"]
+    ],
+    [
+      "stated",
+      "fits-more",
+      "fitting",
+      ["quote", "A failed fit names a few of its problems and counts the rest"]
+    ],
+    [
+      "stated",
+      "fits-schema",
+      "fitting",
+      ["quote", "A value fits a schema's shape"]
+    ],
+    [
+      "stated",
+      "form-name-defined",
+      "names",
+      ["quote", "A body cannot define the name of a form and use the form"]
+    ],
+    [
+      "stated",
+      "form-well-formed",
+      "forms",
+      ["quote", "An array that names a special form has the form's shape"]
+    ],
+    [
+      "stated",
+      "goal-alternatives-limit",
+      "limits",
+      ["quote", "A goal expands to at most so many alternatives"]
+    ],
+    [
+      "stated",
+      "goal-or-boolean",
+      "goals",
+      ["quote", "not, and, and or take goals or booleans"]
+    ],
+    [
+      "stated",
+      "goal-shape",
+      "goals",
+      [
+        "quote",
+        "A goal is a relation call, a not, and, or, =, or in form, or a function call on logic variables"
+      ]
+    ],
+    [
+      "stated",
+      "graph-relation-columns",
+      "library",
+      [
+        "quote",
+        "A graph algorithm reads a relation of at least two columns, from and to"
+      ]
+    ],
+    [
+      "stated",
+      "graph-weights",
+      "library",
+      ["quote", "A graph algorithm's weights are at least 0"]
+    ],
+    [
+      "stated",
+      "head-no-anonymous",
+      "forms",
+      ["quote", "A rule head cannot use the anonymous variable ?_"]
+    ],
+    [
+      "stated",
+      "head-shape",
+      "forms",
+      [
+        "quote",
+        "A rule head is a relation call or =, an and of those, or exists over relation calls"
+      ]
+    ],
+    [
+      "stated",
+      "head-vars-bound",
+      "binding",
+      [
+        "quote",
+        "Every variable of a rule head appears in a relation of the body, or is listed in exists"
+      ]
+    ],
+    [
+      "stated",
+      "in-takes-list",
+      "goals",
+      ["quote", "The second argument of in is a list"]
+    ],
+    [
+      "stated",
+      "includes-undecided",
+      "fitting",
+      ["quote", "schema/includes? answers only when it can decide"]
+    ],
+    [
+      "stated",
+      "inclusion-no-value",
+      "fitting",
+      ["quote", "schema/includes? compares schemas, not values"]
+    ],
+    [
+      "stated",
+      "index-in-range",
+      "objects",
+      ["quote", "An index is within the list"]
+    ],
+    [
+      "stated",
+      "invariant-holds",
+      "invariants",
+      [
+        "quote",
+        "A change, or an invariant added, leaves every invariant holding"
+      ]
+    ],
+    [
+      "stated",
+      "json-text",
+      "data",
+      [
+        "quote",
+        "Only data has JSON text, and a fraction is written as a decimal or as text"
+      ]
+    ],
+    [
+      "stated",
+      "key-exists",
+      "objects",
+      ["quote", "A record has the key a path or an access asks for"]
+    ],
+    [
+      "stated",
+      "key-not-empty",
+      "merges",
+      ["quote", "A key has at least one column"]
+    ],
+    ["stated", "key-one-row", "merges", ["quote", "A key holds one row"]],
+    [
+      "stated",
+      "key-option-shape",
+      "merges",
+      ["quote", "The key option is a column name or a list of them"]
+    ],
+    [
+      "stated",
+      "listing-limit",
+      "limits",
+      [
+        "quote",
+        "A schema that stands for each value it allows allows at most so many"
+      ]
+    ],
+    [
+      "stated",
+      "match-case-reachable",
+      "match",
+      ["quote", "Each case of a match can be reached"]
+    ],
+    [
+      "stated",
+      "match-exhaustive",
+      "match",
+      [
+        "quote",
+        "The cases of a match without a fallback cover the values its value can have"
+      ]
+    ],
+    [
+      "stated",
+      "match-needs-case",
+      "match",
+      ["quote", "A match without a fallback has a case for its value"]
+    ],
+    [
+      "stated",
+      "merge-is-aggregate",
+      "merges",
+      ["quote", "A merge combines with an aggregate"]
+    ],
+    [
+      "stated",
+      "merge-needs-key",
+      "merges",
+      ["quote", "A relation that merges has a key"]
+    ],
+    [
+      "stated",
+      "merge-not-key",
+      "merges",
+      ["quote", "A merge combines a column outside the key"]
+    ],
+    [
+      "stated",
+      "merge-option-shape",
+      "merges",
+      ["quote", "The merge option is a record from a column to an aggregate"]
+    ],
+    [
+      "stated",
+      "method-at-path",
+      "objects",
+      ["quote", "A key or a path names a method of the value"]
+    ],
+    [
+      "stated",
+      "misspelled-module",
+      "names",
+      [
+        "quote",
+        "A name in a module whose other names are bound reads as misspelled"
+      ]
+    ],
+    [
+      "stated",
+      "misspelled-near",
+      "names",
+      ["quote", "A name a letter or two from a bound name reads as misspelled"]
+    ],
+    [
+      "stated",
+      "new-value-in-recursion",
+      "recursion",
+      [
+        "quote",
+        "A rule that recurses cannot compute or invent a new value in its head"
+      ]
+    ],
+    [
+      "stated",
+      "no-compute-with-unknown",
+      "unknowns",
+      [
+        "quote",
+        "Nothing computes with an unknown; it stands as an argument, or inside a record or list"
+      ]
+    ],
+    [
+      "stated",
+      "no-invent-into-aggregate",
+      "unknowns",
+      [
+        "quote",
+        "A rule that invents values cannot give a row of a relation that aggregates"
+      ]
+    ],
+    [
+      "stated",
+      "number-digits-limit",
+      "limits",
+      ["quote", "A number read from text has at most so many digits"]
+    ],
+    [
+      "stated",
+      "number-left-open",
+      "standing",
+      ["quote", "A schema the solver reasons over leaves a number open"]
+    ],
+    [
+      "stated",
+      "one-merge",
+      "merges",
+      ["quote", "Every rule for a relation that merges agrees on how it merges"]
+    ],
+    [
+      "stated",
+      "one-name-one-kind",
+      "declarations",
+      ["quote", "A name is a relation or a schema, not both"]
+    ],
+    [
+      "stated",
+      "only-data",
+      "data",
+      [
+        "quote",
+        "The logic database holds data: facts, derived rows, and answers are JSON values"
+      ]
+    ],
+    [
+      "stated",
+      "open-rest-unbounded",
+      "standing",
+      [
+        "quote",
+        "schema/open without the schema of the rest allows any other keys or items"
+      ]
+    ],
+    [
+      "stated",
+      "open-takes-shape",
+      "standing",
+      ["quote", "schema/open is given a record or a list of schemas"]
+    ],
+    [
+      "stated",
+      "option-known",
+      "options",
+      ["quote", "A form takes only the options it knows"]
+    ],
+    [
+      "stated",
+      "option-whole-number",
+      "options",
+      ["quote", "A count option is a whole number of at least 0"]
+    ],
+    ["stated", "options-record", "options", ["quote", "Options are a record"]],
+    [
+      "stated",
+      "order-by-variables",
+      "options",
+      ["quote", "A query orders by its own variables"]
+    ],
+    [
+      "stated",
+      "order-option-shape",
+      "options",
+      ["quote", "The order option is a variable name or a list of them"]
+    ],
+    [
+      "stated",
+      "owned-var-in-goal",
+      "unknowns",
+      ["quote", "The variable some or exists owns appears in its goal"]
+    ],
+    [
+      "stated",
+      "owned-var-names",
+      "unknowns",
+      ["quote", "some and exists own named logic variables, each once"]
+    ],
+    [
+      "stated",
+      "path-index-list",
+      "objects",
+      ["quote", "A numeric path segment indexes a list"]
+    ],
+    [
+      "stated",
+      "path-is-string",
+      "objects",
+      ["quote", "A path is a string of keys and indexes"]
+    ],
+    [
+      "stated",
+      "predicate-says-nothing",
+      "standing",
+      [
+        "quote",
+        "A predicate says neither which values it accepts nor what kind they are"
+      ]
+    ],
+    [
+      "stated",
+      "promise-not-reentrant",
+      "library",
+      ["quote", "A promise is not forced while it is being forced"]
+    ],
+    [
+      "stated",
+      "quantity-same-units",
+      "library",
+      ["quote", "Quantities combined have the same units"]
+    ],
+    [
+      "stated",
+      "quantity-unit-known",
+      "library",
+      ["quote", "quantity/in converts to a unit of the same dimension"]
+    ],
+    [
+      "stated",
+      "question-through-recursion",
+      "recursion",
+      [
+        "quote",
+        "A question, such as a goal under not, cannot go through recursion"
+      ]
+    ],
+    [
+      "stated",
+      "quote-a-name",
+      "names",
+      ["quote", "A string that is a name is quoted to mean the string"]
+    ],
+    [
+      "stated",
+      "range-limit",
+      "limits",
+      ["quote", "array/range makes at most so many numbers"]
+    ],
+    [
+      "stated",
+      "read-before-defined",
+      "names",
+      ["quote", "A name is read only after its definition has a value"]
+    ],
+    [
+      "stated",
+      "reading-place",
+      "numbers",
+      ["quote", "A reading error names its line and column"]
+    ],
+    [
+      "stated",
+      "record-keys-unbounded",
+      "standing",
+      ["quote", "schema/recordOf allows records with any keys"]
+    ],
+    [
+      "stated",
+      "relation-declared",
+      "declarations",
+      ["quote", "A relation is declared before it is used"]
+    ],
+    [
+      "stated",
+      "relation-schema-one-column",
+      "schemas",
+      [
+        "quote",
+        "A relation is the schema of one value only when it has one column"
+      ]
+    ],
+    [
+      "stated",
+      "schema-being-declared",
+      "standing",
+      [
+        "quote",
+        "A schema still being declared can be named but not checked against"
+      ]
+    ],
+    [
+      "stated",
+      "schema-declared",
+      "declarations",
+      ["quote", "A relation's rows name a schema that is declared"]
+    ],
+    [
+      "stated",
+      "schema-name",
+      "declarations",
+      ["quote", "A schema's name is a string that is not a special form's name"]
+    ],
+    [
+      "stated",
+      "schema-says-kind",
+      "standing",
+      [
+        "quote",
+        "A schema the solver reasons over says what kind its values are"
+      ]
+    ],
+    [
+      "stated",
+      "schema-self-paradox",
+      "fitting",
+      [
+        "quote",
+        "A schema whose check asks the same question again and fits exactly when it does not has no answer"
+      ]
+    ],
+    [
+      "stated",
+      "schema-self-smaller",
+      "fitting",
+      ["quote", "A schema asks about itself again only about a smaller value"]
+    ],
+    [
+      "stated",
+      "schema-shape-known",
+      "fitting",
+      ["quote", "A schema's shape is known when it is declared"]
+    ],
+    [
+      "stated",
+      "schema-shape-no-question",
+      "fitting",
+      ["quote", "A schema's shape asks no question while it is declared"]
+    ],
+    [
+      "stated",
+      "schema-stands-for-values",
+      "standing",
+      [
+        "quote",
+        "A schema binds the value it checks only when it can stand for each value it allows"
+      ]
+    ],
+    [
+      "stated",
+      "self-naming-unbounded",
+      "standing",
+      ["quote", "A schema that names itself allows values of any size"]
+    ],
+    [
+      "stated",
+      "set-needs-binding",
+      "names",
+      ["quote", "set! changes a binding that a scope around it holds"]
+    ],
+    [
+      "stated",
+      "set-not-in-rule",
+      "names",
+      [
+        "quote",
+        "set! cannot change an outside binding while a rule, query, or find runs"
+      ]
+    ],
+    [
+      "stated",
+      "shape-of-=",
+      "forms",
+      ["quote", "The = form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-and",
+      "forms",
+      ["quote", "The and form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-assuming",
+      "forms",
+      ["quote", "The assuming form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-begin",
+      "forms",
+      ["quote", "The begin form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-cond",
+      "forms",
+      ["quote", "The cond form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-define",
+      "forms",
+      ["quote", "The define form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-delay",
+      "forms",
+      ["quote", "The delay form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-eval",
+      "forms",
+      ["quote", "The eval form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-exists",
+      "forms",
+      ["quote", "The exists form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-fact",
+      "forms",
+      ["quote", "The fact form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-find",
+      "forms",
+      ["quote", "The find form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-in",
+      "forms",
+      ["quote", "The in form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-invariant",
+      "forms",
+      ["quote", "The invariant form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-lambda",
+      "forms",
+      ["quote", "The lambda form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-match",
+      "forms",
+      ["quote", "The match form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-not",
+      "forms",
+      ["quote", "The not form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-or",
+      "forms",
+      ["quote", "The or form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-query",
+      "forms",
+      ["quote", "The query form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-quote",
+      "forms",
+      ["quote", "The quote form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-relation",
+      "forms",
+      ["quote", "The relation form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-retract",
+      "forms",
+      ["quote", "The retract form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-rule",
+      "forms",
+      ["quote", "The rule form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-schema",
+      "forms",
+      ["quote", "The schema form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-set!",
+      "forms",
+      ["quote", "The set! form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-snapshot",
+      "forms",
+      ["quote", "The snapshot form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-some",
+      "forms",
+      ["quote", "The some form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shape-of-why",
+      "forms",
+      ["quote", "The why form has the shape its usage gives"]
+    ],
+    [
+      "stated",
+      "shift-needs-reset",
+      "library",
+      ["quote", "func/shift needs a func/reset around it"]
+    ],
+    [
+      "stated",
+      "snapshot-writes-data",
+      "data",
+      [
+        "quote",
+        "A snapshot writes data, the functions the environment names, and lambdas that do not call themselves"
+      ]
+    ],
+    [
+      "stated",
+      "solver-call",
+      "solver",
+      ["quote", "The solver names the call it cannot reason about"]
+    ],
+    [
+      "stated",
+      "solver-contract",
+      "solver",
+      ["quote", "The solver cannot follow a lambda with a contract"]
+    ],
+    [
+      "stated",
+      "solver-decides-linear",
+      "solver",
+      [
+        "quote",
+        "The solver decides sums of numbers times known numbers, comparisons of them, and equality of values"
+      ]
+    ],
+    [
+      "stated",
+      "solver-finite-answers",
+      "solver",
+      [
+        "quote",
+        "A question gives finitely many answers; a value that meets only constraints is bounded on both sides"
+      ]
+    ],
+    [
+      "stated",
+      "solver-finite-number",
+      "solver",
+      ["quote", "The solver reasons over finite numbers"]
+    ],
+    [
+      "stated",
+      "solver-list-length",
+      "solver",
+      ["quote", "The solver needs the length of a list it goes over"]
+    ],
+    [
+      "stated",
+      "solver-no-schema",
+      "solver",
+      ["quote", "A value no goal binds has a schema that can stand for it"]
+    ],
+    [
+      "stated",
+      "solver-recursion",
+      "solver",
+      ["quote", "The solver cannot follow a function that calls itself"]
+    ],
+    [
+      "stated",
+      "solver-relation-goal",
+      "solver",
+      ["quote", "The solver names the relation goal it cannot reason about"]
+    ],
+    [
+      "stated",
+      "solver-size-limit",
+      "limits",
+      [
+        "quote",
+        "A question over values no goal binds splits into at most so many cases"
+      ]
+    ],
+    [
+      "stated",
+      "solver-unbound-function",
+      "solver",
+      ["quote", "The solver cannot call a function no goal binds"]
+    ],
+    [
+      "stated",
+      "solver-unbound-schema",
+      "solver",
+      [
+        "quote",
+        "The solver cannot use a schema made from a value no goal binds"
+      ]
+    ],
+    [
+      "stated",
+      "solver-undecided",
+      "solver",
+      [
+        "quote",
+        "A value that a goal the solver cannot decide gives has no value"
+      ]
+    ],
+    [
+      "stated",
+      "stand-relation",
+      "standing",
+      ["quote", "A relation stands for values only through a relation goal"]
+    ],
+    [
+      "stated",
+      "text-is-json",
+      "numbers",
+      ["quote", "Text read as a program is JSON"]
+    ],
+    [
+      "stated",
+      "topological-acyclic",
+      "library",
+      ["quote", "graph/topologicalOrder needs a graph without a cycle"]
+    ],
+    [
+      "stated",
+      "unbound-name",
+      "names",
+      ["quote", "A name that is read is bound to something"]
+    ],
+    [
+      "stated",
+      "value-waits",
+      "standing",
+      ["quote", "A value that waits for a logic variable has no value yet"]
+    ],
+    [
+      "stated",
+      "vars-direct-arguments",
+      "goals",
+      [
+        "quote",
+        "Logic variables are direct arguments, not nested inside arrays or records"
+      ]
+    ],
+    [
+      "stated",
+      "why-ground",
+      "unknowns",
+      ["quote", "why explains a fact without variables"]
+    ]
+  ],
+  [
+    "fact",
+    [
+      "reads",
+      [
+        "quote",
+        " As a whole argument of a rule head, aggregate/… combines one value from every match. To combine each match's own list, do it in the body, as in [\"=\", \"?result\", [\"aggregate/…\", \"?list\"]]."
+      ],
+      "aggregate-whole-argument"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        " … calls …, since an array is always a call. To match a list, write [\"array/make\",…]."
+      ],
+      "array-is-call"
+    ],
+    [
+      "reads",
+      ["quote", "\"in\" expects a list, but found …."],
+      "in-takes-list"
+    ],
+    ["reads", ["quote", "\"in\" expects a list, but … is …."], "in-takes-list"],
+    [
+      "reads",
+      [
+        "quote",
+        "\"…\" and \"…\" depend on each other, so \"…\" must aggregate too. Every relation in a recursive cycle through an aggregate must aggregate with …."
+      ],
+      "aggregate-cycle"
+    ],
+    [
+      "reads",
+      ["quote", "\"…\" does not end in a method: \"…\" is …."],
+      "method-at-path"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "\"…\" has … columns, so it cannot be the schema of one value: a relation is a schema when it has one column. To mean the string, write [\"quote\", \"…\"]."
+      ],
+      "relation-schema-one-column"
+    ],
+    [
+      "reads",
+      ["quote", "\"…\" is a relation here, so it cannot also name a schema."],
+      "one-name-one-kind"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "\"…\" is a relation; bind the value with the relation goal [\"…\", value] instead"
+      ],
+      "stand-relation"
+    ],
+    [
+      "reads",
+      ["quote", "\"…\" is a schema here, so it cannot also name a relation."],
+      "one-name-one-kind"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "\"…\" is keyed by …, but it would hold … and …, which differ in a column that does not merge."
+      ],
+      "key-one-row"
+    ],
+    [
+      "reads",
+      ["quote", "\"…\" is keyed by …, but … derived … while … holds."],
+      "key-one-row"
+    ],
+    ["reads", ["quote", "\"…\" is not a method; it is …."], "method-at-path"],
+    [
+      "reads",
+      [
+        "quote",
+        "\"…\" is read before it is defined. A define binds its name from the start of the body it is in, and a relation or schema form from the start of the program, so the string means that definition, which has no value yet. Define it first, or write [\"quote\", \"…\"] to mean the string."
+      ],
+      "read-before-defined"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "\"…\" is read before it is defined. The body it is in defines \"…\", which binds it from the start of the body, so there an array that starts with \"…\" calls that definition, which has no value yet, instead of being the … form. As in R7RS Scheme, a body cannot define the name of a form and use the form: give the definition another name."
+      ],
+      "form-name-defined"
+    ],
+    [
+      "reads",
+      ["quote", "\"…\" is still being declared"],
+      "schema-being-declared"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "\"…\" merges …, so a rule for it gives each of those columns plainly or with that aggregate, and aggregates nothing else, but … differs."
+      ],
+      "one-merge"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "\"…\" names itself inside its values, so it allows values of any size"
+      ],
+      "self-naming-unbounded"
+    ],
+    [
+      "reads",
+      ["quote", "\"…\" names itself, so it allows values of any size"],
+      "self-naming-unbounded"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "\"…\" was asked about while its own rows were being derived. A question cannot go through recursion."
+      ],
+      "question-through-recursion"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        ", or when the two name each other, declare them in one form: [\"schema\", \"…\", shape, \"…\", shape]"
+      ],
+      "declare-before-naming"
+    ],
+    ["reads", ["quote", "; and … more"], "fits-more"],
+    [
+      "reads",
+      ["quote", "= takes two terms, as in [\"=\", \"?x\", 1]."],
+      "shape-of-="
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "?… is a value no goal binds, and its schema cannot stand for it: …."
+      ],
+      "solver-no-schema"
+    ],
+    [
+      "reads",
+      ["quote", "A condition must be true or false, but found …."],
+      "condition-is-boolean"
+    ],
+    [
+      "reads",
+      ["quote", "A condition must be true or false, but … is …."],
+      "condition-is-boolean"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "A continuation was resumed a second time: the one func/shift gives goes on once."
+      ],
+      "continuation-once"
+    ],
+    [
+      "reads",
+      ["quote", "A filter must be true or false, but … is …."],
+      "condition-is-boolean"
+    ],
+    [
+      "reads",
+      ["quote", "A goal-directed query asked about a value that is not data."],
+      "only-data"
+    ],
+    [
+      "reads",
+      ["quote", "A numeric path segment needs a list, but found …."],
+      "path-index-list"
+    ],
+    [
+      "reads",
+      ["quote", "A path must be a string such as \"a.b.0\", but found …."],
+      "path-is-string"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "A promise was forced while it was being forced, so forcing it would never end."
+      ],
+      "promise-not-reentrant"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "A question may give at most … answers from values no goal binds. Narrow it."
+      ],
+      "solver-size-limit"
+    ],
+    [
+      "reads",
+      ["quote", "A rational's denominator cannot be 0"],
+      "denominator-not-zero"
+    ],
+    [
+      "reads",
+      ["quote", "A rule head cannot use the anonymous variable \"?_\": …."],
+      "head-no-anonymous"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "A rule head must be a relation call or \"=\", an \"and\" of those, or \"exists\" over relation calls, but found …."
+      ],
+      "head-shape"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "A schema binds the value it checks only when it can stand for each value it allows, and here …."
+      ],
+      "schema-stands-for-values"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "A schema that stands for each value it allows may allow at most … values, so that listing them ends soon. Narrow it, or bind the value with a relation goal first."
+      ],
+      "listing-limit"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "A schema's name must be a string that is not the name of a special form, but found …."
+      ],
+      "schema-name"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "An invariant needs the option \"assert\", set to \"some\" or \"none\", such as {\"assert\": \"none\"}."
+      ],
+      "assert-option"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "As a goal, … must be true or false, but its expression gives …. Use it as a value, as in [\"=\", \"?found\", [\"assuming\", ...]]."
+      ],
+      "condition-is-boolean"
+    ],
+    [
+      "reads",
+      ["quote", "Cannot follow \"…\" at \"…\": … has no such key."],
+      "key-exists"
+    ],
+    [
+      "reads",
+      ["quote", "Cannot order by …: the query's variables are …."],
+      "order-by-variables"
+    ],
+    [
+      "reads",
+      ["quote", "Cannot snapshot the database: …."],
+      "snapshot-writes-data"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Compute the value in a non-recursive rule, or aggregate it with …."
+      ],
+      "new-value-in-recursion"
+    ],
+    ["reads", ["quote", "Did you mean \"…\"?"], "misspelled-near"],
+    [
+      "reads",
+      [
+        "quote",
+        "Every rule that aggregates into \"…\" must aggregate the same columns in the same way, since they say how the candidates of each key combine, but … differs from an earlier rule."
+      ],
+      "one-merge"
+    ],
+    [
+      "reads",
+      ["quote", "Expected a class to construct, but found …."],
+      "argument-is-class"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Expected a goal but found …. Goals are relation calls, not/and/or/=/in forms, or function calls on logic variables."
+      ],
+      "goal-shape"
+    ],
+    [
+      "reads",
+      ["quote", "Expected an object, but found …."],
+      "argument-is-object"
+    ],
+    [
+      "reads",
+      ["quote", "Facts may only contain data, but the \"…\" of … is …"],
+      "only-data"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Goal expands to more than … alternatives; split it into separate rules."
+      ],
+      "goal-alternatives-limit"
+    ],
+    [
+      "reads",
+      ["quote", "Index … is past the end of a list of length …."],
+      "index-in-range"
+    ],
+    [
+      "reads",
+      ["quote", "Invent the value in a rule that does not recurse."],
+      "new-value-in-recursion"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "It needs the value of ?…, which a goal the solver cannot decide gives."
+      ],
+      "solver-undecided"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Logic variables must be direct arguments, not nested inside arrays or records: …"
+      ],
+      "vars-direct-arguments"
+    ],
+    [
+      "reads",
+      ["quote", "No case of the match fits …, and it has no fallback: …."],
+      "match-needs-case"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "No logic database is available. Evaluate with run(), or provide LionDatabaseService."
+      ],
+      "database-available"
+    ],
+    ["reads", ["quote", "Nothing is bound to \"…\". …"], "unbound-name"],
+    ["reads", ["quote", "Nothing is bound to \"…\". … …"], "unbound-name"],
+    [
+      "reads",
+      [
+        "quote",
+        "Other names begin with \"…\", so it reads as a misspelled name."
+      ],
+      "misspelled-module"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Relation \"…\" cannot merge \"…\": it is part of the key, and the key says which rows merge."
+      ],
+      "merge-not-key"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Relation \"…\" has no column \"…\" to merge. Its columns are …."
+      ],
+      "column-exists"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Relation \"…\" has no column \"…\" to use as a key. Its columns are …."
+      ],
+      "column-exists"
+    ],
+    [
+      "reads",
+      ["quote", "Relation \"…\" is already declared with …."],
+      "declared-once"
+    ],
+    [
+      "reads",
+      ["quote", "Relation \"…\" is not declared here."],
+      "relation-declared"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Relation \"…\" merges \"…\" with …, but a merge combines values with an aggregate, such as \"aggregate/sum\" or \"aggregate/min\"."
+      ],
+      "merge-is-aggregate"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Relation \"…\" merges the rows a key gets, so it needs a key, as in {\"key\": [\"id\"], \"merge\": {...}}."
+      ],
+      "merge-needs-key"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Relation \"…\" names the schema \"…\" for its rows, but no schema is declared under that name. Declare it first, as in [\"schema\", \"…\", {...}]."
+      ],
+      "schema-declared"
+    ],
+    [
+      "reads",
+      ["quote", "Relation \"…\" needs at least one key column."],
+      "key-not-empty"
+    ],
+    [
+      "reads",
+      ["quote", "Relation \"…\" repeats a column name."],
+      "columns-distinct"
+    ],
+    [
+      "reads",
+      ["quote", "Relation \"…\" repeats a key column."],
+      "columns-distinct"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Rule head … both aggregates and lists variables in \"exists\". A rule that invents values cannot aggregate."
+      ],
+      "no-invent-into-aggregate"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Rule head … computes with a variable that \"exists\" lists. An unknown can stand as an argument, or inside a record or list, but nothing can compute with it."
+      ],
+      "no-compute-with-unknown"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Rule head … lists \"?…\" in \"exists\", but the body binds it too. Give one of them another name."
+      ],
+      "exists-var-fresh"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Rule … aggregates with aggregate/… over \"…\", which depends on \"…\". Only … can go through recursion."
+      ],
+      "aggregate-through-recursion"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Rule … asks about \"…\", which depends on \"…\". A question, such as a goal under \"not\", cannot go through recursion."
+      ],
+      "question-through-recursion"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Rule … invents a value for \"…\", whose rules aggregate. A rule that invents values cannot give a row of a relation that aggregates."
+      ],
+      "no-invent-into-aggregate"
+    ],
+    [
+      "reads",
+      ["quote", "Rule … produced a value that is not data: …."],
+      "only-data"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Rule … … in its head while recursing, which may never finish. …"
+      ],
+      "new-value-in-recursion"
+    ],
+    ["reads", ["quote", "Rule …: aggregate/… ….…"], "aggregate-value-kind"],
+    [
+      "reads",
+      ["quote", "Rules cannot add to …: it is computed from its inputs."],
+      "computed-no-rows-of-its-own"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Schema \"…\" asks whether … fits it while checking …. A schema may ask about itself again only about a smaller value, so that its check ends."
+      ],
+      "schema-self-smaller"
+    ],
+    [
+      "reads",
+      ["quote", "Schema \"…\" is already declared as …."],
+      "declared-once"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Schema \"…\" is still being declared, so nothing can be checked against it yet. Its shape can name it, but cannot call it."
+      ],
+      "schema-being-declared"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The cases leave out values \"…\" can have: some value of its contract, …, fits no case, and the match has no fallback."
+      ],
+      "match-exhaustive"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The goals about values no goal binds split into more than … cases. Narrow the question."
+      ],
+      "solver-size-limit"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The key of \"…\" must be a column name or a list of them, but found …."
+      ],
+      "key-option-shape"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The merge of \"…\" must be a record from a column to the aggregate that joins its values, as in {\"price\": \"aggregate/min\"}, but found …."
+      ],
+      "merge-option-shape"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The number at … has more than … digits, more than a number read from text may have."
+      ],
+      "number-digits-limit"
+    ],
+    ["reads", ["quote", "The only … option is \"…\"."], "option-known"],
+    [
+      "reads",
+      ["quote", "The path \"…\" does not end in a method name."],
+      "method-at-path"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The query option \"order\" must be a variable name or a list of them, such as [\"-points\", \"name\"], but found …."
+      ],
+      "order-option-shape"
+    ],
+    [
+      "reads",
+      ["quote", "The query produced an answer that is not data: …."],
+      "only-data"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The schema form takes a name and a shape for each schema, but … has no shape."
+      ],
+      "shape-of-schema"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The schema of \"…\" must be the name of a declared schema, but found …."
+      ],
+      "schema-declared"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The shape of schema \"…\" asks … while it is declared, so it would depend on the facts of the moment. Ask inside a lambda, or use the relation itself as a schema."
+      ],
+      "schema-shape-no-question"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The shape of schema \"…\" must be known when it is declared, but … waits for a logic variable."
+      ],
+      "schema-shape-known"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The solver cannot reason about …: it decides sums of numbers times known numbers, comparisons of them, and equality of values."
+      ],
+      "solver-decides-linear"
+    ],
+    ["reads", ["quote", "The text is not JSON: …"], "text-is-json"],
+    [
+      "reads",
+      [
+        "quote",
+        "The values no goal binds can be shaped in more than … ways together. Narrow their schemas."
+      ],
+      "solver-size-limit"
+    ],
+    [
+      "reads",
+      ["quote", "The … expected at least one answer but found none: …."],
+      "assert-some"
+    ],
+    [
+      "reads",
+      ["quote", "The … expected no answers but found …, such as …: …."],
+      "assert-none"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The … option \"assert\" must be \"some\" or \"none\", but found …."
+      ],
+      "assert-option"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The … option \"…\" must be a whole number of at least 0, but found …."
+      ],
+      "option-whole-number"
+    ],
+    ["reads", ["quote", "There is no key \"…\"…."], "key-exists"],
+    [
+      "reads",
+      [
+        "quote",
+        "These constraints are too many to decide soon: more than … arise while eliminating their variables, or more than … cases split from \"not equal\". Narrow the question."
+      ],
+      "solver-size-limit"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "This case can never be reached: every value its schema allows fits the schema of case …, which comes first."
+      ],
+      "match-case-reachable"
+    ],
+    [
+      "reads",
+      ["quote", "This invariant does not hold, so it was not added."],
+      "invariant-holds"
+    ],
+    [
+      "reads",
+      ["quote", "To mean the string itself, write [\"quote\", \"…\"]."],
+      "quote-a-name"
+    ],
+    ["reads", ["quote", "Unknown … option \"…\". …"], "option-known"],
+    [
+      "reads",
+      [
+        "quote",
+        "Unsafe assuming …: what its changes state must be known, but … is not bound by the rule or query around it."
+      ],
+      "bound-before-use"
+    ],
+    [
+      "reads",
+      ["quote", "Unsafe find …: its goal does not bind …."],
+      "bound-before-use"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Unsafe goal …: … must first be bound by a relation, \"=\", \"in\", or \"schema/fits?\", or typed by a schema that says what kind its values are, such as value/integer?.……"
+      ],
+      "bound-before-use"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Unsafe rule head …: … never appears in a relation in the body. To say the head holds for some value nobody has given, list it in \"exists\": [\"exists\", […], head]."
+      ],
+      "head-vars-bound"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Whether … fits \"…\" has no answer: checking it asks the same question again, and the value would fit exactly when it does not."
+      ],
+      "schema-self-paradox"
+    ],
+    [
+      "reads",
+      ["quote", "a call of a function made from a value no goal binds"],
+      "solver-unbound-function"
+    ],
+    ["reads", ["quote", "a call of …"], "solver-call"],
+    ["reads", ["quote", "a function that calls itself"], "solver-recursion"],
+    ["reads", ["quote", "a lambda with a contract"], "solver-contract"],
+    ["reads", ["quote", "a list of …"], "describes-taken"],
+    [
+      "reads",
+      ["quote", "a record or list of schemas, and the schema of its rest"],
+      "describes-taken"
+    ],
+    ["reads", ["quote", "a schema and a schema"], "describes-taken"],
+    [
+      "reads",
+      ["quote", "a schema made from a value no goal binds"],
+      "solver-unbound-schema"
+    ],
+    ["reads", ["quote", "a value and a schema"], "describes-taken"],
+    ["reads", ["quote", "a value that is not empty"], "describes-taken"],
+    [
+      "reads",
+      [
+        "quote",
+        "aggregate/… expects a list, but found …. An aggregate combines a rule's matches only as a whole argument of the rule's head."
+      ],
+      "aggregate-whole-argument"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "and takes goals or booleans, as in [\"and\", [\"edge\", \"?x\", \"?y\"], [\"edge\", \"?y\", \"?z\"]]."
+      ],
+      "shape-of-and"
+    ],
+    ["reads", ["quote", "another kind of value"], "describes-taken"],
+    [
+      "reads",
+      ["quote", "array/range can make at most … numbers, but was asked for …."],
+      "range-limit"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "assuming takes fact, retract, and rule forms before its expression, but found …."
+      ],
+      "shape-of-assuming"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "assuming takes fact, retract, and rule forms, then the expression to evaluate as if they were made, as in [\"assuming\", [\"fact\", [\"edge\", \"c\", \"d\"]], [\"path\", \"a\", \"d\"]]."
+      ],
+      "shape-of-assuming"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "assuming takes one or more fact, retract, and rule forms, then an expression, as in [\"assuming\", [\"fact\", [\"edge\", \"c\", \"d\"]], [\"find\", \"?t\", [\"edge\", \"c\", \"?t\"]]]."
+      ],
+      "shape-of-assuming"
+    ],
+    [
+      "reads",
+      ["quote", "assuming takes relation calls in its … forms, but found …."],
+      "fact-takes-calls"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "begin takes any number of expressions, as in [\"begin\", [\"define\", \"x\", 1], \"x\"]."
+      ],
+      "shape-of-begin"
+    ],
+    ["reads", ["quote", "computes a new value"], "new-value-in-recursion"],
+    [
+      "reads",
+      ["quote", "computes a new value for …"],
+      "new-value-in-recursion"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "cond takes one or more cases, each a condition and a result, as in [\"cond\", [[\"number/greaterThan\", \"x\", 0], \"positive\"], [\"else\", \"other\"]]."
+      ],
+      "shape-of-cond"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "define takes a name and an expression, as in [\"define\", \"answer\", 42]."
+      ],
+      "shape-of-define"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "delay takes one expression, which value/force runs once, as in [\"delay\", [\"number/add\", 1, 2]]."
+      ],
+      "shape-of-delay"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "eval takes one expression, whose value it evaluates, as in [\"eval\", [\"quote\", [\"number/add\", 1, 2]]]."
+      ],
+      "shape-of-eval"
+    ],
+    [
+      "reads",
+      ["quote", "exists lists \"?…\", but its goal does not mention it: …."],
+      "owned-var-in-goal"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "exists lists named logic variables, each once, such as [\"?m\"], but found …."
+      ],
+      "owned-var-names"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "exists takes a list of variables and a goal, as in [\"exists\", [\"?m\"], [\"mother\", \"ben\", \"?m\"]]."
+      ],
+      "shape-of-exists"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "expects a record or a list of schemas, or a schema that names one, but found …"
+      ],
+      "open-takes-shape"
+    ],
+    [
+      "reads",
+      ["quote", "expects all numbers or all strings, but found … and …"],
+      "aggregate-value-kind"
+    ],
+    [
+      "reads",
+      ["quote", "expects lists or strings, but found …"],
+      "aggregate-value-kind"
+    ],
+    ["reads", ["quote", "expects lists, but found …"], "aggregate-value-kind"],
+    [
+      "reads",
+      ["quote", "expects numbers, but found …"],
+      "aggregate-value-kind"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "fact takes one or more goals, as in [\"fact\", [\"edge\", \"a\", \"b\"]]."
+      ],
+      "shape-of-fact"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "find takes a template and a goal, as in [\"find\", \"?to\", [\"edge\", \"a\", \"?to\"]]."
+      ],
+      "shape-of-find"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "func/shift needs a func/reset around it: the continuation it gives runs up to that reset."
+      ],
+      "shift-needs-reset"
+    ],
+    [
+      "reads",
+      ["quote", "graph/topologicalOrder found a cycle among ……."],
+      "topological-acyclic"
+    ],
+    ["reads", ["quote", "has no finite result"], "arithmetic-finite"],
+    [
+      "reads",
+      ["quote", "has no finite result, or would have more than … digits"],
+      "arithmetic-finite"
+    ],
+    [
+      "reads",
+      ["quote", "in over a list whose length the solver does not know"],
+      "solver-list-length"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "in takes an element and a list, as in [\"in\", \"?tag\", [\"array/make\", \"a\", \"b\"]]."
+      ],
+      "shape-of-in"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "invariant takes a goal and its options, as in [\"invariant\", [\"broken\", \"?x\"], {\"assert\": \"none\"}]."
+      ],
+      "shape-of-invariant"
+    ],
+    ["reads", ["quote", "invents a value for …"], "new-value-in-recursion"],
+    ["reads", ["quote", "it leaves no number open"], "number-left-open"],
+    [
+      "reads",
+      [
+        "quote",
+        "lambda takes a list of parameters, each a name or a name and a schema, or one name for the list of all its arguments, and a body, as in [\"lambda\", [\"x\", [\"y\", \"value/number?\"]], [\"number/add\", \"x\", \"y\"]] or [\"lambda\", \"args\", [\"array/length\", \"args\"]]."
+      ],
+      "shape-of-lambda"
+    ],
+    ["reads", ["quote", "line …, column …"], "reading-place"],
+    [
+      "reads",
+      [
+        "quote",
+        "match takes a value, one or more cases of a schema and a function, and maybe a fallback function, as in [\"match\", \"x\", [\"value/number?\", \"value/identity\"], [\"lambda\", [\"v\"], null]]."
+      ],
+      "shape-of-match"
+    ],
+    [
+      "reads",
+      ["quote", "no part of schema/allOf says what kind its values are"],
+      "all-of-no-kind"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "not takes one goal, as in [\"not\", [\"edge\", \"a\", \"b\"]]."
+      ],
+      "shape-of-not"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "or takes goals or booleans, as in [\"or\", [\"edge\", \"?x\", \"b\"], [\"edge\", \"b\", \"?x\"]]."
+      ],
+      "shape-of-or"
+    ],
+    ["reads", ["quote", "quantity/in: … is not in …."], "quantity-unit-known"],
+    [
+      "reads",
+      ["quote", "quantity/…: … and … have different units."],
+      "quantity-same-units"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "query takes a goal and maybe options, as in [\"query\", [\"edge\", \"a\", \"?to\"]]."
+      ],
+      "shape-of-query"
+    ],
+    [
+      "reads",
+      ["quote", "quote takes one value, as in [\"quote\", [\"a\", \"b\"]]."],
+      "shape-of-quote"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "relation takes a name, a list of columns, and maybe options, as in [\"relation\", \"edge\", [\"from\", \"to\"]]."
+      ],
+      "shape-of-relation"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "retract takes one or more goals, as in [\"retract\", [\"edge\", \"a\", \"b\"]]."
+      ],
+      "shape-of-retract"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "rule takes a head and one or more goals, as in [\"rule\", [\"path\", \"?x\", \"?y\"], [\"edge\", \"?x\", \"?y\"]]."
+      ],
+      "shape-of-rule"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "schema takes a name and a shape for each schema it declares, as in [\"schema\", \"Order\", {\"id\": \"value/integer?\"}]."
+      ],
+      "shape-of-schema"
+    ],
+    [
+      "reads",
+      ["quote", "schema/allOf of no schemas allows every value"],
+      "all-of-none"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "schema/arrayOf with no most length allows lists of any length"
+      ],
+      "array-length-unbounded"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "schema/includes? cannot say whether every value … allows fits …: …"
+      ],
+      "includes-undecided"
+    ],
+    [
+      "reads",
+      ["quote", "schema/open is not given a record or a list of schemas"],
+      "open-takes-shape"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "schema/open with no schema for the rest allows any other keys or items"
+      ],
+      "open-rest-unbounded"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "set! cannot change \"…\" while a rule, query, or find runs: the engine chooses when and how often its parts run, so a change to a binding made outside it would not happen once for each answer. Change it outside, or derive the value with a rule or an aggregate."
+      ],
+      "set-not-in-rule"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "set! changes a binding, and no scope around it binds the name. Bind it with define first."
+      ],
+      "set-needs-binding"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "set! takes a name a scope binds and an expression, as in [\"set!\", \"count\", [\"number/add\", \"count\", 1]]."
+      ],
+      "shape-of-set!"
+    ],
+    [
+      "reads",
+      ["quote", "snapshot takes nothing, as in [\"snapshot\"]."],
+      "shape-of-snapshot"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "some expects a relation call, or an \"and\" of them, but found …."
+      ],
+      "described-by-calls"
+    ],
+    [
+      "reads",
+      ["quote", "some stands for \"…\", but its goal does not mention it: …."],
+      "owned-var-in-goal"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "some stands for a named logic variable, such as \"?m\", but found …."
+      ],
+      "owned-var-names"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "some takes a variable and a goal, as in [\"some\", \"?m\", [\"mother\", \"ben\", \"?m\"]]."
+      ],
+      "shape-of-some"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "takes as its second argument the most items a list may have, a whole number of at least 0, but found …"
+      ],
+      "describes-taken"
+    ],
+    ["reads", ["quote", "that are each …"], "describes-taken"],
+    ["reads", ["quote", "the relation goal …"], "solver-relation-goal"],
+    [
+      "reads",
+      ["quote", "the schema of each item, and the most items"],
+      "describes-taken"
+    ],
+    ["reads", ["quote", "the value to check"], "describes-taken"],
+    ["reads", ["quote", "the … \"…\". …"], "only-data"],
+    ["reads", ["quote", "to the power of"], "arithmetic-finite"],
+    ["reads", ["quote", "waits for a logic variable"], "only-data"],
+    [
+      "reads",
+      ["quote", "why expects a fact without variables: …."],
+      "why-ground"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "why takes one goal, as in [\"why\", [\"path\", \"a\", \"c\"]]."
+      ],
+      "shape-of-why"
+    ],
+    [
+      "reads",
+      ["quote", "{\"order\": \"-points\", \"limit\": 10}"],
+      "options-record"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… \"…\" cannot be declared: schema \"…\" was declared with \"…\" as a plain string, since nothing had that name then. Declare \"…\" before \"…\"…. To keep the string, write [\"quote\", \"…\"] in the shape."
+      ],
+      "declare-before-naming"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… allows any other keys or items; give it the schema of the rest"
+      ],
+      "open-rest-unbounded"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… allows lists of any length; give it the most items a list may have, as in [\"schema/arrayOf\", …, 3]"
+      ],
+      "array-length-unbounded"
+    ],
+    [
+      "reads",
+      ["quote", "… allows records with any keys"],
+      "record-keys-unbounded"
+    ],
+    [
+      "reads",
+      ["quote", "… breaks an invariant, so nothing changed."],
+      "invariant-holds"
+    ],
+    ["reads", ["quote", "… by an unknown"], "solver-decides-linear"],
+    [
+      "reads",
+      ["quote", "… by zero has no number for its result."],
+      "arithmetic-finite"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… computes with a variable that \"some\" owns. An unknown is described by relation calls whose arguments are values, its variables, or records and lists of those."
+      ],
+      "no-compute-with-unknown"
+    ],
+    ["reads", ["quote", "… does not fit …"], "fits-schema"],
+    [
+      "reads",
+      ["quote", "… does not say what kind its values are"],
+      "schema-says-kind"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… expects a relation call, or an \"and\" of them, but found …."
+      ],
+      "described-by-calls"
+    ],
+    [
+      "reads",
+      ["quote", "… expects a value for \"…\", but found …."],
+      "algorithm-argument-kind"
+    ],
+    [
+      "reads",
+      ["quote", "… expects a … for \"…\", but found …."],
+      "algorithm-argument-kind"
+    ],
+    [
+      "reads",
+      ["quote", "… expects goals or booleans, but found …."],
+      "goal-or-boolean"
+    ],
+    [
+      "reads",
+      ["quote", "… expects relation calls, but found …."],
+      "fact-takes-calls"
+    ],
+    ["reads", ["quote", "… found a value that is not data: …."], "only-data"],
+    ["reads", ["quote", "… has no JSON text."], "json-text"],
+    ["reads", ["quote", "… has no value here."], "inclusion-no-value"],
+    [
+      "reads",
+      [
+        "quote",
+        "… has no value yet: it waits for a logic variable, or for the rule it is part of to run."
+      ],
+      "value-waits"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… is a fraction no decimal writes, so JSON cannot hold it: round it with [\"number/round\", value, places], or write it as text with number/toString."
+      ],
+      "json-text"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… is a function a snapshot cannot write. It can write the functions the environment names, and lambdas that do not call themselves"
+      ],
+      "snapshot-writes-data"
+    ],
+    [
+      "reads",
+      ["quote", "… is a predicate, which does not say which values it accepts"],
+      "predicate-says-nothing"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… is a predicate, which says neither which values it accepts nor what kind they are"
+      ],
+      "predicate-says-nothing"
+    ],
+    [
+      "reads",
+      ["quote", "… is computed from its inputs, so it cannot have facts."],
+      "computed-no-rows-of-its-own"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… is not a call: its first element must be a special form or evaluate to a function."
+      ],
+      "call-head-function"
+    ],
+    ["reads", ["quote", "… is not a finite number"], "solver-finite-number"],
+    [
+      "reads",
+      ["quote", "… is not a function, so it cannot be called."],
+      "call-head-function"
+    ],
+    [
+      "reads",
+      ["quote", "… is not a function, so … cannot run."],
+      "call-head-function"
+    ],
+    [
+      "reads",
+      ["quote", "… is not a record or a list of schemas"],
+      "open-takes-shape"
+    ],
+    [
+      "reads",
+      ["quote", "… is not a well-formed … form: …"],
+      "form-well-formed"
+    ],
+    ["reads", ["quote", "… is not data"], "snapshot-writes-data"],
+    ["reads", ["quote", "… is not known yet"], "value-waits"],
+    ["reads", ["quote", "… is …, where nothing is expected"], "fits-extra"],
+    [
+      "reads",
+      [
+        "quote",
+        "… kept improving after … rounds, so evaluation stopped. A cycle can improve a value forever, such as a negative-weight cycle under aggregate/min."
+      ],
+      "aggregate-converges"
+    ],
+    ["reads", ["quote", "… must fit … but is missing"], "fits-missing"],
+    ["reads", ["quote", "… must fit … but is …"], "fits-schema"],
+    [
+      "reads",
+      [
+        "quote",
+        "… needs a database to ask: assuming asks the database as it would be after its changes."
+      ],
+      "database-available"
+    ],
+    [
+      "reads",
+      ["quote", "… needs a relation with at least two columns, from and to."],
+      "graph-relation-columns"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… needs its function to give true or false, but for … it gives …."
+      ],
+      "filter-function-boolean"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… needs weights of at least 0 in the third column, but found …."
+      ],
+      "graph-weights"
+    ],
+    [
+      "reads",
+      ["quote", "… of a function no goal binds"],
+      "solver-unbound-function"
+    ],
+    [
+      "reads",
+      ["quote", "… of a list whose length the solver does not know"],
+      "solver-list-length"
+    ],
+    ["reads", ["quote", "… of two unknowns"], "solver-decides-linear"],
+    ["reads", ["quote", "… options are …."], "option-known"],
+    [
+      "reads",
+      ["quote", "… options must be a record such as …, but found …."],
+      "options-record"
+    ],
+    ["reads", ["quote", "… or more arguments"], "arity"],
+    [
+      "reads",
+      ["quote", "… produced a row that is not … JSON values: …."],
+      "computed-row-shape"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… reads relations that depend on its own results, through …. A computed relation cannot be part of a recursive cycle."
+      ],
+      "computed-not-recursive"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… stands for infinitely many values that meet …, and … waits for its value. … Bound … on both sides, or bind it with a relation goal."
+      ],
+      "solver-finite-answers"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… stands for infinitely many values that meet …, so they cannot each be an answer. Bound it on both sides, or ask only whether one exists, with exists or not."
+      ],
+      "solver-finite-answers"
+    ],
+    ["reads", ["quote", "… takes … as argument … but got …."], "argument-fits"],
+    ["reads", ["quote", "… takes …… but got …."], "arity"],
+    ["reads", ["quote", "… with … arguments"], "arity"]
+  ],
+  [
+    "fact",
+    [
+      "kept",
+      "aggregate-value-kind",
+      [
+        "quote",
+        "each names the kind one aggregate takes, and the wrapper names the rule"
+      ]
+    ],
+    [
+      "kept",
+      "aggregate-whole-argument",
+      [
+        "quote",
+        "one is an aggregate called in plain code, the other one nested in a head argument's expression, with the body that would combine each match's list"
+      ]
+    ],
+    [
+      "kept",
+      "arity",
+      ["quote", "one is the message, the others the counts and calls it names"]
+    ],
+    [
+      "kept",
+      "assert-option",
+      ["quote", "one is the option left out, the other a value it cannot have"]
+    ],
+    [
+      "kept",
+      "bound-before-use",
+      [
+        "quote",
+        "each names what is unbound where: the changes of an assuming, the template of a find, a goal"
+      ]
+    ],
+    [
+      "kept",
+      "database-available",
+      [
+        "quote",
+        "one is a host that gave no database, the other an assuming with nothing to ask"
+      ]
+    ],
+    [
+      "kept",
+      "declare-before-naming",
+      [
+        "quote",
+        "the message and its ending for two schemas that name each other"
+      ]
+    ],
+    [
+      "kept",
+      "describes-taken",
+      [
+        "quote",
+        "each describes a different schema, in the words a message says what a function takes"
+      ]
+    ],
+    [
+      "kept",
+      "fits-schema",
+      [
+        "quote",
+        "one is the summary of a failed fit, the other a value that is something else"
+      ]
+    ],
+    [
+      "kept",
+      "invariant-holds",
+      [
+        "quote",
+        "one is an invariant that does not hold as it is added, the other a change that would break one"
+      ]
+    ],
+    [
+      "kept",
+      "json-text",
+      [
+        "quote",
+        "one is a value with no JSON, the other a fraction, with how to write it"
+      ]
+    ],
+    [
+      "kept",
+      "key-exists",
+      [
+        "quote",
+        "one follows a path and names where it stopped, the other reads one key"
+      ]
+    ],
+    [
+      "kept",
+      "key-one-row",
+      [
+        "quote",
+        "one tells two combinations that differ, the other a derived row against a held one, naming the rule"
+      ]
+    ],
+    [
+      "kept",
+      "method-at-path",
+      [
+        "quote",
+        "each names a different place the method is missing: a key, an empty path, the end of a path"
+      ]
+    ],
+    [
+      "kept",
+      "one-merge",
+      [
+        "quote",
+        "one compares a rule with the declared merge, the other with an earlier rule"
+      ]
+    ],
+    [
+      "kept",
+      "option-known",
+      [
+        "quote",
+        "the message, and its two endings: the one option there is, or the options there are"
+      ]
+    ],
+    [
+      "kept",
+      "options-record",
+      ["quote", "the message and the example it gives"]
+    ],
+    [
+      "kept",
+      "owned-var-names",
+      ["quote", "exists owns a list of variables, some one"]
+    ],
+    [
+      "kept",
+      "schema-being-declared",
+      [
+        "quote",
+        "one is the reason a schema cannot stand for values, the other the check against it"
+      ]
+    ],
+    [
+      "kept",
+      "schema-declared",
+      [
+        "quote",
+        "one is a schema option that is no name, the other a name no schema is declared under"
+      ]
+    ],
+    [
+      "kept",
+      "shape-of-schema",
+      ["quote", "one names the name that has no shape"]
+    ],
+    [
+      "kept",
+      "snapshot-writes-data",
+      ["quote", "the message and the two things a snapshot cannot write"]
+    ],
+    [
+      "kept",
+      "solver-decides-linear",
+      ["quote", "the message and the cases it cannot decide"]
+    ],
+    [
+      "kept",
+      "solver-finite-answers",
+      [
+        "quote",
+        "one is a value a call waits for, the other an answer of its own"
+      ]
+    ],
+    [
+      "kept",
+      "solver-size-limit",
+      [
+        "quote",
+        "each limit is a different count: answers, cases of goals, shapes of values, constraints"
+      ]
+    ],
+    [
+      "kept",
+      "value-waits",
+      [
+        "quote",
+        "one is a value that waits, the other a schema the listing cannot read yet"
+      ]
+    ]
+  ]
+]

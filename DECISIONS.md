@@ -219,6 +219,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`improvement-order`](#improvement-order) | `constraints-capability-cost-rate` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
 | 2026-11-21 | [`scheme-fidelity`](#scheme-fidelity) | `departures-decided-and-probed` | [Lion's departures from Scheme and Racket are the exceptions a decision names, and any other difference from Scheme is a finding](#scheme-departures-listed) |
 | 2026-11-21 | [`speed-constraint`](#speed-constraint) | `growth-hard-constant-soft` | [A change to Lion is judged by its constraints first, then by what Lion can do after it, then by what that costs per capability](#improvement-judged-by-capability) |
+| 2026-11-21 | [`exact-numbers`](#exact-numbers) | `exact-rationals` | [Every number is exact, so what the solver proves holds of plain code](#exact-numbers) |
 | 2026-11-21 | [`catch-handler-argument`](#catch-handler-argument) | `failure-record` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`cond-case-shape`](#cond-case-shape) | `one-result` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
 | 2026-11-21 | [`continuation-shots`](#continuation-shots) | `one-shot` | [Ten of the differences from Scheme that R7RS-small's cases show are departures, each for a reason Lion already has](#r7rs-departures-decided) |
@@ -235,7 +236,6 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-21 | [`func-apply-arguments`](#func-apply-arguments) | `spread-last-list` | [array/head and array/tail fail on an empty list, and func/apply spreads its last argument, as Scheme's car, cdr, and apply do](#empty-list-head-and-apply) |
 | 2026-11-21 | [`lambda-rest-parameter`](#lambda-rest-parameter) | `one-name-for-all` | [A lambda written with one name for its parameters takes any number of arguments, as a list, as (lambda args body) does in Scheme](#lambda-rest-parameter) |
 | 2026-11-21 | [`fixing-pays-off`](#fixing-pays-off) | `fix-or-improve` | [An experiment pays off when it fixes a problem it targets, as when it improves a score](#fixing-pays-off) |
-| 2026-11-21 | [`exact-numbers`](#exact-numbers) | `exact-rationals` | [Every number is exact, so what the solver proves holds of plain code](#exact-numbers) |
 
 <a id="program-representation"></a>
 
@@ -4992,6 +4992,14 @@ Now: `growth-hard-constant-soft`.
 
 - 2026-11-21 `speed-constraint`: `growth-hard-constant-soft` over `both-hard`, `report-only`: "A workload whose growth or kept memory rises past its recorded value is refused, and a constant-factor slowdown beyond the noise is reported and counts against the change." (`improvement-judged-by-capability.json`)
 
+<a id="exact-numbers"></a>
+
+## exact-numbers
+
+Now: `exact-rationals`.
+
+- 2026-11-21 `exact-numbers`: `exact-rationals` over `binary64-doubles`, `scheme-numeric-tower`, `decimal-floating-point`, `solver-refuses-rounding`, `floating-point-theory`: "Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are." (`exact-numbers.json`)
+
 <a id="catch-handler-argument"></a>
 
 ## catch-handler-argument
@@ -5267,11 +5275,3 @@ Recorded 2026-11-21 in `history/notes/fixing-pays-off.json`.
 - Stated, not checked by running Lion: decided `fixing-pays-off`: `fix-or-improve`. "An experiment pays off when its version improved a score, or fixed a problem that one of its beliefs targeted"
 - Stated, not checked by running Lion: `reasoning-fix-pays-off` is `paid-off`. "`paid_off` then names the problem's question, and a direction's misses, its patience, and its place in "Where should the next experiment go?" count both kinds of payoff"
 - Stated, not checked by running Lion: `loop-status-replays` exists. "`bun run loop status` builds the record's model again from its steps before it asks"
-
-<a id="exact-numbers"></a>
-
-## exact-numbers
-
-Now: `exact-rationals`.
-
-- 2026-11-21 `exact-numbers`: `exact-rationals` over `binary64-doubles`, `scheme-numeric-tower`, `decimal-floating-point`, `solver-refuses-rounding`, `floating-point-theory`: "Every Lion number is exact: an integer of any size or a fraction, as Scheme's exact numbers are." (`exact-numbers.json`)

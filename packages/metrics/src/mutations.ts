@@ -907,6 +907,23 @@ const WEIGHTS: readonly Mutation[] = [
 
 export const MUTATIONS: readonly Mutation[] = [
   {
+    name: "the messages by rule take a rule one message states for one stated in several wordings",
+    file: "packages/metrics/src/message-rules.json",
+    find: '["number/greaterThan", ["array/length", "?ts"], 1]',
+    replace: '["number/greaterThan", ["array/length", "?ts"], 0]',
+    package: "metrics",
+    tests: ["src/tests/message-rules.test.ts"],
+  },
+  {
+    name: "the messages by rule offer to unify a rule kept in several wordings on purpose",
+    file: "packages/metrics/src/message-rules.json",
+    find: '["several", "?r", "?k", "?s", "?ts"],\n    ["not", ["kept", "?r", "?_"]]',
+    replace:
+      '["several", "?r", "?k", "?s", "?ts"],\n    ["not", ["kept", "?_", "?r"]]',
+    package: "metrics",
+    tests: ["src/tests/message-rules.test.ts"],
+  },
+  {
     name: "a fraction JSON cannot write counts as data a pair can give",
     file: "packages/metrics/src/pairs.ts",
     find: "  } catch {\n    return false;\n  }\n};",
