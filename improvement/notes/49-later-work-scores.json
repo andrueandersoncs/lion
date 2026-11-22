@@ -1,0 +1,260 @@
+{
+  "scores": [
+    {
+      "question": {
+        "capability passed": "openrulebench",
+        "pillar": "all"
+      },
+      "better": "higher",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "capability passed": "sv-comp",
+        "pillar": "all"
+      },
+      "better": "higher",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "known mistakes found": "programs"
+      },
+      "better": "lower",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "answers resting on stale probes": "research"
+      },
+      "better": "lower",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    },
+    {
+      "question": {
+        "flaky checks": "telemetry"
+      },
+      "better": "lower",
+      "requires": [
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ],
+  "beliefs": [
+    {
+      "id": "later-work-1",
+      "statement": "With the outside suites, the lint run over every program, and the stale evidence counted, OpenRuleBench passes 4 of 4 and SV-COMP 2 of 3, no program holds a known mistake, 213 of the research model's answers rest on stale probes as before the suites' commit, and every requirement holds",
+      "predicts": [
+        {
+          "question": {
+            "capability passed": "openrulebench",
+            "pillar": "all"
+          },
+          "value": 4
+        },
+        {
+          "question": {
+            "capability passed": "sv-comp",
+            "pillar": "all"
+          },
+          "value": 2
+        },
+        {
+          "question": {
+            "known mistakes found": "programs"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "answers resting on stale probes": "research"
+          },
+          "value": 213
+        },
+        {
+          "question": {
+            "failing test tasks": "all packages"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "record check": "history"
+          },
+          "value": "holds"
+        },
+        {
+          "question": {
+            "undocumented grid exceptions": "core"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "workloads faster than linear": "scale"
+          },
+          "value": 0
+        },
+        {
+          "question": {
+            "instrument lines removed": "since the base"
+          },
+          "value": 0
+        }
+      ]
+    }
+  ]
+}

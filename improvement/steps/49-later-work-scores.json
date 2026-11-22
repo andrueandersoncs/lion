@@ -1,0 +1,733 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    "higher"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    "higher"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "known mistakes found": "programs"
+    }
+   ],
+   [
+    "quote",
+    "lower"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "known mistakes found": "programs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "known mistakes found": "programs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "known mistakes found": "programs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "known mistakes found": "programs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "known mistakes found": "programs"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "answers resting on stale probes": "research"
+    }
+   ],
+   [
+    "quote",
+    "lower"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "answers resting on stale probes": "research"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "answers resting on stale probes": "research"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "answers resting on stale probes": "research"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "answers resting on stale probes": "research"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "answers resting on stale probes": "research"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "scored",
+   [
+    "quote",
+    {
+     "flaky checks": "telemetry"
+    }
+   ],
+   [
+    "quote",
+    "lower"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "flaky checks": "telemetry"
+    }
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "flaky checks": "telemetry"
+    }
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "flaky checks": "telemetry"
+    }
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "flaky checks": "telemetry"
+    }
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "requires",
+   [
+    "quote",
+    {
+     "flaky checks": "telemetry"
+    }
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "belief",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    "With the outside suites, the lint run over every program, and the stale evidence counted, OpenRuleBench passes 4 of 4 and SV-COMP 2 of 3, no program holds a known mistake, 213 of the research model's answers rest on stale probes as before the suites' commit, and every requirement holds"
+   ]
+  ],
+  [
+   "since",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   41
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "openrulebench",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    4
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    {
+     "capability passed": "sv-comp",
+     "pillar": "all"
+    }
+   ],
+   [
+    "quote",
+    2
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    {
+     "known mistakes found": "programs"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    {
+     "answers resting on stale probes": "research"
+    }
+   ],
+   [
+    "quote",
+    213
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    {
+     "failing test tasks": "all packages"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    {
+     "record check": "history"
+    }
+   ],
+   [
+    "quote",
+    "holds"
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    {
+     "undocumented grid exceptions": "core"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    {
+     "workloads faster than linear": "scale"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ],
+  [
+   "predicts",
+   [
+    "quote",
+    "later-work-1"
+   ],
+   [
+    "quote",
+    {
+     "instrument lines removed": "since the base"
+    }
+   ],
+   [
+    "quote",
+    0
+   ]
+  ]
+ ],
+ "recorded"
+]
