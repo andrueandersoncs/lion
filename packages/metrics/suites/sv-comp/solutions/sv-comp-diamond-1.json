@@ -1,0 +1,100 @@
+[
+  "begin",
+  [
+    "define",
+    "inv",
+    [
+      "lambda",
+      ["x", "y"],
+      [
+        "and",
+        ["number/greaterThanOrEqualTo", "y", 0],
+        ["number/greaterThanOrEqualTo", "x", 0],
+        [
+          "cond",
+          [
+            ["=", ["number/remainder", "y", 2], 0],
+            [
+              "and",
+              ["=", ["number/remainder", "x", 2], 0],
+              ["number/lessThanOrEqualTo", "x", 100]
+            ]
+          ],
+          ["else", ["number/lessThanOrEqualTo", "x", 99]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "step",
+    [
+      "lambda",
+      ["x", "y"],
+      [
+        "cond",
+        [["=", ["number/remainder", "y", 2], 0], ["number/add", "x", 2]],
+        ["else", ["number/add", "x", 1]]
+      ]
+    ]
+  ],
+  [
+    "lambda",
+    ["assertion"],
+    [
+      "and",
+      [
+        "value/identity",
+        [
+          "not",
+          [
+            "exists",
+            ["?y"],
+            [
+              "and",
+              ["schema/fits?", "?y", "value/integer?"],
+              ["number/greaterThanOrEqualTo", "?y", 0],
+              ["not", ["inv", 0, "?y"]]
+            ]
+          ]
+        ]
+      ],
+      [
+        "value/identity",
+        [
+          "not",
+          [
+            "exists",
+            ["?x", "?y"],
+            [
+              "and",
+              ["schema/fits?", "?x", "value/integer?"],
+              ["schema/fits?", "?y", "value/integer?"],
+              ["inv", "?x", "?y"],
+              ["number/lessThan", "?x", 99],
+              ["not", ["inv", ["step", "?x", "?y"], "?y"]]
+            ]
+          ]
+        ]
+      ],
+      [
+        "value/identity",
+        [
+          "not",
+          [
+            "exists",
+            ["?x", "?y"],
+            [
+              "and",
+              ["schema/fits?", "?x", "value/integer?"],
+              ["schema/fits?", "?y", "value/integer?"],
+              ["inv", "?x", "?y"],
+              ["number/greaterThanOrEqualTo", "?x", 99],
+              ["not", ["assertion", { "x": "?x", "y": "?y" }]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

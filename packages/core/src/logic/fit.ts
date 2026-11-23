@@ -851,12 +851,15 @@ export const misfit = (schema: unknown, value: unknown) =>
     return `${summary}: ${found.slice(0, MAX_SHOWN).map(describe).join("; ")}${more}.`;
   });
 
+/** What a schema's one argument is called in arity messages. */
+export const SCHEMA_ARGUMENT = "the value to check";
+
 /** A schema as a function: called with the one value to check. */
 const checker = () => {
   const schema: LionFunction = takes(
     1,
     (value: unknown) => fits(schema, value),
-    "the value to check"
+    SCHEMA_ARGUMENT
   );
   return schema;
 };

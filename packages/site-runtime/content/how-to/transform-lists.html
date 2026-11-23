@@ -17,13 +17,18 @@
 </lion-example>
 
 <h2>Keep some items</h2>
-<p>There is no filter function; use <code>array/flat-map</code> and return a one-item list to keep an item or an empty list to drop it:</p>
+<p>Pass a list and a predicate to <code>array/filter</code>. Its function gives <code>true</code> or <code>false</code>, as a condition does:</p>
 <lion-example name="Filter">
-["array/flat-map", ["array/range", 1, 11],
-  ["lambda", ["n"],
-    ["cond",
-      [["number/greaterThan", "n", 6], ["array/make", "n"]],
-      ["else", ["array/make"]]]]]
+["array/filter", ["array/range", 1, 11],
+  ["lambda", ["n"], ["number/greaterThan", "n", 6]]]
+</lion-example>
+
+<h2>Reverse and sort</h2>
+<p><code>array/reverse</code> puts items in reverse order. <code>array/sort</code> puts items in ascending canonical order, or stably sorts by a two-argument predicate that says when the first item comes before the second:</p>
+<lion-example name="Reverse and sort">
+{"reversed": ["array/reverse", ["array/make", "a", "b", "c"]],
+ "sorted": ["array/sort", ["array/make", 3, 1, 4, 1, 5]],
+ "descending": ["array/sort", ["array/make", 3, 1, 4, 1, 5], "number/greaterThan"]}
 </lion-example>
 
 <h2>Combine items into one value</h2>

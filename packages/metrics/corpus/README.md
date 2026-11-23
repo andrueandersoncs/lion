@@ -22,7 +22,7 @@ Each folder of [`../suites/`](../suites/) holds a suite with this layout, its ta
 | `openrulebench` | transitive closure with no argument bound and with the first bound, Join1, and DBLP | OpenRuleBench (Liang, Fodor, Wan, and Kifer, 2009), as Brass and Stephan, *Experiences with Some Benchmarks for Deductive Databases* (2017), describe it. The data is generated from a fixed seed, smaller than the benchmark's, and each expected answer was computed apart from Lion and is written in the check. |
 | `sv-comp` | `loop-acceleration/simple_1`, `diamond_1`, and `count_by_1` | SV-COMP's benchmark set, ReachSafety, property unreach-call. A program is a function of an assertion that says whether every run that leaves the loop meets it, so the check asks it of the benchmark's assertion, and of assertions a guess would get wrong, without running the loop. |
 
-A suite records its gaps as the corpus does: `sv-comp/gaps.json` says why `diamond_1` has no reference program yet, since Lion's solver cannot reason about the remainder of an unknown.
+A suite records any remaining gaps in `gaps.json` as the corpus does. Every task in `openrulebench` and `sv-comp` currently has a passing reference program.
 
 ## A task
 

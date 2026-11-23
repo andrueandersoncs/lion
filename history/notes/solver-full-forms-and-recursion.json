@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "The symbolic solver runs full Lion expressions inside lambdas (`=`, `and`, `or`, `not`, `in`, `begin` with local `define`, `match`, `schema/fits?`, `[]`, `array/slice`, `array/zip`), suspended closures referencing logic variables, and recursive functions over bounded inputs with dead-branch pruning and Shannon-decomposed negation, proving recursive sorts such as insertion sort and merge sort over `[\"schema/arrayOf\", \"value/integer?\", 4]`.",
+      "says": {
+        "feature": "solver-full-forms-and-recursion",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The symbolic solver evaluates `begin` with local `define`, `match`, `=`, `and`, `or`, `not`, `in`, `schema/fits?`, and recursive functions over bounded lists.",
+      "says": {
+        "behavior": "solver-recursive-lambda-bounded-lists",
+        "is": "decided",
+        "area": "logic"
+      }
+    }
+  ]
+}

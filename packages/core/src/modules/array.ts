@@ -1,7 +1,7 @@
 import { Array as Arr, Effect, Schema } from "effect";
 import { atLeast, logicError } from "@/errors/evaluation";
 import { call } from "@/evaluation/special-forms/function";
-import { listMaker, show } from "@/logic/terms";
+import { compareValues, listMaker, show } from "@/logic/terms";
 import { combining, over, overEffect, slicing } from "@/modules/lib/shared";
 
 const MAX_RANGE = 1_000_000;
@@ -13,6 +13,13 @@ const Filled = List.check(
   Schema.isMinLength(1, { expected: "a value that is not empty" })
 );
 
+const booleanResult = (name: string, input: string, value: unknown) =>
+  typeof value === "boolean"
+    ? Effect.succeed(value)
+    : logicError(
+        `${name} needs its function to give true or false, but for ${input} it gives ${show(value)}.`
+      );
+
 /**
  * Whether the function gives `stop` for some item, asked item by item and
  * stopping at the first that does, as Racket's ormap and andmap do. The
@@ -22,12 +29,11 @@ const asking = (name: string, stop: boolean) =>
   overEffect([List, Schema.Any], (list, fn) =>
     Effect.gen(function* () {
       for (const item of list) {
-        const value = yield* call(fn, item);
-        if (typeof value !== "boolean") {
-          return yield* logicError(
-            `${name} needs its function to give true or false, but for ${show(item)} it gives ${show(value)}.`
-          );
-        }
+        const value = yield* booleanResult(
+          name,
+          show(item),
+          yield* call(fn, item)
+        );
         if (value === stop) {
           return stop;
         }
@@ -35,6 +41,45 @@ const asking = (name: string, stop: boolean) =>
       return !stop;
     })
   );
+
+/** Stable merge sort with an Effect-returning strict boolean `before` comparator. */
+const mergeSort = (
+  items: readonly unknown[],
+  before: unknown
+): Effect.Effect<unknown[], unknown> =>
+  items.length < 2
+    ? Effect.succeed([...items])
+    : Effect.gen(function* () {
+        const mid = Math.floor(items.length / 2);
+        const left = yield* mergeSort(items.slice(0, mid), before);
+        const right = yield* mergeSort(items.slice(mid), before);
+        const out: unknown[] = [];
+        let i = 0;
+        let j = 0;
+        while (i < left.length && j < right.length) {
+          const rightFirst = yield* booleanResult(
+            "array/sort",
+            `${show(right[j])}, ${show(left[i])}`,
+            yield* call(before, right[j], left[i])
+          );
+          if (rightFirst) {
+            out.push(right[j]);
+            j += 1;
+          } else {
+            out.push(left[i]);
+            i += 1;
+          }
+        }
+        while (i < left.length) {
+          out.push(left[i]);
+          i += 1;
+        }
+        while (j < right.length) {
+          out.push(right[j]);
+          j += 1;
+        }
+        return out;
+      });
 
 /** The function's result for each item of a list, in order. */
 const mapItems = overEffect([List, Schema.Any], (list, fn) =>
@@ -123,6 +168,42 @@ export const module = {
 
   /** Whether the function is true for every item; it stops at the first that is not. */
   "every?": asking("array/every?", false),
+
+  /** The items for which the function gives true, in order. */
+  filter: overEffect([List, Schema.Any], (list, fn) =>
+    Effect.gen(function* () {
+      const kept: unknown[] = [];
+      for (const item of list) {
+        if (
+          yield* booleanResult(
+            "array/filter",
+            show(item),
+            yield* call(fn, item)
+          )
+        ) {
+          kept.push(item);
+        }
+      }
+      return kept;
+    })
+  ),
+
+  /** A new list with the items in reverse order. */
+  reverse: over([List], (list): unknown[] => [...list].reverse()),
+
+  /**
+   * A new list sorted in ascending value order, or stably by `before`, a
+   * function of two items that gives true when the first comes before the
+   * second, as Racket's `sort` takes.
+   */
+  sort: overEffect(
+    [List, Schema.Any],
+    (list, before) =>
+      before === undefined
+        ? Effect.succeed([...list].sort(compareValues))
+        : mergeSort(list, before),
+    1
+  ),
 
   /** Whole numbers from start up to, but not including, end. */
   range: overEffect([Schema.Int, Schema.Int], (start, end) =>

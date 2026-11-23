@@ -181,8 +181,14 @@ export const LINT_RULES: readonly unknown[] = [
 ];
 
 /** The program that asks the lints of a program read as data. */
-export const lintProgram = (program: unknown): unknown => {
-  const rows = factsOf(program);
+export const lintProgram = (
+  program: unknown,
+  declared: readonly string[] = []
+): unknown => {
+  const rows = [
+    ...factsOf(program),
+    ...declared.map((name) => ["declared", name]),
+  ];
   return [
     "begin",
     ...LINT_RULES,
@@ -216,8 +222,11 @@ const termAt = (program: unknown, pointer: string): unknown =>
     );
 
 /** What the lints find in a program, each with where it stands. */
-export const lint = (program: unknown): Effect.Effect<Linted[]> =>
-  run(lintProgram(program), stdlib).pipe(
+export const lint = (
+  program: unknown,
+  declared: readonly string[] = []
+): Effect.Effect<Linted[]> =>
+  run(lintProgram(program, declared), stdlib).pipe(
     Effect.map((found) =>
       [
         ...new Map(

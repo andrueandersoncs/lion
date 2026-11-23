@@ -44,6 +44,8 @@ export const module = {
   ),
   /** The parts of the text between each separator: what `join` joins back. */
   split: onTwo((text, separator): string[] => text.split(separator)),
+  /** The text's Unicode characters in order, keeping astral characters whole. */
+  chars: over([Schema.String], (text): string[] => Array.from(text)),
   /** The text from `start` up to `end`, as `array/slice` cuts a list. */
   slice: slicing(Schema.String),
   padStart: padding((text, length, fill) => text.padStart(length, fill)),

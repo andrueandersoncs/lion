@@ -17450,13 +17450,13 @@
             ["repo/read", "packages/cli/src/index.ts"],
             [
               "quote",
-              "const program = yield* readJson(file);\n      const result = yield* run(program, stdlib, { database: store });"
+              "const program = yield* readJson(text);\n      const result = yield* run(program, stdlib, { database: store });"
             ]
           ],
           [
             "string/includes",
             ["repo/read", "packages/cli/src/index.ts"],
-            ["quote", "const file = Argument.FileText(\"file\")"]
+            ["quote", "const file = Argument.String(\"file\")"]
           ]
         ],
         ["quote", "lion-expression-schema"]
@@ -25591,6 +25591,171 @@
           ["quote", "picked-tests"]
         ],
         [["string/includes", "hook", "bun run test"], ["quote", "every-test"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "feature": "string/chars",
+    "kind": "function",
+    "program": ["=", ["string/chars", "a𝄞b"], ["quote", ["a", "𝄞", "b"]]]
+  },
+  {
+    "feature": "array/filter",
+    "kind": "function",
+    "program": [
+      "=",
+      [
+        "array/filter",
+        ["quote", [1, 5, 2, 4]],
+        ["lambda", ["x"], ["number/greaterThan", "x", 2]]
+      ],
+      ["quote", [5, 4]]
+    ]
+  },
+  {
+    "feature": "array/reverse",
+    "kind": "function",
+    "program": [
+      "=",
+      ["array/reverse", ["quote", [1, 2, 3]]],
+      ["quote", [3, 2, 1]]
+    ]
+  },
+  {
+    "feature": "array/sort",
+    "kind": "function",
+    "program": [
+      "and",
+      ["=", ["array/sort", ["quote", [3, 1, 2]]], ["quote", [1, 2, 3]]],
+      [
+        "=",
+        ["array/sort", ["quote", [3, 1, 2]], "number/greaterThan"],
+        ["quote", [3, 2, 1]]
+      ]
+    ]
+  },
+  {
+    "case": "solver-remainder-known-divisor",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "query",
+            [
+              "not",
+              [
+                "exists",
+                ["?n"],
+                [
+                  "and",
+                  ["schema/fits?", "?n", "value/integer?"],
+                  ["=", ["number/remainder", "?n", 2], 0],
+                  ["not", ["value/integer?", ["number/divide", "?n", 2]]]
+                ]
+              ]
+            ]
+          ],
+          ["quote", [{}]]
+        ],
+        ["quote", "decided"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "schema-includes-across-kinds",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [
+        [
+          "and",
+          ["not", ["schema/includes?", "value/number?", "value/integer?"]],
+          ["not", ["schema/includes?", "value/string?", "value/number?"]],
+          [
+            "not",
+            [
+              "schema/includes?",
+              ["schema/open", { "x": "value/integer?" }],
+              { "x": "value/integer?" }
+            ]
+          ],
+          [
+            "schema/includes?",
+            ["schema/arrayOf", "value/integer?"],
+            [
+              "schema/anyOf",
+              ["quote", []],
+              [
+                "schema/open",
+                ["array/make", "value/integer?"],
+                ["schema/arrayOf", "value/integer?"]
+              ]
+            ]
+          ]
+        ],
+        ["quote", "decided"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "solver-recursive-lambda-bounded-lists",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "rev",
+        [
+          "lambda",
+          ["xs"],
+          [
+            "cond",
+            [["=", "xs", ["quote", []]], ["quote", []]],
+            [
+              "else",
+              [
+                "array/concat",
+                ["rev", ["array/tail", "xs"]],
+                ["array/make", ["array/head", "xs"]]
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "query",
+              [
+                "not",
+                [
+                  "exists",
+                  ["?xs"],
+                  [
+                    "and",
+                    [
+                      "schema/fits?",
+                      "?xs",
+                      ["schema/arrayOf", "value/integer?", 3]
+                    ],
+                    ["not", ["=", ["rev", ["rev", "?xs"]], "?xs"]]
+                  ]
+                ]
+              ]
+            ],
+            ["quote", [{}]]
+          ],
+          ["quote", "decided"]
+        ],
         ["else", ["quote", "other"]]
       ]
     ]

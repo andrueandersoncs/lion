@@ -251,3 +251,256 @@ describe("array/zip", () => {
       })
   );
 });
+
+describe("array/filter, array/reverse, and array/sort", () => {
+  const nums = Arbitrary.array(zipItem, { maxLength: 8 });
+  const threshold = zipItem;
+
+  it.effect.prop(
+    "array/filter keeps matching items in order, rejects non-boolean predicates, and works in logic and the solver",
+    { items: nums, above: threshold },
+    ({ above, items }) =>
+      Effect.gen(function* () {
+        const pred = ["lambda", ["x"], ["number/greaterThan", "x", above]];
+        const expected = items.filter((x) => x > above);
+        expect(
+          yield* run(["array/filter", ["quote", items], pred], stdlib)
+        ).toEqual(expected);
+        // Works waiting in find.
+        expect(
+          yield* run(
+            [
+              "find",
+              ["array/filter", "?xs", pred],
+              ["=", "?xs", ["quote", items]],
+            ],
+            stdlib
+          )
+        ).toEqual([expected]);
+        // Non-boolean predicate fails cleanly when list is non-empty.
+        if (items.length > 0) {
+          const failed = yield* Effect.exit(
+            run(
+              ["array/filter", ["quote", items], ["lambda", ["x"], "x"]],
+              stdlib
+            )
+          );
+          expect(failed._tag).toBe("Failure");
+        }
+        // Symbolic proof: every element of array/filter(xs, x > above) is > above.
+        const proved = yield* run(
+          [
+            "query",
+            [
+              "not",
+              [
+                "exists",
+                ["?xs", "?kept"],
+                [
+                  "and",
+                  [
+                    "schema/fits?",
+                    "?xs",
+                    ["schema/arrayOf", "value/integer?", 3],
+                  ],
+                  ["=", "?kept", ["array/filter", "?xs", pred]],
+                  ["not", ["array/every?", "?kept", pred]],
+                ],
+              ],
+            ],
+          ],
+          stdlib
+        );
+        expect(proved).toEqual([{}]);
+      })
+  );
+
+  it.effect.prop(
+    "array/reverse reverses a list without mutating it, is its own inverse, and works in the solver",
+    { items: nums },
+    ({ items }) =>
+      Effect.gen(function* () {
+        const copy = [...items];
+        const reversed = yield* run(
+          ["array/reverse", ["quote", items]],
+          stdlib
+        );
+        expect(reversed).toEqual([...items].reverse());
+        expect(items).toEqual(copy);
+        // Involution proved symbolically over all bounded integer lists.
+        const proved = yield* run(
+          [
+            "query",
+            [
+              "not",
+              [
+                "exists",
+                ["?xs"],
+                [
+                  "and",
+                  [
+                    "schema/fits?",
+                    "?xs",
+                    ["schema/arrayOf", "value/integer?", 3],
+                  ],
+                  [
+                    "not",
+                    ["=", ["array/reverse", ["array/reverse", "?xs"]], "?xs"],
+                  ],
+                ],
+              ],
+            ],
+          ],
+          stdlib
+        );
+        expect(proved).toEqual([{}]);
+      })
+  );
+
+  it.effect.prop(
+    "array/sort sorts ascending by default and stably by a boolean comparator, without mutating, and works in the solver",
+    {
+      items: nums,
+      pairs: Arbitrary.array(
+        Arbitrary.all([
+          Arbitrary.schema(
+            Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 3 }))
+          ),
+          zipItem,
+        ]),
+        { maxLength: 8 }
+      ),
+    },
+    ({ items, pairs }) =>
+      Effect.gen(function* () {
+        const sorted = yield* run(["array/sort", ["quote", items]], stdlib);
+        expect(sorted).toEqual([...items].sort((a, b) => a - b));
+        // Descending with number/greaterThan comparator.
+        const desc = yield* run(
+          ["array/sort", ["quote", items], "number/greaterThan"],
+          stdlib
+        );
+        expect(desc).toEqual([...items].sort((a, b) => b - a));
+        // Stability: records with equal keys keep their original order.
+        const tagged = pairs.map(([key, val], index) => ({ index, key, val }));
+        const byKey = (yield* run(
+          [
+            "array/sort",
+            ["quote", tagged],
+            [
+              "lambda",
+              ["a", "b"],
+              [
+                "number/lessThan",
+                ["object/get", "a", "key"],
+                ["object/get", "b", "key"],
+              ],
+            ],
+          ],
+          stdlib
+        )) as { readonly index: number; readonly key: number }[];
+        for (let at = 1; at < byKey.length; at += 1) {
+          const prev = byKey[at - 1] as { index: number; key: number };
+          const curr = byKey[at] as { index: number; key: number };
+          expect(prev.key).toBeLessThanOrEqual(curr.key);
+          if (prev.key === curr.key) {
+            expect(prev.index).toBeLessThan(curr.index);
+          }
+        }
+        // Non-boolean comparator fails cleanly when list has at least 2 items.
+        if (items.length >= 2) {
+          const failed = yield* Effect.exit(
+            run(
+              [
+                "array/sort",
+                ["quote", items],
+                ["lambda", ["a", "b"], ["number/subtract", "a", "b"]],
+              ],
+              stdlib
+            )
+          );
+          expect(failed._tag).toBe("Failure");
+        }
+      })
+  );
+
+  it.effect.prop(
+    "array/sort is proved to preserve length and order symbolically for bounded integer lists",
+    {
+      descending: Arbitrary.schema(Schema.Boolean),
+    },
+    ({ descending }) =>
+      Effect.gen(function* () {
+        const op = descending ? "number/greaterThan" : "number/lessThan";
+        const okOp = descending
+          ? "number/greaterThanOrEqualTo"
+          : "number/lessThanOrEqualTo";
+        const callSort = descending
+          ? ["array/sort", "?xs", op]
+          : ["array/sort", "?xs"];
+        const proved = yield* run(
+          [
+            "begin",
+            [
+              "define",
+              "ordered?",
+              [
+                "lambda",
+                ["xs"],
+                [
+                  "cond",
+                  [["number/lessThan", ["array/length", "xs"], 2], true],
+                  [
+                    "else",
+                    [
+                      "and",
+                      [
+                        okOp,
+                        ["array/head", "xs"],
+                        ["array/head", ["array/tail", "xs"]],
+                      ],
+                      ["ordered?", ["array/tail", "xs"]],
+                    ],
+                  ],
+                ],
+              ],
+            ],
+            [
+              "query",
+              [
+                "not",
+                [
+                  "exists",
+                  ["?xs", "?out"],
+                  [
+                    "and",
+                    [
+                      "schema/fits?",
+                      "?xs",
+                      ["schema/arrayOf", "value/integer?", 4],
+                    ],
+                    ["=", "?out", callSort],
+                    [
+                      "not",
+                      [
+                        "and",
+                        [
+                          "=",
+                          ["array/length", "?out"],
+                          ["array/length", "?xs"],
+                        ],
+                        ["ordered?", "?out"],
+                      ],
+                    ],
+                  ],
+                ],
+              ],
+            ],
+          ],
+          stdlib
+        );
+        expect(proved).toEqual([{}]);
+      }),
+    { arbitrary: { runs: 4 } }
+  );
+});

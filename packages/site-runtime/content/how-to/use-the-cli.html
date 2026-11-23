@@ -7,13 +7,21 @@ bun add --dev @lionlang/cli
 </code-block>
 <p>In a project, run it with <code>bun run lion</code>. Installed globally, it is just <code>lion</code>.</p>
 
-<h2>Evaluate a file</h2>
-<p>Write a program to a JSON file and pass the file's path. The result prints as formatted JSON:</p>
+<h2>Evaluate a file, inline expression, or standard input</h2>
+<p>Pass a JSON file, pass <code>--eval</code> (<code>-e</code>) for a quick one-liner, or pipe JSON into standard input (explicitly with <code>-</code> or implicitly when piped). The result prints as formatted JSON:</p>
 <code-block lang="shell">
-echo '["number/add", 1, 2]' > add.json
 bun run lion add.json
+bun run lion -e '["number/add", 1, 2]'
+echo '["number/add", 1, 2]' | bun run lion -
 </code-block>
-<p>If the file is not valid JSON, or the program fails, <code>lion</code> prints the error and exits with status 1.</p>
+<p>If the input is not valid JSON, or the program fails, <code>lion</code> prints the error and exits with status 1.</p>
+
+<h2>Check a program without running it</h2>
+<p><code>lion check</code> reports malformed forms, misspelled names, wrong-arity calls, unreachable or non-exhaustive <code>match</code> cases, and Lion lints with JSON pointers. Pass <code>--database</code> to check a query against a saved database's relations and schemas read-only:</p>
+<code-block lang="shell">
+bun run lion check program.json
+bun run lion check --database store.json -e '["query", ["edge", "a", "?to"]]'
+</code-block>
 
 <h2>Keep a logic database in a file</h2>
 <p>Add <code>--database</code> with a path. The file is loaded before the program runs and saved after it succeeds, so relations, facts, rules, and invariants carry over to the next run:</p>

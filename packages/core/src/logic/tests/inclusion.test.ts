@@ -173,4 +173,182 @@ describe("schema/includes?", () => {
       }),
     OPTIONS
   );
+
+  /** Disjoint atomic kinds in Lion, with number split into integer and non-integer. */
+  const ATOMS = [
+    "int",
+    "non-int",
+    "string",
+    "boolean",
+    "null",
+    "array",
+    "object",
+    "function",
+    "symbol",
+    "promise",
+    "unknown",
+    "undefined",
+  ] as const;
+
+  type Atom = (typeof ATOMS)[number];
+
+  const KIND_SCHEMAS: Readonly<Record<string, readonly Atom[]>> = {
+    "value/integer?": ["int"],
+    "value/number?": ["int", "non-int"],
+    "value/string?": ["string"],
+    "value/boolean?": ["boolean"],
+    "value/null?": ["null"],
+    "value/array?": ["array"],
+    "value/object?": ["object"],
+    "value/function?": ["function"],
+    "value/symbol?": ["symbol"],
+    "value/promise?": ["promise"],
+    "value/unknown?": ["unknown"],
+    "value/undefined?": ["undefined"],
+    "value/any?": ATOMS,
+  };
+
+  const kindName = Arbitrary.schema(
+    Schema.Literals(Object.keys(KIND_SCHEMAS) as [string, ...string[]])
+  );
+
+  const kindUnion = Arbitrary.array(kindName, { minLength: 1, maxLength: 3 });
+
+  it.effect.prop(
+    "decides inclusion across all value kinds and unions of them, matching set inclusion",
+    { inner: kindUnion, outer: kindUnion },
+    ({ inner, outer }) =>
+      Effect.gen(function* () {
+        const toSchema = (names: readonly string[]) =>
+          names.length === 1 ? names[0] : ["schema/anyOf", ...names];
+        const innerAtoms = new Set(inner.flatMap((n) => KIND_SCHEMAS[n] ?? []));
+        const outerAtoms = new Set(outer.flatMap((n) => KIND_SCHEMAS[n] ?? []));
+        const expected = [...innerAtoms].every((a) => outerAtoms.has(a));
+        const outcome = yield* evaluate([
+          "schema/includes?",
+          toSchema(inner),
+          toSchema(outer),
+        ]);
+        expect(outcome).toEqual({ ok: true, value: expected });
+      }),
+    OPTIONS
+  );
+
+  const fieldKind = Arbitrary.schema(
+    Schema.Literals(["value/integer?", "value/number?", "value/string?"])
+  );
+
+  const fieldIncludes = (a: string, b: string) =>
+    a === b || (a === "value/integer?" && b === "value/number?");
+
+  it.effect.prop(
+    "decides inclusion between open records, exact records, and schema/recordOf",
+    {
+      innerOpen: Arbitrary.schema(Schema.Boolean),
+      outerOpen: Arbitrary.schema(Schema.Boolean),
+      innerHasY: Arbitrary.schema(Schema.Boolean),
+      outerHasY: Arbitrary.schema(Schema.Boolean),
+      ix: fieldKind,
+      iy: fieldKind,
+      ox: fieldKind,
+      oy: fieldKind,
+    },
+    ({ innerHasY, innerOpen, ix, iy, outerHasY, outerOpen, ox, oy }) =>
+      Effect.gen(function* () {
+        const innerFields = innerHasY ? { x: ix, y: iy } : { x: ix };
+        const outerFields = outerHasY ? { x: ox, y: oy } : { x: ox };
+        const inner = innerOpen ? ["schema/open", innerFields] : innerFields;
+        const outer = outerOpen ? ["schema/open", outerFields] : outerFields;
+        const expected =
+          fieldIncludes(ix, ox) &&
+          (!innerOpen || outerOpen) &&
+          (!outerHasY || (innerHasY && fieldIncludes(iy, oy))) &&
+          (outerOpen || !innerHasY || outerHasY);
+        const outcome = yield* evaluate(["schema/includes?", inner, outer]);
+        expect(outcome).toEqual({ ok: true, value: expected });
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "decides inclusion between unbounded and bounded arrayOf, open lists, and tuples",
+    {
+      itemA: fieldKind,
+      itemB: fieldKind,
+      modeA: Arbitrary.schema(
+        Schema.Literals(["unbounded", "bounded", "open1", "tuple1"])
+      ),
+      modeB: Arbitrary.schema(
+        Schema.Literals(["unbounded", "bounded", "open1", "tuple1", "split"])
+      ),
+      boundA: int(0, 3),
+      boundB: int(0, 3),
+    },
+    ({ boundA, boundB, itemA, itemB, modeA, modeB }) =>
+      Effect.gen(function* () {
+        const make = (mode: string, item: string, bound: number) => {
+          switch (mode) {
+            case "unbounded":
+              return ["schema/arrayOf", item];
+            case "bounded":
+              return ["schema/arrayOf", item, bound];
+            case "open1":
+              return ["schema/open", ["array/make", item]];
+            case "split":
+              return [
+                "schema/anyOf",
+                ["quote", []],
+                ["schema/open", ["array/make", item], ["schema/arrayOf", item]],
+              ];
+            default:
+              return ["array/make", item];
+          }
+        };
+        // Exact model of which (length, itemKind) pairs each list schema allows.
+        const lengths = [0, 1, 2, 3, 4];
+        const allows = (
+          mode: string,
+          item: string,
+          bound: number,
+          len: number,
+          head: string,
+          tail: string
+        ) => {
+          const hOk = len === 0 || fieldIncludes(head, item);
+          const tOk = len <= 1 || fieldIncludes(tail, item);
+          switch (mode) {
+            case "unbounded":
+            case "split":
+              return hOk && tOk;
+            case "bounded":
+              return len <= bound && hOk && tOk;
+            case "open1":
+              return len >= 1 && hOk;
+            default:
+              return len === 1 && hOk;
+          }
+        };
+        const samples = ["value/integer?", "value/number?", "value/string?"];
+        let expected = true;
+        for (const len of lengths) {
+          for (const head of samples) {
+            for (const tail of samples) {
+              if (
+                allows(modeA, itemA, boundA, len, head, tail) &&
+                !allows(modeB, itemB, boundB, len, head, tail)
+              ) {
+                expected = false;
+              }
+            }
+          }
+        }
+        const outcome = yield* evaluate([
+          "schema/includes?",
+          make(modeA, itemA, boundA),
+          make(modeB, itemB, boundB),
+        ]);
+        expect(outcome).toEqual({ ok: true, value: expected });
+      }),
+    OPTIONS
+  );
 });

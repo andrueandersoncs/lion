@@ -2,6 +2,26 @@
 
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `array/filter` keeps items of a list for which a boolean predicate gives `true`, in plain code, waiting rules, and the symbolic solver: `["array/filter", ["array/make", 1, 5, 2], ["lambda", ["x"], ["number/greaterThan", "x", 2]]]` gives `[5]`. (`array/filter` added)
+- `array/reverse` reverses a list in plain code, waiting rules, and the symbolic solver: `["array/reverse", ["array/make", 1, 2, 3]]` gives `[3, 2, 1]`. (`array/reverse` added)
+- `array/sort` sorts a list in ascending canonical order or stably by an optional two-argument boolean comparator, in plain code, waiting rules, and the symbolic solver: `["array/sort", ["array/make", 3, 1, 2]]` gives `[1, 2, 3]`. (`array/sort` added)
+- The `lion` and `lion check` commands accept `--eval` (`-e`) for inline JSON programs and `-` (or piped stdin) for standard input, and `lion check --database <file>` loads a saved database read-only so its relations and schemas are in scope without modifying the file. (`cli-eval-stdin-check-database` added)
+- `schema/includes?` decides inclusion across all value kinds (`value/number?`, `value/integer?`, `value/string?`, `value/array?`, `value/object?`, `value/function?`, `value/symbol?`, `value/promise?`, `value/unknown?`, `value/undefined?`, `value/any?`), open records and lists (`schema/open` without rest), and unbounded collections (`schema/arrayOf` without `most`, `schema/recordOf`), e.g. `["schema/includes?", "value/number?", "value/integer?"]` gives `false` and `["schema/includes?", "value/string?", "value/number?"]` gives `false`. (`schema-inclusion-across-kinds` added)
+- The symbolic solver runs full Lion expressions inside lambdas (`=`, `and`, `or`, `not`, `in`, `begin` with local `define`, `match`, `schema/fits?`, `[]`, `array/slice`, `array/zip`), suspended closures referencing logic variables, and recursive functions over bounded inputs with dead-branch pruning and Shannon-decomposed negation, proving recursive sorts such as insertion sort and merge sort over `["schema/arrayOf", "value/integer?", 4]`. (`solver-full-forms-and-recursion` added)
+- The symbolic solver decides `number/floor`, `number/ceiling`, `number/round` (with optional constant places), `number/remainder` by any known non-zero divisor, and `value/integer?` on arbitrary real expressions via exact Skolem integer variables, e.g. `["query", ["not", ["exists", ["?n"], ["and", ["schema/fits?", "?n", "value/integer?"], ["=", ["number/remainder", "?n", 2], 0], ["not", ["value/integer?", ["number/divide", "?n", 2]]]]]]]` proves every even integer halves to an integer (`[{}]`). (`solver-rounding-and-remainder` added)
+- Static analysis (`analyze`, `lion check`, and the graph editor) reports wrong-arity calls to standard library functions, declared relations, declared schemas, immediate lambdas, and unmutated single-site defined lambdas with the exact runtime arity message. (`static-arity-diagnostics` added)
+- `string/chars` splits a string into its Unicode characters in order, keeping astral characters whole: `["string/chars", "a𝄞b"]` gives `["a", "𝄞", "b"]`. (`string/chars` added)
+
+### Changed
+
+- `schema/includes?` gives `false` for `value/number?` in `value/integer?`, `value/string?` in `value/number?`, and open records in exact records, and `true` when an unbounded `schema/arrayOf` is covered by a `schema/anyOf` of empty and open lists. (`schema-includes-across-kinds` is `decided`)
+- The symbolic solver evaluates `begin` with local `define`, `match`, `=`, `and`, `or`, `not`, `in`, `schema/fits?`, and recursive functions over bounded lists. (`solver-recursive-lambda-bounded-lists` is `decided`)
+- The symbolic solver decides `number/remainder` by a known non-zero divisor, `number/floor`, `number/ceiling`, `number/round`, and `value/integer?` on arbitrary numbers. (`solver-remainder-known-divisor` is `decided`)
+
 ## 2026-11-22 — @lionlang/core 0.16.0, @lionlang/cli 0.15.0
 
 Every number is exact, as Scheme's exact numbers are: a number a program writes is the value its digits write, arithmetic, sums, and means are exact, `["number/add", 0.1, 0.2]` is 0.3, no sum or product overflows past 2^53, and `["number/divide", 1, 3]` is the fraction 1/3, which `number/toString` writes as `1/3`; so what the solver proves about numbers holds of what plain code computes. `array/zip` pairs up lists, `number/round` takes decimal places, `func/apply` spreads its last list as Scheme's `apply` does, a lambda written with one name in place of its parameters takes any number of arguments, and `and` and `or` of no goals and `number/add` and `number/multiply` of no arguments give Scheme's results. `lion check` also runs lints written in Lion, the first of which warns of a list written as a bare array in a rule, a find, or a query. Each rule a message states is told in one wording wherever it is broken, a relation goal finds its rows through the later goal with fewer rows when that is cheaper, and a message shows a value a host function gives that JSON cannot hold as its kind, such as `<Map>` or `<bigint>`, where a bigint made the message fail before. Breaking: integers past 2^53 - 1 and decimals compute exactly instead of failing or rounding, a fraction no decimal writes has no JSON text, and `array/head` and `array/tail` fail on an empty list.

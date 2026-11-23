@@ -17,7 +17,12 @@
  * string function on one, is refused by name.
  */
 import { Effect } from "effect";
-import { KeyNotFoundError, logicError, notTruth } from "@/errors/evaluation";
+import {
+  KeyNotFoundError,
+  LogicError,
+  logicError,
+  notTruth,
+} from "@/errors/evaluation";
 import { type Environment, lookup, UNBOUND } from "@/evaluation/environment";
 import { call } from "@/evaluation/special-forms/function";
 import { fits } from "@/logic/fit";
@@ -28,11 +33,14 @@ import {
   minus,
   plus,
   type Sort,
+  satisfiable,
   times,
   variable,
 } from "@/logic/solver";
 import {
+  ANY_REST_SCHEMA,
   and,
+  atom,
   type Cases,
   equal,
   FALSE,
@@ -45,6 +53,7 @@ import {
   not,
   numberSym,
   one,
+  opaqueKindOf,
   or,
   plainOf,
   product,
@@ -74,24 +83,122 @@ import {
   show,
 } from "@/logic/terms";
 import {
+  DIGITS,
   divide,
+  floor as exactFloor,
   isZero,
   multiply,
   negate,
   ONE,
+  type Rational,
   ratio,
   ZERO,
 } from "@/numbers/exact";
+import { isMatchCase } from "@/schemas/evaluation";
+
+/** Sentinel schema that allows no values, used to test inhabitedness. */
+export const EMPTY_SCHEMA = Symbol("empty schema");
 
 /** The context a goal is worked out in. */
 export interface Context {
+  /** Maps concrete values of opaque kinds (such as strings) to unique integer ids. */
+  readonly atoms?: Map<unknown, number>;
+  /** True when deciding schema inclusion across broad shapes (opaque kinds, open/unbounded collections). */
+  readonly broad?: boolean;
+  /** Recursive schema inclusion check for open/unbounded rest schemas. */
+  readonly checkIncludes?: (
+    inner: unknown,
+    outer: unknown
+  ) => Effect.Effect<boolean, Error>;
+  /** Defining constraints of Skolem integer variables (such as floor), keyed by variable name. */
+  readonly definitions: Map<string, readonly Constraint[]>;
   /** The value of a term with no symbolic variable in it, for this answer. */
   readonly evaluate: (term: unknown) => Effect.Effect<unknown, Error>;
+  /** Memoizes floor(u) -> integer variable name for a canonical linear expression. */
+  readonly floors: Map<string, string>;
   /** Whether each of the solver's variables is a whole number or any number. */
   readonly sorts: Map<string, Sort>;
   /** What each symbolic variable stands for. */
   readonly symbols: ReadonlyMap<string, Cases>;
 }
+
+const LEAF_PARTS = /[.#/]/;
+
+/** Canonical text for a linear expression, so equal expressions share one floor variable. */
+const linearKey = (linear: Linear) =>
+  `${linear.constant.n}/${linear.constant.d}|${[...linear.coefficients]
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([name, c]) => `${name}:${c.n}/${c.d}`)
+    .join(",")}`;
+
+/**
+ * The exact floor of a linear expression: a whole variable `q` pinned in
+ * `context.definitions` by `q <= u < q + 1`. Because every number has one
+ * unique floor, these defining constraints hold under both positive and
+ * negated formulas, and are attached outside any `not`.
+ */
+const floorLinear = (linear: Linear, context: Context): Linear => {
+  if (linear.coefficients.size === 0) {
+    return constant(ratio(exactFloor(linear.constant)));
+  }
+  if (integral(linear, context.sorts)) {
+    return linear;
+  }
+  const key = linearKey(linear);
+  const existing = context.floors.get(key);
+  if (existing !== undefined) {
+    return variable(existing);
+  }
+  const [first] = linear.coefficients.keys();
+  const owner = (first ?? "v").split(LEAF_PARTS)[0] || "v";
+  const name = `${owner}#floor_${context.floors.size}`;
+  const q = variable(name);
+  context.sorts.set(name, "integer");
+  context.floors.set(key, name);
+  context.definitions.set(name, [
+    { linear: minus(linear, q), relation: ">=" },
+    { linear: minus(plus(q, constant(ONE)), linear), relation: ">" },
+  ]);
+  return q;
+};
+
+/**
+ * Appends every defining constraint for auxiliary variables referenced
+ * (transitively) by `constraints` or `extra`.
+ */
+export const withDefinitions = (
+  constraints: readonly Constraint[],
+  definitions: ReadonlyMap<string, readonly Constraint[]>,
+  extra: readonly string[] = []
+): readonly Constraint[] => {
+  if (definitions.size === 0) {
+    return constraints;
+  }
+  const seen = new Set<string>();
+  const queue: string[] = [
+    ...extra,
+    ...constraints.flatMap((c) => [...c.linear.coefficients.keys()]),
+  ];
+  const added: Constraint[] = [];
+  for (const name of queue) {
+    if (seen.has(name)) {
+      continue;
+    }
+    seen.add(name);
+    const defs = definitions.get(name);
+    if (defs !== undefined) {
+      for (const c of defs) {
+        added.push(c);
+        for (const dep of c.linear.coefficients.keys()) {
+          if (!seen.has(dep)) {
+            queue.push(dep);
+          }
+        }
+      }
+    }
+  }
+  return added.length === 0 ? constraints : [...added, ...constraints];
+};
 
 const MOST_DEPTH = 64;
 
@@ -123,9 +230,8 @@ const linearOf = (sym: Sym, what: string) => {
 
 const compareWith =
   (relation: ">=" | ">", flip: boolean) =>
-  (a: Linear, b: Linear): Formula => [
-    [{ linear: flip ? minus(b, a) : minus(a, b), relation }],
-  ];
+  (a: Linear, b: Linear): Formula =>
+    atom({ linear: flip ? minus(b, a) : minus(a, b), relation });
 
 const ANY = Number.POSITIVE_INFINITY;
 
@@ -136,6 +242,7 @@ const ANY = Number.POSITIVE_INFINITY;
 const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "array/concat": [0, ANY],
   "array/every?": [2, 2],
+  "array/filter": [2, 2],
   "array/flat-map": [2, 2],
   "array/head": [1, 1],
   "array/includes?": [2, 2],
@@ -143,15 +250,21 @@ const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "array/map": [2, 2],
   "array/reduce": [3, 3],
   "array/reductions": [3, 3],
+  "array/reverse": [1, 1],
+  "array/slice": [2, 3],
   "array/some?": [2, 2],
+  "array/sort": [1, 2],
   "array/tail": [1, 1],
+  "array/zip": [1, ANY],
   "boolean/and": [2, 2],
   "boolean/not": [1, 1],
   "boolean/or": [2, 2],
   "number/absolute": [1, 1],
   "number/add": [0, ANY],
+  "number/ceiling": [1, 1],
   "number/divide": [2, 2],
   "number/equals?": [2, 2],
+  "number/floor": [1, 1],
   "number/greaterThan": [2, 2],
   "number/greaterThanOrEqualTo": [2, 2],
   "number/lessThan": [2, 2],
@@ -159,9 +272,12 @@ const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "number/max": [1, ANY],
   "number/min": [1, ANY],
   "number/multiply": [0, ANY],
+  "number/remainder": [2, 2],
+  "number/round": [1, 2],
   "number/subtract": [2, 2],
   "object/get": [2, 3],
   "object/has?": [2, 2],
+  "schema/fits?": [2, 2],
   "value/integer?": [1, 1],
   "value/number?": [1, 1],
 };
@@ -226,12 +342,96 @@ const LIBRARY: Readonly<
             );
       }
     ),
+  "number/floor": (args, name, context) =>
+    Effect.map(linearOf(args[0] as Sym, name), (x) =>
+      one(numberSym(floorLinear(x, context)))
+    ),
+  "number/ceiling": (args, name, context) =>
+    Effect.map(linearOf(args[0] as Sym, name), (x) =>
+      one(
+        numberSym(
+          times(floorLinear(times(x, negate(ONE)), context), negate(ONE))
+        )
+      )
+    ),
+  "number/round": (args, name, context) =>
+    Effect.flatMap(
+      Effect.forEach(args, (arg) => linearOf(arg, name)),
+      ([x, places]) => {
+        if (places !== undefined) {
+          if (places.coefficients.size > 0) {
+            return refused(name);
+          }
+          if (
+            places.constant.d !== 1n ||
+            places.constant.n > BigInt(DIGITS) ||
+            places.constant.n < -BigInt(DIGITS)
+          ) {
+            return refused(name);
+          }
+        }
+        const p = places === undefined ? 0n : places.constant.n;
+        const subject = x as Linear;
+        if (p >= 0n && integral(subject, context.sorts)) {
+          return Effect.succeed(one(numberSym(subject)));
+        }
+        const scale: Rational =
+          p >= 0n ? ratio(10n ** p) : ratio(1n, 10n ** -p);
+        const rounded = floorLinear(
+          plus(times(subject, scale), constant(ratio(1n, 2n))),
+          context
+        );
+        return Effect.succeed(
+          one(numberSym(times(rounded, divide(ONE, scale))))
+        );
+      }
+    ),
+  "number/remainder": (args, name, context) =>
+    Effect.flatMap(
+      Effect.forEach(args, (arg) => linearOf(arg, name)),
+      ([a, b]) => {
+        if (b === undefined || b.coefficients.size > 0) {
+          return refused(`${name} by an unknown`);
+        }
+        if (isZero(b.constant)) {
+          return logicError(`${name} by zero has no finite result.`);
+        }
+        const k: Rational = b.constant.n < 0n ? negate(b.constant) : b.constant;
+        const dividend = a as Linear;
+        const scaled = times(dividend, divide(ONE, k));
+        const posQ = floorLinear(scaled, context);
+        const negQ = floorLinear(times(scaled, negate(ONE)), context);
+        const posWhen = atom({ linear: dividend, relation: ">=" });
+        const negWhen = atom({
+          linear: times(dividend, negate(ONE)),
+          relation: ">",
+        });
+        return Effect.succeed<Cases>([
+          ...(posWhen.length === 0
+            ? []
+            : [
+                {
+                  sym: numberSym(minus(dividend, times(posQ, k))),
+                  when: posWhen,
+                },
+              ]),
+          ...(negWhen.length === 0
+            ? []
+            : [
+                {
+                  sym: numberSym(plus(dividend, times(negQ, k))),
+                  when: negWhen,
+                },
+              ]),
+        ]);
+      }
+    ),
   "number/absolute": (args, name) =>
     Effect.map(linearOf(args[0] as Sym, name), (x) => [
-      { sym: numberSym(x), when: [[{ linear: x, relation: ">=" }]] },
+      { sym: numberSym(x), when: atom({ linear: x, relation: ">=" }) },
       {
         sym: numberSym(times(x, negate(ONE))),
-        when: [[{ linear: times(x, negate(ONE)), relation: ">" }]],
+        when: atom({ linear: times(x, negate(ONE)), relation: ">" }),
       },
     ]),
   "number/min": (args, name) => extremum(args, name, false),
@@ -287,17 +487,17 @@ const LIBRARY: Readonly<
     }
     return Effect.succeed(one(truthSym(fields.has(key.value) ? TRUE : FALSE)));
   },
+  "schema/fits?": (args, _name, context, depth) =>
+    isConcrete(args[1] as Sym)
+      ? Effect.map(
+          fitsOf(args[0] as Sym, plainOf(args[1] as Sym), context, depth),
+          (f) => one(truthSym(f))
+        )
+      : refused("a schema made from a value no goal binds"),
   "value/number?": (args) =>
     Effect.succeed(one(truthSym(args[0]?.kind === "number" ? TRUE : FALSE))),
-  "value/integer?": (args, name, context) => {
-    const [arg] = args;
-    if (arg?.kind !== "number") {
-      return Effect.succeed(one(truthSym(FALSE)));
-    }
-    return integral(arg.linear, context.sorts)
-      ? Effect.succeed(one(truthSym(TRUE)))
-      : refused(name);
-  },
+  "value/integer?": (args, _name, context) =>
+    Effect.map(fitsInteger(args[0] as Sym, context), (f) => one(truthSym(f))),
 };
 
 /** What the solver says of a list it goes over whose length it does not know. */
@@ -429,6 +629,177 @@ const quantified = (
       )
   );
 
+interface ListWay {
+  readonly items: Sym[];
+  readonly when: Formula;
+}
+
+const filterStep = (
+  ways: readonly ListWay[],
+  item: Sym,
+  holds: Formula
+): Effect.Effect<ListWay[], Error> => {
+  const fails = not(holds);
+  const next: ListWay[] = [];
+  for (const way of ways) {
+    const kept = and(way.when, holds);
+    if (kept.length > 0) {
+      next.push({ items: [...way.items, item], when: kept });
+    }
+    const dropped = and(way.when, fails);
+    if (dropped.length > 0) {
+      next.push({ items: way.items, when: dropped });
+    }
+    if (next.length > MOST_WAYS) {
+      return Effect.fail(tooManyWays());
+    }
+  }
+  return Effect.succeed(next);
+};
+
+const filterSymbolic = (
+  items: readonly Sym[],
+  fn: unknown,
+  context: Context,
+  depth: number
+): Result =>
+  Effect.gen(function* () {
+    let ways: ListWay[] = [{ items: [], when: TRUE }];
+    for (const item of items) {
+      const holds = yield* Effect.flatMap(
+        applyCallable(fn, [item], context, depth),
+        formulaOf
+      );
+      ways = yield* filterStep(ways, item, holds);
+    }
+    return ways.map(({ items: kept, when }) => ({ sym: listSym(kept), when }));
+  });
+
+const prependWays = (
+  head: Sym,
+  rest: readonly ListWay[],
+  out: ListWay[]
+): Effect.Effect<void, Error> => {
+  for (const each of rest) {
+    out.push({ items: [head, ...each.items], when: each.when });
+    if (out.length > MOST_WAYS) {
+      return Effect.fail(tooManyWays());
+    }
+  }
+  return Effect.void;
+};
+
+const mergeSymbolic = (
+  left: readonly Sym[],
+  right: readonly Sym[],
+  guard: Formula,
+  compareSym: (a: Sym, b: Sym) => Effect.Effect<Formula, Error>,
+  context: Context
+): Effect.Effect<ListWay[], Error> => {
+  if (left.length === 0) {
+    return Effect.succeed([{ items: [...right], when: guard }]);
+  }
+  if (right.length === 0) {
+    return Effect.succeed([{ items: [...left], when: guard }]);
+  }
+  return Effect.gen(function* () {
+    const rightFirst = yield* compareSym(right[0] as Sym, left[0] as Sym);
+    const out: ListWay[] = [];
+    const takeRight = pruneFormula(and(guard, rightFirst), context);
+    if (takeRight.length > 0) {
+      const rest = yield* mergeSymbolic(
+        left,
+        right.slice(1),
+        takeRight,
+        compareSym,
+        context
+      );
+      yield* prependWays(right[0] as Sym, rest, out);
+    }
+    const takeLeft = pruneFormula(and(guard, not(rightFirst)), context);
+    if (takeLeft.length > 0) {
+      const rest = yield* mergeSymbolic(
+        left.slice(1),
+        right,
+        takeLeft,
+        compareSym,
+        context
+      );
+      yield* prependWays(left[0] as Sym, rest, out);
+    }
+    return out;
+  });
+};
+
+const sortSlice = (
+  slice: readonly Sym[],
+  guard: Formula,
+  compareSym: (a: Sym, b: Sym) => Effect.Effect<Formula, Error>,
+  context: Context
+): Effect.Effect<ListWay[], Error> => {
+  if (slice.length < 2) {
+    return Effect.succeed([{ items: [...slice], when: guard }]);
+  }
+  const mid = Math.floor(slice.length / 2);
+  return Effect.gen(function* () {
+    const lefts = yield* sortSlice(
+      slice.slice(0, mid),
+      guard,
+      compareSym,
+      context
+    );
+    const out: ListWay[] = [];
+    for (const l of lefts) {
+      const rights = yield* sortSlice(
+        slice.slice(mid),
+        l.when,
+        compareSym,
+        context
+      );
+      for (const r of rights) {
+        out.push(
+          ...(yield* mergeSymbolic(
+            l.items,
+            r.items,
+            r.when,
+            compareSym,
+            context
+          ))
+        );
+        if (out.length > MOST_WAYS) {
+          return yield* Effect.fail(tooManyWays());
+        }
+      }
+    }
+    return out;
+  });
+};
+
+const sortSymbolic = (
+  items: readonly Sym[],
+  before: Sym | undefined,
+  name: string,
+  context: Context,
+  depth: number
+): Result => {
+  if (items.length < 2) {
+    return Effect.succeed(one(listSym(items)));
+  }
+  const compareSym = (a: Sym, b: Sym): Effect.Effect<Formula, Error> => {
+    if (before !== undefined) {
+      return Effect.flatMap(functionOf(before, name), (f) =>
+        Effect.flatMap(applyCallable(f, [a, b], context, depth), formulaOf)
+      );
+    }
+    return a.kind === "number" && b.kind === "number"
+      ? Effect.succeed(compareWith(">", true)(a.linear, b.linear))
+      : refused(name);
+  };
+  return Effect.map(sortSlice(items, TRUE, compareSym, context), (ways) =>
+    ways.map(({ items: sorted, when }) => ({ sym: listSym(sorted), when }))
+  );
+};
+
 /** How the array functions work on lists of known length whose items the solver works out. */
 const ARRAYS: Readonly<
   Record<
@@ -444,9 +815,47 @@ const ARRAYS: Readonly<
   "array/length": ([list], name) =>
     Effect.map(listOf(list, name), (items) => one(fromValue(items.length))),
   "array/head": ([list], name) =>
-    Effect.map(listOf(list, name), (items) => one(items[0] ?? fromValue(null))),
+    Effect.flatMap(listOf(list, name), (items) =>
+      items.length === 0 ? refused(name) : Effect.succeed(one(items[0] as Sym))
+    ),
   "array/tail": ([list], name) =>
-    Effect.map(listOf(list, name), (items) => one(listSym(items.slice(1)))),
+    Effect.flatMap(listOf(list, name), (items) =>
+      items.length === 0
+        ? refused(name)
+        : Effect.succeed(one(listSym(items.slice(1))))
+    ),
+  "array/slice": ([list, start, end], name) =>
+    Effect.flatMap(listOf(list, name), (items) => {
+      if (start === undefined || !isConcrete(start)) {
+        return refused(name);
+      }
+      const from = plainOf(start);
+      let to: unknown;
+      if (end !== undefined) {
+        to = isConcrete(end) ? plainOf(end) : null;
+      }
+      if (
+        typeof from !== "number" ||
+        !Number.isInteger(from) ||
+        (to !== undefined && (typeof to !== "number" || !Number.isInteger(to)))
+      ) {
+        return refused(name);
+      }
+      return Effect.succeed(one(listSym(items.slice(from, to))));
+    }),
+  "array/zip": (lists, name) =>
+    Effect.map(
+      Effect.forEach(lists, (list) => listOf(list, name)),
+      (all) =>
+        one(
+          listSym(
+            Array.from(
+              { length: Math.min(...all.map((items) => items.length)) },
+              (_, at) => listSym(all.map((items) => items[at] as Sym))
+            )
+          )
+        )
+    ),
   "array/concat": (lists, name) =>
     Effect.map(
       Effect.forEach(lists, (list) => listOf(list, name)),
@@ -496,6 +905,19 @@ const ARRAYS: Readonly<
     quantified(args, name, context, depth, true),
   "array/every?": (args, name, context, depth) =>
     quantified(args, name, context, depth, false),
+  "array/filter": ([list, fn], name, context, depth) =>
+    Effect.flatMap(
+      Effect.all([listOf(list, name), functionOf(fn, name)]),
+      ([items, f]) => filterSymbolic(items, f, context, depth)
+    ),
+  "array/reverse": ([list], name) =>
+    Effect.map(listOf(list, name), (items) =>
+      one(listSym([...items].reverse()))
+    ),
+  "array/sort": ([list, before], name, context, depth) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      sortSymbolic(items, before, name, context, depth)
+    ),
   "array/reductions": ([list, initial, fn], name, context, depth) =>
     Effect.flatMap(
       Effect.all([listOf(list, name), functionOf(fn, name)]),
@@ -697,8 +1119,46 @@ interface Where {
   readonly context: Context;
   readonly depth: number;
   readonly environment: Environment | undefined;
+  readonly guard: Formula;
   readonly scope: ReadonlyMap<string, Cases>;
 }
+
+const sortsForConstraints = (
+  constraints: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>
+) =>
+  new Map(
+    constraints
+      .flatMap((c) => [...c.linear.coefficients.keys()])
+      .map((name) => [name, sorts.get(name) ?? "real"] as const)
+  );
+
+/** Drops conjunctions whose linear constraints are unsatisfiable together. */
+const pruneFormula = (formula: Formula, context: Context): Formula => {
+  if (formula.length === 0) {
+    return formula;
+  }
+  const kept: (readonly Constraint[])[] = [];
+  for (const conj of formula) {
+    if (conj.length <= 1) {
+      kept.push(conj);
+      continue;
+    }
+    const all = withDefinitions(conj, context.definitions);
+    try {
+      if (satisfiable(all, sortsForConstraints(all, context.sorts))) {
+        kept.push(conj);
+      }
+    } catch (error) {
+      if (error instanceof LogicError) {
+        kept.push(conj);
+      } else {
+        throw error;
+      }
+    }
+  }
+  return kept;
+};
 
 const each = (parts: readonly unknown[], where: Where) =>
   Effect.forEach(parts, (part) => expressionAt(part, where));
@@ -747,6 +1207,7 @@ const lambdaCall = (
           expressionAt(body, {
             ...where,
             depth: where.depth + 1,
+            guard: and(where.guard, when),
             scope: new Map([...where.scope, ...bound(parameters, syms)]),
           }),
           (cases) => under(when, cases)
@@ -793,6 +1254,254 @@ const closureOf = (
   kind: "closure",
 });
 
+/** Equality inside a lambda body, as `=` works in a goal. */
+const equalityExpr = (
+  [first, second]: readonly unknown[],
+  where: Where
+): Result =>
+  Effect.map(
+    Effect.all([expressionAt(first, where), expressionAt(second, where)]),
+    ([a, b]) =>
+      one(
+        truthSym(
+          product([a, b]).reduce<Formula>(
+            (sofar, { syms: [x, y], when }) =>
+              or(
+                sofar,
+                and(when, equal(x as Sym, y as Sym, where.context.atoms))
+              ),
+            FALSE
+          )
+        )
+      )
+  );
+
+/** Short-circuiting `and` inside a lambda body. */
+const logicalAndExpr = (parts: readonly unknown[], where: Where): Result =>
+  Effect.gen(function* () {
+    let holds: Formula = TRUE;
+    for (const part of parts) {
+      const reachable = and(where.guard, holds);
+      if (reachable.length === 0) {
+        return one(truthSym(FALSE));
+      }
+      const next = yield* holdsWhere(part, { ...where, guard: reachable });
+      holds = and(holds, next);
+      if (holds.length === 0) {
+        return one(truthSym(FALSE));
+      }
+    }
+    return one(truthSym(holds));
+  });
+
+/** Short-circuiting `or` inside a lambda body. */
+const logicalOrExpr = (parts: readonly unknown[], where: Where): Result =>
+  Effect.gen(function* () {
+    let holds: Formula = FALSE;
+    for (const part of parts) {
+      const remaining = and(where.guard, not(holds));
+      if (remaining.length === 0) {
+        return one(truthSym(holds));
+      }
+      const next = yield* holdsWhere(part, { ...where, guard: remaining });
+      holds = or(holds, next);
+      if (holds.some((conj) => conj.length === 0)) {
+        return one(truthSym(TRUE));
+      }
+    }
+    return one(truthSym(holds));
+  });
+
+/** Membership `in` inside a lambda body. */
+const membershipExpr = (
+  [element, list]: readonly unknown[],
+  where: Where
+): Result =>
+  Effect.flatMap(
+    Effect.all([expressionAt(element, where), expressionAt(list, where)]),
+    ([elements, lists]) =>
+      Effect.map(
+        Effect.forEach(product([elements, lists]), ({ syms, when }) =>
+          Effect.map(listOf(syms[1], "in"), (items) =>
+            and(
+              when,
+              items.reduce<Formula>(
+                (f, item) =>
+                  or(f, equal(syms[0] as Sym, item, where.context.atoms)),
+                FALSE
+              )
+            )
+          )
+        ),
+        (fs) => one(truthSym(fs.reduce(or, FALSE)))
+      )
+  );
+
+/** Sequential `begin` with local `define` bindings inside a lambda body. */
+const sequenceExpr = (parts: readonly unknown[], where: Where): Result =>
+  Effect.gen(function* () {
+    if (parts.length === 0) {
+      return one(fromValue([]));
+    }
+    const scope = new Map(where.scope);
+    const local: Where = { ...where, scope };
+    let last: Cases = one(fromValue([]));
+    for (const part of parts) {
+      if (
+        Array.isArray(part) &&
+        part[0] === "define" &&
+        !isName("define", scope, where.environment) &&
+        typeof part[1] === "string" &&
+        part.length === 3
+      ) {
+        const value = yield* expressionAt(part[2], local);
+        scope.set(part[1], value);
+        last = value;
+      } else {
+        last = yield* expressionAt(part, local);
+      }
+    }
+    return last;
+  });
+
+/** Whether `sym` fits a schema expression evaluated inside a lambda (`match`). */
+const fitsMatchSchema = (
+  sym: Sym,
+  schemaCases: Cases,
+  where: Where
+): Effect.Effect<Formula, Error> =>
+  Effect.gen(function* () {
+    let formula: Formula = FALSE;
+    for (const { sym: schemaSym, when } of schemaCases) {
+      let fit: Formula;
+      if (isConcrete(schemaSym)) {
+        fit = yield* fitsOf(
+          sym,
+          plainOf(schemaSym),
+          where.context,
+          where.depth
+        );
+      } else if (schemaSym.kind === "closure") {
+        fit = yield* Effect.flatMap(
+          applyCallable(schemaSym, [sym], where.context, where.depth),
+          formulaOf
+        );
+      } else if (
+        schemaSym.kind === "number" ||
+        schemaSym.kind === "truth" ||
+        schemaSym.kind === "value"
+      ) {
+        fit = equal(sym, schemaSym, where.context.atoms);
+      } else {
+        return yield* refused("a schema made from a value no goal binds");
+      }
+      formula = or(formula, and(when, fit));
+    }
+    return formula;
+  });
+
+const applyMatchHandler = (
+  fnExpr: unknown,
+  sym: Sym,
+  when: Formula,
+  guard: Formula,
+  where: Where
+): Result =>
+  Effect.gen(function* () {
+    const handlers = yield* expressionAt(fnExpr, { ...where, guard });
+    const out: { when: Formula; sym: Sym }[] = [];
+    for (const { sym: fnSym, when: fnWhen } of handlers) {
+      const fn = callableOf(fnSym);
+      if (fn === undefined) {
+        return yield* refused(`a call of ${show(fnExpr)}`);
+      }
+      const applied = yield* applyCallable(
+        fn,
+        [sym],
+        where.context,
+        where.depth
+      );
+      out.push(...under(and(when, fnWhen), applied));
+    }
+    return out;
+  });
+
+const matchSubject = (
+  sym: Sym,
+  when: Formula,
+  clauses: readonly (readonly [unknown, unknown])[],
+  fallback: { readonly has: boolean; readonly expr: unknown },
+  where: Where
+): Result =>
+  Effect.gen(function* () {
+    const out: { when: Formula; sym: Sym }[] = [];
+    let before = when;
+    for (const [schemaExpr, fnExpr] of clauses) {
+      const schemaCases = yield* expressionAt(schemaExpr, where);
+      const fits = yield* fitsMatchSchema(sym, schemaCases, where);
+      const here = and(before, fits);
+      const reachable =
+        where.depth > 1
+          ? pruneFormula(and(where.guard, here), where.context)
+          : and(where.guard, here);
+      if (reachable.length > 0) {
+        out.push(
+          ...(yield* applyMatchHandler(fnExpr, sym, here, reachable, where))
+        );
+      }
+      before = and(before, not(fits));
+      if (before.length === 0) {
+        return out;
+      }
+    }
+    const remaining = pruneFormula(and(where.guard, before), where.context);
+    if (remaining.length === 0) {
+      return out;
+    }
+    if (!fallback.has) {
+      return yield* refused("match");
+    }
+    out.push(
+      ...(yield* applyMatchHandler(
+        fallback.expr,
+        sym,
+        before,
+        remaining,
+        where
+      ))
+    );
+    return out;
+  });
+
+/** Pattern `match` inside a lambda body. */
+const matchExpr = (parts: readonly unknown[], where: Where): Result =>
+  Effect.gen(function* () {
+    if (parts.length < 2) {
+      return yield* refused("match");
+    }
+    const [subjectExpr, ...rest] = parts;
+    const last = rest.at(-1);
+    const hasFallback = !isMatchCase(last);
+    const clauses = (hasFallback ? rest.slice(0, -1) : rest) as readonly [
+      unknown,
+      unknown,
+    ][];
+    const subjects = yield* expressionAt(subjectExpr, where);
+    const out: { when: Formula; sym: Sym }[] = [];
+    for (const { sym, when } of subjects) {
+      out.push(
+        ...(yield* matchSubject(
+          sym,
+          when,
+          clauses,
+          { expr: last, has: hasFallback },
+          where
+        ))
+      );
+    }
+    return out;
+  });
+
 const expressionAt = (code: unknown, where: Where): Result => {
   if (typeof code === "string") {
     return named(code, where);
@@ -802,6 +1511,9 @@ const expressionAt = (code: unknown, where: Where): Result => {
   }
   if (!Array.isArray(code)) {
     return Effect.succeed(one(fromValue(code)));
+  }
+  if (code.length === 0) {
+    return Effect.succeed(one(fromValue([])));
   }
   const [head, ...rest] = code as unknown[];
   if (Array.isArray(head) && head[0] === "lambda") {
@@ -819,6 +1531,22 @@ const expressionAt = (code: unknown, where: Where): Result => {
       return Effect.succeed(one(fromValue(rest[0])));
     case "cond":
       return conditional(rest, where);
+    case "match":
+      return matchExpr(rest, where);
+    case "begin":
+      return sequenceExpr(rest, where);
+    case "=":
+      return equalityExpr(rest, where);
+    case "and":
+      return logicalAndExpr(rest, where);
+    case "or":
+      return logicalOrExpr(rest, where);
+    case "not":
+      return Effect.map(holdsWhere(rest[0], where), (f) =>
+        one(truthSym(not(f)))
+      );
+    case "in":
+      return membershipExpr(rest, where);
     case "lambda":
       return contracted(rest[0])
         ? refused("a lambda with a contract")
@@ -837,7 +1565,8 @@ const expression = (
   environment: Environment | undefined,
   context: Context,
   depth: number
-): Result => expressionAt(code, { context, depth, environment, scope });
+): Result =>
+  expressionAt(code, { context, depth, environment, guard: TRUE, scope });
 
 /** Where a `cond` test holds: the cases in which it is true. */
 const holdsWhere = (test: unknown, where: Where) =>
@@ -860,11 +1589,24 @@ const conditional = (clauses: readonly unknown[], where: Where): Result =>
         test === "else" && !isName("else", where.scope, where.environment);
       const holds = otherwise ? TRUE : yield* holdsWhere(test, where);
       const here = and(before, holds);
-      if (here.length > 0) {
-        out.push(...under(here, yield* expressionAt(result, where)));
+      const reachable =
+        where.depth > 1
+          ? pruneFormula(and(where.guard, here), where.context)
+          : and(where.guard, here);
+      if (reachable.length > 0) {
+        out.push(
+          ...under(
+            here,
+            yield* expressionAt(result, { ...where, guard: reachable })
+          )
+        );
       }
       before = and(before, not(holds));
-      if (before.length === 0 || otherwise) {
+      if (
+        before.length === 0 ||
+        and(where.guard, before).length === 0 ||
+        otherwise
+      ) {
         return out;
       }
     }
@@ -907,7 +1649,23 @@ export const term = (value: unknown, context: Context, depth = 0): Result => {
       );
     }
     if (mentions(value.fn, context)) {
-      return unboundFunction("a call");
+      return Effect.flatMap(term(value.fn, context, depth), (fns) =>
+        fns.some(({ sym }) => callableOf(sym) === undefined)
+          ? unboundFunction("a call")
+          : Effect.flatMap(
+              Effect.forEach(value.args, (arg) => term(arg, context, depth)),
+              (args) =>
+                Effect.map(
+                  Effect.forEach(fns, ({ sym, when }) =>
+                    Effect.map(
+                      applyCases(callableOf(sym), args, context, depth),
+                      (cases) => under(when, cases)
+                    )
+                  ),
+                  (all) => all.flat()
+                )
+            )
+      );
     }
     return Effect.flatMap(
       Effect.forEach(value.args, (arg) => term(arg, context, depth)),
@@ -1042,9 +1800,73 @@ const fitsInteger = (sym: Sym, context: Context): Fit => {
   if (sym.kind !== "number") {
     return Effect.succeed(FALSE);
   }
-  return integral(sym.linear, context.sorts)
-    ? Effect.succeed(TRUE)
-    : refused("value/integer?");
+  if (integral(sym.linear, context.sorts)) {
+    return Effect.succeed(TRUE);
+  }
+  const q = floorLinear(sym.linear, context);
+  return Effect.succeed(atom({ linear: minus(sym.linear, q), relation: "=" }));
+};
+
+/** Whether `sub` is included in `sup`, using the context's recursive inclusion check. */
+const subschema = (
+  sub: unknown,
+  sup: unknown,
+  context: Context
+): Effect.Effect<boolean, Error> =>
+  context.checkIncludes === undefined
+    ? refused("a schema")
+    : context.checkIncludes(sub, sup);
+
+/** Whether `schema` allows at least one value (`!(schema <= EMPTY)`). */
+const isInhabited = (
+  schema: unknown,
+  context: Context
+): Effect.Effect<boolean, Error> =>
+  schema === ANY_REST_SCHEMA
+    ? Effect.succeed(true)
+    : Effect.map(subschema(schema, EMPTY_SCHEMA, context), (empty) => !empty);
+
+const OPAQUE_PREDICATES: Readonly<Record<string, string>> = {
+  "value/function?": "function",
+  "value/promise?": "promise",
+  "value/string?": "string",
+  "value/symbol?": "symbol",
+  "value/unknown?": "unknown",
+};
+
+const fitsOpaque = (sym: Sym, want: string): Fit =>
+  Effect.succeed(
+    (sym.kind === "opaque" && sym.of === want) ||
+      (sym.kind === "closure" && want === "function") ||
+      (sym.kind === "value" && opaqueKindOf(sym.value) === want)
+      ? TRUE
+      : FALSE
+  );
+
+const VALUE_PREDICATES: Readonly<
+  Record<string, (sym: Sym, context: Context) => Fit>
+> = {
+  "value/any?": () => Effect.succeed(TRUE),
+  "value/array?": (sym) =>
+    Effect.succeed(
+      sym.kind === "list" || (sym.kind === "value" && Array.isArray(sym.value))
+        ? TRUE
+        : FALSE
+    ),
+  "value/integer?": fitsInteger,
+  "value/number?": (sym) =>
+    Effect.succeed(sym.kind === "number" ? TRUE : FALSE),
+  "value/object?": (sym) =>
+    Effect.succeed(
+      sym.kind === "record" ||
+        (sym.kind === "value" && isPlainObject(sym.value))
+        ? TRUE
+        : FALSE
+    ),
+  "value/undefined?": (sym) =>
+    Effect.succeed(
+      sym.kind === "value" && sym.value === undefined ? TRUE : FALSE
+    ),
 };
 
 /** That a value fits a schema that is a function: a predicate or a built schema. */
@@ -1057,18 +1879,22 @@ const fitsFunction = (
   const allowed = allowedBy(shape);
   if (allowed !== undefined) {
     return Effect.succeed(
-      allowed.reduce<Formula>((f, v) => or(f, equal(sym, fromValue(v))), FALSE)
+      allowed.reduce<Formula>(
+        (f, v) => or(f, equal(sym, fromValue(v), context.atoms)),
+        FALSE
+      )
     );
   }
-  switch (nameOf(shape)) {
-    case "value/number?":
-      return Effect.succeed(sym.kind === "number" ? TRUE : FALSE);
-    case "value/integer?":
-      return fitsInteger(sym, context);
-    case "value/any?":
-      return Effect.succeed(TRUE);
-    default:
-      break;
+  const fnName = nameOf(shape);
+  if (fnName !== undefined) {
+    const direct = VALUE_PREDICATES[fnName];
+    if (direct !== undefined) {
+      return direct(sym, context);
+    }
+    const want = OPAQUE_PREDICATES[fnName];
+    if (want !== undefined) {
+      return fitsOpaque(sym, want);
+    }
   }
   const built = buildOf(shape);
   if (built !== undefined) {
@@ -1085,6 +1911,12 @@ export const fitsOf = (
   context: Context,
   depth: number
 ): Fit => {
+  if (schema === ANY_REST_SCHEMA) {
+    return Effect.succeed(TRUE);
+  }
+  if (schema === EMPTY_SCHEMA) {
+    return Effect.succeed(FALSE);
+  }
   if (isConcrete(sym)) {
     const fit = fits(schema, plainOf(sym)) as unknown as Effect.Effect<
       unknown,
@@ -1097,12 +1929,33 @@ export const fitsOf = (
     return fitsFunction(sym, shape, context, depth);
   }
   if (isPlainObject(shape)) {
+    if (sym.kind === "record" && sym.rest !== undefined) {
+      return fitsRecordWithRest(
+        sym.fields,
+        sym.rest,
+        Object.entries(shape),
+        undefined,
+        context,
+        depth
+      );
+    }
     const fields = fieldsOf(sym);
     return fields === undefined
       ? Effect.succeed(FALSE)
       : fitsRecord(fields, Object.entries(shape), undefined, context, depth);
   }
   if (Array.isArray(shape)) {
+    if (sym.kind === "list" && sym.rest !== undefined) {
+      return Effect.flatMap(isInhabited(sym.rest, context), (alive) =>
+        alive || sym.items.length !== shape.length
+          ? Effect.succeed(FALSE)
+          : allFit(
+              shape.map((part, at) => [sym.items[at] as Sym, part] as const),
+              context,
+              depth
+            )
+      );
+    }
     const items = itemsOf(sym);
     return items === undefined || items.length !== shape.length
       ? Effect.succeed(FALSE)
@@ -1112,7 +1965,7 @@ export const fitsOf = (
           depth
         );
   }
-  return Effect.succeed(equal(sym, fromValue(shape)));
+  return Effect.succeed(equal(sym, fromValue(shape), context.atoms));
 };
 
 /** The schema inside a schema/optional; undefined for any other schema. */
@@ -1122,6 +1975,48 @@ const optionalOf = (part: unknown) => {
     ? built.args[0]
     : undefined;
 };
+
+const fitsRecordWithRest = (
+  fields: ReadonlyMap<string, Sym>,
+  symRest: unknown,
+  named: readonly (readonly [string, unknown])[],
+  outerRest: unknown,
+  context: Context,
+  depth: number
+): Fit =>
+  Effect.gen(function* () {
+    const alive = yield* isInhabited(symRest, context);
+    if (!alive) {
+      return yield* fitsRecord(fields, named, outerRest, context, depth);
+    }
+    if (outerRest === undefined) {
+      return FALSE;
+    }
+    const pairs: (readonly [Sym, unknown])[] = [];
+    for (const [key, part] of named) {
+      const inner = optionalOf(part);
+      const field = fields.get(key);
+      if (field !== undefined) {
+        pairs.push([field, inner ?? part]);
+      } else if (inner === undefined) {
+        return FALSE;
+      } else if (!(yield* subschema(symRest, inner, context))) {
+        return FALSE;
+      }
+    }
+    if (outerRest !== ANY_REST) {
+      const others = [...fields.keys()].filter(
+        (key) => !named.some(([k]) => k === key)
+      );
+      const left: Sym = {
+        fields: new Map(others.map((key) => [key, fields.get(key) as Sym])),
+        kind: "record",
+        rest: symRest,
+      };
+      pairs.push([left, outerRest]);
+    }
+    return yield* allFit(pairs, context, depth);
+  });
 
 const fitsRecord = (
   fields: ReadonlyMap<string, Sym>,
@@ -1166,16 +2061,43 @@ const fitsOpen = (
 ): Fit => {
   const items = throughNames(shape);
   if (!Array.isArray(items)) {
+    if (!isPlainObject(items)) {
+      return Effect.succeed(FALSE);
+    }
+    const outerRest = rest.length === 0 ? ANY_REST : rest[0];
+    if (sym.kind === "record" && sym.rest !== undefined) {
+      return fitsRecordWithRest(
+        sym.fields,
+        sym.rest,
+        Object.entries(items),
+        outerRest,
+        context,
+        depth
+      );
+    }
     const fields = fieldsOf(sym);
-    return fields === undefined || !isPlainObject(items)
+    return fields === undefined
       ? Effect.succeed(FALSE)
-      : fitsRecord(
-          fields,
-          Object.entries(items),
-          rest.length === 0 ? ANY_REST : rest[0],
-          context,
-          depth
-        );
+      : fitsRecord(fields, Object.entries(items), outerRest, context, depth);
+  }
+  if (sym.kind === "list" && sym.rest !== undefined) {
+    if (sym.items.length < items.length) {
+      return Effect.succeed(FALSE);
+    }
+    const pairs: (readonly [Sym, unknown])[] = items.map(
+      (part, at) => [sym.items[at] as Sym, part] as const
+    );
+    if (rest.length > 0) {
+      pairs.push([
+        {
+          items: sym.items.slice(items.length),
+          kind: "list",
+          rest: sym.rest,
+        },
+        rest[0],
+      ]);
+    }
+    return allFit(pairs, context, depth);
   }
   const list = itemsOf(sym);
   if (list === undefined || list.length < items.length) {
@@ -1209,8 +2131,25 @@ const fitsBuilt = (
     case "schema/optional":
       return fitsOf(sym, args[0], context, depth);
     case "schema/arrayOf": {
-      const items = itemsOf(sym);
       const most = args[1] as number | undefined;
+      if (sym.kind === "list" && sym.rest !== undefined) {
+        const symRest = sym.rest;
+        return Effect.gen(function* () {
+          const alive = yield* isInhabited(symRest, context);
+          if (most !== undefined && (sym.items.length > most || alive)) {
+            return FALSE;
+          }
+          if (alive && !(yield* subschema(symRest, args[0], context))) {
+            return FALSE;
+          }
+          return yield* allFit(
+            sym.items.map((item) => [item, args[0]] as const),
+            context,
+            depth
+          );
+        });
+      }
+      const items = itemsOf(sym);
       return items === undefined || (most !== undefined && items.length > most)
         ? Effect.succeed(FALSE)
         : allFit(
@@ -1220,6 +2159,20 @@ const fitsBuilt = (
           );
     }
     case "schema/recordOf": {
+      if (sym.kind === "record" && sym.rest !== undefined) {
+        const symRest = sym.rest;
+        return Effect.gen(function* () {
+          const alive = yield* isInhabited(symRest, context);
+          if (alive && !(yield* subschema(symRest, args[0], context))) {
+            return FALSE;
+          }
+          return yield* allFit(
+            [...sym.fields.values()].map((field) => [field, args[0]] as const),
+            context,
+            depth
+          );
+        });
+      }
       const fields = fieldsOf(sym);
       return fields === undefined
         ? Effect.succeed(FALSE)
@@ -1244,7 +2197,13 @@ export const shapeFor = (
 ): Effect.Effect<{ cases: Cases; sorts: ReadonlyMap<string, Sort> }, Error> =>
   Effect.gen(function* () {
     const sorts = new Map<string, Sort>();
-    const shaped = shapeOf(schema, name, sorts, new Set());
+    const shaped = shapeOf(
+      schema,
+      name,
+      sorts,
+      new Set(),
+      context.broad ?? false
+    );
     if (shaped instanceof Shapeless) {
       return yield* logicError(
         `?${name} is a value no goal binds, and its schema cannot stand for it: ${shaped.why}.`

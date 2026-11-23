@@ -8,11 +8,18 @@
  */
 
 import { Effect, Exit, Option } from "effect";
-import { MalformedFormError, unboundSet } from "@/errors/evaluation";
+import {
+  countOf,
+  MalformedFormError,
+  unboundSet,
+  whatOf,
+  wrongCount,
+} from "@/errors/evaluation";
 import { nameOrString } from "@/evaluation/base-forms/primitive";
 import { declares, type Scope, scopeWith } from "@/evaluation/environment";
 import { run } from "@/evaluation/evaluate";
 import { bodyNames, declaredIn, definedIn } from "@/evaluation/hoisting";
+import { SCHEMA_ARGUMENT } from "@/logic/fit";
 import { isLogicVariableName, isNamespacedName } from "@/logic/terms";
 import { Exact, type LionNumber, toNearest } from "@/numbers/exact";
 import {
@@ -819,27 +826,193 @@ const uncovered = (
     : undefined;
 };
 
+interface StaticArity {
+  readonly range: readonly [number, number];
+  readonly what?: string;
+}
+
+const nodeArities = (
+  node: SemanticNode,
+  expression: LionExpressionType,
+  mutated: ReadonlySet<string>
+): readonly (readonly [string, StaticArity])[] => {
+  if (node.specialForm === "relation") {
+    const nameNode = node.children.find((c) => c.role === "binding")?.node;
+    const colsNode = node.children.find((c) => c.role === "columns")?.node;
+    const cols =
+      colsNode === undefined ? undefined : partAt(expression, colsNode.path);
+    return nameNode?.meaning?.kind === "binding" &&
+      nameNode.meaning.binding.kind === "relation" &&
+      Array.isArray(cols)
+      ? [
+          [
+            nameNode.meaning.binding.id,
+            { range: [cols.length, cols.length], what: cols.join(", ") },
+          ],
+        ]
+      : [];
+  }
+  if (node.specialForm === "schema") {
+    return node.children.flatMap((child) =>
+      child.role === "binding" &&
+      child.node.meaning?.kind === "binding" &&
+      child.node.meaning.binding.kind === "schema"
+        ? [
+            [
+              child.node.meaning.binding.id,
+              { range: [1, 1], what: SCHEMA_ARGUMENT },
+            ] as const,
+          ]
+        : []
+    );
+  }
+  if (node.specialForm === "define") {
+    const nameNode = node.children.find((c) => c.role === "binding")?.node;
+    const valueNode = node.children.find((c) => c.role === "value")?.node;
+    const params =
+      valueNode?.specialForm === "lambda"
+        ? valueNode.children.find((c) => c.role === "parameters")?.node
+        : undefined;
+    return nameNode?.meaning?.kind === "binding" &&
+      nameNode.meaning.binding.kind === "define" &&
+      nameNode.meaning.binding.at.length === 1 &&
+      !mutated.has(nameNode.meaning.binding.id) &&
+      (params?.kind === "array" || params?.kind === "empty-array")
+      ? [
+          [
+            nameNode.meaning.binding.id,
+            { range: [params.children.length, params.children.length] },
+          ],
+        ]
+      : [];
+  }
+  return [];
+};
+
+/**
+ * Collects the fixed arity of bindings declared in the program: relations
+ * (by their columns), schemas (1 argument), and unmutated single-site
+ * `define`s whose value is a fixed-parameter lambda.
+ */
+const collectArities = (
+  nodes: readonly SemanticNode[],
+  expression: LionExpressionType
+): ReadonlyMap<string, StaticArity> => {
+  const mutated = new Set(
+    nodes.flatMap((node) => {
+      if (node.specialForm !== "set!") {
+        return [];
+      }
+      const target = node.children.find((c) => c.role === "binding")?.node;
+      return target?.meaning?.kind === "name"
+        ? [target.meaning.binding.id]
+        : [];
+    })
+  );
+  const found = new Map<string, StaticArity | null>();
+  for (const node of nodes) {
+    for (const [id, arity] of nodeArities(node, expression, mutated)) {
+      const prev = found.get(id);
+      if (prev === undefined) {
+        found.set(id, arity);
+      } else if (
+        prev !== null &&
+        (prev.range[0] !== arity.range[0] ||
+          prev.range[1] !== arity.range[1] ||
+          prev.what !== arity.what)
+      ) {
+        found.set(id, null);
+      }
+    }
+  }
+  return new Map(
+    [...found].flatMap(([id, arity]) =>
+      arity === null ? [] : ([[id, arity]] as const)
+    )
+  );
+};
+
+const checkCount = (
+  label: string,
+  range: readonly [number, number],
+  got: number,
+  what?: string
+): string | undefined =>
+  got < range[0] || got > range[1]
+    ? wrongCount(label, range, got, what).message
+    : undefined;
+
+/**
+ * The arity diagnostic of a call whose callee takes a known number of
+ * arguments and whose call gives another number; undefined otherwise.
+ */
+const arityDiagnostic = (
+  node: SemanticNode,
+  expression: LionExpressionType,
+  environment: Readonly<Record<string, unknown>>,
+  arities: ReadonlyMap<string, StaticArity>
+): string | undefined => {
+  if (node.kind !== "call" || node.quoted || node.diagnostic !== undefined) {
+    return undefined;
+  }
+  const callee = node.children[0]?.node;
+  const got = node.children.length - 1;
+  if (callee?.meaning?.kind === "name") {
+    const { binding } = callee.meaning;
+    if (binding.kind === "environment") {
+      const fn = environment[binding.name];
+      const range = countOf(fn);
+      return range === undefined
+        ? undefined
+        : checkCount(JSON.stringify(binding.name), range, got, whatOf(fn));
+    }
+    const known = arities.get(binding.id);
+    return known === undefined
+      ? undefined
+      : checkCount(JSON.stringify(binding.name), known.range, got, known.what);
+  }
+  if (callee?.specialForm === "lambda") {
+    const params = callee.children.find((c) => c.role === "parameters")?.node;
+    if (params?.kind === "array" || params?.kind === "empty-array") {
+      const count = params.children.length;
+      return checkCount(
+        JSON.stringify(partAt(expression, callee.path)),
+        [count, count],
+        got
+      );
+    }
+  }
+  return undefined;
+};
+
 /**
  * The match cases no value can reach, each warned of: a case whose schema
  * includes no value an earlier case's schema leaves, as `schema/includes?`
  * decides, so the earlier case takes every value that fits it. Only cases
- * whose schemas have one value wherever the match runs are checked.
+ * whose schemas have one value wherever the match runs are checked. Also
+ * flags calls that pass the wrong number of arguments to a statically known
+ * function, relation, schema, or lambda.
  */
 const withCaseWarnings = (
   root: SemanticNode,
   expression: LionExpressionType,
   environment: Readonly<Record<string, unknown>>
 ): SemanticNode => {
-  const nodes = new Map(
-    flattenAnalysis(root).map((node) => [node.pointer, node] as const)
-  );
+  const flat = flattenAnalysis(root);
+  const nodes = new Map(flat.map((node) => [node.pointer, node] as const));
+  const arities = collectArities(flat, expression);
   const warn = (node: SemanticNode): SemanticNode => {
     const children = node.children.map((child) => ({
       ...child,
       node: warn(child.node),
     }));
+    const arityError = arityDiagnostic(node, expression, environment, arities);
     if (node.specialForm !== "match") {
-      return { ...node, children };
+      return {
+        ...node,
+        children,
+        ...(arityError === undefined ? {} : { diagnostic: arityError }),
+      };
     }
     const cases = children.filter(
       (child) => child.role === "pattern" && child.node.children[0]

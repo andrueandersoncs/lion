@@ -122,6 +122,20 @@ export const EXPRESSIONS: readonly Expression[] = [
   // Exact numbers: a fraction no decimal writes, and decimals that add exactly.
   { name: "exact fraction", form: ["number/divide", X, 3] },
   { name: "exact decimal sum", form: ["number/add", X, 0.1, 0.2] },
+  { name: "remainder", form: ["number/remainder", ["number/add", X, 1], 2] },
+  {
+    name: "floor of a fraction",
+    form: ["number/floor", ["number/divide", X, 2]],
+  },
+  {
+    name: "ceiling of a fraction",
+    form: ["number/ceiling", ["number/divide", X, 2]],
+  },
+  { name: "rounded fraction", form: ["number/round", ["number/divide", X, 2]] },
+  {
+    name: "characters of a string",
+    form: ["string/chars", ["string/concat", "a𝄞", ["number/toString", X]]],
+  },
   {
     name: "fraction written as text",
     form: ["number/toString", ["number/divide", X, 3]],
@@ -217,6 +231,30 @@ export const EXPRESSIONS: readonly Expression[] = [
     boolean: true,
   },
   {
+    name: "filtered list",
+    form: [
+      "array/filter",
+      ["array/make", X, 0, ["number/add", X, 1]],
+      ["lambda", ["v"], ["number/greaterThan", "v", 1]],
+    ],
+  },
+  {
+    name: "reversed list",
+    form: ["array/reverse", ["array/make", X, ["number/add", X, 1]]],
+  },
+  {
+    name: "sorted list",
+    form: ["array/sort", ["array/make", ["number/add", X, 1], X, 0]],
+  },
+  {
+    name: "sorted list with comparator",
+    form: [
+      "array/sort",
+      ["array/make", X, ["number/add", X, 1]],
+      "number/greaterThan",
+    ],
+  },
+  {
     name: "lambda made by a lambda",
     form: [
       [["lambda", ["k"], ["lambda", ["v"], ["number/add", "v", "k"]]], X],
@@ -233,6 +271,15 @@ export const EXPRESSIONS: readonly Expression[] = [
         "value/integer?",
         ["lambda", ["n"], ["number/greaterThan", "n", 1]],
       ],
+    ],
+    boolean: true,
+  },
+  {
+    name: "unbounded list schema inclusion",
+    form: [
+      "schema/includes?",
+      ["schema/arrayOf", ["schema/anyOf", X, 2]],
+      ["schema/arrayOf", ["lambda", ["n"], ["number/greaterThan", "n", 1]]],
     ],
     boolean: true,
   },

@@ -4,7 +4,7 @@ import { analyze, flattenAnalysis } from "@lionlang/core/analysis/analyze";
 import { lint } from "@lionlang/core/analysis/lint";
 import { run } from "@lionlang/core/evaluation/evaluate";
 import { readJson, writeJson } from "@lionlang/core/evaluation/reading";
-import { LogicDatabase } from "@lionlang/core/logic/database";
+import { LogicDatabase, relationBindings } from "@lionlang/core/logic/database";
 import { loadDatabase, saveDatabase } from "@lionlang/core/logic/snapshot";
 import { stdlib } from "@lionlang/core/modules";
 import { Console, Effect, Option } from "effect";
@@ -12,8 +12,17 @@ import { Argument, CliError, Command, Flag } from "effect/cli";
 
 export const VERSION = "0.15.0";
 
-const file = Argument.FileText("file").pipe(
-  Argument.withDescription("Path to a Lion JSON program")
+const file = Argument.String("file").pipe(
+  Argument.withDescription(
+    "Path to a Lion JSON program, or - to read from standard input"
+  ),
+  Argument.optional
+);
+
+const evalFlag = Flag.String("eval").pipe(
+  Flag.withAlias("e"),
+  Flag.withDescription("Lion JSON program given directly on the command line"),
+  Flag.optional
 );
 
 const database = Flag.String("database").pipe(
@@ -22,6 +31,56 @@ const database = Flag.String("database").pipe(
   ),
   Flag.optional
 );
+
+const checkDatabase = Flag.String("database").pipe(
+  Flag.withDescription(
+    "Lion JSON file whose relations and schemas are in scope while checking the program. Never modified."
+  ),
+  Flag.optional
+);
+
+const readStdin = () =>
+  Effect.tryPromise({
+    try: async () => {
+      const chunks: Buffer[] = [];
+      for await (const chunk of process.stdin) {
+        chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+      }
+      return Buffer.concat(chunks).toString("utf8");
+    },
+    catch: (cause) => cause,
+  });
+
+const readProgramSource = (
+  fileOption: Option.Option<string>,
+  evalOption: Option.Option<string>
+) => {
+  const filePath = Option.getOrUndefined(fileOption);
+  const inline = Option.getOrUndefined(evalOption);
+  if (filePath !== undefined && inline !== undefined) {
+    return Effect.fail(
+      new Error("Give either a program file or --eval, not both.")
+    );
+  }
+  if (inline !== undefined) {
+    return Effect.succeed(inline);
+  }
+  if (filePath === "-") {
+    return readStdin();
+  }
+  if (filePath !== undefined) {
+    return Effect.tryPromise({
+      try: () => readFile(filePath, "utf8"),
+      catch: (cause) => cause,
+    });
+  }
+  if (!process.stdin.isTTY) {
+    return readStdin();
+  }
+  return Effect.fail(
+    new Error("Give a program file, - for standard input, or --eval '<json>'.")
+  );
+};
 
 /** One form per line, and one fact per line, so saved databases diff well. */
 export const formatSnapshot = (program: readonly unknown[]) => {
@@ -68,13 +127,14 @@ const writeDatabase = (path: string, store: LogicDatabase) =>
 
 const evaluateCommand = Command.make(
   "lion",
-  { file, database },
+  { file, eval: evalFlag, database },
   Effect.fn(
-    function* ({ file, database }) {
+    function* ({ file, eval: inline, database }) {
       const path = Option.getOrUndefined(database);
       const store =
         path === undefined ? new LogicDatabase() : yield* readDatabase(path);
-      const program = yield* readJson(file);
+      const text = yield* readProgramSource(file, inline);
+      const program = yield* readJson(text);
       const result = yield* run(program, stdlib, { database: store });
       yield* Console.log(yield* writeJson(result, 2));
       if (path !== undefined) {
@@ -146,8 +206,11 @@ const workerCommand = Command.make(
  * fail when it runs, and each that is wrong though nothing fails, such as a
  * match case no value can reach, with where it stands as a JSON pointer.
  */
-export const findings = (program: unknown) =>
-  flattenAnalysis(analyze(program as never, stdlib)).flatMap((node) => [
+export const findings = (
+  program: unknown,
+  environment: Readonly<Record<string, unknown>> = stdlib
+) =>
+  flattenAnalysis(analyze(program as never, environment)).flatMap((node) => [
     ...(node.diagnostic === undefined
       ? []
       : [{ at: node.pointer, error: node.diagnostic }]),
@@ -158,12 +221,27 @@ export const findings = (program: unknown) =>
 
 const checkCommand = Command.make(
   "check",
-  { file: Argument.FileText("file") },
+  { file, eval: evalFlag, database: checkDatabase },
   Effect.fn(
-    function* ({ file }) {
-      const program = yield* readJson(file);
+    function* ({ file, eval: inline, database }) {
+      const path = Option.getOrUndefined(database);
+      const store = path === undefined ? undefined : yield* readDatabase(path);
+      const text = yield* readProgramSource(file, inline);
+      const program = yield* readJson(text);
+      const environment =
+        store === undefined
+          ? stdlib
+          : {
+              ...stdlib,
+              ...relationBindings(store),
+              ...Object.fromEntries(store.schemas),
+            };
+      const declared = store === undefined ? [] : [...store.relations.keys()];
       // What the analysis finds, then what the lints written in Lion find.
-      const found = [...findings(program), ...(yield* lint(program))];
+      const found = [
+        ...findings(program, environment),
+        ...(yield* lint(program, declared)),
+      ];
       yield* Console.log(JSON.stringify(found, null, 2));
       if (found.some((each) => "error" in each)) {
         return yield* new CliError.UserError({

@@ -15,7 +15,7 @@
      ["number/greaterThanOrEqualTo", "?x", 0], ["number/greaterThanOrEqualTo", "?y", 0],
      ["=", ["number/add", "?x", "?y"], 3]]]}
 </lion-example>
-<p>The filters can add, subtract, multiply and divide by known numbers, compare, and use <code>number/min</code>, <code>number/max</code>, <code>number/absolute</code>, and <code>cond</code>. <code>value/number?</code> types a variable that may be any number.</p>
+<p>The filters can add, subtract, multiply and divide by known numbers, take <code>number/floor</code>, <code>number/ceiling</code>, <code>number/round</code>, and <code>number/remainder</code> by a known non-zero divisor, check <code>value/integer?</code>, compare, and use <code>number/min</code>, <code>number/max</code>, <code>number/absolute</code>, <code>cond</code>, and <code>match</code>. <code>value/number?</code> types a variable that may be any number.</p>
 <p>As with values a schema lists, a <code>find</code> gives one value for every match, so a value the solver works out counts even when the template leaves it out. A rule gives each row once:</p>
 <lion-example name="One value for every match">
 ["begin",
@@ -43,6 +43,29 @@
        ["=", ["number/multiply", 2, "?n"], 7]]]]]}
 </lion-example>
 <p>Each query gives <code>[{}]</code> when its goal holds and <code>[]</code> when it does not.</p>
+
+<h2>Reason about remainders, rounding, and lists</h2>
+<p>The solver decides <code>number/floor</code>, <code>number/ceiling</code>, <code>number/round</code>, <code>number/remainder</code> by a known non-zero divisor, and <code>value/integer?</code> on any number, as well as lambdas with local <code>define</code>, <code>match</code>, and recursion over bounded lists:</p>
+<lion-example name="Remainders, rounding, and lists in the solver">
+{"even numbers stay even after +2": ["query",
+   ["not", ["exists", ["?n"],
+     ["and", ["schema/fits?", "?n", "value/integer?"],
+       ["=", ["number/remainder", "?n", 2], 0],
+       ["not", ["=", ["number/remainder", ["number/add", "?n", 2], 2], 0]]]]]],
+ "half a whole number is whole iff even": ["query",
+   ["not", ["exists", ["?n"],
+     ["and", ["schema/fits?", "?n", "value/integer?"],
+       ["=", ["number/remainder", "?n", 2], 0],
+       ["not", ["value/integer?", ["number/divide", "?n", 2]]]]]]],
+ "floor is at most ceiling": ["query",
+   ["not", ["exists", ["?x"],
+     ["and", ["schema/fits?", "?x", "value/number?"],
+       ["number/greaterThan", ["number/floor", "?x"], ["number/ceiling", "?x"]]]]]],
+ "sort preserves length for every list up to 3": ["query",
+   ["not", ["exists", ["?xs"],
+     ["and", ["schema/fits?", "?xs", ["schema/arrayOf", "value/integer?", 3]],
+       ["not", ["=", ["array/length", ["array/sort", "?xs"]], ["array/length", "?xs"]]]]]]]}
+</lion-example>
 
 <h2>Prove something about decimals</h2>
 <p>Numbers are exact, in the solver and in plain code alike, so what the solver proves about decimals holds of what plain code computes. No number between 0 and 1 changes when 0.2 is added and taken away, and plain code gives 0.1 back:</p>

@@ -1,16 +1,31 @@
 <article id="cli" data-title="Command line" data-summary="The lion command from @lionlang/cli: evaluating files, keeping a database file, serving the graph editor, and printing Lion as a Web Worker.">
 <p>Install with <code>bun add --dev @lionlang/cli</code>. The package provides the <code>lion</code> command.</p>
 
-<h2 id="cli-evaluate"><code>lion &lt;file&gt;</code></h2>
+<h2 id="cli-evaluate"><code>lion [&lt;file&gt;]</code></h2>
 <code-block lang="shell">
-lion [--database &lt;path&gt;] &lt;file&gt;
+lion [--database &lt;path&gt;] [--eval &lt;json&gt;] [&lt;file&gt;]
 </code-block>
-<p>Reads <code>file</code> as JSON, evaluates it with the standard library, and prints the result as JSON indented by two spaces.</p>
+<p>Reads a Lion program as JSON from <code>file</code>, <code>--eval</code> (<code>-e</code>), or standard input (when <code>file</code> is <code>-</code> or omitted while stdin is piped), evaluates it with the standard library, and prints the result as JSON indented by two spaces.</p>
 <table>
   <thead><tr><th>Argument or flag</th><th>Meaning</th></tr></thead>
   <tbody>
-    <tr data-entry="lion file"><td><code>file</code></td><td>Path to a Lion program in JSON. Required.</td></tr>
+    <tr data-entry="lion file"><td><code>file</code></td><td>Path to a Lion program in JSON, or <code>-</code> to read from standard input. Optional when <code>--eval</code> is passed or stdin is piped.</td></tr>
+    <tr data-entry="--eval"><td><code>--eval &lt;json&gt;</code>, <code>-e &lt;json&gt;</code></td><td>Evaluate a Lion program written directly on the command line instead of reading a file.</td></tr>
     <tr data-entry="--database"><td><code>--database &lt;path&gt;</code></td><td>A JSON file that holds the logic database. It is loaded before the program runs; if it does not exist, the database starts empty. After the program succeeds, the database is saved back as a <a href="#form-snapshot">snapshot</a>, one form and one fact per line. If the program fails, the file is not written.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="cli-check"><code>lion check [&lt;file&gt;]</code></h2>
+<code-block lang="shell">
+lion check [--database &lt;path&gt;] [--eval &lt;json&gt;] [&lt;file&gt;]
+</code-block>
+<p>Reads a program without running it and prints a JSON list of diagnostics and warnings, each with its JSON pointer in <code>at</code>: malformed forms, misspelled names, wrong-arity calls to known functions, relations, schemas, or lambdas, unreachable or non-exhaustive <code>match</code> cases, and Lion lints such as lists written as bare arrays inside rules or queries. Exits with status <code>1</code> when any <code>error</code> is found.</p>
+<table>
+  <thead><tr><th>Argument or flag</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr data-entry="lion check file"><td><code>file</code></td><td>Path to a Lion program in JSON, or <code>-</code> to read from standard input. Optional when <code>--eval</code> is passed or stdin is piped.</td></tr>
+    <tr data-entry="lion check --eval"><td><code>--eval &lt;json&gt;</code>, <code>-e &lt;json&gt;</code></td><td>Check a Lion program written directly on the command line.</td></tr>
+    <tr data-entry="lion check --database"><td><code>--database &lt;path&gt;</code></td><td>Load a saved database read-only before checking, so calls to its declared relations and schemas are recognized and checked for arity without modifying the file.</td></tr>
   </tbody>
 </table>
 

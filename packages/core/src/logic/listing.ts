@@ -237,6 +237,9 @@ const builtListing = (
       if (most === undefined) {
         return new Unlisted(listWithoutMost(schema, item));
       }
+      if (most === 0) {
+        return () => [[]];
+      }
       const each = listing(item, inward(path));
       if (each instanceof Unlisted) {
         return each;

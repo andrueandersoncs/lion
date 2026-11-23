@@ -496,3 +496,144 @@ describe("analyze: the head of a call", () => {
     OPTIONS
   );
 });
+
+const ARITY_ERROR =
+  /takes \d+( to \d+| or more)? arguments?( \([^)]*\))? but got \d+\./;
+
+const expectedArity = (kind: string, arity: number) => {
+  if (kind === "schema") {
+    return 1;
+  }
+  if (kind === "relation") {
+    return Math.max(1, arity);
+  }
+  return arity;
+};
+
+describe("analyze: static arity checking", () => {
+  const FIXED_STDLIB = [
+    "number/divide",
+    "number/subtract",
+    "number/floor",
+    "number/round",
+    "array/head",
+    "array/slice",
+    "array/sort",
+    "string/chars",
+    "string/join",
+    "object/get",
+    "schema/includes?",
+    "graph/shortestPath",
+  ] as const;
+
+  const argCount = Arbitrary.schema(
+    Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 6 }))
+  );
+
+  it.effect.prop(
+    "flags wrong-arity calls to stdlib functions with the exact runtime error message",
+    { fn: element(FIXED_STDLIB), count: argCount },
+    ({ count, fn }) =>
+      Effect.gen(function* () {
+        const call = [fn, ...Array.from({ length: count }, (_, at) => at)];
+        const root = analyze(call as never, stdlib);
+        const ran = yield* outcome(call);
+        const isArityError =
+          "error" in ran &&
+          ran.error === "LogicError" &&
+          ARITY_ERROR.test(ran.message);
+        if (isArityError) {
+          expect(root.diagnostic).toBe(ran.message);
+        } else {
+          expect(root.diagnostic).toBeUndefined();
+        }
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "flags wrong-arity calls to declared relations, schemas, immediate lambdas, and unmutated defined lambdas",
+    {
+      arity: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 3 }))
+      ),
+      got: argCount,
+      kind: element([
+        "relation",
+        "schema",
+        "immediate",
+        "defined",
+        "rest",
+        "mutated",
+      ]),
+    },
+    ({ arity, got, kind }) =>
+      Effect.gen(function* () {
+        const params = Array.from({ length: arity }, (_, at) => `p${at}`);
+        const args = Array.from({ length: got }, (_, at) => at);
+        let program: unknown;
+        let callPointer: string;
+        if (kind === "relation") {
+          const cols =
+            arity === 0
+              ? ["c0"]
+              : Array.from({ length: arity }, (_, at) => `c${at}`);
+          program = [
+            "begin",
+            ["relation", "edge", cols],
+            ["query", ["edge", ...args]],
+          ];
+          callPointer = "/2/1";
+        } else if (kind === "schema") {
+          program = [
+            "begin",
+            ["schema", "Num", "value/number?"],
+            ["Num", ...args],
+          ];
+          callPointer = "/2";
+        } else if (kind === "immediate") {
+          program = [["lambda", params, 0], ...args];
+          callPointer = "";
+        } else if (kind === "defined") {
+          program = [
+            "begin",
+            ["define", "f", ["lambda", params, 0]],
+            ["f", ...args],
+          ];
+          callPointer = "/2";
+        } else if (kind === "rest") {
+          program = [
+            "begin",
+            ["define", "f", ["lambda", "all", "all"]],
+            ["f", ...args],
+          ];
+          callPointer = "/2";
+        } else {
+          program = [
+            "begin",
+            ["define", "f", ["lambda", params, 0]],
+            ["set!", "f", ["lambda", "all", "all"]],
+            ["f", ...args],
+          ];
+          callPointer = "/3";
+        }
+        const callNode = flattenAnalysis(
+          analyze(program as never, stdlib)
+        ).find((node) => node.pointer === callPointer);
+        const ran = yield* outcome(program);
+        const expectedError =
+          kind !== "rest" &&
+          kind !== "mutated" &&
+          got !== expectedArity(kind, arity);
+        if (expectedError) {
+          expect(ran).toMatchObject({ error: "LogicError" });
+          expect(callNode?.diagnostic).toBe(
+            "message" in ran ? ran.message : undefined
+          );
+        } else {
+          expect(callNode?.diagnostic).toBeUndefined();
+        }
+      }),
+    OPTIONS
+  );
+});

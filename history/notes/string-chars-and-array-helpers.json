@@ -1,0 +1,36 @@
+{
+  "claims": [
+    {
+      "quote": "`string/chars` splits a string into its Unicode characters in order, keeping astral characters whole: `[\"string/chars\", \"a𝄞b\"]` gives `[\"a\", \"𝄞\", \"b\"]`.",
+      "says": {
+        "feature": "string/chars",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "`array/filter` keeps items of a list for which a boolean predicate gives `true`, in plain code, waiting rules, and the symbolic solver: `[\"array/filter\", [\"array/make\", 1, 5, 2], [\"lambda\", [\"x\"], [\"number/greaterThan\", \"x\", 2]]]` gives `[5]`.",
+      "says": {
+        "feature": "array/filter",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "`array/reverse` reverses a list in plain code, waiting rules, and the symbolic solver: `[\"array/reverse\", [\"array/make\", 1, 2, 3]]` gives `[3, 2, 1]`.",
+      "says": {
+        "feature": "array/reverse",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "`array/sort` sorts a list in ascending canonical order or stably by an optional two-argument boolean comparator, in plain code, waiting rules, and the symbolic solver: `[\"array/sort\", [\"array/make\", 3, 1, 2]]` gives `[1, 2, 3]`.",
+      "says": {
+        "feature": "array/sort",
+        "kind": "function",
+        "present": true
+      }
+    }
+  ]
+}

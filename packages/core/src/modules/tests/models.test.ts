@@ -1146,3 +1146,32 @@ describe("string/numbers", () => {
       })
   );
 });
+
+describe("string/chars", () => {
+  const codePoint = oneOf(["a", "b", "0", " ", "é", "𝄞", "🦁", "中"]);
+  const unicodeText = Arbitrary.array(codePoint, { maxLength: 10 });
+
+  it.effect.prop(
+    "splits text into whole Unicode characters, keeping astral characters intact, and round-trips with string/join",
+    { parts: unicodeText },
+    ({ parts }) =>
+      Effect.gen(function* () {
+        const whole = parts.join("");
+        const chars = yield* evaluate(["string/chars", quote(whole)]);
+        expect(chars).toEqual(parts);
+        expect(
+          yield* evaluate(["string/join", ["string/chars", quote(whole)], ""])
+        ).toBe(whole);
+        expect(
+          yield* evaluate([
+            "string/join",
+            ["array/reverse", ["string/chars", quote(whole)]],
+            "",
+          ])
+        ).toBe([...parts].reverse().join(""));
+        expect(yield* evaluate(waiting("string/chars", quote(whole)))).toEqual([
+          parts,
+        ]);
+      })
+  );
+});

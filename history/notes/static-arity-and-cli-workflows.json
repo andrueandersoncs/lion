@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "Static analysis (`analyze`, `lion check`, and the graph editor) reports wrong-arity calls to standard library functions, declared relations, declared schemas, immediate lambdas, and unmutated single-site defined lambdas with the exact runtime arity message.",
+      "says": {
+        "feature": "static-arity-diagnostics",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The `lion` and `lion check` commands accept `--eval` (`-e`) for inline JSON programs and `-` (or piped stdin) for standard input, and `lion check --database <file>` loads a saved database read-only so its relations and schemas are in scope without modifying the file.",
+      "says": {
+        "feature": "cli-eval-stdin-check-database",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

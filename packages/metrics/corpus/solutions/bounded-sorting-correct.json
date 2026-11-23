@@ -1,0 +1,60 @@
+[
+  "begin",
+  [
+    "define",
+    "ascending?",
+    [
+      "lambda",
+      ["xs"],
+      [
+        "cond",
+        [["number/lessThan", ["array/length", "xs"], 2], true],
+        [
+          "else",
+          [
+            "and",
+            [
+              "number/lessThanOrEqualTo",
+              ["array/head", "xs"],
+              ["array/head", ["array/tail", "xs"]]
+            ],
+            ["ascending?", ["array/tail", "xs"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "lambda",
+    ["sort"],
+    [
+      "value/identity",
+      [
+        "not",
+        [
+          "exists",
+          ["?xs"],
+          [
+            "and",
+            ["schema/fits?", "?xs", ["schema/arrayOf", "value/integer?", 4]],
+            [
+              "not",
+              [
+                [
+                  "lambda",
+                  ["out"],
+                  [
+                    "and",
+                    ["=", ["array/length", "out"], ["array/length", "?xs"]],
+                    ["ascending?", "out"]
+                  ]
+                ],
+                ["sort", "?xs"]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

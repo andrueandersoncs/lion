@@ -2164,8 +2164,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "schema/includes? checks only the first listed value",
     file: core("logic/inclusion.ts"),
-    find: "      for (const value of values) {",
-    replace: "      for (const value of values.slice(0, 1)) {",
+    find: "    for (const value of values) {",
+    replace: "    for (const value of values.slice(0, 1)) {",
     tests: ["src/logic/tests/inclusion.test.ts"],
   },
   {
@@ -5169,5 +5169,80 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "  return { file: source };",
     package: "metrics",
     tests: ["src/tests/affected.test.ts"],
+  },
+  {
+    name: "a symbolic floor drops its upper bound",
+    file: core("logic/symbolic.ts"),
+    find: '    { linear: minus(plus(q, constant(ONE)), linear), relation: ">" },',
+    replace: "",
+    tests: ["src/logic/tests/solver-division.test.ts"],
+  },
+  {
+    name: "a symbolic remainder drops the negative-dividend branch",
+    file: core("logic/symbolic.ts"),
+    find: "          ...(negWhen.length === 0\n            ? []\n            : [\n                {\n                  sym: numberSym(plus(dividend, times(negQ, k))),\n                  when: negWhen,\n                },\n              ]),",
+    replace: "",
+    tests: ["src/logic/tests/solver-division.test.ts"],
+  },
+  {
+    name: "schema inclusion across kinds disables broad shapes",
+    file: core("logic/inclusion.ts"),
+    find: "      broad: true,",
+    replace: "      broad: false,",
+    tests: [
+      "src/logic/tests/inclusion.test.ts",
+      "src/analysis/tests/match-cases.test.ts",
+    ],
+  },
+  {
+    name: "unbounded list inclusion does not split against schema/anyOf",
+    file: core("logic/inclusion.ts"),
+    find: "    const split = listSplitOf(outer);",
+    replace: "    const split = { hasUnion: false, max: -1 };",
+    tests: ["src/logic/tests/inclusion.test.ts"],
+  },
+  {
+    name: "schema/arrayOf of at most zero items fails to list",
+    file: core("logic/listing.ts"),
+    find: "      if (most === 0) {\n        return () => [[]];\n      }",
+    replace: "",
+    tests: ["src/logic/tests/symbolic-forms.test.ts"],
+  },
+  {
+    name: "a symbolic call refuses a suspended lambda",
+    file: core("logic/symbolic.ts"),
+    find: "    if (mentions(value.fn, context)) {\n      return Effect.flatMap(term(value.fn, context, depth), (fns) =>",
+    replace:
+      '    if (mentions(value.fn, context)) {\n      return unboundFunction("a call");\n      return Effect.flatMap(term(value.fn, context, depth), (fns) =>',
+    tests: ["src/logic/tests/symbolic-forms.test.ts"],
+  },
+  {
+    name: "string/chars splits UTF-16 code units instead of characters",
+    file: core("modules/string.ts"),
+    find: "  chars: over([Schema.String], (text): string[] => Array.from(text)),",
+    replace:
+      '  chars: over([Schema.String], (text): string[] => text.split("")),',
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "array/sort breaks tie stability",
+    file: core("modules/array.ts"),
+    find: "            yield* call(before, right[j], left[i])",
+    replace: "            !(yield* call(before, left[i], right[j]))",
+    tests: ["src/modules/tests/array.test.ts"],
+  },
+  {
+    name: "static analysis omits wrong-arity diagnostics",
+    file: core("analysis/analyze.ts"),
+    find: "        ...(arityError === undefined ? {} : { diagnostic: arityError }),",
+    replace: "",
+    tests: ["src/analysis/tests/analyze.test.ts"],
+  },
+  {
+    name: "static arity analysis ignores set! mutation of a defined lambda",
+    file: core("analysis/analyze.ts"),
+    find: "      !mutated.has(nameNode.meaning.binding.id) &&",
+    replace: "      true &&",
+    tests: ["src/analysis/tests/analyze.test.ts"],
   },
 ];

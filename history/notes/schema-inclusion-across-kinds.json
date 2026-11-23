@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "`schema/includes?` decides inclusion across all value kinds (`value/number?`, `value/integer?`, `value/string?`, `value/array?`, `value/object?`, `value/function?`, `value/symbol?`, `value/promise?`, `value/unknown?`, `value/undefined?`, `value/any?`), open records and lists (`schema/open` without rest), and unbounded collections (`schema/arrayOf` without `most`, `schema/recordOf`), e.g. `[\"schema/includes?\", \"value/number?\", \"value/integer?\"]` gives `false` and `[\"schema/includes?\", \"value/string?\", \"value/number?\"]` gives `false`.",
+      "says": {
+        "feature": "schema-inclusion-across-kinds",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`schema/includes?` gives `false` for `value/number?` in `value/integer?`, `value/string?` in `value/number?`, and open records in exact records, and `true` when an unbounded `schema/arrayOf` is covered by a `schema/anyOf` of empty and open lists.",
+      "says": {
+        "behavior": "schema-includes-across-kinds",
+        "is": "decided",
+        "area": "schemas"
+      }
+    }
+  ]
+}

@@ -89,11 +89,15 @@
 <p>A case that only the Omega test's dark and grey shadows refute, which some problems over whole numbers need, gets no certificate, and <code>why</code> then shows none.</p>
 
 <h2>Ask whether one schema includes another</h2>
-<p><code>schema/includes?</code> says whether every value one schema allows fits another, exactly: by listing the first schema's values when it can list them, and by the solver otherwise. It refuses, and says why, what neither can decide, such as whether every number is a whole number, or anything about every string:</p>
+<p><code>schema/includes?</code> says whether every value one schema allows fits another, exactly: by listing the first schema's values when it can list them, and by the solver otherwise — across value kinds, open records and lists, and unbounded collections. It refuses, and says why, only when neither can decide an arbitrary predicate:</p>
 <lion-example name="One schema in another">
 {"whole numbers are numbers": ["schema/includes?", "value/integer?", "value/number?"],
+ "not every number is whole": ["schema/includes?", "value/number?", "value/integer?"],
+ "strings are not numbers": ["schema/includes?", "value/string?", "value/number?"],
+ "open record in exact record": ["schema/includes?", ["schema/open", {"x": "value/integer?"}], {"x": "value/integer?"}],
  "positive amounts are not negative": ["schema/includes?", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]], ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 0]]]],
  "and not the other way": ["schema/includes?", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 0]]], ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
+ "lists are empty or non-empty": ["schema/includes?", ["schema/arrayOf", "value/integer?"], ["schema/anyOf", ["quote", []], ["schema/open", ["array/make", "value/integer?"], ["schema/arrayOf", "value/integer?"]]]],
  "a listed schema": ["schema/includes?", ["schema/anyOf", 1, 2], ["schema/anyOf", 1, 2, 3]]}
 </lion-example>
 

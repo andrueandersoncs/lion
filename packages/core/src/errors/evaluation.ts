@@ -183,6 +183,9 @@ const plural = (count: number) => `${count} argument${count === 1 ? "" : "s"}`;
 /** How many arguments each function takes, the fewest and the most. */
 const COUNTS = new WeakMap<object, readonly [least: number, most: number]>();
 
+/** What a function's arguments are, when declared with `takes`. */
+const WHATS = new WeakMap<object, string>();
+
 /** Records how many arguments a function takes. */
 export const counted = <F extends object>(fn: F, count: Count): F => {
   COUNTS.set(fn, typeof count === "number" ? [count, count] : count);
@@ -192,6 +195,10 @@ export const counted = <F extends object>(fn: F, count: Count): F => {
 /** How many arguments a function takes, when it says. */
 export const countOf = (fn: unknown) =>
   typeof fn === "function" ? COUNTS.get(fn) : undefined;
+
+/** What a function's arguments are, when `takes` named them. */
+export const whatOf = (fn: unknown) =>
+  typeof fn === "function" ? WHATS.get(fn) : undefined;
 
 /** The failure of a call that gives `who` a number of arguments it does not take. */
 export const wrongCount = (
@@ -229,6 +236,9 @@ export const takes = <A extends unknown[], B, E, R>(
     args.length < least || args.length > most
       ? Effect.fail(wrongCount(show(self), range, args.length, what))
       : fn(...args);
+  if (what !== undefined) {
+    WHATS.set(self, what);
+  }
   return counted(self, range);
 };
 

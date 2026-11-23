@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "The symbolic solver decides `number/floor`, `number/ceiling`, `number/round` (with optional constant places), `number/remainder` by any known non-zero divisor, and `value/integer?` on arbitrary real expressions via exact Skolem integer variables, e.g. `[\"query\", [\"not\", [\"exists\", [\"?n\"], [\"and\", [\"schema/fits?\", \"?n\", \"value/integer?\"], [\"=\", [\"number/remainder\", \"?n\", 2], 0], [\"not\", [\"value/integer?\", [\"number/divide\", \"?n\", 2]]]]]]]` proves every even integer halves to an integer (`[{}]`).",
+      "says": {
+        "feature": "solver-rounding-and-remainder",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The symbolic solver decides `number/remainder` by a known non-zero divisor, `number/floor`, `number/ceiling`, `number/round`, and `value/integer?` on arbitrary numbers.",
+      "says": {
+        "behavior": "solver-remainder-known-divisor",
+        "is": "decided",
+        "area": "logic"
+      }
+    }
+  ]
+}

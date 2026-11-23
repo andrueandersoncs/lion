@@ -1,0 +1,5 @@
+[
+  "lambda",
+  ["text"],
+  ["string/join", ["array/reverse", ["string/chars", "text"]], ""]
+]

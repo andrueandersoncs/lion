@@ -970,11 +970,58 @@ const choicesIn = (
 };
 
 /**
+ * The values `name` can take: from its own range, or, when a real variable
+ * is equated to a bounded whole variable (such as `value/integer?`), from
+ * that whole variable's range.
+ */
+const choicesFor = (
+  name: string,
+  left: readonly Constraint[],
+  remaining: ReadonlyMap<string, Sort>
+): Iterable<Rational> | undefined => {
+  const sort = remaining.get(name) ?? "real";
+  const direct = choicesIn(rangeOf(name, left, remaining), sort);
+  if (direct !== undefined || sort !== "real") {
+    return direct;
+  }
+  for (const c of left) {
+    if (
+      c.relation !== "=" ||
+      c.linear.coefficients.size !== 2 ||
+      !c.linear.coefficients.has(name)
+    ) {
+      continue;
+    }
+    const entries = [...c.linear.coefficients];
+    const [other, cOther] = entries.find(([n]) => n !== name) as [
+      string,
+      Rational,
+    ];
+    if (remaining.get(other) !== "integer") {
+      continue;
+    }
+    const wholes = choicesIn(rangeOf(other, left, remaining), "integer");
+    if (wholes !== undefined) {
+      const cName = c.linear.coefficients.get(name) as Rational;
+      return (function* () {
+        for (const v of wholes) {
+          yield negate(
+            divide(add(multiply(cOther, v), c.linear.constant), cName)
+          );
+        }
+      })();
+    }
+  }
+  return undefined;
+};
+
+/**
  * Every combination of values that the variables in `keep` take in some
  * solution, the other variables being any values that meet the constraints
  * with them; or the first variable of `keep` that takes infinitely many. A
  * whole variable takes finitely many when the constraints bound it on both
- * sides; one that may be any number, only when they fix it to one value.
+ * sides; one that may be any number, only when they fix it to one value or
+ * equate it to a bounded whole variable.
  */
 export const enumerate = (
   constraints: readonly Constraint[],
@@ -1003,10 +1050,7 @@ export const enumerate = (
       }
       return;
     }
-    const choices = choicesIn(
-      rangeOf(name, left, remaining),
-      remaining.get(name) ?? "real"
-    );
+    const choices = choicesFor(name, left, remaining);
     if (choices === undefined) {
       infinite = name;
       return;

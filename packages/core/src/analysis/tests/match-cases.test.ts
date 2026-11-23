@@ -126,4 +126,53 @@ describe("a match on a parameter with a contract, with no fallback", () => {
       expect(match?.warning !== undefined).toBe(leaves);
     }
   );
+
+  /** Infinite value-kind schemas, each with the disjoint atoms it covers. */
+  const KINDS = {
+    integer: ["value/integer?", ["int"]],
+    number: ["value/number?", ["int", "non-int"]],
+    string: ["value/string?", ["string"]],
+    array: ["value/array?", ["array"]],
+    object: ["value/object?", ["object"]],
+  } as const;
+
+  type Kind = keyof typeof KINDS;
+  const kindNames = Object.keys(KINDS) as Kind[];
+
+  it.prop(
+    "warns on non-finite kind contracts (string, number, array, object) when cases leave out a kind",
+    {
+      contract: Arbitrary.array(element(kindNames), {
+        minLength: 1,
+        maxLength: 3,
+      }),
+      cases: Arbitrary.array(element(kindNames), {
+        minLength: 1,
+        maxLength: 3,
+      }),
+    },
+    ({ cases: chosen, contract }) => {
+      const contractSchema =
+        contract.length === 1
+          ? KINDS[contract[0] as Kind][0]
+          : ["schema/anyOf", ...contract.map((k) => KINDS[k][0])];
+      const program = [
+        "lambda",
+        [["x", contractSchema]],
+        [
+          "match",
+          "x",
+          ...chosen.map((k) => [KINDS[k][0], ["lambda", ["v"], k]]),
+        ],
+      ];
+      const match = flattenAnalysis(analyze(program as never, stdlib)).find(
+        (node) => node.specialForm === "match"
+      );
+      const covered = new Set<string>(chosen.flatMap((k) => KINDS[k][1]));
+      const leaves = contract
+        .flatMap((k) => KINDS[k][1])
+        .some((atom) => !covered.has(atom));
+      expect(match?.warning !== undefined).toBe(leaves);
+    }
+  );
 });

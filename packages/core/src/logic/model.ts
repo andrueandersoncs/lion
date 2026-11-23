@@ -55,6 +55,7 @@ import {
   type Context as SymbolicContext,
   shapeFor,
   term as symbolicTerm,
+  withDefinitions,
 } from "@/logic/symbolic";
 import {
   and,
@@ -868,14 +869,17 @@ const described = (
 };
 
 /** A model with no rows, for terms that ask no question. */
-const NOTHING_DERIVED = new Model(new Map(), []);
+let nothingDerived: Model | undefined;
+const emptyModel = () => {
+  nothingDerived ??= new Model(new Map(), []);
+  return nothingDerived;
+};
 
 /**
  * The value of a term in plain code, once every question in it is asked:
  * what `some` names, and the rows `exists` says hold, which read nothing.
  */
-export const plainValue = (item: unknown) =>
-  term(NOTHING_DERIVED, item, NO_VARS);
+export const plainValue = (item: unknown) => term(emptyModel(), item, NO_VARS);
 
 /**
  * The unknown a `some` form names, for an answer. Its variable is always its
@@ -1273,6 +1277,7 @@ interface Waiting {
  * run once it gives their variables values.
  */
 interface Choice {
+  readonly definitions: ReadonlyMap<string, readonly Constraint[]>;
   readonly formula: Formula;
   readonly symbols: ReadonlyMap<string, Cases>;
   readonly waiting: readonly Waiting[];
@@ -1301,8 +1306,10 @@ const stepFormulas = (model: Model, step: Solved, vars: Vars) =>
   Effect.gen(function* () {
     const sorts = new Map<string, Sort>();
     const base: SymbolicContext = {
+      definitions: new Map(),
       evaluate: (part) =>
         term(model, part, vars) as unknown as Effect.Effect<unknown, Error>,
+      floors: new Map(),
       sorts,
       symbols: new Map(),
     };
@@ -1360,7 +1367,12 @@ const choiceOf = (
     const symbols = new Map<string, Cases>(
       shapes.map(([name, each]) => [name, [{ sym: each.sym, when: TRUE }]])
     );
-    const context: SymbolicContext = { ...base, symbols };
+    const context: SymbolicContext = {
+      ...base,
+      definitions: new Map(base.definitions),
+      floors: new Map(base.floors),
+      symbols,
+    };
     const waiting: Waiting[] = [];
     // The variables that waiting goals give values to.
     const pending = new Set<string>();
@@ -1415,7 +1427,14 @@ const choiceOf = (
         hold(goal, decided);
       }
     }
-    return { formula, symbols, waiting } satisfies Choice;
+    return {
+      definitions: context.definitions,
+      formula: formula.map((conj) =>
+        withDefinitions(conj, context.definitions)
+      ),
+      symbols,
+      waiting,
+    } satisfies Choice;
   });
 
 /**
@@ -1560,8 +1579,13 @@ const listings = (
     const listedLeaves = [
       ...new Set([...answered, ...leavesOfChosen(needs, chosen)]),
     ];
+    const chosenLeaves = leavesOfChosen(given, chosen);
     return when.map((extra) => ({
-      all: [...constraints, ...extra],
+      all: withDefinitions(
+        [...constraints, ...extra],
+        choice.definitions,
+        chosenLeaves
+      ),
       answered,
       chosen,
       listedLeaves,
