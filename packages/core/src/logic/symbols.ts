@@ -37,6 +37,7 @@ import {
   allowedBy,
   buildOf,
   isPlainObject,
+  type LambdaInfo,
   nameOf,
   type SchemaInfo,
   sameValue,
@@ -44,9 +45,12 @@ import {
   Unknown,
 } from "@/logic/terms";
 import {
+  add,
   compare,
   divide,
   isNumber,
+  isZero,
+  multiply,
   negate,
   ONE,
   type Rational,
@@ -345,7 +349,12 @@ export const opaqueKindOf = (value: unknown): OpaqueKind | undefined => {
 
 /** What a symbolic value is: a number, a truth, a value, an opaque kind, or a record or list of these. */
 export type Sym =
-  | { readonly kind: "number"; readonly linear: Linear }
+  | {
+      readonly kind: "number";
+      readonly linear: Linear;
+      /** Higher-degree monomial terms (sorted `"a*b"` keys); omitted when purely linear. */
+      readonly nonlinear?: ReadonlyMap<string, Rational>;
+    }
   | { readonly kind: "truth"; readonly formula: Formula }
   | { readonly kind: "value"; readonly value: unknown }
   | {
@@ -364,6 +373,19 @@ export type Sym =
       readonly items: readonly Sym[];
       /** Schema for zero or more trailing items; undefined for a fixed-length list. */
       readonly rest?: unknown;
+      /** Strictly smaller inductive tail list (from structural list induction). */
+      readonly tail?: Extract<Sym, { readonly kind: "inductive" }>;
+    }
+  /**
+   * A strictly smaller sub-value fitting a recursive schema (or unbounded list)
+   * encountered during inductive inclusion or structural induction.
+   */
+  | {
+      readonly kind: "inductive";
+      readonly schema: unknown;
+      readonly depth: number;
+      readonly name: string;
+      readonly length?: Linear;
     }
   /**
    * A lambda written where the solver runs, over values it works out: its
@@ -372,6 +394,8 @@ export type Sym =
   | {
       readonly kind: "closure";
       readonly apply: (args: readonly Sym[], depth: number) => unknown;
+      readonly info?: LambdaInfo;
+      readonly scope?: ReadonlyMap<string, Cases>;
     };
 
 /** A value in each of several cases, each with when it holds. */
@@ -379,7 +403,154 @@ export type Cases = readonly { readonly when: Formula; readonly sym: Sym }[];
 
 export const one = (sym: Sym): Cases => [{ sym, when: TRUE }];
 
-export const numberSym = (linear: Linear): Sym => ({ kind: "number", linear });
+export type NumberSym = Extract<Sym, { readonly kind: "number" }>;
+
+export const numberSym = (
+  linear: Linear,
+  nonlinear?: ReadonlyMap<string, Rational>
+): NumberSym =>
+  nonlinear !== undefined && nonlinear.size > 0
+    ? { kind: "number", linear, nonlinear }
+    : { kind: "number", linear };
+
+const monomialKey = (factors: readonly string[]): string =>
+  [...factors].sort().join("*");
+
+const polyTerms = (sym: NumberSym): [readonly string[], Rational][] => {
+  const out: [readonly string[], Rational][] = [];
+  if (!isZero(sym.linear.constant)) {
+    out.push([[], sym.linear.constant]);
+  }
+  for (const [name, k] of sym.linear.coefficients) {
+    if (!isZero(k)) {
+      out.push([[name], k]);
+    }
+  }
+  if (sym.nonlinear !== undefined) {
+    for (const [key, k] of sym.nonlinear) {
+      if (!isZero(k)) {
+        out.push([key.split("*"), k]);
+      }
+    }
+  }
+  return out;
+};
+
+const fromPolyTerms = (
+  terms: Iterable<readonly [readonly string[], Rational]>
+): NumberSym => {
+  let constantVal: Rational = ZERO;
+  const coeffs = new Map<string, Rational>();
+  const nonlinear = new Map<string, Rational>();
+  for (const [factors, k] of terms) {
+    if (isZero(k)) {
+      continue;
+    }
+    if (factors.length === 0) {
+      constantVal = add(constantVal, k);
+    } else if (factors.length === 1) {
+      const name = factors[0] as string;
+      const next = add(coeffs.get(name) ?? ZERO, k);
+      if (isZero(next)) {
+        coeffs.delete(name);
+      } else {
+        coeffs.set(name, next);
+      }
+    } else {
+      const key = monomialKey(factors);
+      const next = add(nonlinear.get(key) ?? ZERO, k);
+      if (isZero(next)) {
+        nonlinear.delete(key);
+      } else {
+        nonlinear.set(key, next);
+      }
+    }
+  }
+  return numberSym(
+    { coefficients: coeffs, constant: constantVal },
+    nonlinear.size > 0 ? nonlinear : undefined
+  );
+};
+
+export const polyAdd = (a: NumberSym, b: NumberSym): NumberSym => {
+  if (a.nonlinear === undefined && b.nonlinear === undefined) {
+    const coeffs = new Map(a.linear.coefficients);
+    for (const [name, k] of b.linear.coefficients) {
+      const next = add(coeffs.get(name) ?? ZERO, k);
+      if (isZero(next)) {
+        coeffs.delete(name);
+      } else {
+        coeffs.set(name, next);
+      }
+    }
+    return numberSym({
+      coefficients: coeffs,
+      constant: add(a.linear.constant, b.linear.constant),
+    });
+  }
+  return fromPolyTerms([...polyTerms(a), ...polyTerms(b)]);
+};
+
+export const polySub = (a: NumberSym, b: NumberSym): NumberSym =>
+  a.nonlinear === undefined && b.nonlinear === undefined
+    ? numberSym(minus(a.linear, b.linear))
+    : fromPolyTerms([
+        ...polyTerms(a),
+        ...polyTerms(b).map(([f, k]) => [f, negate(k)] as const),
+      ]);
+
+export const polyScale = (a: NumberSym, factor: Rational): NumberSym => {
+  if (isZero(factor)) {
+    return numberSym(constant(ZERO));
+  }
+  if (a.nonlinear === undefined) {
+    return numberSym(times(a.linear, factor));
+  }
+  const nonlinear = new Map<string, Rational>();
+  for (const [key, k] of a.nonlinear) {
+    const next = multiply(k, factor);
+    if (!isZero(next)) {
+      nonlinear.set(key, next);
+    }
+  }
+  return numberSym(times(a.linear, factor), nonlinear);
+};
+
+export const polyMul = (a: NumberSym, b: NumberSym): NumberSym => {
+  const ta = polyTerms(a);
+  const tb = polyTerms(b);
+  const prod: [readonly string[], Rational][] = [];
+  for (const [fa, ka] of ta) {
+    for (const [fb, kb] of tb) {
+      prod.push([[...fa, ...fb], multiply(ka, kb)]);
+    }
+  }
+  return fromPolyTerms(prod);
+};
+
+export const polySubstitute = (
+  sym: NumberSym,
+  varName: string,
+  replacement: NumberSym
+): NumberSym => {
+  let acc: NumberSym = numberSym(constant(ZERO));
+  for (const [factors, k] of polyTerms(sym)) {
+    let termVal: NumberSym = numberSym(constant(k));
+    const kept: string[] = [];
+    for (const f of factors) {
+      if (f === varName) {
+        termVal = polyMul(termVal, replacement);
+      } else {
+        kept.push(f);
+      }
+    }
+    if (kept.length > 0) {
+      termVal = polyMul(termVal, fromPolyTerms([[kept, ONE]]));
+    }
+    acc = polyAdd(acc, termVal);
+  }
+  return acc;
+};
 
 export const truthSym = (formula: Formula): Sym => ({ formula, kind: "truth" });
 
@@ -394,13 +565,33 @@ export const fromValue = (value: unknown): Sym => {
   return { kind: "value", value };
 };
 
+const concreteNumber = (sym: NumberSym, values: Values): unknown => {
+  let total = valueAt(sym.linear, values);
+  if (total === undefined) {
+    return undefined;
+  }
+  if (sym.nonlinear === undefined) {
+    return toNumber(total);
+  }
+  for (const [key, k] of sym.nonlinear) {
+    let term = k;
+    for (const factor of key.split("*")) {
+      const v = values.get(factor);
+      if (v === undefined) {
+        return undefined;
+      }
+      term = multiply(term, v);
+    }
+    total = add(total, term);
+  }
+  return toNumber(total);
+};
+
 /** The value a symbolic value has once its variables have values; undefined when one has none. */
 export const concrete = (sym: Sym, values: Values): unknown => {
   switch (sym.kind) {
-    case "number": {
-      const value = valueAt(sym.linear, values);
-      return value === undefined ? undefined : toNumber(value);
-    }
+    case "number":
+      return concreteNumber(sym, values);
     case "truth":
       return sym.formula.some((conjunction) =>
         conjunction.every((c) => {
@@ -411,6 +602,7 @@ export const concrete = (sym: Sym, values: Values): unknown => {
     case "value":
       return sym.value;
     case "closure":
+    case "inductive":
     case "opaque":
       return undefined;
     case "record": {
@@ -428,7 +620,7 @@ export const concrete = (sym: Sym, values: Values): unknown => {
       return out;
     }
     default: {
-      if (sym.rest !== undefined) {
+      if (sym.rest !== undefined || sym.tail !== undefined) {
         return undefined;
       }
       const items = sym.items.map((item) => concrete(item, values));
@@ -455,7 +647,12 @@ const meetsValue = (c: Constraint, value: Rational) => {
 export const leavesOf = (sym: Sym): string[] => {
   switch (sym.kind) {
     case "number":
-      return [...sym.linear.coefficients.keys()];
+      return [
+        ...sym.linear.coefficients.keys(),
+        ...(sym.nonlinear === undefined
+          ? []
+          : [...sym.nonlinear.keys()].flatMap((k) => k.split("*"))),
+      ];
     case "opaque":
       return [...sym.id.coefficients.keys()];
     case "truth":
@@ -465,10 +662,17 @@ export const leavesOf = (sym: Sym): string[] => {
     case "value":
     case "closure":
       return [];
+    case "inductive":
+      return sym.length === undefined
+        ? []
+        : [...sym.length.coefficients.keys()];
     case "record":
       return [...sym.fields.values()].flatMap(leavesOf);
     default:
-      return sym.items.flatMap(leavesOf);
+      return [
+        ...sym.items.flatMap(leavesOf),
+        ...(sym.tail === undefined ? [] : leavesOf(sym.tail)),
+      ];
   }
 };
 
@@ -502,6 +706,25 @@ const equalOpaque = (
   });
 };
 
+const isEmptyListSym = (sym: Sym): boolean =>
+  (sym.kind === "value" &&
+    Array.isArray(sym.value) &&
+    sym.value.length === 0) ||
+  (sym.kind === "list" && sym.items.length === 0 && sym.rest === undefined);
+
+const equalInductive = (a: Sym, b: Sym): Formula | undefined => {
+  if (a.kind === "inductive" && b.kind === "inductive" && a.name === b.name) {
+    return TRUE;
+  }
+  if (a.kind === "inductive" && a.length !== undefined && isEmptyListSym(b)) {
+    return atom({ linear: a.length, relation: "=" });
+  }
+  if (b.kind === "inductive" && b.length !== undefined && isEmptyListSym(a)) {
+    return atom({ linear: b.length, relation: "=" });
+  }
+  return undefined;
+};
+
 /** The formula that two symbolic values are the same value. */
 export const equal = (
   a: Sym,
@@ -514,6 +737,10 @@ export const equal = (
   if (a.kind === "truth" && b.kind === "truth") {
     return or(and(a.formula, b.formula), and(not(a.formula), not(b.formula)));
   }
+  const ind = equalInductive(a, b);
+  if (ind !== undefined) {
+    return ind;
+  }
   if (a.kind === "opaque") {
     return equalOpaque(a, b, atoms);
   }
@@ -521,40 +748,52 @@ export const equal = (
     return equalOpaque(b, a, atoms);
   }
   if (a.kind === "record" || b.kind === "record") {
-    const [left, right] = [fieldsOf(a), fieldsOf(b)];
-    if (
-      left === undefined ||
-      right === undefined ||
-      left.size !== right.size ||
-      ![...left.keys()].every((key) => right.has(key))
-    ) {
-      return FALSE;
-    }
-    return [...left].reduce<Formula>(
-      (sofar, [key, field]) =>
-        and(sofar, equal(field, right.get(key) as Sym, atoms)),
-      TRUE
-    );
+    return equalRecords(a, b, atoms);
   }
   if (a.kind === "list" || b.kind === "list") {
-    const [left, right] = [itemsOf(a), itemsOf(b)];
-    if (
-      left === undefined ||
-      right === undefined ||
-      left.length !== right.length
-    ) {
-      return FALSE;
-    }
-    return left.reduce<Formula>(
-      (sofar, item, at) => and(sofar, equal(item, right[at] as Sym, atoms)),
-      TRUE
-    );
+    return equalLists(a, b, atoms);
   }
   if (a.kind === "value" && b.kind === "value") {
     return sameValue(a.value, b.value) ? TRUE : FALSE;
   }
   // A number or a truth is never the same as a value of another kind.
   return FALSE;
+};
+
+const equalRecords = (
+  a: Sym,
+  b: Sym,
+  atoms?: Map<unknown, number>
+): Formula => {
+  const [left, right] = [fieldsOf(a), fieldsOf(b)];
+  if (
+    left === undefined ||
+    right === undefined ||
+    left.size !== right.size ||
+    ![...left.keys()].every((key) => right.has(key))
+  ) {
+    return FALSE;
+  }
+  return [...left].reduce<Formula>(
+    (sofar, [key, field]) =>
+      and(sofar, equal(field, right.get(key) as Sym, atoms)),
+    TRUE
+  );
+};
+
+const equalLists = (a: Sym, b: Sym, atoms?: Map<unknown, number>): Formula => {
+  const [left, right] = [itemsOf(a), itemsOf(b)];
+  if (
+    left === undefined ||
+    right === undefined ||
+    left.length !== right.length
+  ) {
+    return FALSE;
+  }
+  return left.reduce<Formula>(
+    (sofar, item, at) => and(sofar, equal(item, right[at] as Sym, atoms)),
+    TRUE
+  );
 };
 
 export const fieldsOf = (sym: Sym): ReadonlyMap<string, Sym> | undefined => {
@@ -571,7 +810,9 @@ export const fieldsOf = (sym: Sym): ReadonlyMap<string, Sym> | undefined => {
 
 export const itemsOf = (sym: Sym): readonly Sym[] | undefined => {
   if (sym.kind === "list") {
-    return sym.rest === undefined ? sym.items : undefined;
+    return sym.rest === undefined && sym.tail === undefined
+      ? sym.items
+      : undefined;
   }
   if (sym.kind === "value" && Array.isArray(sym.value)) {
     return sym.value.map(fromValue);
@@ -603,10 +844,11 @@ export const product = (
   return out;
 };
 
-/** Whether a symbolic value holds a closure, opaque kind, or open rest. */
+/** Whether a symbolic value holds a closure, opaque kind, inductive value, or open rest. */
 const isAbstract = (sym: Sym): boolean => {
   switch (sym.kind) {
     case "closure":
+    case "inductive":
     case "opaque":
       return true;
     case "record":
@@ -614,7 +856,11 @@ const isAbstract = (sym: Sym): boolean => {
         sym.rest !== undefined || [...sym.fields.values()].some(isAbstract)
       );
     case "list":
-      return sym.rest !== undefined || sym.items.some(isAbstract);
+      return (
+        sym.rest !== undefined ||
+        sym.tail !== undefined ||
+        sym.items.some(isAbstract)
+      );
     default:
       return false;
   }
@@ -759,12 +1005,180 @@ const broadPredicateShape = (
   return name === "value/any?" ? anyShape(path, sorts) : undefined;
 };
 
+const schemaChildren = (schema: unknown): readonly unknown[] => {
+  if (typeof schema === "function") {
+    return buildOf(schema)?.args ?? [];
+  }
+  if (Array.isArray(schema)) {
+    return schema;
+  }
+  return isPlainObject(schema) ? Object.values(schema) : [];
+};
+
+/** Collects all named schemas structurally reachable from `schema`. */
+const collectNamed = (
+  schema: unknown,
+  found: Set<SchemaInfo>,
+  visited = new Set<unknown>()
+): void => {
+  if (
+    schema === null ||
+    schema === undefined ||
+    (typeof schema !== "object" && typeof schema !== "function") ||
+    visited.has(schema)
+  ) {
+    return;
+  }
+  visited.add(schema);
+  const named = schemaOf(schema);
+  if (named !== undefined) {
+    if (!found.has(named)) {
+      found.add(named);
+      if (named.definition !== undefined) {
+        collectNamed(named.shape, found, visited);
+      }
+    }
+    return;
+  }
+  for (const child of schemaChildren(schema)) {
+    collectNamed(child, found, visited);
+  }
+};
+
+/** Whether a schema shape is inhabited assuming only named schemas in `alive` are inhabited. */
+const shapeInhabited = (
+  schema: unknown,
+  alive: ReadonlySet<SchemaInfo>
+): boolean => {
+  if (schema === ANY_REST_SCHEMA) {
+    return true;
+  }
+  const named = schemaOf(schema);
+  if (named !== undefined) {
+    return named.definition === undefined ? true : alive.has(named);
+  }
+  if (typeof schema === "function") {
+    const allowed = allowedBy(schema);
+    if (allowed !== undefined) {
+      return allowed.length > 0;
+    }
+    const built = buildOf(schema);
+    if (built === undefined) {
+      return true;
+    }
+    switch (nameOf(built.by)) {
+      case "schema/anyOf":
+        return built.args.some((arg) => shapeInhabited(arg, alive));
+      case "schema/allOf":
+        return built.args.every((arg) => shapeInhabited(arg, alive));
+      case "schema/optional":
+      case "schema/arrayOf":
+      case "schema/recordOf":
+        return true;
+      case "schema/open":
+        return (
+          shapeInhabited(built.args[0], alive) &&
+          (built.args.length < 2 || shapeInhabited(built.args[1], alive))
+        );
+      default:
+        return true;
+    }
+  }
+  if (Array.isArray(schema)) {
+    return schema.every((item) => shapeInhabited(item, alive));
+  }
+  if (isPlainObject(schema)) {
+    return Object.values(schema).every((value) => {
+      const built = buildOf(throughNames(value));
+      return (
+        (built !== undefined && nameOf(built.by) === "schema/optional") ||
+        shapeInhabited(value, alive)
+      );
+    });
+  }
+  return true;
+};
+
+/**
+ * True when a positive schema structurally allows no finite values (least
+ * fixed point is empty), such as `["schema", "Void", {"next": "Void"}]`.
+ */
+export const isStructurallyUninhabited = (schema: unknown): boolean => {
+  const named = new Set<SchemaInfo>();
+  collectNamed(schema, named);
+  if (named.size === 0) {
+    return !shapeInhabited(schema, named);
+  }
+  const alive = new Set<SchemaInfo>();
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const info of named) {
+      if (
+        !alive.has(info) &&
+        (info.definition === undefined || shapeInhabited(info.shape, alive))
+      ) {
+        alive.add(info);
+        grew = true;
+      }
+    }
+  }
+  return !shapeInhabited(schema, alive);
+};
+
+/** True when `schema` (a named schema) refers to itself structurally. */
+export const isRecursiveNamedSchema = (
+  schema: unknown,
+  seen = new Set<SchemaInfo>(),
+  visited = new Set<unknown>()
+): boolean => {
+  if (
+    schema === null ||
+    schema === undefined ||
+    (typeof schema !== "object" && typeof schema !== "function")
+  ) {
+    return false;
+  }
+  const named = schemaOf(schema);
+  if (named !== undefined) {
+    if (seen.has(named)) {
+      return true;
+    }
+    if (named.definition === undefined) {
+      return false;
+    }
+    const next = new Set(seen);
+    next.add(named);
+    return isRecursiveNamedSchema(named.shape, next, visited);
+  }
+  if (visited.has(schema)) {
+    return false;
+  }
+  visited.add(schema);
+  if (typeof schema === "function") {
+    return (
+      buildOf(schema)?.args.some((arg) =>
+        isRecursiveNamedSchema(arg, seen, visited)
+      ) ?? false
+    );
+  }
+  if (Array.isArray(schema)) {
+    return schema.some((item) => isRecursiveNamedSchema(item, seen, visited));
+  }
+  if (isPlainObject(schema)) {
+    return Object.values(schema).some((value) =>
+      isRecursiveNamedSchema(value, seen, visited)
+    );
+  }
+  return false;
+};
+
 const shapeFunction = (
   schema: (...args: never[]) => unknown,
   path: string,
   sorts: Map<string, Sort>,
-  seen: ReadonlySet<SchemaInfo>,
-  broad: boolean
+  seen: ReadonlyMap<SchemaInfo, number>,
+  broad: boolean,
+  depth: number
 ): Shaped | Shapeless => {
   const allowed = allowedBy(schema);
   if (allowed !== undefined) {
@@ -797,19 +1211,29 @@ const shapeFunction = (
       path,
       sorts,
       seen,
-      broad
+      broad,
+      depth
     );
   }
   return new Shapeless(isPredicate(schema));
 };
 
+const toSeenMap = (
+  seen: ReadonlySet<SchemaInfo> | ReadonlyMap<SchemaInfo, number>
+): ReadonlyMap<SchemaInfo, number> =>
+  seen instanceof Map
+    ? seen
+    : new Map([...seen].map((info) => [info, 0] as const));
+
 export const shapeOf = (
   schema: unknown,
   path: string,
   sorts: Map<string, Sort>,
-  seen: ReadonlySet<SchemaInfo>,
-  broad = false
+  seen: ReadonlySet<SchemaInfo> | ReadonlyMap<SchemaInfo, number>,
+  broad = false,
+  depth = 0
 ): Shaped | Shapeless => {
+  const seenMap = toSeenMap(seen);
   if (schema === ANY_REST_SCHEMA) {
     return anyShape(path, sorts);
   }
@@ -818,18 +1242,40 @@ export const shapeOf = (
     if (named.definition === undefined) {
       return new Shapeless(`"${named.name}" is still being declared`);
     }
-    if (seen.has(named)) {
-      return new Shapeless(namesItself(named.name));
+    if (broad && isStructurallyUninhabited(schema)) {
+      return { cases: [], unknown: false };
     }
-    return shapeOf(named.shape, path, sorts, new Set([...seen, named]), broad);
+    const openedAt = seenMap.get(named);
+    if (openedAt !== undefined) {
+      if (!broad) {
+        return new Shapeless(namesItself(named.name));
+      }
+      if (depth <= openedAt) {
+        // Unguarded self-cycle has no finite derivation under least fixed point.
+        return { cases: [], unknown: false };
+      }
+      return {
+        cases: [
+          {
+            sym: { depth, kind: "inductive", name: path, schema },
+            when: TRUE,
+          },
+        ],
+        unknown: true,
+      };
+    }
+    const next = new Map(seenMap);
+    next.set(named, depth);
+    return shapeOf(named.shape, path, sorts, next, broad, depth);
   }
   if (typeof schema === "function") {
     return shapeFunction(
       schema as (...args: never[]) => unknown,
       path,
       sorts,
-      seen,
-      broad
+      seenMap,
+      broad,
+      depth
     );
   }
   if (isPlainObject(schema)) {
@@ -838,12 +1284,13 @@ export const shapeOf = (
       undefined,
       path,
       sorts,
-      seen,
-      broad
+      seenMap,
+      broad,
+      depth
     );
   }
   if (Array.isArray(schema)) {
-    return shapeList(schema, path, sorts, seen, broad);
+    return shapeList(schema, path, sorts, seenMap, broad, depth);
   }
   return { cases: [{ sym: fromValue(schema), when: TRUE }], unknown: false };
 };
@@ -875,8 +1322,9 @@ const shapeRecord = (
   rest: Shaped | undefined,
   path: string,
   sorts: Map<string, Sort>,
-  seen: ReadonlySet<SchemaInfo>,
-  broad = false
+  seen: ReadonlyMap<SchemaInfo, number>,
+  broad = false,
+  depth = 0
 ): Shaped | Shapeless => {
   const parts: Shaped[] = [];
   const optional: boolean[] = [];
@@ -886,7 +1334,14 @@ const shapeRecord = (
       built !== undefined && nameOf(built.by) === "schema/optional"
         ? built.args[0]
         : undefined;
-    const shaped = shapeOf(inner ?? part, `${path}.${key}`, sorts, seen, broad);
+    const shaped = shapeOf(
+      inner ?? part,
+      `${path}.${key}`,
+      sorts,
+      seen,
+      broad,
+      depth + 1
+    );
     if (shaped instanceof Shapeless) {
       return shaped;
     }
@@ -937,12 +1392,21 @@ export const shapeList = (
   items: readonly unknown[],
   path: string,
   sorts: Map<string, Sort>,
-  seen: ReadonlySet<SchemaInfo>,
-  broad = false
+  seen: ReadonlySet<SchemaInfo> | ReadonlyMap<SchemaInfo, number>,
+  broad = false,
+  depth = 0
 ): Shaped | Shapeless => {
+  const seenMap = toSeenMap(seen);
   const parts: Shaped[] = [];
   for (const [at, item] of items.entries()) {
-    const shaped = shapeOf(item, `${path}.${at}`, sorts, seen, broad);
+    const shaped = shapeOf(
+      item,
+      `${path}.${at}`,
+      sorts,
+      seenMap,
+      broad,
+      depth + 1
+    );
     if (shaped instanceof Shapeless) {
       return shaped;
     }
@@ -975,11 +1439,12 @@ function* shapesOf(
   parts: readonly unknown[],
   path: string,
   sorts: Map<string, Sort>,
-  seen: ReadonlySet<SchemaInfo>,
-  broad = false
+  seen: ReadonlyMap<SchemaInfo, number>,
+  broad = false,
+  depth = 0
 ): Generator<Shaped | Shapeless> {
   for (const [at, part] of parts.entries()) {
-    yield shapeOf(part, `${path}/${at}`, sorts, seen, broad);
+    yield shapeOf(part, `${path}/${at}`, sorts, seen, broad, depth);
   }
 }
 
@@ -988,12 +1453,13 @@ function* listsUpTo(
   most: number,
   path: string,
   sorts: Map<string, Sort>,
-  seen: ReadonlySet<SchemaInfo>,
-  broad = false
+  seen: ReadonlyMap<SchemaInfo, number>,
+  broad = false,
+  depth = 0
 ): Generator<Shaped | Shapeless> {
   for (let length = 0; length <= most; length += 1) {
     const items = Array.from({ length }, () => item);
-    yield shapeList(items, `${path}#${length}`, sorts, seen, broad);
+    yield shapeList(items, `${path}#${length}`, sorts, seen, broad, depth);
   }
 }
 
@@ -1006,18 +1472,19 @@ const shapeAll = (
   parts: readonly unknown[],
   path: string,
   sorts: Map<string, Sort>,
-  seen: ReadonlySet<SchemaInfo>,
-  broad = false
+  seen: ReadonlyMap<SchemaInfo, number>,
+  broad = false,
+  depth = 0
 ): Shaped | Shapeless => {
   for (const part of parts) {
-    const shaped = shapeOf(part, path, sorts, seen, false);
+    const shaped = shapeOf(part, path, sorts, seen, false, depth);
     if (!(shaped instanceof Shapeless)) {
       return shaped;
     }
   }
   if (broad) {
     for (const part of parts) {
-      const shaped = shapeOf(part, path, sorts, seen, true);
+      const shaped = shapeOf(part, path, sorts, seen, true, depth);
       if (!(shaped instanceof Shapeless)) {
         return shaped;
       }
@@ -1031,14 +1498,21 @@ const shapeOpen = (
   [shape, ...rest]: readonly unknown[],
   path: string,
   sorts: Map<string, Sort>,
-  seen: ReadonlySet<SchemaInfo>,
-  broad = false
+  seen: ReadonlyMap<SchemaInfo, number>,
+  broad = false,
+  depth = 0
 ): Shaped | Shapeless => {
   if (rest.length === 0 && !broad) {
     return new Shapeless(openWithoutRest(schema));
   }
   const items = throughNames(shape);
   if (isPlainObject(items)) {
+    const entries = Object.entries(items);
+    const hasRequired = entries.some(([, part]) => {
+      const built = buildOf(throughNames(part));
+      return !(built !== undefined && nameOf(built.by) === "schema/optional");
+    });
+    const restDepth = depth + (hasRequired ? 1 : 0);
     const restShape: Shaped | Shapeless =
       rest.length === 0
         ? {
@@ -1054,22 +1528,16 @@ const shapeOpen = (
             ],
             unknown: true,
           }
-        : shapeOf(rest[0], `${path}.~`, sorts, seen, broad);
+        : shapeOf(rest[0], `${path}.~`, sorts, seen, broad, restDepth);
     if (restShape instanceof Shapeless) {
       return restShape;
     }
-    return shapeRecord(
-      Object.entries(items),
-      restShape,
-      path,
-      sorts,
-      seen,
-      broad
-    );
+    return shapeRecord(entries, restShape, path, sorts, seen, broad, depth);
   }
   if (!Array.isArray(items)) {
     return new Shapeless(notAShape(shape));
   }
+  const restDepth = depth + (items.length > 0 ? 1 : 0);
   const restShape: Shaped | Shapeless =
     rest.length === 0
       ? {
@@ -1081,11 +1549,11 @@ const shapeOpen = (
           ],
           unknown: true,
         }
-      : shapeOf(rest[0], `${path}.~`, sorts, seen, broad);
+      : shapeOf(rest[0], `${path}.~`, sorts, seen, broad, restDepth);
   if (restShape instanceof Shapeless) {
     return restShape;
   }
-  const named = shapeList(items, path, sorts, seen, broad);
+  const named = shapeList(items, path, sorts, seen, broad, depth);
   if (named instanceof Shapeless) {
     return named;
   }
@@ -1105,16 +1573,17 @@ const shapeBuilt = (
   args: readonly unknown[],
   path: string,
   sorts: Map<string, Sort>,
-  seen: ReadonlySet<SchemaInfo>,
-  broad = false
+  seen: ReadonlyMap<SchemaInfo, number>,
+  broad = false,
+  depth = 0
 ): Shaped | Shapeless => {
   switch (name) {
     case "schema/anyOf":
-      return union(shapesOf(args, path, sorts, seen, broad));
+      return union(shapesOf(args, path, sorts, seen, broad, depth));
     case "schema/allOf":
-      return shapeAll(args, path, sorts, seen, broad);
+      return shapeAll(args, path, sorts, seen, broad, depth);
     case "schema/optional":
-      return shapeOf(args[0], path, sorts, seen, broad);
+      return shapeOf(args[0], path, sorts, seen, broad, depth);
     case "schema/arrayOf": {
       const [item, most] = args;
       if (most === undefined) {
@@ -1127,7 +1596,9 @@ const shapeBuilt = (
             }
           : new Shapeless(listWithoutMost(schema, item));
       }
-      return union(listsUpTo(item, most as number, path, sorts, seen, broad));
+      return union(
+        listsUpTo(item, most as number, path, sorts, seen, broad, depth)
+      );
     }
     case "schema/recordOf":
       return broad
@@ -1142,12 +1613,28 @@ const shapeBuilt = (
           }
         : new Shapeless(`${name} does not say what kind its values are`);
     case "schema/open":
-      return shapeOpen(schema, args, path, sorts, seen, broad);
+      return shapeOpen(schema, args, path, sorts, seen, broad, depth);
     default:
       return new Shapeless(
         `${name ?? "this schema"} does not say what kind its values are`
       );
   }
+};
+
+/**
+ * True when `schema` is an inductive schema that cannot be given a fixed finite
+ * shape without unfolding: a recursive named schema or an unbounded `schema/arrayOf`.
+ */
+export const isInductiveSchema = (schema: unknown): boolean => {
+  if (isRecursiveNamedSchema(schema)) {
+    return true;
+  }
+  const built = buildOf(throughNames(schema));
+  return (
+    built !== undefined &&
+    nameOf(built.by) === "schema/arrayOf" &&
+    built.args[1] === undefined
+  );
 };
 
 /**

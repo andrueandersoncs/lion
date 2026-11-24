@@ -27,7 +27,7 @@ import {
   type Sym,
   throughNames,
 } from "@/logic/symbols";
-import { buildOf, nameOf, show } from "@/logic/terms";
+import { buildOf, nameOf, schemaOf, show } from "@/logic/terms";
 
 const failure = (error: unknown) =>
   error instanceof LogicError
@@ -65,6 +65,81 @@ const sortsOf = (
 const sameSchema = (inner: unknown, outer: unknown) =>
   inner === outer || sameWritten(inner, outer);
 
+const MAX_INDUCTIVE_PAIRS = 32;
+
+const schemaKey = (schema: unknown, ids: Map<unknown, number>): string => {
+  const named = schemaOf(schema);
+  if (named !== undefined) {
+    let id = ids.get(named);
+    if (id === undefined) {
+      id = ids.size;
+      ids.set(named, id);
+    }
+    return `n:${id}`;
+  }
+  if (schema === EMPTY_SCHEMA) {
+    return "s:empty";
+  }
+  if (schema === ANY_REST_SCHEMA) {
+    return "s:any";
+  }
+  try {
+    return `w:${show(schema)}`;
+  } catch {
+    let id = ids.get(schema);
+    if (id === undefined) {
+      id = ids.size;
+      ids.set(schema, id);
+    }
+    return `o:${id}`;
+  }
+};
+
+/**
+ * Whether every value `inner` allows fits `outer`, under strong-induction
+ * hypotheses `assumed` (mapping each pair key to the structural depth where
+ * it was assumed; usable only at strictly greater depth).
+ */
+const includesAt = (
+  inner: unknown,
+  outer: unknown,
+  assumed: ReadonlyMap<string, number>,
+  baseDepth: number,
+  ids: Map<unknown, number>
+): Effect.Effect<boolean, LogicError> => {
+  if (
+    inner === EMPTY_SCHEMA ||
+    outer === ANY_REST_SCHEMA ||
+    sameSchema(inner, outer)
+  ) {
+    return Effect.succeed(true);
+  }
+  const key = `${schemaKey(inner, ids)}<=${schemaKey(outer, ids)}`;
+  const addedAt = assumed.get(key);
+  if (addedAt !== undefined) {
+    if (baseDepth > addedAt) {
+      return Effect.succeed(true);
+    }
+    return Effect.fail(
+      new LogicError({
+        message: "recursive schemas cycled without descending into a sub-value",
+      })
+    );
+  }
+  if (assumed.size >= MAX_INDUCTIVE_PAIRS) {
+    return Effect.fail(
+      new LogicError({
+        message: `recursive schemas did not settle within ${MAX_INDUCTIVE_PAIRS} steps`,
+      })
+    );
+  }
+  const nextAssumed = new Map(assumed);
+  if (addedAt === undefined) {
+    nextAssumed.set(key, baseDepth);
+  }
+  return decided(inner, outer, nextAssumed, baseDepth, ids);
+};
+
 /**
  * Whether every value `inner` allows fits `outer`. A schema includes
  * itself, as one written the same way does, whatever it allows.
@@ -73,11 +148,7 @@ export const includes = (
   inner: unknown,
   outer: unknown
 ): Effect.Effect<boolean, LogicError> =>
-  inner === EMPTY_SCHEMA ||
-  outer === ANY_REST_SCHEMA ||
-  sameSchema(inner, outer)
-    ? Effect.succeed(true)
-    : decided(inner, outer);
+  includesAt(inner, outer, new Map(), 0, new Map());
 
 const MAX_SPLIT = 8;
 
@@ -236,7 +307,10 @@ const listedIncluded = (inner: unknown, outer: unknown) =>
 /** Whether every value `inner` allows fits `outer`, by listing or the solver. */
 const decided = (
   inner: unknown,
-  outer: unknown
+  outer: unknown,
+  assumed: ReadonlyMap<string, number>,
+  baseDepth: number,
+  ids: Map<unknown, number>
 ): Effect.Effect<boolean, LogicError> =>
   Effect.gen(function* () {
     if (
@@ -250,7 +324,8 @@ const decided = (
     const context: Context = {
       atoms: new Map(),
       broad: true,
-      checkIncludes: (a, b) => includes(a, b),
+      checkIncludes: (a, b, step = 0) =>
+        includesAt(a, b, assumed, baseDepth + step, ids),
       definitions: new Map(),
       evaluate: (part) =>
         Effect.fail(

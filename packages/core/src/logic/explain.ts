@@ -38,6 +38,7 @@ import {
   exampleOf,
   hasFree,
   holds,
+  inductionOf,
   type LogicEffect,
   lookup,
   type Match,
@@ -760,6 +761,10 @@ const stepOf = (goal: unknown, vars: Vars): LogicEffect<Solved | undefined> =>
 const refuted = (telling: Telling, step: Solved, vars: Vars) =>
   Effect.gen(function* () {
     const certificate = yield* certificateOf(telling.model, step, vars);
+    const induction =
+      certificate === undefined
+        ? yield* inductionOf(telling.model, step, vars)
+        : undefined;
     const contradicting = yield* contradictionOf(telling.model, step, vars);
     const denies = step.parts.some((literal) => isForm(literal, "not"));
     const vacuous =
@@ -768,6 +773,7 @@ const refuted = (telling: Telling, step: Solved, vars: Vars) =>
       !contradicting.some((literal) => isForm(literal, "not"));
     return {
       ...(certificate === undefined ? {} : { certificate }),
+      ...(induction === undefined ? {} : { induction }),
       ...(contradicting === undefined
         ? {}
         : {

@@ -477,6 +477,25 @@
    "topologicalOrder": ["query", ["graph/topologicalOrder", "edge", "?node", "?position"], {"order": "position"}]}]
 </lion-example>
 
+<h2 id="module-proof"><code>proof</code></h2>
+<p>Checks proof values with a small trusted kernel (without invoking the solver), and proves universal properties of rule-defined relations by rule induction. See <a href="#prove-commands">Prove that every command keeps a rule</a>.</p>
+<dl class="ref">
+  <dt><code>proof/valid?</code></dt>
+  <dd>Whether a proof value (linear refutation certificate, Omega integer split tree, case split, induction proof, lemma composition, or <code>why</code> derivation) checks out under the trusted kernel.</dd>
+  <dt><code>proof/rules</code></dt>
+  <dd>Takes a relation and a target schema, or a record mapping mutually recursive relation names to schemas, and proves by rule induction that every derived row fits its schema across all databases whose base relations fit their declared schemas.</dd>
+</dl>
+<lion-example name="proof">
+["begin",
+  ["schema", "PosRow", {"id": "value/string?", "score": ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 1]]]}],
+  ["relation", "base", ["id", "score"], {"schema": "PosRow"}],
+  ["relation", "reach", ["id", "score"]],
+  ["rule", ["reach", "?x", ["aggregate/min", "?s"]], ["base", "?x", "?s"]],
+  ["rule", ["reach", "?x", ["aggregate/min", ["number/add", "?s", 1]]], ["reach", "?x", "?s"]],
+  ["define", "p", ["proof/rules", "reach", "PosRow"]],
+  {"proved": ["object/get", "p", "proved"], "valid": ["proof/valid?", "p"]}]
+</lion-example>
+
 <h2 id="module-symbols">Module symbols</h2>
 <p>Every module except <code>console</code> also binds <code>module/symbol</code>, such as <code>number/symbol</code>, to a JavaScript symbol that identifies the module.</p>
 </article>

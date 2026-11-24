@@ -1,0 +1,52 @@
+[
+  "begin",
+  [
+    "schema",
+    "EdgeCost",
+    [
+      "schema/allOf",
+      "value/integer?",
+      ["lambda", ["c"], ["number/greaterThanOrEqualTo", "c", 2]]
+    ]
+  ],
+  [
+    "schema",
+    "PosEdge",
+    { "from": "value/string?", "to": "value/string?", "cost": "EdgeCost" }
+  ],
+  ["relation", "edge", ["from", "to", "cost"], { "schema": "PosEdge" }],
+  ["relation", "path", ["from", "to", "cost"]],
+  [
+    "rule",
+    ["path", "?a", "?b", ["aggregate/min", "?c"]],
+    ["edge", "?a", "?b", "?c"]
+  ],
+  [
+    "rule",
+    ["path", "?a", "?c", ["aggregate/min", ["number/add", "?c1", "?c2"]]],
+    ["edge", "?a", "?b", "?c1"],
+    ["path", "?b", "?c", "?c2"]
+  ],
+  [
+    "lambda",
+    ["k"],
+    [
+      "begin",
+      [
+        "define",
+        "target",
+        {
+          "from": "value/string?",
+          "to": "value/string?",
+          "cost": [
+            "schema/allOf",
+            "value/integer?",
+            ["lambda", ["c"], ["number/greaterThanOrEqualTo", "c", "k"]]
+          ]
+        }
+      ],
+      ["define", "p", ["proof/rules", "path", "target"]],
+      ["boolean/and", ["object/get", "p", "proved"], ["proof/valid?", "p"]]
+    ]
+  ]
+]

@@ -1231,7 +1231,7 @@
     "area": "library",
     "program": [
       "cond",
-      [["number/equals?", 0, ["number/subtract", 0, 0.0]], ["quote", "true"]],
+      [["number/equals?", 0, ["number/subtract", 0, 0]], ["quote", "true"]],
       ["else", ["quote", "false"]]
     ]
   },
@@ -23864,7 +23864,14 @@
         ["quote", "exact"]
       ],
       [
-        ["=", ["aggregate/sum", ["array/make", 1e16, 1, -1e16]], 1],
+        [
+          "=",
+          [
+            "aggregate/sum",
+            ["array/make", 10000000000000000, 1, -10000000000000000]
+          ],
+          1
+        ],
         ["quote", "nearest"]
       ],
       ["else", ["quote", "accumulated"]]
@@ -25680,8 +25687,15 @@
             "not",
             [
               "schema/includes?",
-              ["schema/open", { "x": "value/integer?" }],
-              { "x": "value/integer?" }
+              [
+                "schema/open",
+                {
+                  "x": "value/integer?"
+                }
+              ],
+              {
+                "x": "value/integer?"
+              }
             ]
           ],
           [
@@ -25755,6 +25769,241 @@
             ["quote", [{}]]
           ],
           ["quote", "decided"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "recursive-schema-inclusion",
+    "area": "schemas",
+    "program": [
+      "begin",
+      [
+        "schema",
+        "PosInt",
+        [
+          "schema/allOf",
+          "value/integer?",
+          ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+        ],
+        "NonNeg",
+        [
+          "schema/allOf",
+          "value/integer?",
+          ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 0]]
+        ],
+        "PosTree",
+        [
+          "schema/anyOf",
+          {
+            "leaf": "PosInt"
+          },
+          {
+            "node": {
+              "left": "PosTree",
+              "right": "PosTree"
+            }
+          }
+        ],
+        "NonNegTree",
+        [
+          "schema/anyOf",
+          {
+            "leaf": "NonNeg"
+          },
+          {
+            "node": {
+              "left": "NonNegTree",
+              "right": "NonNegTree"
+            }
+          }
+        ],
+        "Void",
+        {
+          "next": "Void"
+        }
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["schema/includes?", "PosTree", "NonNegTree"],
+            ["boolean/not", ["schema/includes?", "NonNegTree", "PosTree"]],
+            ["schema/includes?", "Void", "PosInt"]
+          ],
+          ["quote", "decided"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "solver-structural-and-numeric-induction",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "sum-odd",
+        [
+          "lambda",
+          ["n"],
+          [
+            "cond",
+            [["number/lessThanOrEqualTo", "n", 0], 0],
+            [
+              "else",
+              [
+                "number/add",
+                ["sum-odd", ["number/subtract", "n", 1]],
+                ["number/subtract", ["number/multiply", 2, "n"], 1]
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "query",
+              [
+                "not",
+                [
+                  "exists",
+                  ["?n"],
+                  [
+                    "and",
+                    ["schema/fits?", "?n", "value/integer?"],
+                    ["number/greaterThanOrEqualTo", "?n", 0],
+                    [
+                      "not",
+                      [
+                        "number/equals?",
+                        ["sum-odd", "?n"],
+                        ["number/multiply", "?n", "?n"]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            ["quote", [{}]]
+          ],
+          ["quote", "decided"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "proof-rules-induction",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "schema",
+        "PosCost",
+        [
+          "schema/allOf",
+          "value/integer?",
+          ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 1]]
+        ]
+      ],
+      [
+        "schema",
+        "PosEdge",
+        {
+          "from": "value/string?",
+          "to": "value/string?",
+          "cost": "PosCost"
+        }
+      ],
+      [
+        "relation",
+        "edge",
+        ["from", "to", "cost"],
+        {
+          "schema": "PosEdge"
+        }
+      ],
+      ["relation", "path", ["from", "to", "cost"]],
+      [
+        "rule",
+        ["path", "?a", "?b", ["aggregate/min", "?c"]],
+        ["edge", "?a", "?b", "?c"]
+      ],
+      [
+        "rule",
+        ["path", "?a", "?c", ["aggregate/min", ["number/add", "?c1", "?c2"]]],
+        ["edge", "?a", "?b", "?c1"],
+        ["path", "?b", "?c", "?c2"]
+      ],
+      ["define", "p", ["proof/rules", "path", "PosEdge"]],
+      [
+        "cond",
+        [
+          ["boolean/and", ["object/get", "p", "proved"], ["proof/valid?", "p"]],
+          ["quote", "proved-and-valid"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "proof-kernel-valid-and-splits",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "limit", ["n"]],
+      ["relation", "room", ["n"]],
+      ["fact", ["limit", 3]],
+      [
+        "rule",
+        ["room", "?n"],
+        ["limit", "?n"],
+        ["schema/fits?", "?x", "value/integer?"],
+        ["number/greaterThan", "?x", 2],
+        ["number/lessThan", "?x", "?n"]
+      ],
+      ["define", "w", ["why", ["room", 3]]],
+      [
+        "define",
+        "forged",
+        [
+          "quote",
+          {
+            "constraints": [
+              {
+                "constant": 0,
+                "relation": ">=",
+                "sum": {
+                  "x": 1
+                }
+              }
+            ],
+            "steps": [
+              {
+                "from": [[0, -1]],
+                "tightened": false
+              }
+            ]
+          }
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "boolean/and",
+            ["proof/valid?", "w"],
+            ["boolean/not", ["proof/valid?", "forged"]]
+          ],
+          ["quote", "valid-and-rejects-forged"]
         ],
         ["else", ["quote", "other"]]
       ]

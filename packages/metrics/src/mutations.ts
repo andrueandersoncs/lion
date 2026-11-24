@@ -2192,8 +2192,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "the checker lets an inequality be taken away",
     file: core("logic/certificate.ts"),
-    find: '          (compareNumbers(m, 0) < 0 && (lines[at] as Whole).relation !== "=")',
-    replace: "          false",
+    find: '      (compareNumbers(rawM as LionNumber, 0) < 0 && line.relation !== "=")',
+    replace: "      false",
     tests: ["src/logic/tests/solver.test.ts"],
   },
   {
@@ -5244,5 +5244,65 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "      !mutated.has(nameNode.meaning.binding.id) &&",
     replace: "      true &&",
     tests: ["src/analysis/tests/analyze.test.ts"],
+  },
+  {
+    name: "recursive schema inclusion drops strong-induction depth check",
+    file: core("logic/inclusion.ts"),
+    find: "    if (baseDepth > addedAt) {\n      return Effect.succeed(true);\n    }",
+    replace:
+      "    if (false && baseDepth > addedAt) {\n      return Effect.succeed(true);\n    }",
+    tests: ["src/logic/tests/inclusion.test.ts"],
+  },
+  {
+    name: "uninhabited recursive schema is not treated as empty in inclusion",
+    file: core("logic/symbols.ts"),
+    find: "    if (broad && isStructurallyUninhabited(schema)) {",
+    replace: "    if (false && broad && isStructurallyUninhabited(schema)) {",
+    tests: ["src/logic/tests/inclusion.test.ts"],
+  },
+  {
+    name: "CIC numeric guard skips strict-decrease verification",
+    file: core("logic/induction.ts"),
+    find: "if (satisfiable(decCheck, sortsFor(decCheck, localSorts))) {",
+    replace:
+      "if (false && satisfiable(decCheck, sortsFor(decCheck, localSorts))) {",
+    tests: ["src/logic/tests/induction.test.ts"],
+  },
+  {
+    name: "structural induction drops the induction hypothesis on sub-values",
+    file: core("logic/induction.ts"),
+    find: "      combined = and(combined, not(subBad.success));",
+    replace: "      void subBad;",
+    tests: ["src/logic/tests/induction.test.ts"],
+  },
+  {
+    name: "polynomial subtraction skips cancellation of matching nonlinear terms",
+    file: core("logic/symbolic.ts"),
+    find: "    const diff = polySub(pa, pb);\n    if (diff.nonlinear === undefined) {",
+    replace:
+      "    const diff = polySub(pa, pb);\n    if (pa.nonlinear === undefined && pb.nonlinear === undefined && diff.nonlinear === undefined) {",
+    tests: ["src/logic/tests/induction.test.ts"],
+  },
+  {
+    name: "split certificate checker ignores split bound mismatch",
+    file: core("logic/certificate.ts"),
+    find: "    sameWholeLine(lowLines[baseLines.length] as Whole, lowExtra) &&",
+    replace: "    true &&",
+    tests: ["src/logic/tests/proof.test.ts"],
+  },
+  {
+    name: "rule induction ignores induction hypothesis on recursive target atoms",
+    file: core("logic/proof.ts"),
+    find: "  if (targetEntry !== undefined) {\n    return { extra: [], primary: targetEntry.schema };\n  }",
+    replace:
+      "  if (false && targetEntry !== undefined) {\n    return { extra: [], primary: targetEntry.schema };\n  }",
+    tests: ["src/logic/tests/proof.test.ts"],
+  },
+  {
+    name: "proof/valid? accepts empty induction case lists",
+    file: core("logic/proof.ts"),
+    find: "  if (!Array.isArray(proof.cases) || proof.cases.length === 0) {",
+    replace: "  if (!Array.isArray(proof.cases)) {",
+    tests: ["src/logic/tests/proof.test.ts"],
   },
 ];

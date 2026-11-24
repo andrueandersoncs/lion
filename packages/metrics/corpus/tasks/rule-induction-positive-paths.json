@@ -1,0 +1,19 @@
+{
+  "id": "rule-induction-positive-paths",
+  "pillar": "proofs",
+  "statement": "Every directed edge has string endpoints from and to and an integer cost >= 2. Shortest paths are defined recursively by edge(a, b, c) -> path(a, b, min(c)) and edge(a, b, c1), path(b, c, c2) -> path(a, c, min(c1 + c2)). Define a function of a lower bound k (an integer) that proves by rule induction whether every derived path row across all valid graphs has cost >= k and checks the resulting proof with the proof kernel, returning true when proved and valid and false otherwise. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["proves"],
+    [
+      "and",
+      ["proves", 1],
+      ["proves", 2],
+      ["not", ["proves", 3]],
+      ["not", ["proves", 5]]
+    ]
+  ],
+  "tags": ["proofs", "rules", "induction", "schemas"],
+  "origin": "Rule induction over an inductive relation (CIC inductive predicates + kernel checking)"
+}

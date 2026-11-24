@@ -102,6 +102,8 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "object/keys": [1, 1],
   "object/new": [1, ANY],
   "object/remove": [2, 2],
+  "proof/rules": [1, 2],
+  "proof/valid?": [1, 1],
   "quantity/add": [0, ANY],
   "quantity/divide": [2, 2],
   "quantity/in": [2, 2],

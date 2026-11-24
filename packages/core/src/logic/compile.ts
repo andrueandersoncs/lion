@@ -11,7 +11,7 @@ import {
 } from "@/errors/evaluation";
 import { aggregateCall } from "@/logic/aggregates";
 import { unlisted } from "@/logic/listing";
-import { symbolic } from "@/logic/symbols";
+import { isInductiveSchema, symbolic } from "@/logic/symbols";
 import {
   Atom,
   callsOf,
@@ -858,7 +858,8 @@ const solvable = (
       !bound.has(literal.parts[0].name) &&
       (literal.parts[1] instanceof LogicValue
         ? literal.parts[1].variables.length === 0
-        : symbolic(literal.parts[1]) === undefined)
+        : symbolic(literal.parts[1]) === undefined ||
+          isInductiveSchema(literal.parts[1]))
   );
   if (typing.length === 0) {
     return undefined;

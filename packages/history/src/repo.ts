@@ -49,8 +49,8 @@ const inside = (repository: string, path: string) => {
   return from.startsWith("..") || isAbsolute(from) ? undefined : full;
 };
 
-/** Folders no probe looks into: git's own, and installed packages. */
-const SKIPPED = new Set([".git", "node_modules"]);
+/** Folders no probe looks into: git's own, agent worktrees, and installed packages. */
+const SKIPPED = new Set([".claude", ".git", "node_modules"]);
 
 /**
  * The files at a path, as paths from the repository: the file itself, every

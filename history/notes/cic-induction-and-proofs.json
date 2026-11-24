@@ -1,0 +1,44 @@
+{
+  "claims": [
+    {
+      "quote": "Added CIC-inspired recursive schema inclusion (`schema/includes?` over recursive and mutually recursive named schemas, uninhabited recursive schemas, and least-fixed-point loops), structural and numeric induction with CIC purity and termination guard verification plus exact polynomial cancellation, rule induction over rule-defined relations (`proof/rules`), Omega integer split certificates (`kind: \"split\"`), and a zero-solver trusted proof kernel (`proof/valid?`).",
+      "says": {
+        "feature": "cic-induction-and-proofs",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "schema/includes? decides inclusion between recursive and mutually recursive named schemas by strong structural induction, treats structurally uninhabited recursive schemas as empty, and interprets unguarded loops by least fixed point.",
+      "says": {
+        "area": "schemas",
+        "behavior": "recursive-schema-inclusion",
+        "is": "decided"
+      }
+    },
+    {
+      "quote": "The symbolic solver proves universal claims (`[\"not\", [\"exists\", ...]]`) over recursive named schemas, unbounded `schema/arrayOf`, and lower-bounded integers by structural and numeric induction when the recursive functions pass purity and termination guard checks, with exact polynomial cancellation for nonlinear terms.",
+      "says": {
+        "area": "logic",
+        "behavior": "solver-structural-and-numeric-induction",
+        "is": "decided"
+      }
+    },
+    {
+      "quote": "proof/rules proves universally over all databases whose base relations fit their declared schemas that every row derived by a relation or mutually recursive relations (including element-preserving `aggregate/min` and `aggregate/max` rules) fits a target schema, returning a kernel-checkable induction proof.",
+      "says": {
+        "area": "logic",
+        "behavior": "proof-rules-induction",
+        "is": "proved-and-valid"
+      }
+    },
+    {
+      "quote": "proof/valid? verifies linear refutation certificates, Omega integer split trees, case splits, induction proofs, lemma compositions, and `why` derivation trees using plain arithmetic without invoking the solver, and rejects forged or empty proofs.",
+      "says": {
+        "area": "logic",
+        "behavior": "proof-kernel-valid-and-splits",
+        "is": "valid-and-rejects-forged"
+      }
+    }
+  ]
+}

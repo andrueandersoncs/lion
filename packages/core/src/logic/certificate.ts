@@ -18,11 +18,20 @@
  * dark and grey shadows, and get no certificate here.
  */
 
-import type { Constraint, Sort } from "@/logic/solver";
+import {
+  type Constraint,
+  constant,
+  minus,
+  type Sort,
+  solve,
+  variable,
+} from "@/logic/solver";
 import {
   compareNumbers,
+  floor as floorRat,
   fromRational,
   gcd,
+  isNumber,
   type LionNumber,
   ratio,
   toRational,
@@ -46,6 +55,22 @@ export interface Certificate {
   readonly constraints: readonly Line[];
   readonly steps: readonly Step[];
 }
+
+/**
+ * An integer dichotomy proof: splits an integer linear expression `expr` at
+ * `bound` into `expr <= bound` (`low`) and `expr >= bound + 1` (`high`),
+ * certifying Omega dark/grey shadow integer refutations.
+ */
+export interface SplitCertificate {
+  readonly bound: LionNumber;
+  readonly constraints: readonly Line[];
+  readonly expr: Readonly<Record<string, LionNumber>>;
+  readonly high: ProofCertificate;
+  readonly kind: "split";
+  readonly low: ProofCertificate;
+}
+
+export type ProofCertificate = Certificate | SplitCertificate;
 
 /** The most lines a certificate may make, so that looking for one ends soon. */
 const MOST_LINES = 20_000;
@@ -348,6 +373,14 @@ const finish = (
   );
 };
 
+const toWholeLine = (l: Whole): Line => ({
+  constant: whole(l.constant),
+  relation: l.relation,
+  sum: Object.fromEntries(
+    [...l.coefficients].map(([name, k]) => [name, whole(k)])
+  ),
+});
+
 const written = (
   constraints: readonly Whole[],
   steps: readonly {
@@ -356,13 +389,7 @@ const written = (
   }[]
 ): Certificate | undefined => {
   return {
-    constraints: constraints.map((l) => ({
-      constant: whole(l.constant),
-      relation: l.relation,
-      sum: Object.fromEntries(
-        [...l.coefficients].map(([name, k]) => [name, whole(k)])
-      ),
-    })),
+    constraints: constraints.map(toWholeLine),
     steps: steps.map((s) => ({
       from: s.from.map(([f, m]) => [f, whole(m)] as const),
       tightened: s.tightened,
@@ -370,31 +397,313 @@ const written = (
   };
 };
 
-/** Whether a certificate proves its constraints have no solution, checked with whole numbers alone. */
-export const checks = (certificate: Certificate): boolean => {
-  const lines: (Whole | undefined)[] = certificate.constraints.map((l) => ({
-    coefficients: new Map(
-      Object.entries(l.sum).map(([name, k]) => [name, toRational(k).n])
-    ),
-    constant: toRational(l.constant).n,
-    relation: l.relation,
-  }));
-  for (const step of certificate.steps) {
-    if (
-      step.from.some(
-        ([at, m]) =>
-          lines[at] === undefined ||
-          (compareNumbers(m, 0) < 0 && (lines[at] as Whole).relation !== "=")
-      )
-    ) {
+const MAX_SPLIT_DEPTH = 6;
+
+/**
+ * Refutes constraints using Farkas/Chvátal-Gomory elimination first, and falls
+ * back to bounded integer branch-and-bound dichotomy splits (`expr <= b` vs
+ * `expr >= b + 1`) to certify Omega dark/grey shadow integer refutations.
+ */
+export const refuteWithSplits = (
+  constraints: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  depth = 0
+): ProofCertificate | undefined => {
+  const linear = refute(constraints, sorts);
+  if (linear !== undefined) {
+    return linear;
+  }
+  if (
+    depth >= MAX_SPLIT_DEPTH ||
+    constraints.some((c) => c.relation === "!=")
+  ) {
+    return undefined;
+  }
+  const intVars = [...sorts]
+    .filter(([, sort]) => sort === "integer")
+    .map(([name]) => name);
+  if (intVars.length === 0) {
+    return undefined;
+  }
+  const realSorts = new Map<string, Sort>(
+    [...sorts.keys()].map((name) => [name, "real"] as const)
+  );
+  const relaxed = solve(constraints, realSorts);
+  if (relaxed === undefined) {
+    return undefined;
+  }
+  // Prefer an integer variable whose real-relaxation value is fractional.
+  let splitVar: string | undefined;
+  let bound = 0n;
+  for (const name of intVars) {
+    const val = relaxed.get(name);
+    if (val !== undefined && val.d > 1n) {
+      splitVar = name;
+      bound = floorRat(val);
+      break;
+    }
+  }
+  if (splitVar === undefined) {
+    return undefined;
+  }
+  // low: -v + bound >= 0 (v <= bound)
+  const lowC: Constraint = {
+    linear: minus(constant(ratio(bound)), variable(splitVar)),
+    relation: ">=",
+  };
+  // high: v - (bound + 1) >= 0 (v >= bound + 1)
+  const highC: Constraint = {
+    linear: minus(variable(splitVar), constant(ratio(bound + 1n))),
+    relation: ">=",
+  };
+  const low = refuteWithSplits([...constraints, lowC], sorts, depth + 1);
+  if (low === undefined) {
+    return undefined;
+  }
+  const high = refuteWithSplits([...constraints, highC], sorts, depth + 1);
+  if (high === undefined) {
+    return undefined;
+  }
+  return {
+    bound: whole(bound),
+    constraints: constraints.map((c) => toWholeLine(wholeOf(c))),
+    expr: { [splitVar]: 1 },
+    high,
+    kind: "split",
+    low,
+  };
+};
+
+/** A minimal valid linear certificate for a trivially false (0 > 0) contradiction. */
+export const contradictionCertificate = (): Certificate => ({
+  constraints: [{ constant: 0, relation: ">", sum: {} }],
+  steps: [{ from: [[0, 1]], tightened: false }],
+});
+
+const parseIntBig = (v: unknown): bigint | undefined => {
+  if (!isNumber(v)) {
+    return undefined;
+  }
+  const r = toRational(v);
+  return r.d === 1n ? r.n : undefined;
+};
+
+const parseLine = (raw: unknown): Whole | undefined => {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    return undefined;
+  }
+  const rec = raw as Record<string, unknown>;
+  const rel = rec.relation;
+  if (rel !== ">=" && rel !== ">" && rel !== "=") {
+    return undefined;
+  }
+  const c = parseIntBig(rec.constant);
+  if (c === undefined) {
+    return undefined;
+  }
+  const sum = rec.sum;
+  if (typeof sum !== "object" || sum === null || Array.isArray(sum)) {
+    return undefined;
+  }
+  const coefficients = new Map<string, bigint>();
+  for (const [name, val] of Object.entries(sum as Record<string, unknown>)) {
+    const k = parseIntBig(val);
+    if (k === undefined) {
+      return undefined;
+    }
+    if (k !== 0n) {
+      coefficients.set(name, k);
+    }
+  }
+  return { coefficients, constant: c, relation: rel };
+};
+
+const sameWholeLine = (a: Whole, b: Whole): boolean => {
+  if (
+    a.relation !== b.relation ||
+    a.constant !== b.constant ||
+    a.coefficients.size !== b.coefficients.size
+  ) {
+    return false;
+  }
+  for (const [name, k] of a.coefficients) {
+    if (b.coefficients.get(name) !== k) {
       return false;
     }
-    const combined = combine(
-      lines as Whole[],
-      step.from.map(([at, m]) => [at, toRational(m).n] as const)
-    );
-    lines.push(step.tightened ? tighten(combined) : combined);
   }
-  const last = lines.at(-1);
-  return certificate.steps.length > 0 && isFalse(last);
+  return true;
+};
+
+const parseLines = (raw: unknown): Whole[] | undefined => {
+  if (!Array.isArray(raw)) {
+    return undefined;
+  }
+  const lines: Whole[] = [];
+  for (const item of raw) {
+    const parsed = parseLine(item);
+    if (parsed === undefined) {
+      return undefined;
+    }
+    lines.push(parsed);
+  }
+  return lines;
+};
+
+const parseStepFrom = (
+  step: unknown,
+  lines: readonly Whole[]
+):
+  | {
+      readonly from: readonly (readonly [number, bigint])[];
+      readonly tightened: boolean;
+    }
+  | undefined => {
+  if (
+    typeof step !== "object" ||
+    step === null ||
+    !Array.isArray((step as { from?: unknown }).from) ||
+    typeof (step as { tightened?: unknown }).tightened !== "boolean"
+  ) {
+    return undefined;
+  }
+  const { from, tightened } = step as { from: unknown[]; tightened: boolean };
+  const parsedFrom: (readonly [number, bigint])[] = [];
+  for (const pair of from) {
+    if (!Array.isArray(pair) || pair.length !== 2) {
+      return undefined;
+    }
+    const [rawAt, rawM] = pair;
+    if (
+      typeof rawAt !== "number" ||
+      !Number.isInteger(rawAt) ||
+      rawAt < 0 ||
+      rawAt >= lines.length
+    ) {
+      return undefined;
+    }
+    const line = lines[rawAt];
+    const m = parseIntBig(rawM);
+    if (
+      line === undefined ||
+      m === undefined ||
+      (compareNumbers(rawM as LionNumber, 0) < 0 && line.relation !== "=")
+    ) {
+      return undefined;
+    }
+    parsedFrom.push([rawAt, m]);
+  }
+  return { from: parsedFrom, tightened };
+};
+
+/** Whether a linear certificate proves its constraints have no solution, checked with whole numbers alone. */
+export const checks = (certificate: Certificate): boolean => {
+  if (
+    typeof certificate !== "object" ||
+    certificate === null ||
+    !Array.isArray(certificate.steps) ||
+    certificate.steps.length === 0
+  ) {
+    return false;
+  }
+  const lines = parseLines(certificate.constraints);
+  if (lines === undefined) {
+    return false;
+  }
+  for (const step of certificate.steps) {
+    const parsed = parseStepFrom(step, lines);
+    if (parsed === undefined) {
+      return false;
+    }
+    const combined = combine(lines, parsed.from);
+    lines.push(parsed.tightened ? tighten(combined) : combined);
+  }
+  return isFalse(lines.at(-1));
+};
+
+const parseExprCoeffs = (
+  raw: unknown
+):
+  | {
+      readonly pos: Map<string, bigint>;
+      readonly neg: Map<string, bigint>;
+    }
+  | undefined => {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    return undefined;
+  }
+  const pos = new Map<string, bigint>();
+  const neg = new Map<string, bigint>();
+  for (const [name, val] of Object.entries(raw as Record<string, unknown>)) {
+    const k = parseIntBig(val);
+    if (k === undefined) {
+      return undefined;
+    }
+    if (k !== 0n) {
+      pos.set(name, k);
+      neg.set(name, -k);
+    }
+  }
+  return pos.size === 0 ? undefined : { neg, pos };
+};
+
+const parseBranchLines = (
+  branch: unknown,
+  expectedLength: number
+): Whole[] | undefined => {
+  if (typeof branch !== "object" || branch === null || Array.isArray(branch)) {
+    return undefined;
+  }
+  const list = (branch as Record<string, unknown>).constraints;
+  if (!Array.isArray(list) || list.length !== expectedLength) {
+    return undefined;
+  }
+  return parseLines(list);
+};
+
+const checkSplitCertificate = (rec: Record<string, unknown>): boolean => {
+  const bound = parseIntBig(rec.bound);
+  const baseLines = parseLines(rec.constraints);
+  const coeffs = parseExprCoeffs(rec.expr);
+  if (bound === undefined || baseLines === undefined || coeffs === undefined) {
+    return false;
+  }
+  const lowExtra: Whole = {
+    coefficients: coeffs.neg,
+    constant: bound,
+    relation: ">=",
+  };
+  const highExtra: Whole = {
+    coefficients: coeffs.pos,
+    constant: -(bound + 1n),
+    relation: ">=",
+  };
+  const lowLines = parseBranchLines(rec.low, baseLines.length + 1);
+  const highLines = parseBranchLines(rec.high, baseLines.length + 1);
+  if (lowLines === undefined || highLines === undefined) {
+    return false;
+  }
+  const basesMatch = baseLines.every(
+    (base, i) =>
+      sameWholeLine(lowLines[i] as Whole, base) &&
+      sameWholeLine(highLines[i] as Whole, base)
+  );
+  return (
+    basesMatch &&
+    sameWholeLine(lowLines[baseLines.length] as Whole, lowExtra) &&
+    sameWholeLine(highLines[baseLines.length] as Whole, highExtra) &&
+    checksProof(rec.low) &&
+    checksProof(rec.high)
+  );
+};
+
+/** Checks either a linear Farkas/CG certificate or an integer dichotomy split tree. */
+export const checksProof = (cert: unknown): boolean => {
+  if (typeof cert !== "object" || cert === null || Array.isArray(cert)) {
+    return false;
+  }
+  const rec = cert as Record<string, unknown>;
+  if (rec.kind === "split") {
+    return checkSplitCertificate(rec);
+  }
+  return checks(cert as Certificate);
 };

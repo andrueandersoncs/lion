@@ -351,4 +351,139 @@ describe("schema/includes?", () => {
       }),
     OPTIONS
   );
+
+  it.effect.prop(
+    "decides inclusion between recursive linked lists and even-length lists by structural induction",
+    {
+      loA: int(-3, 3),
+      loB: int(-3, 3),
+      evenA: Arbitrary.schema(Schema.Boolean),
+      evenB: Arbitrary.schema(Schema.Boolean),
+    },
+    ({ evenA, evenB, loA, loB }) =>
+      Effect.gen(function* () {
+        const atLeast = (lo: number) => [
+          "schema/allOf",
+          "value/integer?",
+          ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", lo]],
+        ];
+        const shapeA = evenA
+          ? [
+              "schema/anyOf",
+              ["quote", []],
+              { head: atLeast(loA), tail: { head: atLeast(loA), tail: "A" } },
+            ]
+          : ["schema/anyOf", ["quote", []], { head: atLeast(loA), tail: "A" }];
+        const shapeB = evenB
+          ? [
+              "schema/anyOf",
+              ["quote", []],
+              { head: atLeast(loB), tail: { head: atLeast(loB), tail: "B" } },
+            ]
+          : ["schema/anyOf", ["quote", []], { head: atLeast(loB), tail: "B" }];
+        const expected = loA >= loB && (!evenB || evenA);
+        const outcome = yield* attempt(
+          [
+            "begin",
+            ["schema", "A", shapeA, "B", shapeB],
+            ["schema/includes?", "A", "B"],
+          ],
+          new LogicDatabase()
+        );
+        expect(outcome).toEqual({ ok: true, value: expected });
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "decides inclusion between recursive trees and mutually recursive expression schemas",
+    {
+      loA: int(-3, 3),
+      loB: int(-3, 3),
+      mutual: Arbitrary.schema(Schema.Boolean),
+    },
+    ({ loA, loB, mutual }) =>
+      Effect.gen(function* () {
+        const atLeast = (lo: number) => [
+          "schema/allOf",
+          "value/integer?",
+          ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", lo]],
+        ];
+        const decl = mutual
+          ? [
+              "schema",
+              "A",
+              ["schema/anyOf", atLeast(loA), "ASum"],
+              "ASum",
+              { add: ["schema/arrayOf", "A"] },
+              "B",
+              ["schema/anyOf", atLeast(loB), "BSum"],
+              "BSum",
+              { add: ["schema/arrayOf", "B"] },
+            ]
+          : [
+              "schema",
+              "A",
+              { children: ["schema/arrayOf", "A"], v: atLeast(loA) },
+              "B",
+              { children: ["schema/arrayOf", "B"], v: atLeast(loB) },
+            ];
+        const outcome = yield* attempt(
+          ["begin", decl, ["schema/includes?", "A", "B"]],
+          new LogicDatabase()
+        );
+        expect(outcome).toEqual({ ok: true, value: loA >= loB });
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "treats uninhabited recursive schemas as empty and unguarded loops by least fixed point",
+    {
+      a: int(0, 3),
+      b: int(0, 3),
+    },
+    ({ a, b }) =>
+      Effect.gen(function* () {
+        const outcome = yield* attempt(
+          [
+            "begin",
+            [
+              "schema",
+              "Void",
+              { next: "Void" },
+              "InfVoid",
+              { next: "InfVoid", v: "value/integer?" },
+              "LoopA",
+              ["schema/anyOf", "LoopA", a],
+              "LoopB",
+              ["schema/anyOf", "LoopB", b],
+            ],
+            {
+              arrayVoidIsEmpty: [
+                "schema/includes?",
+                ["schema/arrayOf", "Void"],
+                ["quote", []],
+              ],
+              infVoidInAnything: ["schema/includes?", "InfVoid", b],
+              loopAInLoopB: ["schema/includes?", "LoopA", "LoopB"],
+              loopNotInVoid: ["schema/includes?", "LoopA", "Void"],
+              voidInAnything: ["schema/includes?", "Void", b],
+            },
+          ],
+          new LogicDatabase()
+        );
+        expect(outcome).toEqual({
+          ok: true,
+          value: {
+            arrayVoidIsEmpty: true,
+            infVoidInAnything: true,
+            loopAInLoopB: a === b,
+            loopNotInVoid: false,
+            voidInAnything: true,
+          },
+        });
+      }),
+    OPTIONS
+  );
 });

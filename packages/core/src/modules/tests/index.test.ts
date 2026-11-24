@@ -10,6 +10,7 @@ import { module as graph } from "../graph.ts";
 import { namespaceEntries, stdlib } from "../index.ts";
 import { module as number } from "../number.ts";
 import { module as object } from "../object.ts";
+import { module as proof } from "../proof.ts";
 import { module as quantity } from "../quantity.ts";
 import { module as schema } from "../schema.ts";
 import { module as string } from "../string.ts";
@@ -24,6 +25,7 @@ const modules: Record<string, Record<string, unknown>> = {
   graph,
   number,
   object,
+  proof,
   quantity,
   schema,
   string,

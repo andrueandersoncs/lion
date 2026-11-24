@@ -1,0 +1,19 @@
+{
+  "id": "induction-tree-sum-positive",
+  "pillar": "proofs",
+  "statement": "A binary tree is either {\"leaf\": n} or {\"node\": n, \"left\": t1, \"right\": t2} where every n is a positive integer. Define a function of a threshold k (an integer) that gives true when every such tree, of any depth, has sum of all its numbers at least k, and false when some tree has sum less than k. The program's value is the function.",
+  "inputs": {},
+  "check": [
+    "lambda",
+    ["proves"],
+    [
+      "and",
+      ["proves", 1],
+      ["proves", 0],
+      ["not", ["proves", 2]],
+      ["not", ["proves", 10]]
+    ]
+  ],
+  "tags": ["solver", "induction", "schemas"],
+  "origin": "Structural induction over a recursive datatype (CIC elimination principle)"
+}

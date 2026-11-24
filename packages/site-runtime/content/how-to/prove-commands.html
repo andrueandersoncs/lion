@@ -86,19 +86,64 @@
   ["define", "proof", ["object/get", ["object/get", ["array/head", ["object/get", ["why", ["room", 3]], "because"]], "but"], "certificate"]],
   {"certificate": "proof", "every case checks": ["array/every?", "proof", "checks"]}]
 </lion-example>
-<p>A case that only the Omega test's dark and grey shadows refute, which some problems over whole numbers need, gets no certificate, and <code>why</code> then shows none.</p>
+<p>A case that needs the Omega test's dark and grey shadows over whole numbers receives a binary integer split tree (<code>kind: "split"</code>) whose leaves are linear certificates. Lion also provides <a href="#module-proof"><code>proof/valid?</code></a>, a small trusted kernel that checks linear certificates, split trees, induction proofs, lemmas, and <code>why</code> derivations with plain arithmetic and without invoking the solver.</p>
+
+<h2>Prove properties by induction</h2>
+<p>For universal questions (<code>["not", ["exists", ...]]</code>) over recursive named schemas, unbounded lists (<code>schema/arrayOf</code>), or lower-bounded integers, the solver proves by structural or numeric induction whenever the recursive functions involved are pure, strictly decrease on a structural sub-part or lower-bounded integer measure, and return a uniform sort. Products of unknowns are tracked as exact polynomials so matching nonlinear terms cancel in induction steps:</p>
+<lion-example name="Structural and numeric induction">
+["begin",
+  ["schema", "PosInt", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 1]]]],
+  ["schema", "Tree", ["schema/anyOf", {"leaf": "PosInt"}, {"node": {"left": "Tree", "right": "Tree", "val": "PosInt"}}]],
+  ["define", "tree-sum", ["lambda", ["t"],
+    ["cond",
+      [["object/has?", "t", "leaf"], ["object/get", "t", "leaf"]],
+      ["else", ["number/add",
+        ["object/get", ["object/get", "t", "node"], "val"],
+        ["tree-sum", ["object/get", ["object/get", "t", "node"], "left"]],
+        ["tree-sum", ["object/get", ["object/get", "t", "node"], "right"]]]]]]],
+  ["define", "sum-odd", ["lambda", ["n"],
+    ["cond",
+      [["number/lessThanOrEqualTo", "n", 0], 0],
+      ["else", ["number/add", ["sum-odd", ["number/subtract", "n", 1]], ["number/subtract", ["number/multiply", 2, "n"], 1]]]]]],
+  {"every tree sum is positive": ["query", ["not", ["exists", ["?t"],
+     ["and", ["schema/fits?", "?t", "Tree"], ["number/lessThan", ["tree-sum", "?t"], 1]]]]],
+   "sum of first n odd numbers is n^2": ["query", ["not", ["exists", ["?n"],
+     ["and", ["schema/fits?", "?n", "value/integer?"],
+             ["number/greaterThanOrEqualTo", "?n", 0],
+             ["not", ["number/equals?", ["sum-odd", "?n"], ["number/multiply", "?n", "?n"]]]]]]]}]
+</lion-example>
+
+<h2>Prove properties of rules by rule induction</h2>
+<p><code>proof/rules</code> proves universally over all databases whose base relations fit their declared schemas that every row derived by a relation (or a record of mutually recursive relations) fits a target schema, returning a proof value checkable by <code>proof/valid?</code>:</p>
+<lion-example name="Rule induction over a recursive relation">
+["begin",
+  ["schema", "PosCost", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 1]]]],
+  ["schema", "PosEdge", {"from": "value/string?", "to": "value/string?", "cost": "PosCost"}],
+  ["relation", "edge", ["from", "to", "cost"], {"schema": "PosEdge"}],
+  ["relation", "path", ["from", "to", "cost"]],
+  ["rule", ["path", "?a", "?b", ["aggregate/min", "?c"]], ["edge", "?a", "?b", "?c"]],
+  ["rule", ["path", "?a", "?c", ["aggregate/min", ["number/add", "?c1", "?c2"]]], ["edge", "?a", "?b", "?c1"], ["path", "?b", "?c", "?c2"]],
+  ["define", "p", ["proof/rules", "path", "PosEdge"]],
+  {"proved": ["object/get", "p", "proved"], "kernel valid": ["proof/valid?", "p"]}]
+</lion-example>
 
 <h2>Ask whether one schema includes another</h2>
-<p><code>schema/includes?</code> says whether every value one schema allows fits another, exactly: by listing the first schema's values when it can list them, and by the solver otherwise — across value kinds, open records and lists, and unbounded collections. It refuses, and says why, only when neither can decide an arbitrary predicate:</p>
+<p><code>schema/includes?</code> says whether every value one schema allows fits another, exactly: by listing the first schema's values when it can list them, and by the solver otherwise — across value kinds, open records and lists, unbounded collections, and recursive or mutually recursive named schemas (including uninhabited recursive schemas). It refuses, and says why, only when neither can decide an arbitrary predicate:</p>
 <lion-example name="One schema in another">
-{"whole numbers are numbers": ["schema/includes?", "value/integer?", "value/number?"],
- "not every number is whole": ["schema/includes?", "value/number?", "value/integer?"],
- "strings are not numbers": ["schema/includes?", "value/string?", "value/number?"],
- "open record in exact record": ["schema/includes?", ["schema/open", {"x": "value/integer?"}], {"x": "value/integer?"}],
- "positive amounts are not negative": ["schema/includes?", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]], ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 0]]]],
- "and not the other way": ["schema/includes?", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 0]]], ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]],
- "lists are empty or non-empty": ["schema/includes?", ["schema/arrayOf", "value/integer?"], ["schema/anyOf", ["quote", []], ["schema/open", ["array/make", "value/integer?"], ["schema/arrayOf", "value/integer?"]]]],
- "a listed schema": ["schema/includes?", ["schema/anyOf", 1, 2], ["schema/anyOf", 1, 2, 3]]}
+["begin",
+  ["schema", "PosInt", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]],
+    "NonNeg", ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 0]]],
+    "PosTree", ["schema/anyOf", {"leaf": "PosInt"}, {"node": {"left": "PosTree", "right": "PosTree"}}],
+    "NonNegTree", ["schema/anyOf", {"leaf": "NonNeg"}, {"node": {"left": "NonNegTree", "right": "NonNegTree"}}]],
+  {"whole numbers are numbers": ["schema/includes?", "value/integer?", "value/number?"],
+   "not every number is whole": ["schema/includes?", "value/number?", "value/integer?"],
+   "strings are not numbers": ["schema/includes?", "value/string?", "value/number?"],
+   "open record in exact record": ["schema/includes?", ["schema/open", {"x": "value/integer?"}], {"x": "value/integer?"}],
+   "positive amounts are not negative": ["schema/includes?", "PosInt", "NonNeg"],
+   "and not the other way": ["schema/includes?", "NonNeg", "PosInt"],
+   "positive trees are non-negative trees": ["schema/includes?", "PosTree", "NonNegTree"],
+   "lists are empty or non-empty": ["schema/includes?", ["schema/arrayOf", "value/integer?"], ["schema/anyOf", ["quote", []], ["schema/open", ["array/make", "value/integer?"], ["schema/arrayOf", "value/integer?"]]]],
+   "a listed schema": ["schema/includes?", ["schema/anyOf", 1, 2], ["schema/anyOf", 1, 2, 3]]}]
 </lion-example>
 
 <h2>Related</h2>

@@ -693,6 +693,48 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
     boolean: true,
   },
+  {
+    name: "proof/valid? over a certificate",
+    form: [
+      "proof/valid?",
+      {
+        constraints: [
+          "array/make",
+          {
+            constant: ["number/subtract", 0, X],
+            relation: ">=",
+            sum: {},
+          },
+        ],
+        steps: [
+          "array/make",
+          {
+            from: ["array/make", ["array/make", 0, 1]],
+            tightened: false,
+          },
+        ],
+      },
+    ],
+    boolean: true,
+  },
+  {
+    name: "recursive schema inclusion",
+    setup: [
+      [
+        "schema",
+        "Even",
+        ["schema/anyOf", 0, { next: { next: "Even" } }],
+        "Nat",
+        ["schema/anyOf", 0, { next: "Nat" }],
+      ],
+    ],
+    form: [
+      "schema/includes?",
+      ["cond", [["number/equals?", X, 1], "Even"], ["else", "Nat"]],
+      "Even",
+    ],
+    boolean: true,
+  },
 ];
 
 /** What plain code gives an expression for each value of `?x`, in order. */

@@ -1,0 +1,65 @@
+[
+  "begin",
+  [
+    "schema",
+    "PosInt",
+    [
+      "schema/allOf",
+      "value/integer?",
+      ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+    ]
+  ],
+  [
+    "schema",
+    "PosTree",
+    [
+      "schema/anyOf",
+      { "leaf": "PosInt" },
+      { "node": "PosInt", "left": "PosTree", "right": "PosTree" }
+    ]
+  ],
+  [
+    "define",
+    "tree-sum",
+    [
+      "lambda",
+      ["t"],
+      [
+        "cond",
+        [["object/has?", "t", "leaf"], ["object/get", "t", "leaf"]],
+        [
+          "else",
+          [
+            "number/add",
+            ["object/get", "t", "node"],
+            ["tree-sum", ["object/get", "t", "left"]],
+            ["tree-sum", ["object/get", "t", "right"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "lambda",
+    ["k"],
+    [
+      "=",
+      [
+        "query",
+        [
+          "not",
+          [
+            "exists",
+            ["?t"],
+            [
+              "and",
+              ["schema/fits?", "?t", "PosTree"],
+              ["number/lessThan", ["tree-sum", "?t"], "k"]
+            ]
+          ]
+        ]
+      ],
+      ["quote", [{}]]
+    ]
+  ]
+]

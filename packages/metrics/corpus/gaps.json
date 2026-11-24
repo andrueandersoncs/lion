@@ -1,5 +1,4 @@
 {
   "datalog-win-move-well-founded": "Lion's rules allow only stratified negation: a rule cannot ask a question about a relation that depends on its own head, so win(x) :- move(x, y), not win(y) is refused, and the well-founded semantics that tells won, lost, and drawn positions apart is not built. Computing it by hand with an alternating fixpoint in plain code would be bending the task.",
-  "induction-sum-of-odd-numbers": "Lion's solver decides linear arithmetic over numbers and whole numbers, and reasons about lists of bounded length. A claim about every n needs induction over an unbounded sum, and n * n multiplies two unknowns, so neither is decided.",
-  "induction-sorting-every-length": "Lion proves claims about lists of bounded length, which schema/arrayOf with a most stands for; a claim about lists of every length needs induction, which the solver does not do."
+  "induction-sorting-every-length": "Lion proves claims over unbounded lists by structural induction when the inductive hypothesis suffices, but proving an insertion-sort built with array/reduce over every length needs a separate helper lemma (that inserting into a sorted list keeps it sorted) or accumulator generalization."
 }

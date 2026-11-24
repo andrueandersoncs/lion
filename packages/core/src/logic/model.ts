@@ -27,7 +27,7 @@ import {
   steers,
 } from "@/errors/evaluation";
 import { aggregator } from "@/logic/aggregates";
-import { type Certificate, refute } from "@/logic/certificate";
+import { type ProofCertificate, refuteWithSplits } from "@/logic/certificate";
 import {
   type CompiledRule,
   compilable,
@@ -39,6 +39,11 @@ import {
   Solved,
 } from "@/logic/compile";
 import { matching } from "@/logic/fit";
+import {
+  type InductionProof,
+  type InductionResult,
+  proveByInduction,
+} from "@/logic/induction";
 import { candidatesOf, unlisted } from "@/logic/listing";
 import { factsOf, originalName } from "@/logic/magic";
 import {
@@ -63,6 +68,7 @@ import {
   concrete as concreteOf,
   FALSE,
   type Formula,
+  isInductiveSchema,
   leavesOf,
   MOST_WAYS,
   or,
@@ -1705,36 +1711,92 @@ const listedTyping = (model: Model, step: Solved, vars: Vars) =>
     return undefined;
   });
 
+/** True when any typed schema of `step` is a recursive schema or unbounded `schema/arrayOf`. */
+const hasInductiveTyping = (model: Model, step: Solved, vars: Vars) =>
+  Effect.gen(function* () {
+    for (const literal of step.parts) {
+      if (
+        isForm(literal, "schema/fits?") &&
+        step.symbols.includes((literal.parts[0] as LogicVariable).name)
+      ) {
+        const schema = yield* term(model, literal.parts[1], vars);
+        if (isInductiveSchema(schema)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  });
+
+const tryInduction = (
+  model: Model,
+  step: Solved,
+  vars: Vars
+): Effect.Effect<InductionResult, never> =>
+  proveByInduction(
+    step,
+    (part) =>
+      term(model, part, vars) as unknown as Effect.Effect<unknown, Error>
+  );
+
 /**
  * The answers of a solver step for an answer. With nothing to keep, the
  * answer is kept once when there are values that meet its goals. Otherwise
  * each combination of values of the variables it keeps gives an answer,
  * and a variable with infinitely many fails.
  */
-const solvedAnswers = (
+const inductionToAnswers = (
   model: Model,
-  asked: Solved,
+  step: Solved,
   vars: Vars
 ): LogicEffect<readonly Vars[]> =>
-  Effect.gen(function* () {
-    const step = withKnown(asked, vars);
-    const listing = yield* listedTyping(model, step, vars);
-    if (listing !== undefined) {
-      // The variable takes each value its schema lists, as a listing does,
-      // and the rest of the step is solved with it known.
-      const out: Vars[] = [];
-      for (const each of yield* listed(
-        model,
-        listing.parts[0],
-        listing.parts[1],
-        vars
-      )) {
-        out.push(...(yield* solvedAnswers(model, step, each)));
-      }
-      return out;
+  Effect.flatMap(tryInduction(model, step, vars), (ind) => {
+    if (ind.status === "proved") {
+      return Effect.succeed([]);
     }
+    if (ind.status === "disproved") {
+      return Effect.succeed([vars]);
+    }
+    return Effect.fail(new LogicError({ message: ind.reason }));
+  });
+
+const inductionToWitness = (
+  model: Model,
+  step: Solved,
+  vars: Vars
+): LogicEffect<Vars | undefined> =>
+  Effect.flatMap(tryInduction(model, step, vars), (ind) => {
+    if (ind.status === "proved") {
+      return Effect.succeed(undefined);
+    }
+    if (ind.status === "disproved") {
+      const out = new Map(vars);
+      for (const [k, v] of Object.entries(ind.witness ?? {})) {
+        out.set(k.startsWith("?") ? k.slice(1) : k, v);
+      }
+      return Effect.succeed(out);
+    }
+    return Effect.fail(new LogicError({ message: ind.reason }));
+  });
+
+const directSolvedAnswers = (
+  model: Model,
+  step: Solved,
+  vars: Vars,
+  first: boolean
+): LogicEffect<readonly Vars[]> =>
+  Effect.gen(function* () {
     const { choices, sorts } = yield* stepFormulas(model, step, vars);
-    const first = step.keeps.length === 0;
+    if (first) {
+      const recursiveWait = choices
+        .flatMap((c) => c.waiting)
+        .find((w) => w.why.includes("a function that calls itself"));
+      if (recursiveWait !== undefined) {
+        return yield* Effect.fail(
+          new LogicError({ message: recursiveWait.why })
+        );
+      }
+    }
     const out = new Map<string, Vars>();
     for (const choice of choices) {
       for (const constraints of choice.formula) {
@@ -1763,6 +1825,47 @@ const solvedAnswers = (
       }
     }
     return [...out.values()];
+  });
+
+const solvedAnswers = (
+  model: Model,
+  asked: Solved,
+  vars: Vars
+): LogicEffect<readonly Vars[]> =>
+  Effect.gen(function* () {
+    const step = withKnown(asked, vars);
+    const listing = yield* listedTyping(model, step, vars);
+    if (listing !== undefined) {
+      // The variable takes each value its schema lists, as a listing does,
+      // and the rest of the step is solved with it known.
+      const out: Vars[] = [];
+      for (const each of yield* listed(
+        model,
+        listing.parts[0],
+        listing.parts[1],
+        vars
+      )) {
+        out.push(...(yield* solvedAnswers(model, step, each)));
+      }
+      return out;
+    }
+    const first = step.keeps.length === 0;
+    if (first && (yield* hasInductiveTyping(model, step, vars))) {
+      return yield* inductionToAnswers(model, step, vars);
+    }
+    const direct = yield* Effect.result(
+      directSolvedAnswers(model, step, vars, first)
+    );
+    if (Result.isSuccess(direct)) {
+      return direct.success;
+    }
+    const failure = direct.failure;
+    const message =
+      failure instanceof Error ? failure.message : String(failure);
+    if (first && message.includes("a function that calls itself")) {
+      return yield* inductionToAnswers(model, step, vars);
+    }
+    return yield* Effect.fail(failure);
   }).pipe(
     Effect.mapError((error) =>
       error instanceof LogicError
@@ -1789,6 +1892,34 @@ export const exampleOf = (model: Model, step: Solved, vars: Vars) =>
         )
   ) as LogicEffect<Record<string, unknown> | undefined>;
 
+const directFirstAnswer = (
+  model: Model,
+  step: Solved,
+  vars: Vars
+): LogicEffect<Vars | undefined> =>
+  Effect.gen(function* () {
+    const { choices, sorts } = yield* stepFormulas(model, step, vars);
+    const names = [...step.symbols, ...step.defines.map(([name]) => name)];
+    for (const choice of choices) {
+      for (const constraints of choice.formula) {
+        const [answer] = yield* caseAnswers(
+          model,
+          step,
+          vars,
+          choice,
+          constraints,
+          sorts,
+          names,
+          true
+        );
+        if (answer !== undefined) {
+          return answer;
+        }
+      }
+    }
+    return undefined;
+  });
+
 /** The first answer a solver step gives, with every variable it solves for bound. */
 const firstAnswer = (
   model: Model,
@@ -1812,26 +1943,20 @@ const firstAnswer = (
       }
       return undefined;
     }
-    const { choices, sorts } = yield* stepFormulas(model, step, vars);
-    const names = [...step.symbols, ...step.defines.map(([name]) => name)];
-    for (const choice of choices) {
-      for (const constraints of choice.formula) {
-        const [answer] = yield* caseAnswers(
-          model,
-          step,
-          vars,
-          choice,
-          constraints,
-          sorts,
-          names,
-          true
-        );
-        if (answer !== undefined) {
-          return answer;
-        }
-      }
+    if (yield* hasInductiveTyping(model, step, vars)) {
+      return yield* inductionToWitness(model, step, vars);
     }
-    return undefined;
+    const direct = yield* Effect.result(directFirstAnswer(model, step, vars));
+    if (Result.isSuccess(direct)) {
+      return direct.success;
+    }
+    const failure = direct.failure;
+    const message =
+      failure instanceof Error ? failure.message : String(failure);
+    if (message.includes("a function that calls itself")) {
+      return yield* inductionToWitness(model, step, vars);
+    }
+    return yield* Effect.fail(failure);
   }).pipe(
     Effect.mapError((error) =>
       error instanceof LogicError
@@ -1842,6 +1967,20 @@ const firstAnswer = (
       defect instanceof LogicError ? Effect.fail(defect) : Effect.die(defect)
     )
   ) as LogicEffect<Vars | undefined>;
+
+/** Induction proof object when a solver step was refuted by structural or numeric induction. */
+export const inductionOf = (model: Model, asked: Solved, vars: Vars) =>
+  Effect.gen(function* () {
+    const step = withKnown(asked, vars);
+    if ((yield* listedTyping(model, step, vars)) !== undefined) {
+      return undefined;
+    }
+    const ind = yield* tryInduction(model, step, vars);
+    return ind.status === "proved" ? ind.proof : undefined;
+  }).pipe(
+    Effect.catch(() => Effect.succeed(undefined)),
+    Effect.catchDefect(() => Effect.succeed(undefined))
+  ) as LogicEffect<InductionProof | undefined>;
 
 /**
  * Certificates that a solver step has no values for an answer: one for each
@@ -1857,14 +1996,14 @@ export const certificateOf = (model: Model, asked: Solved, vars: Vars) =>
       return undefined;
     }
     const { choices, sorts } = yield* stepFormulas(model, step, vars);
-    const proofs: Certificate[] = [];
+    const proofs: ProofCertificate[] = [];
     for (const choice of choices) {
       if (choice.waiting.length > 0) {
         return undefined;
       }
       for (const conjunction of choice.formula) {
         for (const each of yield* solving(() => splitCases(conjunction))) {
-          const proof = refute(each, sortsFor(each, [], sorts));
+          const proof = refuteWithSplits(each, sortsFor(each, [], sorts));
           if (proof === undefined) {
             return undefined;
           }
@@ -1876,7 +2015,7 @@ export const certificateOf = (model: Model, asked: Solved, vars: Vars) =>
   }).pipe(
     Effect.catch(() => Effect.succeed(undefined)),
     Effect.catchDefect(() => Effect.succeed(undefined))
-  ) as LogicEffect<readonly Certificate[] | undefined>;
+  ) as LogicEffect<readonly ProofCertificate[] | undefined>;
 
 /**
  * The goals of a solver step that already have no values that meet them

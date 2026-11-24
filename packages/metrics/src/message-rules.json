@@ -1157,6 +1157,42 @@
       "why-ground",
       "unknowns",
       ["quote", "why explains a fact without variables"]
+    ],
+    [
+      "stated",
+      "proof-rules-target",
+      "calls",
+      [
+        "quote",
+        "proof/rules takes a declared relation and a schema, or a non-empty record of declared relations to schemas"
+      ]
+    ],
+    [
+      "stated",
+      "proof-rules-induction",
+      "solver",
+      [
+        "quote",
+        "proof/rules proves every derived row fits a schema from declared base schemas and supported rules"
+      ]
+    ],
+    [
+      "stated",
+      "solver-induction",
+      "solver",
+      [
+        "quote",
+        "The solver proves by induction when it can unfold an inductive schema or lower-bounded integer and prove every step"
+      ]
+    ],
+    [
+      "stated",
+      "solver-induction-guard",
+      "solver",
+      [
+        "quote",
+        "Induction admits only pure recursive functions that strictly decrease on a recursive sub-part or lower-bounded integer and return a uniform sort"
+      ]
     ]
   ],
   [
@@ -1173,7 +1209,7 @@
       "reads",
       [
         "quote",
-        " … calls …, since an array is always a call. To match a list, write [\"array/make\",…]."
+        "… calls …, since an array is always a call. To match a list, write [\"array/make\",…]."
       ],
       "array-is-call"
     ],
@@ -2431,7 +2467,141 @@
     ],
     ["reads", ["quote", "… takes … as argument … but got …."], "argument-fits"],
     ["reads", ["quote", "… takes …… but got …."], "arity"],
-    ["reads", ["quote", "… with … arguments"], "arity"]
+    ["reads", ["quote", "… with … arguments"], "arity"],
+    [
+      "reads",
+      ["quote", "a relation and a schema, or a record of relations to schemas"],
+      "describes-taken"
+    ],
+    [
+      "reads",
+      ["quote", "recursive schemas cycled without descending into a sub-value"],
+      "includes-undecided"
+    ],
+    [
+      "reads",
+      ["quote", "recursive schemas did not settle within … steps"],
+      "includes-undecided"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/rules expects a relation and a schema, or a non-empty record of relation names to schemas, but found …."
+      ],
+      "proof-rules-target"
+    ],
+    [
+      "reads",
+      ["quote", "proof/rules found no declared relation named \"…\"."],
+      "proof-rules-target"
+    ],
+    [
+      "reads",
+      ["quote", "declared schema of \"…\" is not included in target schema"],
+      "proof-rules-induction"
+    ],
+    [
+      "reads",
+      ["quote", "existing fact in \"…\" does not fit schema"],
+      "proof-rules-induction"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/rules cannot prove \"…\": it has no rules and no declared row schema."
+      ],
+      "proof-rules-induction"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/rules cannot prove a rule with this aggregate or existential head: …."
+      ],
+      "proof-rules-induction"
+    ],
+    [
+      "reads",
+      ["quote", "proof/rules could not construct a certificate for rule …."],
+      "proof-rules-induction"
+    ],
+    [
+      "reads",
+      ["quote", "proof/rules could not prove rule …: …"],
+      "proof-rules-induction"
+    ],
+    [
+      "reads",
+      ["quote", "rule for \"…\" can produce a row outside the target schema"],
+      "proof-rules-induction"
+    ],
+    ["reads", ["quote", "cannot unfold …: …"], "solver-induction"],
+    [
+      "reads",
+      [
+        "quote",
+        "induction step \"…\" could not be proved (the property may need a stronger invariant)"
+      ],
+      "solver-induction"
+    ],
+    [
+      "reads",
+      ["quote", "inductive proof does not support `in` over symbolic lists"],
+      "solver-induction"
+    ],
+    [
+      "reads",
+      ["quote", "no guarded recursive function found for numeric induction"],
+      "solver-induction"
+    ],
+    [
+      "reads",
+      ["quote", "no inductive schema or lower-bounded integer variable found"],
+      "solver-induction"
+    ],
+    [
+      "reads",
+      ["quote", "unverified recursive function …"],
+      "solver-induction-guard"
+    ],
+    [
+      "reads",
+      ["quote", "… can pass a value below … to a recursive call"],
+      "solver-induction-guard"
+    ],
+    [
+      "reads",
+      ["quote", "… does not return a uniform number or truth sort"],
+      "solver-induction-guard"
+    ],
+    [
+      "reads",
+      ["quote", "… does not strictly decrease … on every recursive call"],
+      "solver-induction-guard"
+    ],
+    [
+      "reads",
+      ["quote", "… is not pure and cannot be admitted to induction"],
+      "solver-induction-guard"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… recurses on an argument that is not a linear integer expression in …"
+      ],
+      "solver-induction-guard"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… recurses on an argument that is not a strictly smaller sub-part of …"
+      ],
+      "solver-induction-guard"
+    ]
   ],
   [
     "fact",
@@ -2667,6 +2837,46 @@
       [
         "quote",
         "one is a value that waits, the other a schema the listing cannot read yet"
+      ]
+    ],
+    [
+      "kept",
+      "includes-undecided",
+      [
+        "quote",
+        "the wrapper message and the two recursive inclusion causes that explain why it cannot decide"
+      ]
+    ],
+    [
+      "kept",
+      "proof-rules-target",
+      [
+        "quote",
+        "one is a wrong argument shape, the other an undeclared relation name in the record"
+      ]
+    ],
+    [
+      "kept",
+      "proof-rules-induction",
+      [
+        "quote",
+        "each names a different reason rule induction failed or found a counterexample: missing schema, unsupported head, existing fact, base schema, counterexample rule, or unprovable step"
+      ]
+    ],
+    [
+      "kept",
+      "solver-induction",
+      [
+        "quote",
+        "each names a different reason induction could not run or prove a step"
+      ]
+    ],
+    [
+      "kept",
+      "solver-induction-guard",
+      [
+        "quote",
+        "each names the specific CIC guard condition a recursive function violated"
       ]
     ]
   ]

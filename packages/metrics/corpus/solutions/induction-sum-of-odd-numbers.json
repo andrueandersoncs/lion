@@ -1,0 +1,47 @@
+[
+  "begin",
+  [
+    "define",
+    "sum-odd",
+    [
+      "lambda",
+      ["n"],
+      [
+        "cond",
+        [["number/lessThanOrEqualTo", "n", 0], 0],
+        [
+          "else",
+          [
+            "number/add",
+            ["number/subtract", ["number/multiply", 2, "n"], 1],
+            ["sum-odd", ["number/subtract", "n", 1]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "lambda",
+    ["f"],
+    [
+      "=",
+      [
+        "query",
+        [
+          "not",
+          [
+            "exists",
+            ["?n"],
+            [
+              "and",
+              ["schema/fits?", "?n", "value/integer?"],
+              ["number/greaterThanOrEqualTo", "?n", 0],
+              ["not", ["number/equals?", ["sum-odd", "?n"], ["f", "?n"]]]
+            ]
+          ]
+        ]
+      ],
+      ["quote", [{}]]
+    ]
+  ]
+]

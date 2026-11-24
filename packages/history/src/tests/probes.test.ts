@@ -121,8 +121,12 @@ const makeRepository = (held: ReadonlyMap<string, string>) => {
   const repository = join(root, "repo");
   mkdirSync(join(repository, "dir"), { recursive: true });
   writeFileSync(join(root, OUTSIDE), "outside");
-  // What no probe lists: git's own files, and installed packages.
-  for (const hidden of [".git/HEAD", "dir/node_modules/pkg/index.js"]) {
+  // What no probe lists: git's own files, agent worktrees, and installed packages.
+  for (const hidden of [
+    ".git/HEAD",
+    ".claude/worktrees/other/clip.mp4",
+    "dir/node_modules/pkg/index.js",
+  ]) {
     mkdirSync(dirname(join(repository, hidden)), { recursive: true });
     writeFileSync(join(repository, hidden), "hidden");
   }
