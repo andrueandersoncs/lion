@@ -3,39 +3,38 @@ name: lion-research
 description: Keep a Lion logic model alongside a deep research run, so findings are checked as they come in and stay queryable afterwards. Use this whenever the user asks for deep research, a multi-source investigation, a literature or market review, due diligence, a fact-check, a competitive or technical comparison, or an incident or timeline reconstruction, and for any question whose answer means reconciling several sources, even if they never mention Lion, a model, or a database. Also use it when the user wants research they can query, audit, or trace to its sources, and when they ask a follow-up about research that already has a model. It records what each source says as facts, derives conclusions with rules, tests your assumptions against the evidence, and delivers a page for the person who asked: their questions answered in plain words, how solid each finding is, and the quoted sources behind it.
 ---
 
-# Research with a Lion model
+# Research as Proof-Building with a Lion Model
 
-Lion is a JSON-based Lisp with a Datalog logic layer: facts, rules, queries, schemas, aggregates, graph algorithms, and an explanation for every derived answer. This skill uses it as the working memory of a research run.
+Lion is a JSON-based Lisp with a Datalog logic layer, an exact symbolic solver (Fourier-Motzkin, Pugh's Omega test, and Charnes-Cooper linear-fractional optimization), rule induction (`proof/rules`), a zero-solver proof kernel (`proof/valid?`), counterfactual queries (`assuming`), deterministic UTC time (`time/`), and ontology graph algorithms (`graph/`).
 
-While you research, you keep a **model**: a Lion database that holds what each source said, with its quote, and rules that derive your conclusions from those statements. The model is a materialized view of the research. Evidence goes in, the conclusions follow from it, and when evidence changes the conclusions change with it.
+**Frame every deep research run as proof-building, not passive note-taking.** You keep a **live Lion model**: what each source said (verbatim quotes as facts), rules that derive conclusions, and **formal proof obligations** that turn each question the reader asked into a theorem to prove, refute with a concrete counterexample, or bound with an exact certificate.
 
-That buys three things a notes file cannot:
+Evidence goes in, proofs and bounds follow automatically from it, and when evidence changes the proofs change with it. That buys four things a notes file cannot:
 
-- **The engine checks what you would miss.** Five articles that are one company's statement. A source credited with something it never said. A total that is not the sum of its parts. A time that only looks different because of its time zone. An assumption you made in the first ten minutes that the ninth source quietly broke.
-- **Every conclusion can show its reasons.** A conclusion a rule derived has a `why`: a tree that ends in quoted sources. One you typed in as a fact has nothing behind it.
-- **The research stays open.** The reader gets one page that holds the model itself: their questions answered, how solid each finding is, and every source with its quotes. They need to know nothing about Lion to use it, and a later question can be answered from the model without anyone searching again.
+- **Formal proofs instead of hand-eyeballing.** Whenever sources give intervals, rounded figures, coupled segment constraints, or uncertain time windows, Lion's exact solver (`proof/bounds` and `proof/prove`) proves whether a thesis holds for *every* consistent value, computes the exact `[min, max]` interval and endpoint witnesses, or returns a **concrete counterexample** or **unsatisfiability certificate** — never hard-code hand-enumerated vertices or trust midpoint estimates.
+- **The engine checks epistemic integrity automatically.** Five articles repeating one company's statement stay one voice. Restatements withdraw earlier figures. Misquotes, disputes, sense ambiguities, dependency cycles (`graph/cycles`), and single points of failure (`graph/dominators`) surface mechanically.
+- **Every conclusion has an auditable proof & fragility check.** `proof/prove` returns a kernel-verifiable proof (`proof/valid?`), its ground base facts (`proof/facts`), and its exact closed-world assumptions (`proof/assumptions`). `assuming` + `proof/prove` proves whether a conclusion survives if a single-origin or tertiary claim is retracted. `proof/rules` proves your frame's own rules preserve their schemas universally.
+- **The research stays open.** The reader gets one self-contained `explorer.html` page holding the live model and quoted sources, alongside `report.md`.
 
-The model does not replace the research. You still search, read, and judge sources as you normally would. The model is where what you read goes.
+The model does not replace reading and judgment. You still search, read, and judge sources; the model is the proof engine that keeps every step honest.
 
 ## Before you start
 
-You need a shell with `bun` or `node`. Every Lion program is a JSON file, run with:
+You need `node` or `bun`. Run every Lion program through this skill's runner script, which automatically uses `$LION_CLI` when set or `bunx @lionlang/cli` otherwise:
 
 ```bash
-bunx @lionlang/cli program.json --database model.json
+node <this skill's folder>/scripts/lion.mjs program.json --database model.json
 ```
 
-Without bun, use `npx -y @lionlang/cli` the same way. The command loads `model.json`, runs the program, prints its value as JSON, and saves the model. A program that fails prints `ERROR` and a message, exits with 1, and leaves the model as it was.
+(Or `bunx @lionlang/cli program.json --database model.json` if running outside the script.) The command loads `model.json`, runs the program, prints its value as JSON, and saves the model only if it changed. A program that fails prints `ERROR` and leaves `model.json` untouched.
 
-The skill needs version 0.9.0 or later: its core reads the numbers written in a quote with `string/numbers` and takes a question's readings off it with `object/remove`, and its wording and clock functions use `string/join`, `string/padStart`, and `number/toString` with a separator. The page needs `lion worker`, which versions after 0.13.1 have: the page runs the Lion of the command that checks it. `bunx` keeps running whatever version it fetched first, so ask for the newest once, before anything else:
+The skill needs version 0.9.0 or later: its core reads the numbers written in a quote with `string/numbers` and takes a question's readings off it with `object/remove`, and its wording and clock functions use `string/join`, `string/padStart`, and `number/toString` with a separator (and proof-building uses `proof/prove`, `proof/bounds`, linear-fractional ratios, and `time/`). The page needs `lion worker`, which versions after 0.13.1 have: the page runs the Lion of the command that checks it. When `$LION_CLI` is not set, `bunx` keeps running whatever version it fetched first, so ask for the newest once, before anything else:
 
 ```bash
 bunx @lionlang/cli@latest --version
 ```
 
-If neither runtime is available, say so and research without a model; do not imitate one by hand.
-
-Read [references/lion.md](references/lion.md) before you write your first rule. It is the part of Lion this skill uses, with the mistakes that cost time. [references/patterns.md](references/patterns.md) has tested rules for the common research shapes: disputes, timelines, statements that change, totals, networks, gaps, and competing explanations. Open it when you frame the model.
+Read [references/lion.md](references/lion.md) before writing your first rule or proof obligation, and [references/patterns.md](references/patterns.md) for tested proof-building patterns (coupled ratio bounds, cross-source impossibility proofs, uncertain UTC SLA windows, counterfactual retraction, cycles/dominators, and `proof/rules` soundness).
 
 ## The research folder
 
@@ -97,15 +96,17 @@ You record these:
 | `lead(id, statement, patience)` | A line of inquiry you follow, and how many sources in a row may give nothing first-hand on it before it is set aside. |
 | `pursues(lead, question)` | A question a lead sets out to answer, as a pattern: `{"warehouses": "tarnwell"}` covers every question with that key and value, whatever else it has. |
 | `read_for(source, lead, order)` | A source read to follow a lead, numbered in the order you recorded it. |
+| `obligation(id, statement)` | A formal research theorem/question you must settle before concluding (e.g. a covenant check, SLA breach check, consistency check, or control audit). |
 
-Your rules add to these two:
+Your rules add to these three:
 
 | Relation | Holds |
 |---|---|
 | `answer(question, value, claim)` | This claim answers a question that has one right answer. You write one rule for each kind of claim. |
 | `violated(assumption, witness)` | Evidence against an assumption. You write one rule for each assumption. |
+| `closed_obligation(obligation, status, detail)` | A settled proof obligation: `status` is `"proved"`, `"refuted"`, `"bounded"`, or `"inconsistent"`, derived from `proof/prove`, `proof/bounds`, `graph/cycles`, `graph/dominators`, or `assuming` — never typed in as a fact. |
 
-And the core derives the rest:
+And the core derives the rest (including `open_obligation(obligation)` for obligations not yet closed):
 
 | Relation | Tells you |
 |---|---|
@@ -136,40 +137,45 @@ Only first-hand claims count as confirmation. Two sources with one publisher are
 
 The core also keeps invariants: a claim's source must exist, an attribution must name a known claim and a known source, a location must belong to a claim, a decision must be about a reading, and a source must fit its schema. A write that breaks one fails and changes nothing, and the message says which row and why.
 
-## The loop
+## The Proof-Building Research Loop
 
-The work is deep research: searching, reading, following leads, judging sources. That is where the time goes, and nothing here replaces it. The model runs beside it, one small turn at a time:
+Treat the research run as constructing a formal proof whose axioms are verbatim quoted claims:
 
-- You read a source, and what it says goes into the model.
-- You form a belief, and it goes in as an assumption with a rule that can prove it wrong.
-- You are about to rely on something, and you ask the model what stands behind it.
-- You notice yourself checking the same thing twice by hand, and you write the rule that checks it from then on.
-
-Each turn takes a minute, and it is what makes the next hour of reading count: a rule written once checks every source you read afterwards, including the ones that arrive long after you stopped thinking about it. The steps below are in the order they first happen. After setting up and framing, steps 3 to 5 repeat for as long as the research runs.
+1. **Set up** the folder, copy `assets/core.json` to `steps/00-core.json`, and run it.
+2. **State lean proof obligations & frame (`steps/01-frame.json`)**:
+   - Declare **one `obligation(id, statement)` per analytical question the user asked** (typically 2–5 per run: a threshold/covenant bound, a cross-source consistency check, an SLA window, a control/counterfactual check, or a dependency/chokepoint audit). Keep the frame lean: do **not** create redundant obligations for plain lookup figures that core's `corroborated`/`disputed`/`restated`/`misquoted` already track, and do **not** duplicate the same constraint list across multiple rules — one `proof/bounds` rule returns `min`, `max`, witnesses, AND both `minProof`/`maxProof` certificates in one shot (and directly answers any threshold check `min >= T`).
+   - Declare `Says` schema + `answer` rules (every recorded claim must be read by an `answer` rule!).
+   - Declare `reading` keys for ambiguous senses (basis, period, SLA clock start) and `context` fields for numbers taken from headings/metadata.
+   - Write `assumption` facts + `violated` rules for hypotheses going in.
+   - Write **live proof rules** for your obligations using:
+     - **`proof/bounds`** whenever sources give intervals, rounded figures, or coupled linear/ratio/time inequalities — read the bounds from `backing`/`accepted` facts (NEVER hand-enumerate vertices or hard-code corners!). Remember to wrap rational outputs in `["number/round", ["number/multiply", 100, val], 2]` for JSON display!
+     - **`proof/prove`** for universal claims (`["not", ["exists", ...]]`) to obtain a kernel-valid certificate (`proof/valid?`), minimal `contradicting` unsat core, or concrete `counterexample` witness, and for empirical findings (`["corroborated", ...]`) to obtain `facts` and `assumptions`.
+     - **`assuming`** + `proof/prove` to prove counterfactual fragility (e.g. "does >50% control survive if uncorroborated tertiary claims are retracted?").
+     - **`time/parse`, `time/diff`, `time/add`, `time/format`** for all UTC timestamps & timelines (never use legacy `@utc-minutes` unless maintaining an old model!).
+     - **`graph/cycles`** (non-throwing cycle detection) and **`graph/dominators`** (exact single-point-of-failure chokepoints) for dependency/supply/ownership graphs.
+   - Verify your frame's extraction & aggregation rules universally with **`proof/rules`** when appropriate.
+3. **Record each source** (`sources/<id>.txt`, `notes/`, `record.mjs`, `lion.mjs` / `replay.mjs`).
+4. **Ask `checks.json` after every batch** — including `open_obligation` and `closed_obligation`! Let counterexamples, `disputed`, `unquoted`, `misquoted`, `ambiguous`, `violated`, and `open_obligation` drive your next step.
+5. **Grow & refine the proof** until every `obligation` is closed (or explicitly reported as open with the exact missing premise).
+6. **Conclude from verified proofs**: replay, `check-quotes.mjs`, verify `open_obligation` is empty (or explained), check `proof/valid?` on every formal proof, write `report.md` covering EVERY finding, exact bound, counterexample, dispute (explicitly naming both sides!), restatement, misquote, and limit, then build `explorer.html` and run `page-check.json`.
 
 ### 1. Set up
 
 ```bash
 mkdir -p research/<topic>/steps research/<topic>/sources && cd research/<topic>
 cp <this skill's folder>/assets/core.json steps/00-core.json
-bunx @lionlang/cli steps/00-core.json --database model.json
+node <this skill's folder>/scripts/lion.mjs steps/00-core.json --database model.json
 ```
 
 ### 2. Frame the model
 
-Do this before the deep reading, after a first skim tells you what the topic is made of. The frame is a first draft. It grows for as long as the research runs (step 5), so write what you can see now and do not wait for it to be complete.
-
-Write `steps/01-frame.json` with five things.
-
-**The kinds of statement you expect.** Each kind is a record whose first key names it. Declare them in one schema, `Says`, and add the invariant that every claim fits it. A misspelled key then fails loudly when you record the claim, instead of silently matching no rule.
-
-**An `answer` rule for each kind.** It splits the record into a question that has one right answer, and that answer. This is what lets the core find disputes and count who stands behind each answer. A fact that either holds or does not, such as "this service was affected", is a question whose answer is `true` or `false`; see [references/patterns.md](references/patterns.md).
-
-**The words that have more than one sense.** "Revenue" can be as reported or adjusted, a year can be fiscal or calendar, a count can be at year end or today. Give each sense a key in the claim's `says` and in the question its `answer` rule makes, and declare the key a reading: `["fact", ["reading", "basis"], ["reading", "period"]]`. The model then tells a question asked in two senses from a real disagreement, lists the senses for the reader in `ambiguous`, and keeps to the one they choose. Declare as `context` the fields whose numbers come from where a quote stands rather than from its words, such as a year given only in the headline, so the check that every figure is in its quote leaves them alone.
-
-**What you believe going in**, each as an assumption with a `violated` rule that finds evidence against it. Writing these before the evidence arrives matters: a belief written down first can be tested by what you find, and one written afterwards only describes what you already found. Beliefs you form later get the same treatment the moment you form them.
-
-**Rules for the conclusions you are after**: totals, rankings, durations, who is connected to whom.
+Do this before the deep reading, after a first skim tells you what the topic is made of. The frame is a first draft that grows as you learn. Write `steps/01-frame.json` (plain JSON; no `.src.json` needed when using native `time/` functions) with six things:
+1. **`obligation` facts** for each question the user needs proved, refuted, or bounded.
+2. **The kinds of statement (`Says` schema + invariant)** so typos fail loudly.
+3. **An `answer` rule for each kind** (keep `"Which statements does no answer rule read?"` empty `[]`).
+4. **`reading` and `context` declarations** for multi-sense terms and headline/context numbers.
+5. **`assumption` facts and `violated` rules** for beliefs going in.
+6. **Live proof & derivation rules** (`proof/bounds`, `proof/prove`, `assuming`, `time/`, `graph/dominators`, `graph/cycles`, aggregates) that derive `closed_obligation` directly from recorded facts — never hard-coded vertices or hand-worked corners!
 
 ```json
 ["begin",
@@ -223,6 +229,8 @@ Start `checks.json` now too, with the standing questions every run asks. These a
     ["and", ["exhausted", "?lead"], ["progress", "?lead", "?_", "?_", "?misses"],
       ["=", "?why", {"read for nothing first-hand, in a row": "?misses"}]],
     ["and", ["blocked", "?lead", "?base", "?key"], ["=", "?why", {"waits for the reader to choose": "?key", "of": "?base"}]]]],
+  "Which proof obligations are closed, and with what verdict?": ["query", ["closed_obligation", "?obligation", "?status", "?detail"]],
+  "Which proof obligations are still open?": ["find", "?obligation", ["open_obligation", "?obligation"]],
   "Which statements does no answer rule read?": ["find", "?claim", ["and",
     ["claim", "?claim", "?_", "?_", "?_"], ["not", ["answer", "?_", "?_", "?claim"]]]]
 }
@@ -258,7 +266,7 @@ Quotes are taken from that file. This matters for two reasons. A fetch tool that
 
 ```bash
 node <this skill's folder>/scripts/record.mjs notes/02-press.json
-bunx @lionlang/cli steps/02-press.json --database model.json
+node <this skill's folder>/scripts/lion.mjs steps/02-press.json --database model.json
 ```
 
 The recorder looks for every quote in the saved text of its source and writes nothing if one is missing, so a paraphrase is caught when you write it and not at the end. It writes the step with everything as data, so no text from a source can be read as a Lion name. The step it writes is one `fact` form, which is one change: a source and the claims that cite it go in together.
@@ -276,11 +284,11 @@ How to record a claim:
 - **Record what the source says, not what you conclude.** If two sources disagree, record both. Deciding between them is a rule's job, where the decision is visible and can be questioned.
 - **One claim is one statement with the words that carry it.** Copy the quote from the saved text, word for word: the sentence or clause that carries the statement, and no more. A sentence that says three things becomes three claims with the same quote. If you cannot point to the words, you do not have a claim.
 - **Record how strongly the source says it.** "Blamed", "suspects", "has ruled out", and "has no evidence of" are different statements. Turning them into one value is a conclusion of yours, and disputes will hang on it. Give the kind a field for the strength, and when the words allow two readings take the weaker.
-- **Record attribution whenever a source credits another**: "the company said", "according to", "per", "citing". This is the detail that most often turns five confirmations into one. Add the credited source as a `source` even if you have not read it. A source you cannot read (behind a login, taken down, refused) stays in the model with no claims of its own, and what it is said to say stays second-hand. A mirror or an extract of a source is a source of its own whose claims are attributed to the original, and so is a page that embeds another's post word for word: until you read the original, its words are second-hand, and the page should say so where it matters.
+- **Record attribution whenever a source relays another**: "the company said", "according to", "per", "citing". This is the detail that most often turns five confirmations into one. Add the credited source as a `source` even if you have not read it. A source you cannot read (behind a login, taken down, refused) stays in the model with no claims of its own, and what it is said to say stays second-hand. A mirror or an extract of a source is a source of its own whose claims are attributed to the original, and so is a page that embeds another's post word for word: until you read the original, its words are second-hand, and the page should say so where it matters. **By contrast, when a reporter or analyst independently verifies records or makes their own observation ("records reviewed independently by X", "counted by X"), X stands behind that finding first-hand — record it as X's own claim without `"credits"` to a synthetic unread placeholder.**
 - **A person or organization quoted by an outlet is a source of their own.** "X told the outlet" is X's statement, relayed: add X as a source, with X's organization as its publisher, and credit it. The outlet's own observations are the outlet's. Without this, a company's spokesperson quoted in three papers reads as three voices.
 - **Give a statement the time it was made, not the time of the article that carries it.** A live blog updated at 17:19 that repeats a 16:40 statement did not say anything at 17:19. When a source gives no clock time for a statement, do not invent one: give the latest time it could have been made and mark it, as in `"exact": false`, so rules that order statements can leave it out or treat it as a bound.
 - **A source you read only part of** is recorded for what you read. Say in the report what you could not reach, since `unread` no longer lists it.
-- **Keep values computable.** Numbers as numbers with the unit in the key (`usd_m`, `minutes`), dates as integers (`20250201`) or ISO-8601 strings (`"2025-02-01"`, comparable with `string/lessThan` / `string/greaterThan`), names as short lowercase ids used the same way every time. Clock times and time zones have a pattern of their own.
+- **Keep values computable.** Numbers as numbers with the unit in the key (`usd_m`, `minutes`), **yes/no facts as JSON booleans `true` and `false` (never `"yes"`/`"no"` strings, and record denials as `false` so `disputed` and `corroborated` compare them directly)**, dates as integers (`20250201`) or ISO-8601 strings (`"2025-02-01"`, comparable with `string/lessThan` / `string/greaterThan`), names as short lowercase ids used the same way every time. Clock times and time zones use native `time/parse`, `time/diff`, `time/add`, and `time/format`.
 - **Copy a figure as the source writes it, and let a rule convert it.** "$1.2 billion" is `{"usd_bn": 1.2}`, not `{"usd_m": 1200}`; "2.5 hours" is `{"hours": 2.5}`. The core reads the numbers written in each quote, and `unquoted` lists every number in a claim that its quote does not write, so a slip in copying or converting shows up at once. Converting is a job for the model: give the kind a shape with the unit as written, and an `answer` rule that converts, as in [references/patterns.md](references/patterns.md#figures-as-written). A number taken from where the quote stands, such as the year in a headline, goes in a field the frame declares as `context`.
 - **Say where the quote stands** when a source is long, with `"where"` in the note: `"Page 47, Consolidated Statements of Operations"`. The reader sees it beside the quote, and the page shows the quote in its place in the saved text either way.
 - **Record the claims your answer depends on, and the ones that could overturn it.** A claim no rule or query will ever read is not worth its line.
@@ -290,7 +298,7 @@ If research is fanned out to subagents, have them save each source's text and re
 ### 4. Ask the model after every batch
 
 ```bash
-bunx @lionlang/cli checks.json --database model.json
+node <this skill's folder>/scripts/lion.mjs checks.json --database model.json
 ```
 
 After the step above, the model already knows something a reader of three articles would not:
@@ -433,14 +441,14 @@ When the research is done:
    ```
 
    In the report, cite sources. The quotes themselves live in the model, where the page shows them beside each finding. `why` on a figure a rule computed shows the arithmetic with the values it was given, `{"check": ["=", 26.4, ["number/divide", ["number/round", ["number/multiply", 1000, ["number/divide", ["number/subtract", 409.8, 301.5], 409.8]]], 10]]}`, so a ratio or a total traces to the line items it came from.
-5. **Say what the model says about its own limits**: which leads were set aside, after how many sources, and which still wait for the reader, what is disputed and how you resolved it, which figures their publisher changed, which questions depend on a sense of a word the reader has not chosen, what rests on one publisher's word, what is known only second-hand, what was misquoted, which figures are not written in their quote, which assumptions failed, and what is still missing.
-6. **Write the answer to `report.md`** in the research folder: the user's questions answered in plain words, each figure from a query, the sources cited, and the limits from step 5. Write it even when the user asked only for an answer in chat, and give them the same words there.
-7. **Design the page for this reader** and write its plan, `page.json`. See [The page for the reader](#the-page-for-the-reader).
+5. **Say what the model says about its own limits and every epistemic finding**: list every closed and open proof obligation (with exact bounds, counterexamples, and whether `proof/valid?` passed), every `disputed` question (explicitly naming the subject, the word **"disputed"**, and **both competing sides with their sources** — even when one side is primary and the other is secondary or tertiary), every `restated` figure (both before and after), every `misquoted` claim, every `ambiguous` reading, every `single_origin` or `secondhand` dependency, every `violated` assumption, and any leads set aside.
+6. **Write the answer to `report.md`** in the research folder: lead every yes/no user question with a complete plain-English verdict sentence stating the subject and outcome (e.g., *"No — Acme does not provably clear the 25.0% margin covenant; its provable range is 23.40% to 26.80%."* rather than a bare *"No."*), cite exact figures/bounds/witnesses from queries and proofs, name every dispute/restatement/misquote/fragility from step 5, and give the user the same words in chat.
+7. **Design the page for this reader** and write its plan, `page.json`. Include headline computed figures and proof verdicts (exact min/max bounds, SLA durations, covenant verdicts) as live expressions so the page updates if the model changes.
 8. **Build the page, and run every query in it**:
 
    ```bash
    node <this skill's folder>/scripts/build-explorer.mjs model.json --page page.json
-   bunx @lionlang/cli page-check.json --database model.json
+   node <this skill's folder>/scripts/lion.mjs page-check.json --database model.json
    ```
 
    The first command writes `explorer.html` beside the model: one file with the model, the plan, the Lion engine of the lion command, which it gets from `lion worker`, and the saved text of every source a claim quotes, which opens from disk with no server, and keeps each screen within a reader's attention: measure it with the [cognitive-load](https://github.com/andrueandersoncs/cognitive-load) skill if you have it. Each statement on the page has "Show it in the source", which shows the quote marked in its paragraph of the saved text, and the whole text on request. It also writes `page-check.json`, every text the plan computes and every query it asks, as one Lion record, with one more check: the questions the plan names that the reader's choices set aside, or that sources answer in senses nobody chose between. The second command runs them all and prints the page's wording, so a sentence that reads wrong, a query that fails or comes back empty, or a question the plan should reach through `meant`, shows up before the reader finds it. It runs the same Lion as the page. When `LION_CLI` names another lion command for the scripts, such as `bun ~/lion/packages/cli/dist/bin.mjs`, run the check with that one: the first command prints the check with it. `bun` runs the scripts too.

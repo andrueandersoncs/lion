@@ -206,7 +206,10 @@ const session = (work: string, prompt: string): Promise<string> => {
       : ["--max-budget-usd", args.option("budget") as string]),
   ];
   return new Promise((done) => {
-    const child = spawn("claude", flags, { cwd: work });
+    const child = spawn("claude", flags, {
+      cwd: work,
+      env: { ...process.env, LION_CLI: lionCli },
+    });
     let output = "";
     child.stdout.on("data", (chunk) => {
       output += chunk;

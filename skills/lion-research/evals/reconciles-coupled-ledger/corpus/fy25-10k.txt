@@ -1,0 +1,19 @@
+Vespera Grid Storage — Form 10-K (Fiscal Year 2025)
+Published: 2026-02-24
+URL: https://sec.example/vespera/fy25-10k
+
+Item 7. Segment Revenue and Cost Structure
+Total FY25 revenue (R = GridScale + MicroPack + ServiceContracts, with no inter-segment eliminations) falls within an audited band of $480.0 million to $520.0 million pending final interconnection milestone recognition:
+- GridScale accounts for at least 50% of total FY25 revenue (g >= 0.50 * R) and no more than $290.0 million (g <= 290).
+- MicroPack revenue is at least 1.5 times ServiceContracts revenue (m >= 1.5 * s).
+- ServiceContracts revenue is between $50.0 million and $95.0 million (50 <= s <= 95).
+
+Segment direct variable cost ratios (audited):
+- GridScale direct COGS equals 74% of GridScale revenue (0.74 * g, i.e., 26% segment contribution).
+- MicroPack direct COGS equals 62% of MicroPack revenue (0.62 * m, i.e., 38% segment contribution).
+- ServiceContracts direct COGS equals 30% of ServiceContracts revenue (0.30 * s, i.e., 70% segment contribution).
+
+Restatement of Fixed Overhead: Following audit review of lease capitalization, Vespera restated shared fixed plant overhead from its January preliminary estimate of $20.0 million to a final range of $24.0 million to $30.0 million (24 <= F <= 30). Total COGS = 0.74*g + 0.62*m + 0.30*s + F; Gross Margin = (R - Total COGS) / R.
+
+Item 2. Properties
+Total active modular battery sites across North, South, and West regions (all whole integer counts) are capped at 43 sites (north + south + west <= 43) under the federal interconnection tariff.

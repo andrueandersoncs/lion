@@ -1,0 +1,7 @@
+Meridian Pay Status Page — Incident #4418
+Published: 2026-04-10
+URL: https://status.meridianpay.example/incidents/4418
+
+2026-04-10T13:15:00Z — Checkout API is experiencing elevated 503 errors. Initial estimates indicate 12,000 merchants affected.
+2026-04-10T13:40:00Z — Engineers suspect an upstream BGP routing flap.
+2026-04-10T16:20:00Z — A fix has been deployed and checkout traffic has recovered.

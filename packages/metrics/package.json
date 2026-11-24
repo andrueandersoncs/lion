@@ -18,6 +18,7 @@
     "skill-eval": "bun run skill-eval.ts",
     "capability": "bun run capability.ts",
     "efficacy": "bun run efficacy.ts",
+    "research-audit": "bun run research-audit.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

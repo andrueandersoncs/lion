@@ -971,6 +971,22 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
   if (isForm(question, "why")) {
     return planWhy(question, outer);
   }
+  if (isForm(question, "proof/prove")) {
+    const [goal] = question.parts;
+    return typeof goal === "boolean"
+      ? [{ body: [], bound: new Set(outer) }]
+      : plan(goal, outer, NOTHING);
+  }
+  if (isForm(question, "proof/bounds")) {
+    const [target, goal] = question.parts;
+    const planned = plan(goal, outer);
+    for (const { bound } of planned) {
+      checkValues(question, [target], bound, (names) =>
+        unsafeBounds(show(question), names)
+      );
+    }
+    return planned;
+  }
   if (!isForm(question, "find")) {
     // A question asks only whether its goal has a match.
     return plan(question, outer, NOTHING);
@@ -989,6 +1005,9 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
 
 export const unsafeFind = (findText: string, names: string) =>
   `Unsafe find ${findText}: its goal does not bind ${names}.`;
+
+export const unsafeBounds = (boundsText: string, names: string) =>
+  `Unsafe proof/bounds ${boundsText}: its goal does not bind ${names}.`;
 
 export const anonymousRuleHead = (headText: string) =>
   `A rule head cannot use the anonymous variable "?_": ${headText}.`;

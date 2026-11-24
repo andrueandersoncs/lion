@@ -1,0 +1,7 @@
+OpsTalk Forum — Thread: Meridian #4418 Breakdown
+Published: 2026-04-12
+URL: https://opstalk.example/threads/meridian-4418
+
+Per FinTech Daily, the outage lasted 245 minutes until 17:20 UTC.
+
+An anonymous poster claimed that Meridian's architecture has a hidden loop: auth-vault depends on checkout for health-check tokens during key rotation.

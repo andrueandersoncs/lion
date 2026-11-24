@@ -1,0 +1,151 @@
+{
+  "about": "Known-correct substantive checks for Vespera Grid Storage (reconciles-coupled-ledger): coupled 4-variable ratio optimization, 4-constraint integer infeasibility, multi-hop counterfactual ownership, and source integrity.",
+  "checks": [
+    {
+      "stage": "reading",
+      "check": "Every quote is in its source's saved text",
+      "quotes": true,
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every figure recorded is written in the words quoted",
+      "query": ["find", "?claim", ["unquoted", "?claim", "?_", "?_"]],
+      "expect": "none",
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every source in the corpus was read and recorded",
+      "query": [
+        "array/length",
+        [
+          "aggregate/unique",
+          ["find", "?source", ["claim", "?_", "?source", "?_", "?_"]]
+        ]
+      ],
+      "expect": 6,
+      "rests_on": [
+        "q4-prelim",
+        "fy25-10k",
+        "permit-registry",
+        "sec-13d",
+        "gridpulse-blog",
+        "energywire"
+      ]
+    },
+    {
+      "stage": "framing",
+      "check": "Every statement recorded is read by an answer rule",
+      "query": [
+        "find",
+        "?claim",
+        [
+          "and",
+          ["claim", "?claim", "?_", "?_", "?_"],
+          ["not", ["answer", "?_", "?_", "?claim"]]
+        ]
+      ],
+      "expect": "none",
+      "rests_on": []
+    },
+    {
+      "stage": "conclusions",
+      "check": "GridPulse Blog misquotes the 10-K Services floor as $80M instead of $50M",
+      "query": ["find", "?c", ["misquoted", "?c", "?_", "?_", 80, 50]],
+      "expect": "some",
+      "rests_on": ["gridpulse-blog", "fy25-10k"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "Helios's 18% direct stake (or Nordic's 35% / 60% stake) is corroborated independently by two publishers",
+      "query": [
+        "or",
+        ["corroborated", "?_", 18],
+        ["corroborated", "?_", 35],
+        ["corroborated", "?_", 60]
+      ],
+      "expect": true,
+      "rests_on": ["sec-13d", "energywire"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "An assumption or violation check flags the covenant failure or site infeasibility",
+      "query": ["or", ["violated", "?_", "?_"], ["disputed", "?_", "?_"]],
+      "expect": true,
+      "rests_on": ["fy25-10k", "permit-registry"]
+    },
+    {
+      "stage": "page",
+      "check": "The page was built",
+      "file": "explorer.html",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "Every text and query of the page runs",
+      "page": "runs",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "The page reports the exact minimum gross margin 27.83%",
+      "page": "27\\.83",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "page",
+      "check": "The page reports the exact maximum gross margin 33.33%",
+      "page": "33\\.33",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report concludes Vespera does NOT provably clear the 28.0% covenant",
+      "report": "(?i)(does not|cannot|fails to|not provably|falls below|breaches|below 28)",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives the exact minimum gross margin 27.83%",
+      "report": "27\\.83",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives the exact maximum gross margin 33.33% (not the naive 33.23% at R=520)",
+      "report": "33\\.33",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives the exact min witness (g=290, m=140, s=50, f=30)",
+      "report": "290[\\s\\S]{0,120}140[\\s\\S]{0,120}50[\\s\\S]{0,120}30",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives the exact max witness (g=240, m=145, s=95, f=24)",
+      "report": "240[\\s\\S]{0,120}145[\\s\\S]{0,120}95[\\s\\S]{0,120}24",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report proves the modular site constraints are impossible (requiring at least 44 sites vs cap 43)",
+      "report": "(?i)(44[\\s\\S]{0,140}43|43[\\s\\S]{0,140}44)[\\s\\S]{0,160}(inconsistent|impossible|contradict|unsat|exceed|cannot|violat)",
+      "rests_on": ["q4-prelim", "fy25-10k", "permit-registry"]
+    },
+    {
+      "stage": "report",
+      "check": "The report computes Helios effective stake as 51% with Apex SPV and 39% (below 50%) when the tertiary blog claim is retracted",
+      "report": "51%[\\s\\S]{0,240}39%|39%[\\s\\S]{0,240}51%",
+      "rests_on": ["sec-13d", "gridpulse-blog"]
+    },
+    {
+      "stage": "report",
+      "check": "The report flags the $20M fixed-overhead restatement and GridPulse's $80M vs $50M misquote",
+      "report": "(80[\\s\\S]{0,160}50|50[\\s\\S]{0,160}80)",
+      "rests_on": ["q4-prelim", "fy25-10k", "gridpulse-blog"]
+    }
+  ]
+}

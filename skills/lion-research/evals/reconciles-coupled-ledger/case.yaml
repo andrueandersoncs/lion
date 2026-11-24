@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: reconciles-coupled-ledger
+expected_outcome: |
+  Working only from the saved corpus, the run audits Vespera Grid Storage
+  across coupled multi-source financial, operational, and ownership disclosures:
+  (1) Exact coupled gross margin bounds are 27.83% (min, at g=290, m=140, s=50,
+  f=30, R=480) to 33.33% (max, at g=240, m=145, s=95, f=24, R=480 — NOT 33.23%
+  at R=520), so Vespera does NOT provably clear the 28.0% lending covenant;
+  (2) The four modular-site constraints across the filings (total <= 43,
+  south >= west + 5, west >= 9, north >= south + 7) are mathematically
+  unsatisfiable (implying at least 44 sites > 43);
+  (3) Helios Infra Fund's apparent 51% effective voting stake (18% direct +
+  21% via Nordic Energy + 12% via Apex Grid SPV) falls to 39% (below 50%
+  control) if the uncorroborated tertiary blog claim about Apex Grid SPV is
+  retracted;
+  (4) Fixed overhead was restated from $20M to $24M-$30M, and GridPulse Blog
+  misquotes the 10-K as saying Services revenue is at least $80M when the 10-K
+  says $50M.

@@ -26633,5 +26633,256 @@
         ["else", ["quote", "broken"]]
       ]
     ]
+  },
+  {
+    "case": "proof-prove-and-counterexample-synthesis",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "ok",
+        [
+          "proof/prove",
+          [
+            "not",
+            [
+              "exists",
+              ["?x"],
+              [
+                "and",
+                ["schema/fits?", "?x", "value/integer?"],
+                ["number/greaterThanOrEqualTo", "?x", 5],
+                ["number/lessThan", "?x", 5]
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "bad",
+        [
+          "proof/prove",
+          [
+            "not",
+            [
+              "exists",
+              ["?x"],
+              [
+                "and",
+                ["schema/fits?", "?x", "value/integer?"],
+                ["number/greaterThanOrEqualTo", "?x", 0],
+                ["number/lessThanOrEqualTo", "?x", 10],
+                ["number/greaterThan", "?x", 8]
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", ["object/get", "ok", "proved"], true],
+            ["=", ["proof/valid?", "ok"], true],
+            ["=", ["object/get", "bad", "proved"], false],
+            ["object/has?", "bad", "counterexample"]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "proof-bounds-exact-intervals",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "b",
+        [
+          "proof/bounds",
+          ["number/divide", ["number/subtract", "?r", "?c"], "?r"],
+          [
+            "and",
+            ["schema/fits?", "?r", "value/number?"],
+            ["schema/fits?", "?c", "value/number?"],
+            ["number/greaterThanOrEqualTo", "?r", 238],
+            ["number/lessThanOrEqualTo", "?r", 242],
+            ["number/greaterThanOrEqualTo", "?c", 161],
+            ["number/lessThanOrEqualTo", "?c", 165]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              [
+                "number/round",
+                ["number/multiply", 100, ["object/get", "b", "min"]],
+                2
+              ],
+              30.67
+            ],
+            [
+              "=",
+              [
+                "number/round",
+                ["number/multiply", 100, ["object/get", "b", "max"]],
+                2
+              ],
+              33.47
+            ],
+            ["=", ["proof/valid?", ["object/get", "b", "minProof"]], true],
+            ["=", ["proof/valid?", ["object/get", "b", "maxProof"]], true]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "symbolic-linear-fractional-ratios",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "p",
+        [
+          "proof/prove",
+          [
+            "not",
+            [
+              "exists",
+              ["?x", "?y"],
+              [
+                "and",
+                ["schema/fits?", "?x", "value/number?"],
+                ["schema/fits?", "?y", "value/number?"],
+                ["number/lessThanOrEqualTo", "?y", -2],
+                ["number/greaterThanOrEqualTo", "?x", 4],
+                ["number/greaterThan", ["number/divide", "?x", "?y"], 0]
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", ["object/get", "p", "proved"], true],
+            ["=", ["proof/valid?", "p"], true]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "proof-rules-research-frames",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["schema", "Says", { "metric": "value/string?", "v": "value/integer?" }],
+      [
+        "schema",
+        "CntRow",
+        {
+          "metric": "value/string?",
+          "n": [
+            "schema/allOf",
+            "value/integer?",
+            ["lambda", ["k"], ["number/greaterThanOrEqualTo", "k", 1]]
+          ]
+        }
+      ],
+      ["relation", "claim", ["id", "says"]],
+      [
+        "invariant",
+        ["and", ["claim", "?_", "?s"], ["not", ["Says", "?s"]]],
+        { "assert": "none" }
+      ],
+      ["relation", "counts", ["metric", "n"]],
+      [
+        "rule",
+        ["counts", "?m", ["aggregate/count", "?id"]],
+        ["claim", "?id", { "metric": "?m", "v": "?_" }]
+      ],
+      ["define", "p", ["proof/rules", "counts", "CntRow"]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", ["object/get", "p", "proved"], true],
+            ["=", ["proof/valid?", "p"], true]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "symbolic-time-reasoning",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["define", "t0", ["time/parse", "2026-03-03T14:00:00Z"]],
+      [
+        "define",
+        "b",
+        [
+          "proof/bounds",
+          ["time/diff", "?end", "?start", "minutes"],
+          [
+            "and",
+            ["schema/fits?", "?start", "value/integer?"],
+            ["schema/fits?", "?end", "value/integer?"],
+            ["number/greaterThanOrEqualTo", "?start", "t0"],
+            [
+              "number/lessThanOrEqualTo",
+              "?start",
+              ["time/add", "t0", 10, "minutes"]
+            ],
+            [
+              "number/greaterThanOrEqualTo",
+              "?end",
+              ["time/add", "t0", 195, "minutes"]
+            ],
+            [
+              "number/lessThanOrEqualTo",
+              "?end",
+              ["time/add", "t0", 210, "minutes"]
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", ["object/get", "b", "min"], 185],
+            ["=", ["object/get", "b", "max"], 210]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
   }
 ]

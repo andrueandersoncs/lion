@@ -540,12 +540,16 @@
 </lion-example>
 
 <h2 id="module-proof"><code>proof</code></h2>
-<p>Checks proof values with a small trusted kernel (without invoking the solver), and proves universal properties of rule-defined relations by rule induction. See <a href="#prove-commands">Prove that every command keeps a rule</a>.</p>
+<p>Checks proof values with a small trusted kernel (without invoking the solver), proves universal or empirical goals, computes exact tight symbolic and relational bounds, and proves universal properties of rule-defined relations by rule induction. See <a href="#prove-commands">Prove that every command keeps a rule</a>.</p>
 <dl class="ref">
   <dt><code>proof/valid?</code></dt>
-  <dd>Whether a proof value (linear refutation certificate, Omega integer split tree, case split, induction proof, lemma composition, or <code>why</code> derivation) checks out under the trusted kernel.</dd>
+  <dd>Whether a proof value (linear refutation certificate, Omega integer split tree, case split, induction proof, lemma composition, <code>proof/prove</code> / <code>proof/bounds</code> proof record, or <code>why</code> derivation) checks out under the trusted kernel.</dd>
+  <dt><code>proof/prove</code></dt>
+  <dd>Proves a universal (<code>["not", ["exists", ...]]</code>) or empirical goal, returning a kernel-verifiable proof (with <code>facts</code> and <code>assumptions</code> for database derivations) or a concrete <code>counterexample</code> witness when a universal claim fails.</dd>
+  <dt><code>proof/bounds</code></dt>
+  <dd>Computes exact tight <code>min</code> and <code>max</code> bounds of an expression subject to a goal across continuous linear, integer, Charnes-Cooper linear-fractional ratio, and relational database constraints, returning endpoint witnesses and kernel-checkable <code>minProof</code> / <code>maxProof</code> certificates.</dd>
   <dt><code>proof/rules</code></dt>
-  <dd>Takes a relation and a target schema, or a record mapping mutually recursive relation names to schemas, and proves by rule induction that every derived row fits its schema across all databases whose base relations fit their declared schemas.</dd>
+  <dd>Takes a relation and a target schema, or a record mapping mutually recursive relation names to schemas, and proves by rule induction that every derived row fits its schema across all databases whose base relations fit their declared schemas (including single-column schema invariants, nested pattern destructuring, and aggregate output domains).</dd>
   <dt><code>proof/facts</code></dt>
   <dd>Returns the sorted, deduplicated list of recorded (<code>given: true</code>) base facts that a <code>why</code> explanation rests on.</dd>
   <dt><code>proof/assumptions</code></dt>
@@ -562,8 +566,25 @@
   ["rule", ["reach", "?x", ["aggregate/min", ["number/add", "?s", 1]]], ["reach", "?x", "?s"]],
   ["define", "p", ["proof/rules", "reach", "PosRow"]],
   ["define", "w", ["why", ["reach", "a", 2]]],
-  {"proved": ["object/get", "p", "proved"],
-   "valid": ["proof/valid?", "p"],
+  ["define", "b", ["proof/bounds",
+    ["number/divide", ["number/subtract", "?r", "?c"], "?r"],
+    ["and",
+      ["schema/fits?", "?r", "value/number?"], ["schema/fits?", "?c", "value/number?"],
+      ["number/greaterThanOrEqualTo", "?r", 238], ["number/lessThanOrEqualTo", "?r", 242],
+      ["number/greaterThanOrEqualTo", "?c", 161], ["number/lessThanOrEqualTo", "?c", 165]]]],
+  ["define", "cov", ["proof/prove", ["not", ["exists", ["?r", "?c"],
+    ["and",
+      ["schema/fits?", "?r", "value/number?"], ["schema/fits?", "?c", "value/number?"],
+      ["number/greaterThanOrEqualTo", "?r", 238], ["number/lessThanOrEqualTo", "?r", 242],
+      ["number/greaterThanOrEqualTo", "?c", 161], ["number/lessThanOrEqualTo", "?c", 165],
+      ["number/lessThan", ["number/divide", ["number/subtract", "?r", "?c"], "?r"], 0.32]]]]]],
+  {"rulesProved": ["object/get", "p", "proved"],
+   "rulesValid": ["proof/valid?", "p"],
+   "minPct": ["number/round", ["number/multiply", 100, ["object/get", "b", "min"]], 2],
+   "maxPct": ["number/round", ["number/multiply", 100, ["object/get", "b", "max"]], 2],
+   "boundsValid": ["boolean/and", ["proof/valid?", ["object/get", "b", "minProof"]], ["proof/valid?", ["object/get", "b", "maxProof"]]],
+   "covenantProved": ["object/get", "cov", "proved"],
+   "counterexample": ["object/get", "cov", "counterexample"],
    "facts": ["proof/facts", "w"],
    "assumptions": ["proof/assumptions", "w"]}]
 </lion-example>

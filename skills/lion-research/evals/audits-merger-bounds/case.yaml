@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: audits-merger-bounds
+expected_outcome: |
+  Working only from the saved corpus, the run audits Kestrel BioLabs for an
+  acquisition diligence decision. It catches: (1) FY25 revenue was restated
+  from $255M (preliminary release) to a $238.0M-$242.0M audit band in the
+  10-K, with COGS in $161.0M-$165.0M; (2) although the midpoint margin is
+  32.08% (above 32.0%), Kestrel does NOT provably clear the 32.0% gross margin
+  covenant: the exact feasible gross margin interval is 30.67% to 33.47%, with
+  worst-case failure at revenue $238M and COGS $165M (30.67%); (3) the investor
+  deck's division revenue floors ($115M Diagnostics + $78M Reagents + $54M
+  Services = $247M) are mathematically inconsistent with the $242M total
+  revenue ceiling by at least $5M; (4) LabLedger Blog misquotes the preliminary
+  release as saying 480 Services staff when it says 410, and the State Health
+  Lab Registry independently corroborates 410; (5) CryoPack and Helios
+  Glassworks are single-point-of-failure supply-chain bottlenecks for clinical
+  assays.

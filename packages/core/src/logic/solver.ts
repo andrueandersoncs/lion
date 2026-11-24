@@ -1079,3 +1079,429 @@ export const enumerate = (
   }
   return infinite === undefined ? { solutions } : { infinite };
 };
+
+/** One endpoint of an exact symbolic interval, with a witness when attained. */
+export interface BoundEnd {
+  readonly strict: boolean;
+  readonly value: Rational;
+  readonly witness?: Values;
+}
+
+/** Exact lower and upper bounds of a linear or linear-fractional target. */
+export interface Bounds {
+  readonly high?: BoundEnd;
+  readonly low?: BoundEnd;
+}
+
+const stripVar = (
+  values: Values | undefined,
+  name: string
+): Values | undefined => {
+  if (values === undefined) {
+    return undefined;
+  }
+  const out = new Map(values);
+  out.delete(name);
+  return out;
+};
+
+const freshName = (sorts: ReadonlyMap<string, Sort>, base: string): string => {
+  let name = base;
+  let at = 0;
+  while (sorts.has(name)) {
+    at += 1;
+    name = `${base}_${at}`;
+  }
+  return name;
+};
+
+const lcmBig = (a: bigint, b: bigint): bigint =>
+  a === 0n || b === 0n ? 0n : (abs(a) / gcd(a, b)) * abs(b);
+
+const exactIntegerBound = (
+  branch: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  targetName: string,
+  relEnd: { value: Rational; strict: boolean },
+  start: bigint,
+  findMin: boolean
+): BoundEnd => {
+  let lo = findMin ? firstWhole(relEnd) : start;
+  let hi = findMin ? start : lastWhole(relEnd);
+  while (lo < hi) {
+    const mid = findMin ? lo + (hi - lo) / 2n : hi - (hi - lo) / 2n;
+    const probe: Constraint = findMin
+      ? {
+          linear: minus(constant(ratio(mid)), variable(targetName)),
+          relation: ">=",
+        }
+      : {
+          linear: minus(variable(targetName), constant(ratio(mid))),
+          relation: ">=",
+        };
+    made = 0;
+    if (decide([...branch, probe], sorts)) {
+      if (findMin) {
+        hi = mid;
+      } else {
+        lo = mid;
+      }
+    } else if (findMin) {
+      lo = mid + 1n;
+    } else {
+      hi = mid - 1n;
+    }
+  }
+  const best = ratio(findMin ? lo : hi);
+  const witness = stripVar(
+    solve(
+      [
+        ...branch,
+        { linear: minus(variable(targetName), constant(best)), relation: "=" },
+      ],
+      sorts
+    ),
+    targetName
+  );
+  return witness === undefined
+    ? { strict: false, value: best }
+    : { strict: false, value: best, witness };
+};
+
+const realEndWithWitness = (
+  branch: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  targetName: string,
+  end: { value: Rational; strict: boolean }
+): BoundEnd => {
+  if (end.strict) {
+    return { strict: true, value: end.value };
+  }
+  const witness = stripVar(
+    solve(
+      [
+        ...branch,
+        {
+          linear: minus(variable(targetName), constant(end.value)),
+          relation: "=",
+        },
+      ],
+      sorts
+    ),
+    targetName
+  );
+  return witness === undefined
+    ? { strict: false, value: end.value }
+    : { strict: false, value: end.value, witness };
+};
+
+const mergeLow = (
+  current: BoundEnd | undefined,
+  next: BoundEnd | undefined
+): BoundEnd | undefined => {
+  if (current === undefined || next === undefined) {
+    return undefined;
+  }
+  const cmp = compare(next.value, current.value);
+  if (cmp < 0) {
+    return next;
+  }
+  if (cmp === 0 && current.strict && !next.strict) {
+    return next;
+  }
+  return current;
+};
+
+const mergeHigh = (
+  current: BoundEnd | undefined,
+  next: BoundEnd | undefined
+): BoundEnd | undefined => {
+  if (current === undefined || next === undefined) {
+    return undefined;
+  }
+  const cmp = compare(next.value, current.value);
+  if (cmp > 0) {
+    return next;
+  }
+  if (cmp === 0 && current.strict && !next.strict) {
+    return next;
+  }
+  return current;
+};
+
+/** Accumulator for merging exact lower/upper bounds across disjunctive branches. */
+export interface BoundsAcc {
+  anySat: boolean;
+  high: BoundEnd | undefined;
+  highUnbounded: boolean;
+  low: BoundEnd | undefined;
+  lowUnbounded: boolean;
+}
+
+export const makeBoundsAcc = (): BoundsAcc => ({
+  anySat: false,
+  high: undefined,
+  highUnbounded: false,
+  low: undefined,
+  lowUnbounded: false,
+});
+
+export const mergeBoundsInto = (
+  acc: BoundsAcc,
+  branchLow: BoundEnd | undefined,
+  branchHigh: BoundEnd | undefined
+): void => {
+  if (!acc.anySat) {
+    acc.anySat = true;
+    acc.low = branchLow;
+    acc.lowUnbounded = branchLow === undefined;
+    acc.high = branchHigh;
+    acc.highUnbounded = branchHigh === undefined;
+    return;
+  }
+  if (branchLow === undefined) {
+    acc.lowUnbounded = true;
+    acc.low = undefined;
+  } else if (!acc.lowUnbounded) {
+    acc.low = mergeLow(acc.low, branchLow);
+  }
+  if (branchHigh === undefined) {
+    acc.highUnbounded = true;
+    acc.high = undefined;
+  } else if (!acc.highUnbounded) {
+    acc.high = mergeHigh(acc.high, branchHigh);
+  }
+};
+
+export const finishBounds = (
+  acc: BoundsAcc,
+  mapEnd: (end: BoundEnd | undefined) => BoundEnd | undefined = (e) => e
+): Bounds | undefined => {
+  if (!acc.anySat) {
+    return undefined;
+  }
+  const low = acc.lowUnbounded ? undefined : mapEnd(acc.low);
+  const high = acc.highUnbounded ? undefined : mapEnd(acc.high);
+  return {
+    ...(low === undefined ? {} : { low }),
+    ...(high === undefined ? {} : { high }),
+  };
+};
+
+const mixedEndpoint = (
+  branch: readonly Constraint[],
+  extSorts: ReadonlyMap<string, Sort>,
+  targetName: string,
+  end: { readonly strict: boolean; readonly value: Rational } | undefined,
+  targetSort: Sort,
+  initTarget: bigint,
+  isLow: boolean
+): BoundEnd | undefined => {
+  if (end === undefined) {
+    return undefined;
+  }
+  if (targetSort === "integer") {
+    return exactIntegerBound(
+      branch,
+      extSorts,
+      targetName,
+      end,
+      initTarget,
+      isLow
+    );
+  }
+  const direct = realEndWithWitness(branch, extSorts, targetName, end);
+  if (direct.witness !== undefined || direct.strict) {
+    return direct;
+  }
+  throw new LogicError({
+    message:
+      "proof/bounds cannot compute exact mixed-integer bounds when the LP relaxation is not attained.",
+  });
+};
+
+const branchLinearBounds = (
+  branch: readonly Constraint[],
+  extSorts: ReadonlyMap<string, Sort>,
+  targetName: string,
+  targetSort: Sort,
+  allReal: boolean
+):
+  | { readonly high: BoundEnd | undefined; readonly low: BoundEnd | undefined }
+  | undefined => {
+  made = 0;
+  if (!decide(branch, extSorts)) {
+    return undefined;
+  }
+  const range = rangeOf(targetName, branch, extSorts);
+  if (allReal) {
+    return {
+      high:
+        range.high === undefined
+          ? undefined
+          : realEndWithWitness(branch, extSorts, targetName, range.high),
+      low:
+        range.low === undefined
+          ? undefined
+          : realEndWithWitness(branch, extSorts, targetName, range.low),
+    };
+  }
+  const init = solve(branch, extSorts);
+  if (init === undefined) {
+    return undefined;
+  }
+  const t0 = (init.get(targetName) as Rational).n;
+  return {
+    high: mixedEndpoint(
+      branch,
+      extSorts,
+      targetName,
+      range.high,
+      targetSort,
+      t0,
+      false
+    ),
+    low: mixedEndpoint(
+      branch,
+      extSorts,
+      targetName,
+      range.low,
+      targetSort,
+      t0,
+      true
+    ),
+  };
+};
+
+/**
+ * Exact tight lower and upper bounds of a linear expression `target` over
+ * `constraints` and `sorts` (undefined when unsatisfiable). Uses exact
+ * Fourier-Motzkin projection for reals and exact binary-search Omega over
+ * integer/scaled-integer targets, returning concrete witnesses when attained.
+ */
+export const linearBoundsOf = (
+  constraints: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  target: Linear
+): Bounds | undefined => {
+  const targetName = freshName(sorts, "__bound");
+  const allTargetVarsInt = [...target.coefficients.keys()].every(
+    (name) => sorts.get(name) === "integer"
+  );
+  const scaleDen = allTargetVarsInt
+    ? [...target.coefficients.values(), target.constant].reduce(
+        (acc, r) => lcmBig(acc, r.d),
+        1n
+      )
+    : 1n;
+  const scaledTarget =
+    allTargetVarsInt && scaleDen > 1n ? times(target, ratio(scaleDen)) : target;
+  const targetSort: Sort = allTargetVarsInt ? "integer" : "real";
+  const extSorts = new Map(sorts);
+  extSorts.set(targetName, targetSort);
+  const eqTarget: Constraint = {
+    linear: minus(scaledTarget, variable(targetName)),
+    relation: "=",
+  };
+  const allReal = [...extSorts.values()].every((s) => s === "real");
+  const unscaleEnd = (end: BoundEnd | undefined): BoundEnd | undefined => {
+    if (end === undefined || scaleDen === 1n) {
+      return end;
+    }
+    const value = divide(end.value, ratio(scaleDen));
+    return end.witness === undefined
+      ? { strict: end.strict, value }
+      : { strict: end.strict, value, witness: end.witness };
+  };
+
+  try {
+    const acc = makeBoundsAcc();
+    for (const branch of cases([...constraints, eqTarget])) {
+      const b = branchLinearBounds(
+        branch,
+        extSorts,
+        targetName,
+        targetSort,
+        allReal
+      );
+      if (b !== undefined) {
+        mergeBoundsInto(acc, b.low, b.high);
+      }
+    }
+    return finishBounds(acc, unscaleEnd);
+  } catch (error) {
+    if (error instanceof TooHard) {
+      throw tooHard();
+    }
+    throw error;
+  }
+};
+
+/**
+ * Exact tight lower and upper bounds of a linear-fractional ratio `num / den`
+ * over real variables via the Charnes-Cooper transformation (`y = s*x`, `s > 0`,
+ * `den(y, s) = 1`, optimize `num(y, s)`). Returns undefined when unsatisfiable.
+ */
+export const ratioBoundsOf = (
+  constraints: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  num: Linear,
+  den: Linear
+): Bounds | undefined => {
+  if ([...sorts.values()].some((s) => s !== "real")) {
+    throw new LogicError({
+      message:
+        "proof/bounds supports linear-fractional ratio bounds over continuous (value/number?) variables; use proof/prove to check integer ratio inequalities.",
+    });
+  }
+  const sName = freshName(sorts, "__cc_s");
+  const ccSorts = new Map(sorts);
+  ccSorts.set(sName, "real");
+
+  const homogenize = (lin: Linear): Linear => {
+    const coefficients = new Map(lin.coefficients);
+    if (!isZero(lin.constant)) {
+      coefficients.set(sName, lin.constant);
+    }
+    return { coefficients, constant: ZERO };
+  };
+
+  const mapEnd = (end: BoundEnd | undefined): BoundEnd | undefined => {
+    if (end === undefined) {
+      return undefined;
+    }
+    const sVal = end.witness?.get(sName);
+    if (end.witness === undefined || sVal === undefined || isZero(sVal)) {
+      return { strict: end.strict, value: end.value };
+    }
+    const witness = new Map<string, Rational>();
+    for (const [name, val] of end.witness) {
+      if (name !== sName) {
+        witness.set(name, divide(val, sVal));
+      }
+    }
+    return { strict: end.strict, value: end.value, witness };
+  };
+
+  const acc = makeBoundsAcc();
+  const signBranches: readonly [Linear, Linear][] = [
+    [num, den],
+    [times(num, negate(ONE)), times(den, negate(ONE))],
+  ];
+
+  for (const [bNum, bDen] of signBranches) {
+    const ccConstraints: Constraint[] = [
+      ...constraints.map((c) => ({
+        linear: homogenize(c.linear),
+        relation: c.relation,
+      })),
+      { linear: variable(sName), relation: ">" },
+      { linear: minus(homogenize(bDen), constant(ONE)), relation: "=" },
+    ];
+    const res = linearBoundsOf(ccConstraints, ccSorts, homogenize(bNum));
+    if (res !== undefined) {
+      mergeBoundsInto(acc, mapEnd(res.low), mapEnd(res.high));
+    }
+  }
+  return finishBounds(acc);
+};

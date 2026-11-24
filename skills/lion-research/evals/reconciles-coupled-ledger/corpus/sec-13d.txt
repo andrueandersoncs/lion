@@ -1,0 +1,10 @@
+SEC Schedule 13D — Beneficial Ownership of Vespera Grid Storage
+Published: 2026-02-20
+URL: https://sec.example/vespera/13d-helios
+
+Beneficial voting equity holdings in Vespera Grid Storage:
+- Helios Infra Fund directly holds 18% of Vespera Grid Storage voting shares.
+- Nordic Energy Holdings directly holds 35% of Vespera Grid Storage voting shares.
+- Apex Grid SPV directly holds 24% of Vespera Grid Storage voting shares.
+
+Parent ownership disclosure: Helios Infra Fund holds 60% of the voting equity of Nordic Energy Holdings (contributing 60% of 35% = 21% effective indirect stake in Vespera). No parent ownership of Apex Grid SPV is reported in this filing.

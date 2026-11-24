@@ -3024,6 +3024,114 @@
       ["quote", "… accepts only flags from \"i\", \"m\", \"s\", but found …."],
       "regex-flags"
     ],
-    ["reads", ["quote", "…: invalid pattern …: …."], "regex-pattern"]
+    ["reads", ["quote", "…: invalid pattern …: …."], "regex-pattern"],
+    [
+      "stated",
+      "proof-prove-goal",
+      "proof",
+      ["quote", "proof/prove takes a goal or boolean"]
+    ],
+    [
+      "stated",
+      "proof-bounds-input",
+      "proof",
+      ["quote", "proof/bounds takes a numeric expression and a goal"]
+    ],
+    [
+      "stated",
+      "proof-bounds-solvable",
+      "proof",
+      [
+        "quote",
+        "proof/bounds computes exact linear and continuous linear-fractional bounds when solvable"
+      ]
+    ],
+    ["reads", ["quote", "a numeric expression and a goal"], "describes-taken"],
+    [
+      "reads",
+      ["quote", "Unsafe proof/bounds …: its goal does not bind …."],
+      "bound-before-use"
+    ],
+    [
+      "reads",
+      ["quote", "proof/prove expects a goal or boolean, but found …."],
+      "proof-prove-goal"
+    ],
+    [
+      "reads",
+      ["quote", "proof/bounds expects a goal, but found …."],
+      "proof-bounds-input"
+    ],
+    [
+      "reads",
+      ["quote", "proof/bounds expects a numeric target, but found …."],
+      "proof-bounds-input"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/bounds cannot compute exact mixed-integer bounds when the LP relaxation is not attained."
+      ],
+      "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      ["quote", "proof/bounds cannot solve waiting goal …: …"],
+      "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/bounds supports linear and linear-fractional numeric targets, not higher-degree polynomials."
+      ],
+      "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/bounds supports linear-fractional ratio bounds over continuous (value/number?) variables; use proof/prove to check integer ratio inequalities."
+      ],
+      "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      ["quote", "proof/rules cannot enumerate non-fixed list in …."],
+      "proof-rules-induction"
+    ],
+    [
+      "reads",
+      ["quote", "proof/rules cannot prove aggregate/…."],
+      "proof-rules-induction"
+    ],
+    [
+      "reads",
+      ["quote", "proof/rules expects a 2-element pair for aggregate/…."],
+      "proof-rules-induction"
+    ],
+    [
+      "reads",
+      ["quote", "proof/rules expects a numeric argument for aggregate/…."],
+      "proof-rules-induction"
+    ],
+    ["reads", ["quote", "… of a ratio"], "solver-decides-linear"],
+    [
+      "kept",
+      "proof-bounds-input",
+      [
+        "quote",
+        "one is for the goal argument and one is for the numeric target"
+      ]
+    ],
+    [
+      "kept",
+      "proof-bounds-solvable",
+      [
+        "quote",
+        "each names a distinct reason exact bounds could not be computed"
+      ]
+    ]
   ]
 ]

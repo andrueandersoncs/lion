@@ -1,0 +1,146 @@
+{
+  "about": "Known-correct substantive checks for the Kestrel BioLabs acquisition due diligence corpus. Grades reading, framing, model conclusions, interactive page, and final report.",
+  "checks": [
+    {
+      "stage": "reading",
+      "check": "Every quote is in its source's saved text",
+      "quotes": true,
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every figure recorded is written in the words quoted",
+      "query": ["find", "?claim", ["unquoted", "?claim", "?_", "?_"]],
+      "expect": "none",
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every source in the corpus was read and recorded",
+      "query": [
+        "array/length",
+        [
+          "aggregate/unique",
+          ["find", "?source", ["claim", "?_", "?source", "?_", "?_"]]
+        ]
+      ],
+      "expect": 6,
+      "rests_on": [
+        "prelim-release",
+        "fy25-10k",
+        "investor-deck",
+        "biotech-wire",
+        "lab-blog",
+        "regulator-registry"
+      ]
+    },
+    {
+      "stage": "framing",
+      "check": "Every statement recorded is read by an answer rule or domain rule",
+      "query": [
+        "find",
+        "?claim",
+        [
+          "and",
+          ["claim", "?claim", "?_", "?_", "?_"],
+          ["not", ["answer", "?_", "?_", "?claim"]]
+        ]
+      ],
+      "expect": "none",
+      "rests_on": []
+    },
+    {
+      "stage": "conclusions",
+      "check": "410 Services staff is confirmed independently by two publishers first-hand",
+      "query": ["find", "?q", ["corroborated", "?q", 410]],
+      "expect": "some",
+      "rests_on": ["prelim-release", "regulator-registry"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "LabLedger Blog misquotes the preliminary release as saying 480 staff instead of 410",
+      "query": ["find", "?c", ["misquoted", "?c", "?_", "?_", 480, 410]],
+      "expect": "some",
+      "rests_on": ["lab-blog", "prelim-release"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "The withdrawn $255M figure is no longer backed first-hand or is flagged as restated/disputed",
+      "query": [
+        "or",
+        ["restated", "?_", "?_", 255, "?_"],
+        ["not", ["backing", "?_", 255, "?_"]],
+        ["violated", "?_", "?_"]
+      ],
+      "expect": true,
+      "rests_on": ["prelim-release", "fy25-10k"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "An assumption or proof check flags the margin covenant failure or division sum impossibility",
+      "query": ["or", ["violated", "?_", "?_"], ["disputed", "?_", "?_"]],
+      "expect": true,
+      "rests_on": ["fy25-10k", "investor-deck"]
+    },
+    {
+      "stage": "page",
+      "check": "The page was built",
+      "file": "explorer.html",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "Every text and query of the page runs",
+      "page": "runs",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "The page reports the worst-case gross margin (30.67% / 30.7%)",
+      "page": "30\\.(67|7)",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report concludes Kestrel does NOT provably clear the 32.0% covenant",
+      "report": "(does not|cannot|fails to|not provably|falls below|breaches|below 32)",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives the exact worst-case minimum gross margin (30.67% or 30.7%)",
+      "report": "30\\.(67|7)",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives the exact best-case maximum gross margin (33.47% or 33.5%)",
+      "report": "33\\.(47|5)",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report names the worst-case figures ($238M revenue and $165M COGS)",
+      "report": "238[\\s\\S]{0,120}165|165[\\s\\S]{0,120}238",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report proves the division floors ($247M) contradict the $242M ceiling by $5M",
+      "report": "(247[\\s\\S]{0,160}242|242[\\s\\S]{0,160}247)[\\s\\S]{0,160}(inconsistent|impossible|contradict|exceed|unsat|\\$?5)",
+      "rests_on": ["fy25-10k", "investor-deck"]
+    },
+    {
+      "stage": "report",
+      "check": "The report identifies LabLedger's 480 vs 410 misquote and 410 corroboration",
+      "report": "480[\\s\\S]{0,200}410|410[\\s\\S]{0,200}480",
+      "rests_on": ["lab-blog", "prelim-release", "regulator-registry"]
+    },
+    {
+      "stage": "report",
+      "check": "The report names CryoPack and Helios Glassworks as supply-chain single points of failure",
+      "report": "(?i)(cryopack[\\s\\S]{0,250}helios|helios[\\s\\S]{0,250}cryopack)",
+      "rests_on": ["prelim-release", "biotech-wire", "regulator-registry"]
+    }
+  ]
+}

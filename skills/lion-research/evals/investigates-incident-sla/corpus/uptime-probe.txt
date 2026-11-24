@@ -1,0 +1,7 @@
+NetPulse Synthetic Monitor — Tokyo Node Log
+Published: 2026-04-10
+URL: https://netpulse.example/reports/meridian-20260410
+
+Independent synthetic probes from NetPulse Monitor (timestamps in JST, UTC+09:00):
+- First consecutive checkout 503 failure observed at 2026-04-10T22:15:00+09:00.
+- Checkout synthetic probe returned 200 OK continuously starting at 2026-04-11T01:20:00+09:00.

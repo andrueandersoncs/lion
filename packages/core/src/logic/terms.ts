@@ -205,6 +205,8 @@ export type FormName =
   | "find"
   | "assuming"
   | "why"
+  | "proof/prove"
+  | "proof/bounds"
   | "fact"
   | "retract"
   | "rule"
@@ -410,6 +412,7 @@ export const isRelational = (value: unknown): boolean =>
  */
 export const isQuestion = (value: unknown): boolean =>
   isForm(value, "find", "exists", "assuming", "why") ||
+  isForm(value, "proof/prove", "proof/bounds") ||
   value instanceof Atom ||
   (isForm(value, "not", "and", "or") && value.parts.some(isQuestion));
 

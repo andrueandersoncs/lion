@@ -1957,8 +1957,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "number/subtract on unknowns adds",
     file: core("logic/symbolic.ts"),
-    find: "                (a, b) => polySub(a, b),",
-    replace: "                (a, b) => polyAdd(a, b),",
+    find: "          const next = polyTrySub(total, p);",
+    replace: "          const next = polyTryAdd(total, p);",
     tests: SOLVING_TESTS,
   },
   {
@@ -5494,7 +5494,7 @@ export const MUTATIONS: readonly Mutation[] = [
   },
   {
     name: "proof/facts ignores matches inside aggregate derivations",
-    file: core("modules/proof.ts"),
+    file: core("logic/proof.ts"),
     find: "  if (Array.isArray(node.matches)) {",
     replace: "  if (false && Array.isArray(node.matches)) {",
     tests: ["src/logic/tests/proof-provenance.test.ts"],
@@ -5521,5 +5521,49 @@ export const MUTATIONS: readonly Mutation[] = [
     replace:
       "      if (nextIdom !== -1 && idom[at] !== nextIdom) {\n        idom[at] = nextIdom;\n      }",
     tests: ["src/logic/tests/graph.test.ts"],
+  },
+  {
+    name: "proof/prove drops counterexample witness when negated goal holds",
+    file: core("logic/proof.ts"),
+    find: '    const counterexample = isForm(goal, "not")\n      ? yield* witnessOf(model, goal.parts[0], vars)\n      : undefined;',
+    replace: "    const counterexample = undefined;",
+    tests: ["src/logic/tests/proof-building.test.ts"],
+  },
+  {
+    name: "proof/bounds skips integer binary search refinement",
+    file: core("logic/solver.ts"),
+    find: "    if (decide([...branch, probe], sorts)) {\n      if (findMin) {\n        hi = mid;\n      } else {\n        lo = mid;\n      }\n    } else if (findMin) {\n      lo = mid + 1n;\n    } else {\n      hi = mid - 1n;\n    }",
+    replace: "    break;",
+    tests: ["src/logic/tests/proof-building.test.ts"],
+  },
+  {
+    name: "ratioBoundsOf skips denominator normalization constraint in Charnes-Cooper",
+    file: core("logic/solver.ts"),
+    find: '      { linear: minus(homogenize(bDen), constant(ONE)), relation: "=" },',
+    replace: "",
+    tests: ["src/logic/tests/proof-building.test.ts"],
+  },
+  {
+    name: "proof/rules ignores column-level schema invariants",
+    file: core("logic/proof.ts"),
+    find: '  // Column-level schema invariant: ["and", [rel, ?c1, ..., ?ck], ["not", [S, ?ck]]].\n  if (rowTerm instanceof LogicVariable && !rowTerm.anonymous) {',
+    replace:
+      '  // Column-level schema invariant: ["and", [rel, ?c1, ..., ?ck], ["not", [S, ?ck]]].\n  if (false && rowTerm instanceof LogicVariable && !rowTerm.anonymous) {',
+    tests: ["src/logic/tests/proof-building.test.ts"],
+  },
+  {
+    name: "symbolic ratio comparison ignores negative denominator flip",
+    file: core("logic/symbols.ts"),
+    find: "    const posNum = polyFormula(num, op, sorts);\n    const negNum = polyFormula(num, flipOp(op), sorts);",
+    replace:
+      "    const posNum = polyFormula(num, op, sorts);\n    const negNum = polyFormula(num, op, sorts);",
+    tests: ["src/logic/tests/proof-building.test.ts"],
+  },
+  {
+    name: "symbolic time/diff ignores unit scaling divisor",
+    file: core("logic/symbolic.ts"),
+    find: "      return one(polyScale(diff, ratio(1n, unitMs)));",
+    replace: "      return one(diff);",
+    tests: ["src/logic/tests/proof-building.test.ts"],
   },
 ];

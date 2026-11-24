@@ -604,6 +604,10 @@ export class Model {
    * database that keeps this model sets it.
    */
   explain?: (atom: Atom) => LogicEffect<unknown>;
+  /** Proves or refutes a goal with certificates or counterexamples. */
+  prove?: (goal: unknown, vars: Vars) => LogicEffect<unknown>;
+  /** Computes exact symbolic/relational interval bounds for a numeric target. */
+  bounds?: (target: unknown, goal: unknown, vars: Vars) => LogicEffect<unknown>;
 
   constructor(
     facts: ReadonlyMap<string, TupleSet>,
@@ -773,6 +777,12 @@ export const term = (
   if (isForm(value, "why")) {
     return explained(model, value, vars);
   }
+  if (isForm(value, "proof/prove")) {
+    return provedIn(model, value, vars);
+  }
+  if (isForm(value, "proof/bounds")) {
+    return boundedIn(model, value, vars);
+  }
   return isForm(value, "find")
     ? findAll(model, value, vars)
     : holds(model, value as Goal, vars);
@@ -819,6 +829,30 @@ const explained = (
     );
     return yield* home.explain(new Atom(atom.relation, args));
   });
+
+const provedIn = (
+  model: Model,
+  question: LogicForm,
+  vars: Vars
+): LogicEffect<unknown> => {
+  const home = model.base ?? model;
+  if (home.prove === undefined) {
+    return needsDatabase(question, vars);
+  }
+  return home.prove(question.parts[0], vars);
+};
+
+const boundedIn = (
+  model: Model,
+  question: LogicForm,
+  vars: Vars
+): LogicEffect<unknown> => {
+  const home = model.base ?? model;
+  if (home.bounds === undefined) {
+    return needsDatabase(question, vars);
+  }
+  return home.bounds(question.parts[0], question.parts[1], vars);
+};
 
 /**
  * What an `assuming` gives for an answer: its changes with the values of
@@ -1352,7 +1386,7 @@ const attempt = <A>(work: Effect.Effect<A, unknown>) =>
  * goal the solver cannot decide, and every goal that needs a variable such
  * a goal defines, waits for values instead.
  */
-const stepFormulas = (model: Model, step: Solved, vars: Vars) =>
+export const stepFormulas = (model: Model, step: Solved, vars: Vars) =>
   Effect.gen(function* () {
     const sorts = new Map<string, Sort>();
     const base: SymbolicContext = {

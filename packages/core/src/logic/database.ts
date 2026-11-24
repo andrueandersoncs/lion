@@ -53,6 +53,7 @@ import {
   undo,
   type Vars,
 } from "@/logic/model";
+import { boundsGoal, proveGoal } from "@/logic/proof";
 import {
   type Assertion,
   assertionProblem,
@@ -1589,6 +1590,8 @@ const modelOf = (database: LogicDatabase) => {
   const model = new Model(database.facts, database.rules);
   model.assume = assumeIn(database);
   model.explain = explainIn(database, model);
+  model.prove = (goal, vars) => proveGoal(model, goal, vars);
+  model.bounds = (target, goal, vars) => boundsGoal(model, target, goal, vars);
   return model;
 };
 
@@ -1725,7 +1728,7 @@ export const queryDatabase = (
 export const askDatabase = (database: LogicDatabase, question: LogicValue) =>
   reading(database, (model) =>
     Effect.gen(function* () {
-      if (isForm(question, "assuming", "why")) {
+      if (isForm(question, "assuming", "why", "proof/prove", "proof/bounds")) {
         return yield* term(model, question, new Map());
       }
       const plans = yield* compiling(() =>

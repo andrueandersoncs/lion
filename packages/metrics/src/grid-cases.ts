@@ -924,6 +924,81 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
     boolean: true,
   },
+  {
+    name: "proof of a universal bound",
+    form: [
+      "object/get",
+      [
+        "proof/prove",
+        [
+          "not",
+          [
+            "exists",
+            ["?y"],
+            [
+              "and",
+              ["schema/fits?", "?y", "value/integer?"],
+              ["number/greaterThanOrEqualTo", "?y", X],
+              ["number/lessThan", "?y", 2],
+            ],
+          ],
+        ],
+      ],
+      "proved",
+    ],
+    boolean: true,
+  },
+  {
+    name: "exact symbolic bounds",
+    form: [
+      "object/get",
+      [
+        "proof/bounds",
+        ["number/multiply", 2, "?y"],
+        [
+          "and",
+          ["schema/fits?", "?y", "value/integer?"],
+          ["number/greaterThanOrEqualTo", "?y", X],
+          ["number/lessThanOrEqualTo", "?y", ["number/add", X, 3]],
+        ],
+      ],
+      "max",
+    ],
+  },
+  {
+    name: "symbolic ratio check",
+    form: [
+      "exists",
+      ["?r"],
+      [
+        "and",
+        ["schema/fits?", "?r", "value/number?"],
+        ["number/greaterThanOrEqualTo", "?r", 10],
+        ["number/lessThanOrEqualTo", "?r", 20],
+        [
+          "number/greaterThan",
+          ["number/divide", ["number/subtract", "?r", X], "?r"],
+          0.9,
+        ],
+      ],
+    ],
+    boolean: true,
+  },
+  {
+    name: "symbolic time difference check",
+    form: [
+      "exists",
+      ["?t"],
+      [
+        "and",
+        ["schema/fits?", "?t", "value/integer?"],
+        ["number/greaterThanOrEqualTo", "?t", 0],
+        ["number/lessThanOrEqualTo", "?t", ["time/add", 0, X, "minutes"]],
+        ["number/greaterThanOrEqualTo", ["time/diff", "?t", 0, "minutes"], 2],
+      ],
+    ],
+    boolean: true,
+  },
 ];
 
 /** What plain code gives an expression for each value of `?x`, in order. */

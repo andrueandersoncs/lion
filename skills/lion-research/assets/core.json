@@ -104,6 +104,16 @@
   ["relation", "live", ["lead"]],
   ["relation", "progress", ["lead", "read", "paid_off", "misses"]],
   [
+    "relation",
+    "obligation",
+    ["id", "statement"],
+    {
+      "key": "id"
+    }
+  ],
+  ["relation", "closed_obligation", ["obligation", "status", "detail"]],
+  ["relation", "open_obligation", ["obligation"]],
+  [
     "invariant",
     [
       "and",
@@ -231,6 +241,28 @@
           ["source", "?s", "?_", "?_", "?_", "?_", "?_"],
           ["lead", "?l", "?_", "?_"],
           ["value/integer?", "?n"]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["closed_obligation", "?o", "?status", "?_"],
+      [
+        "not",
+        [
+          "and",
+          ["obligation", "?o", "?_"],
+          [
+            "in",
+            "?status",
+            ["quote", ["proved", "refuted", "bounded", "inconsistent"]]
+          ]
         ]
       ]
     ],
@@ -492,6 +524,12 @@
       ]
     ],
     ["lead", "?l", "?_", "?_"]
+  ],
+  [
+    "rule",
+    ["open_obligation", "?o"],
+    ["obligation", "?o", "?_"],
+    ["not", ["closed_obligation", "?o", "?_", "?_"]]
   ],
   "ready"
 ]

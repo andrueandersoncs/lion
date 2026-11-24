@@ -30,20 +30,59 @@ import {
   ZERO,
 } from "@/numbers/exact";
 
-/** A symbolic number: linear part plus optional higher-degree monomials (`"a*b"` keys). */
+/** A symbolic number: linear part plus optional higher-degree monomials (`"a*b"` keys) and optional linear denominator. */
 export interface NumberSym {
+  readonly denominator?: Linear;
   readonly kind: "number";
   readonly linear: Linear;
   readonly nonlinear?: ReadonlyMap<string, Rational>;
 }
 
+/** True when two linear expressions have identical constants and coefficients. */
+export const sameLinear = (a: Linear, b: Linear): boolean => {
+  if (
+    compare(a.constant, b.constant) !== 0 ||
+    a.coefficients.size !== b.coefficients.size
+  ) {
+    return false;
+  }
+  for (const [name, k] of a.coefficients) {
+    const other = b.coefficients.get(name);
+    if (other === undefined || compare(k, other) !== 0) {
+      return false;
+    }
+  }
+  return true;
+};
+
 export const numberSym = (
   linear: Linear,
-  nonlinear?: ReadonlyMap<string, Rational>
-): NumberSym =>
-  nonlinear !== undefined && nonlinear.size > 0
+  nonlinear?: ReadonlyMap<string, Rational>,
+  denominator?: Linear
+): NumberSym => {
+  const hasNl = nonlinear !== undefined && nonlinear.size > 0;
+  if (denominator !== undefined) {
+    if (denominator.coefficients.size === 0 && !isZero(denominator.constant)) {
+      const inv = divide(ONE, denominator.constant);
+      const scaled = polyScale(
+        hasNl
+          ? { kind: "number", linear, nonlinear }
+          : { kind: "number", linear },
+        inv
+      );
+      return scaled;
+    }
+    return hasNl
+      ? { denominator, kind: "number", linear, nonlinear }
+      : { denominator, kind: "number", linear };
+  }
+  return hasNl
     ? { kind: "number", linear, nonlinear }
     : { kind: "number", linear };
+};
+
+export const numeratorOf = (sym: NumberSym): NumberSym =>
+  numberSym(sym.linear, sym.nonlinear);
 
 const MAX_DEGREE = 8;
 const MAX_TERMS = 64;
@@ -139,7 +178,7 @@ export const polyScale = (a: NumberSym, factor: Rational): NumberSym => {
     return numberSym(constant(ZERO));
   }
   if (a.nonlinear === undefined) {
-    return numberSym(times(a.linear, factor));
+    return numberSym(times(a.linear, factor), undefined, a.denominator);
   }
   const nonlinear = new Map<string, Rational>();
   for (const [key, k] of a.nonlinear) {
@@ -148,7 +187,57 @@ export const polyScale = (a: NumberSym, factor: Rational): NumberSym => {
       nonlinear.set(key, next);
     }
   }
-  return numberSym(times(a.linear, factor), nonlinear);
+  return numberSym(times(a.linear, factor), nonlinear, a.denominator);
+};
+
+/** Ratio-aware addition: returns undefined when two distinct unknown denominators cannot stay linear. */
+export const polyTryAdd = (
+  a: NumberSym,
+  b: NumberSym
+): NumberSym | undefined => {
+  if (a.denominator === undefined && b.denominator === undefined) {
+    return polyAdd(a, b);
+  }
+  if (a.denominator !== undefined && b.denominator === undefined) {
+    const sum = polyAdd(numeratorOf(a), polyMul(b, numberSym(a.denominator)));
+    return numberSym(sum.linear, sum.nonlinear, a.denominator);
+  }
+  if (a.denominator === undefined && b.denominator !== undefined) {
+    const sum = polyAdd(polyMul(a, numberSym(b.denominator)), numeratorOf(b));
+    return numberSym(sum.linear, sum.nonlinear, b.denominator);
+  }
+  if (
+    a.denominator !== undefined &&
+    b.denominator !== undefined &&
+    sameLinear(a.denominator, b.denominator)
+  ) {
+    const sum = polyAdd(numeratorOf(a), numeratorOf(b));
+    return numberSym(sum.linear, sum.nonlinear, a.denominator);
+  }
+  return undefined;
+};
+
+/** Ratio-aware subtraction: returns undefined when two distinct unknown denominators cannot stay linear. */
+export const polyTrySub = (a: NumberSym, b: NumberSym): NumberSym | undefined =>
+  polyTryAdd(a, polyScale(b, negate(ONE)));
+
+/** Ratio-aware multiplication: returns undefined when multiplying two unknown denominators. */
+export const polyTryMul = (
+  a: NumberSym,
+  b: NumberSym
+): NumberSym | undefined => {
+  if (a.denominator === undefined && b.denominator === undefined) {
+    return polyMul(a, b);
+  }
+  if (a.denominator !== undefined && b.denominator === undefined) {
+    const prod = polyMul(numeratorOf(a), b);
+    return numberSym(prod.linear, prod.nonlinear, a.denominator);
+  }
+  if (a.denominator === undefined && b.denominator !== undefined) {
+    const prod = polyMul(a, numeratorOf(b));
+    return numberSym(prod.linear, prod.nonlinear, b.denominator);
+  }
+  return undefined;
 };
 
 export const polyMul = (a: NumberSym, b: NumberSym): NumberSym => {
@@ -232,11 +321,12 @@ export const polyPow = (
   return result;
 };
 
-/** True when every variable in `sym` is an integer and every coefficient is an integer. */
+/** True when every variable in `sym` is an integer and every coefficient is an integer (and no unknown denominator). */
 export const polyIntegral = (
   sym: NumberSym,
   sorts: ReadonlyMap<string, Sort>
 ): boolean =>
+  sym.denominator === undefined &&
   sym.linear.constant.d === 1n &&
   [...sym.linear.coefficients].every(
     ([name, c]) => c.d === 1n && sorts.get(name) === "integer"
@@ -279,7 +369,7 @@ const exactSqrt = (r: Rational): Rational | undefined => {
 
 export type PolyComparison = "=" | ">" | ">=" | "<" | "<=";
 
-const flipOp = (op: PolyComparison): PolyComparison => {
+export const flipOp = (op: PolyComparison): PolyComparison => {
   switch (op) {
     case ">":
       return "<";

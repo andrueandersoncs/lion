@@ -1324,7 +1324,9 @@ Evaluates to `{ "within limit": [{}], "not overdrawn": [] }`: every command keep
 - When the proof fails, a rule that holds when a breaking state exists, and `why` of it, give the state and the command. A state that cannot be reached means the rule needs another beside it; Houdini's way of finding the largest set of candidate rules that keeps itself is a few lines of Lion over the same question.
 - Where the solver's step stopped a rule, `why` shows a certificate (linear or integer split tree) or `induction` proof that [`proof/valid?`](#proof) checks without invoking the solver, along with the goals that contradict each other. A proof whose premises allow no state, such as one of a rule no account can meet, says `"vacuous": true`.
 - `["schema/includes?", a, b]` says whether every value `a` allows fits `b`, decided the same way — across all value kinds (such as `value/number?`, `value/integer?`, `value/string?`, `value/array?`, `value/object?`), open records and lists (`schema/open`), unbounded collections (`schema/arrayOf`, `schema/recordOf`), and recursive or mutually recursive named schemas (including structurally uninhabited schemas and least-fixed-point loops).
-- `["proof/rules", rel, schema]` (or `["proof/rules", {"relA": schemaA, "relB": schemaB}]` for mutually recursive relations) proves by rule induction that every row derived by those relations fits the target schema across all databases whose base relations satisfy their declared schemas, returning a proof value checkable by `proof/valid?`.
+- `["proof/prove", goal]` proves a universal or empirical goal in one call, returning `{ proved: true, proof, ... }` (a kernel-verifiable certificate, induction proof, or `why` derivation with `facts` and `assumptions`), `{ proved: false, counterexample }` when the solver finds a concrete violating assignment, or `{ proved: false, reason }` otherwise.
+- `["proof/bounds", expr, goal]` computes exact tight `[min, max]` bounds (continuous Fourier-Motzkin, integer Omega binary search, Charnes-Cooper linear-fractional ratios `num/den`, and relational/hybrid database goals), returning exact endpoint witnesses and kernel-checkable `minProof` / `maxProof` certificates.
+- `["proof/rules", rel, schema]` (or `["proof/rules", {"relA": schemaA, "relB": schemaB}]` for mutually recursive relations) proves by rule induction that every row derived by those relations fits the target schema across all databases whose base relations satisfy their declared schemas (including single-column schema invariants, nested pattern destructuring, `in`/`schema/fits?` filters, and sound abstract domains for `count`/`countUnique`/`sum`/`mean`/`median`/`unique`/`collect`/`argMin`/`argMax`/`min`/`max`), returning a proof value checkable by `proof/valid?`.
 - See [Prove that every command keeps a rule](#prove-commands) for each, with examples.
 
 ### Schemas in rules and queries
@@ -1702,17 +1704,19 @@ The second evaluates to `[{ "path": ["id"], "expected": "value/integer?", "found
 
 ### `proof`
 
-Checks proof values with a small trusted kernel (without invoking the solver), proves universal properties of rule-defined relations by rule induction, and extracts ground evidence and closed-world absences from `why` explanations.
+Checks proof values with a small trusted kernel (without invoking the solver), proves goals or synthesizes counterexamples, computes exact tight symbolic and relational bounds, proves universal properties of rule-defined relations by rule induction, and extracts ground evidence and closed-world absences from `why` explanations.
 
 ```json
 ["proof/valid?", proof]
+["proof/prove", ["not", ["exists", ["?x"], ["and", ["schema/fits?", "?x", "value/integer?"], ["number/greaterThanOrEqualTo", "?x", 1], ["number/lessThan", "?x", 1]]]]]
+["proof/bounds", ["number/divide", ["number/subtract", "?r", "?c"], "?r"], ["and", ["schema/fits?", "?r", "value/number?"], ["schema/fits?", "?c", "value/number?"], ["number/greaterThanOrEqualTo", "?r", 238], ["number/lessThanOrEqualTo", "?r", 242], ["number/greaterThanOrEqualTo", "?c", 161], ["number/lessThanOrEqualTo", "?c", 165]]]
 ["proof/rules", "path", "PosPath"]
 ["proof/rules", {"even": "PosRow", "odd": "PosRow"}]
 ["proof/facts", ["why", ["reach", "a", "d"]]]
 ["proof/assumptions", ["why", ["reach", "a", "d"]]]
 ```
 
-`proof/valid?` verifies linear refutation certificates, Omega integer split trees (`kind: "split"`), case splits (`kind: "cases"`), induction proofs (`kind: "induction"`), lemma compositions (`kind: "lemma"`), and `why` derivation trees. `proof/rules` checks existing facts, base relation schemas, and every rule (including element-preserving `aggregate/min` and `aggregate/max` heads), returning a kernel-checkable induction proof or a counterexample. `proof/facts` returns the sorted, deduplicated list of recorded (`given: true`) base facts that a `why` explanation rests on, and `proof/assumptions` returns the sorted, deduplicated list of leaf absent goals (closed-world negative premises or missing facts) it depends on.
+`proof/valid?` verifies linear refutation certificates, Omega integer split trees (`kind: "split"`), case splits (`kind: "cases"`), induction proofs (`kind: "induction"`), lemma compositions (`kind: "lemma"`), `proof/prove` / `proof/bounds` proof records, and `why` derivation trees. `proof/prove` decides a goal directly — returning a kernel-valid proof (or `why` tree with `facts` and `assumptions`) when proved, or a concrete `counterexample` witness when a universal `["not", ["exists", ...]]` fails. `proof/bounds` computes exact tight `[min, max]` intervals with endpoint witnesses and kernel-checked `minProof` / `maxProof` certificates across continuous linear, integer, Charnes-Cooper linear-fractional ratio, and relational database constraints. `proof/rules` checks existing facts, base relation schemas, single-column schema invariants, and every rule (including nested pattern destructuring, `in`/`schema/fits?` filters, and abstract aggregate output domains), returning a kernel-checkable induction proof or a counterexample. `proof/facts` returns the sorted, deduplicated list of recorded (`given: true`) base facts that a `why` explanation rests on, and `proof/assumptions` returns the sorted, deduplicated list of leaf absent goals (closed-world negative premises or missing facts) it depends on.
 
 ### `time`
 
@@ -1727,7 +1731,7 @@ Deterministic proleptic Gregorian UTC calendar and timestamp functions with zero
 ["time/add", 1772556000000, 1, "days"]
 ```
 
-`time/parse` accepts ISO-8601 dates (`"YYYY-MM-DD"`) and timestamps with an explicit zone (`Z`, `UTC`, or `±HH:MM`) and returns `null` for malformed or impossible calendar dates. `time/fromParts` validates Gregorian dates/times strictly and fails cleanly on impossible dates. `time/format` formats UTC instants at `"date"`, `"minute"`, `"second"` (default), or `"ms"`. `time/parts` returns `{"year", "month", "day", "hour", "minute", "second", "ms", "dayOfWeek"}`. `time/diff` and `time/add` compute exact Lion rational/integer durations in `"ms"`, `"seconds"`, `"minutes"`, `"hours"`, or `"days"`.
+`time/parse` accepts ISO-8601 dates (`"YYYY-MM-DD"`) and timestamps with an explicit zone (`Z`, `UTC`, or `±HH:MM`) and returns `null` for malformed or impossible calendar dates. `time/fromParts` validates Gregorian dates/times strictly and fails cleanly on impossible dates. `time/format` formats UTC instants at `"date"`, `"minute"`, `"second"` (default), or `"ms"`. `time/parts` returns `{"year", "month", "day", "hour", "minute", "second", "ms", "dayOfWeek"}`. `time/diff` and `time/add` compute exact Lion rational/integer durations in `"ms"`, `"seconds"`, `"minutes"`, `"hours"`, or `"days"`; `time/diff`, `time/add`, and `time/fromParts` (for concrete calendar dates with symbolic hour/minute/second/offset) are also interpreted symbolically by the solver and `proof/bounds`.
 
 ### `console`
 

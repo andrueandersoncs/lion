@@ -20,16 +20,45 @@ import {
   type ProofCertificate,
   refuteWithSplits,
 } from "@/logic/certificate";
-import type { CompiledRule, Literal } from "@/logic/compile";
+import {
+  type CompiledRule,
+  compiling,
+  type Literal,
+  questionPlans,
+  Solved,
+} from "@/logic/compile";
 import type { Invariant, LogicDatabase } from "@/logic/database";
+import { whyGoal } from "@/logic/explain";
 import { fits } from "@/logic/fit";
 import { includes } from "@/logic/inclusion";
 import {
+  certificateOf,
+  each,
+  term as evalTerm,
+  exampleOf,
+  type LogicEffect,
+  type Model,
+  NO_VARS,
+  stepFormulas,
+  type Vars,
+} from "@/logic/model";
+import { numberSym, polyIntegral } from "@/logic/polynomial";
+import {
+  type Bounds,
   type Constraint,
+  constant,
+  finishBounds,
+  linearBoundsOf,
+  makeBoundsAcc,
+  mergeBoundsInto,
+  minus,
+  ratioBoundsOf,
   type Sort,
   solve,
   cases as splitCases,
+  times,
   type Values,
+  variable,
 } from "@/logic/solver";
 import {
   type Context,
@@ -42,11 +71,13 @@ import {
 import {
   ANY_REST_SCHEMA,
   and,
+  atom as atomFormula,
   type Cases,
   concrete,
   equal,
   FALSE,
   type Formula,
+  fromValue,
   not,
   one,
   or,
@@ -56,15 +87,31 @@ import {
 } from "@/logic/symbols";
 import {
   Atom,
+  buildOf,
+  compareValues,
   DeferredCall,
   isForm,
+  isListTerm,
   isPlainObject,
   type LogicForm,
   LogicVariable,
+  nameOf,
   type RelationInfo,
+  recordKeys,
   relationOf,
   show,
+  valueKey,
 } from "@/logic/terms";
+import {
+  compare,
+  fromRational,
+  isNumber,
+  negate,
+  ONE,
+  type Rational,
+  toRational,
+  ZERO,
+} from "@/numbers/exact";
 
 /** A single rule-induction case in a proof returned by `proof/rules`. */
 export interface RuleProofCase {
@@ -237,6 +284,12 @@ export const verifyProof = (proof: unknown): boolean => {
   if (kind === "induction") {
     return verifyInductionProof(proof);
   }
+  if (proof.proved === true && "proof" in proof) {
+    return verifyProof(proof.proof);
+  }
+  if (proof.check === true && Object.keys(proof).length === 1) {
+    return true;
+  }
   if ("constraints" in proof && "steps" in proof) {
     return checksProof(proof);
   }
@@ -295,9 +348,29 @@ const invariantRowSchema = (
         rowTerm[col] instanceof LogicVariable &&
         (rowTerm[col] as LogicVariable).name === varNames[i]
     );
-  return matchesDeferred || matchesObject
-    ? [atom.relation.name, inner.fn]
-    : undefined;
+  if (matchesDeferred || matchesObject) {
+    return [atom.relation.name, inner.fn];
+  }
+  // Column-level schema invariant: ["and", [rel, ?c1, ..., ?ck], ["not", [S, ?ck]]].
+  if (rowTerm instanceof LogicVariable && !rowTerm.anonymous) {
+    const colIndices = atom.args.flatMap((v, i) =>
+      !(v as LogicVariable).anonymous &&
+      (v as LogicVariable).name === rowTerm.name
+        ? [i]
+        : []
+    );
+    if (colIndices.length === 1) {
+      const targetIndex = colIndices[0] as number;
+      const colSchema = Object.fromEntries(
+        cols.map((col, i) => [
+          col,
+          i === targetIndex ? inner.fn : ANY_REST_SCHEMA,
+        ])
+      );
+      return [atom.relation.name, colSchema];
+    }
+  }
+  return undefined;
 };
 
 /**
@@ -356,6 +429,219 @@ const rowSchemaForAtom = (
   return { extra: [], primary: anyRowSchema(atom.relation) };
 };
 
+/** Record fields of a symbolic value when it is a record or plain object value. */
+const symRecordFields = (
+  sym: Sym
+):
+  | { readonly fields: ReadonlyMap<string, Sym>; readonly rest?: unknown }
+  | undefined => {
+  if (sym.kind === "record") {
+    return sym.rest === undefined
+      ? { fields: sym.fields }
+      : { fields: sym.fields, rest: sym.rest };
+  }
+  if (sym.kind === "value" && isPlainObject(sym.value)) {
+    return {
+      fields: new Map(
+        Object.entries(sym.value).map(([k, v]) => [k, fromValue(v)])
+      ),
+    };
+  }
+  return undefined;
+};
+
+/** List items of a symbolic value when it is a fixed list or array value. */
+const symListItems = (sym: Sym): readonly Sym[] | undefined => {
+  if (sym.kind === "list" && sym.rest === undefined && sym.tail === undefined) {
+    return sym.items;
+  }
+  if (sym.kind === "value" && Array.isArray(sym.value)) {
+    return sym.value.map(fromValue);
+  }
+  return undefined;
+};
+
+const resolveRecordField = (
+  rec: NonNullable<ReturnType<typeof symRecordFields>>,
+  k: string,
+  localSymbols: Map<string, Cases>,
+  localCtx: Context
+): Effect.Effect<
+  { readonly sym: Sym; readonly when: Formula } | undefined,
+  Error
+> =>
+  Effect.gen(function* () {
+    const existing = rec.fields.get(k);
+    if (existing !== undefined) {
+      return { sym: existing, when: TRUE };
+    }
+    if (rec.rest === undefined) {
+      return undefined;
+    }
+    const shaped = yield* shapeFor(
+      `rest_${k}_${localSymbols.size}`,
+      rec.rest,
+      localCtx
+    );
+    const only = shaped.cases.length === 1 ? shaped.cases[0] : undefined;
+    return only === undefined ? undefined : { sym: only.sym, when: only.when };
+  });
+
+const recordKeysAllowed = (
+  rec: NonNullable<ReturnType<typeof symRecordFields>>,
+  keys: ReadonlySet<string>,
+  open: boolean
+): boolean => {
+  if (open) {
+    return true;
+  }
+  if (rec.rest === undefined && rec.fields.size !== keys.size) {
+    return false;
+  }
+  return [...rec.fields.keys()].every((k) => keys.has(k));
+};
+
+const bindRecordEntries = (
+  entries: readonly (readonly [string, unknown])[],
+  open: boolean,
+  colSym: Sym,
+  localSymbols: Map<string, Cases>,
+  localCtx: Context
+): Effect.Effect<Formula, Error> =>
+  Effect.gen(function* () {
+    const rec = symRecordFields(colSym);
+    if (
+      rec === undefined ||
+      !recordKeysAllowed(rec, new Set(entries.map(([k]) => k)), open)
+    ) {
+      return FALSE;
+    }
+    let f: Formula = TRUE;
+    for (const [k, pat] of entries) {
+      const resolved = yield* resolveRecordField(
+        rec,
+        k,
+        localSymbols,
+        localCtx
+      );
+      if (resolved === undefined) {
+        return FALSE;
+      }
+      f = and(f, resolved.when);
+      f = and(
+        f,
+        yield* bindAtomColumn(pat, resolved.sym, localSymbols, localCtx)
+      );
+      if (f.length === 0) {
+        return FALSE;
+      }
+    }
+    return f;
+  });
+
+const recordEntriesOf = (
+  arg: unknown
+):
+  | {
+      readonly entries: readonly (readonly [string, unknown])[];
+      readonly open: boolean;
+    }
+  | undefined => {
+  if (isPlainObject(arg)) {
+    return { entries: Object.entries(arg), open: false };
+  }
+  if (arg instanceof DeferredCall) {
+    if (nameOf(arg.fn) === "schema/open" && arg.args.length >= 1) {
+      const inner = recordEntriesOf(arg.args[0]);
+      if (inner !== undefined) {
+        return { entries: inner.entries, open: true };
+      }
+    }
+    const keys = recordKeys(arg.fn);
+    if (keys !== undefined && keys.length === arg.args.length) {
+      return {
+        entries: keys.map((key, i) => [key, arg.args[i]] as const),
+        open: false,
+      };
+    }
+  }
+  if (typeof arg === "function") {
+    const built = buildOf(arg);
+    if (
+      built !== undefined &&
+      nameOf(built.by) === "schema/open" &&
+      built.args.length >= 1
+    ) {
+      const inner = recordEntriesOf(built.args[0]);
+      if (inner !== undefined) {
+        return { entries: inner.entries, open: true };
+      }
+    }
+  }
+  return undefined;
+};
+
+const bindVariableColumn = (
+  arg: LogicVariable,
+  colSym: Sym,
+  localSymbols: Map<string, Cases>,
+  localCtx: Context
+): Formula => {
+  if (arg.anonymous) {
+    return TRUE;
+  }
+  const existing = localSymbols.get(arg.name);
+  if (existing === undefined) {
+    localSymbols.set(arg.name, one(colSym));
+    return TRUE;
+  }
+  return existing.reduce<Formula>(
+    (f, e) => or(f, and(e.when, equal(e.sym, colSym, localCtx.atoms))),
+    FALSE
+  );
+};
+
+const bindListColumn = (
+  args: readonly unknown[],
+  colSym: Sym,
+  localSymbols: Map<string, Cases>,
+  localCtx: Context
+): Effect.Effect<Formula, Error> =>
+  Effect.gen(function* () {
+    const items = symListItems(colSym);
+    if (items === undefined || items.length !== args.length) {
+      return FALSE;
+    }
+    let f: Formula = TRUE;
+    for (let i = 0; i < args.length; i += 1) {
+      f = and(
+        f,
+        yield* bindAtomColumn(args[i], items[i] as Sym, localSymbols, localCtx)
+      );
+      if (f.length === 0) {
+        return FALSE;
+      }
+    }
+    return f;
+  });
+
+const bindAllOfColumn = (
+  parts: readonly unknown[],
+  colSym: Sym,
+  localSymbols: Map<string, Cases>,
+  localCtx: Context
+): Effect.Effect<Formula, Error> =>
+  Effect.gen(function* () {
+    let f: Formula = TRUE;
+    for (const part of parts) {
+      f = and(f, yield* bindAtomColumn(part, colSym, localSymbols, localCtx));
+      if (f.length === 0) {
+        return FALSE;
+      }
+    }
+    return f;
+  });
+
 const bindAtomColumn = (
   arg: unknown,
   colSym: Sym,
@@ -364,27 +650,130 @@ const bindAtomColumn = (
 ): Effect.Effect<Formula, Error> =>
   Effect.gen(function* () {
     if (arg instanceof LogicVariable) {
-      if (arg.anonymous) {
-        return TRUE;
-      }
-      const existing = localSymbols.get(arg.name);
-      if (existing === undefined) {
-        localSymbols.set(arg.name, one(colSym));
-        return TRUE;
-      }
-      return existing.reduce<Formula>(
-        (f, e) => or(f, and(e.when, equal(e.sym, colSym, localCtx.atoms))),
-        FALSE
+      return bindVariableColumn(arg, colSym, localSymbols, localCtx);
+    }
+    const recPat = recordEntriesOf(arg);
+    if (recPat !== undefined) {
+      return yield* bindRecordEntries(
+        recPat.entries,
+        recPat.open,
+        colSym,
+        localSymbols,
+        localCtx
       );
     }
     if (typeof arg === "function") {
       return yield* fitsOf(colSym, arg, localCtx, 0);
+    }
+    if (isListTerm(arg) && arg instanceof DeferredCall) {
+      return yield* bindListColumn(arg.args, colSym, localSymbols, localCtx);
+    }
+    if (arg instanceof DeferredCall && nameOf(arg.fn) === "schema/allOf") {
+      return yield* bindAllOfColumn(arg.args, colSym, localSymbols, localCtx);
     }
     const argCases = yield* symbolicTerm(arg, localCtx);
     return argCases.reduce<Formula>(
       (f, e) => or(f, and(e.when, equal(e.sym, colSym, localCtx.atoms))),
       FALSE
     );
+  });
+
+const unboundVar = (
+  term: unknown,
+  localSymbols: ReadonlyMap<string, Cases>
+): LogicVariable | undefined =>
+  term instanceof LogicVariable &&
+  !term.anonymous &&
+  !localSymbols.has(term.name)
+    ? term
+    : undefined;
+
+const bindInFilter = (
+  filter: Literal,
+  elem: LogicVariable,
+  listTerm: unknown,
+  localSymbols: Map<string, Cases>,
+  localCtx: Context
+): Effect.Effect<boolean, Error> =>
+  Effect.gen(function* () {
+    const listCases = yield* symbolicTerm(listTerm, localCtx);
+    const itemCases: { readonly sym: Sym; readonly when: Formula }[] = [];
+    for (const lc of listCases) {
+      const items = symListItems(lc.sym);
+      if (items === undefined) {
+        return yield* logicError(
+          `proof/rules cannot enumerate non-fixed list in ${show(filter)}.`
+        );
+      }
+      for (const item of items) {
+        itemCases.push({ sym: item, when: lc.when });
+      }
+    }
+    if (itemCases.length === 0) {
+      return false;
+    }
+    localSymbols.set(elem.name, itemCases);
+    return true;
+  });
+
+const tryBindEqFilter = (
+  left: unknown,
+  right: unknown,
+  localSymbols: Map<string, Cases>,
+  localCtx: Context
+): Effect.Effect<boolean, Error> =>
+  Effect.gen(function* () {
+    const lv = unboundVar(left, localSymbols);
+    if (lv !== undefined) {
+      localSymbols.set(lv.name, yield* symbolicTerm(right, localCtx));
+      return true;
+    }
+    const rv = unboundVar(right, localSymbols);
+    if (rv !== undefined) {
+      localSymbols.set(rv.name, yield* symbolicTerm(left, localCtx));
+      return true;
+    }
+    return false;
+  });
+
+const tryBindFilter = (
+  filter: Literal,
+  localSymbols: Map<string, Cases>,
+  localCtx: Context
+): Effect.Effect<"bound" | "empty" | "unhandled", Error> =>
+  Effect.gen(function* () {
+    if (isForm(filter, "=")) {
+      const [left, right] = filter.parts;
+      return (yield* tryBindEqFilter(left, right, localSymbols, localCtx))
+        ? "bound"
+        : "unhandled";
+    }
+    if (isForm(filter, "schema/fits?")) {
+      const [target, schema] = filter.parts;
+      const tv = unboundVar(target, localSymbols);
+      if (tv !== undefined) {
+        localSymbols.set(
+          tv.name,
+          (yield* shapeFor(tv.name, schema, localCtx)).cases
+        );
+        return "bound";
+      }
+    }
+    if (isForm(filter, "in")) {
+      const [elem, listTerm] = filter.parts;
+      const ev = unboundVar(elem, localSymbols);
+      if (ev !== undefined) {
+        const ok = yield* bindInFilter(
+          filter,
+          ev,
+          listTerm,
+          localSymbols,
+          localCtx
+        );
+        return ok ? "bound" : "empty";
+      }
+    }
+    return "unhandled";
   });
 
 const applyRuleFilters = (
@@ -396,24 +785,12 @@ const applyRuleFilters = (
   Effect.gen(function* () {
     let premise = premiseIn;
     for (const filter of filters) {
-      if (isForm(filter, "=")) {
-        const [left, right] = filter.parts;
-        if (
-          left instanceof LogicVariable &&
-          !left.anonymous &&
-          !localSymbols.has(left.name)
-        ) {
-          localSymbols.set(left.name, yield* symbolicTerm(right, localCtx));
-          continue;
-        }
-        if (
-          right instanceof LogicVariable &&
-          !right.anonymous &&
-          !localSymbols.has(right.name)
-        ) {
-          localSymbols.set(right.name, yield* symbolicTerm(left, localCtx));
-          continue;
-        }
+      const bound = yield* tryBindFilter(filter, localSymbols, localCtx);
+      if (bound === "empty") {
+        return FALSE;
+      }
+      if (bound === "bound") {
+        continue;
       }
       const fCases = yield* symbolicTerm(filter, localCtx);
       premise = and(premise, yield* formulaOf(fCases));
@@ -509,6 +886,179 @@ const checkHeadRecord = (
     return { ok: true } as const;
   });
 
+const SUPPORTED_RULE_AGGREGATES = new Set([
+  "min",
+  "max",
+  "count",
+  "countUnique",
+  "sum",
+  "mean",
+  "median",
+  "unique",
+  "collect",
+  "argMin",
+  "argMax",
+]);
+
+/** Projects sound bounds of a linear numeric sym under `premise` across disjuncts. */
+const numericBoundsUnder = (
+  sym: Extract<Sym, { readonly kind: "number" }>,
+  premise: Formula,
+  localDefs: ReadonlyMap<string, readonly Constraint[]>,
+  localSorts: ReadonlyMap<string, Sort>
+): Bounds | undefined => {
+  if (sym.nonlinear !== undefined || sym.denominator !== undefined) {
+    return undefined;
+  }
+  const acc = makeBoundsAcc();
+  for (const conj of premise) {
+    const full = withDefinitions(conj, localDefs);
+    const b = linearBoundsOf(full, sortsFor(full, localSorts), sym.linear);
+    if (b !== undefined) {
+      mergeBoundsInto(acc, b.low, b.high);
+    }
+  }
+  return finishBounds(acc);
+};
+
+const aggregateBoundFormula = (
+  vName: string,
+  kind: "sum" | "mean" | "median",
+  bounds: Bounds | undefined
+): Formula => {
+  if (bounds === undefined) {
+    return TRUE;
+  }
+  let when: Formula = TRUE;
+  const keepLow =
+    bounds.low !== undefined &&
+    (kind !== "sum" || compare(bounds.low.value, ZERO) >= 0);
+  if (keepLow && bounds.low !== undefined) {
+    when = and(
+      when,
+      atomFormula({
+        linear: minus(variable(vName), constant(bounds.low.value)),
+        relation: bounds.low.strict ? ">" : ">=",
+      })
+    );
+  }
+  const keepHigh =
+    bounds.high !== undefined &&
+    (kind !== "sum" || compare(bounds.high.value, ZERO) <= 0);
+  if (keepHigh && bounds.high !== undefined) {
+    when = and(
+      when,
+      atomFormula({
+        linear: minus(constant(bounds.high.value), variable(vName)),
+        relation: bounds.high.strict ? ">" : ">=",
+      })
+    );
+  }
+  return when;
+};
+
+const abstractNumericAggregate = (
+  kind: "sum" | "mean" | "median",
+  at: number,
+  elemCases: Cases,
+  premise: Formula,
+  localDefs: ReadonlyMap<string, readonly Constraint[]>,
+  localSorts: Map<string, Sort>
+): Effect.Effect<Cases, Error> =>
+  Effect.gen(function* () {
+    const out: { readonly sym: Sym; readonly when: Formula }[] = [];
+    for (const ec of elemCases) {
+      if (ec.sym.kind !== "number") {
+        return yield* logicError(
+          `proof/rules expects a numeric argument for aggregate/${kind}.`
+        );
+      }
+      const vName = `__agg_${kind}_${at}_${localSorts.size}`;
+      const isInt = kind === "sum" && polyIntegral(ec.sym, localSorts);
+      localSorts.set(vName, isInt ? "integer" : "real");
+      const bounds = numericBoundsUnder(
+        ec.sym,
+        and(premise, ec.when),
+        localDefs,
+        localSorts
+      );
+      const when = and(ec.when, aggregateBoundFormula(vName, kind, bounds));
+      out.push({ sym: numberSym(variable(vName)), when });
+    }
+    return out;
+  });
+
+const abstractArgExtremum = (
+  kind: "argMin" | "argMax",
+  elemCases: Cases
+): Effect.Effect<Cases, Error> =>
+  Effect.gen(function* () {
+    const out: { readonly sym: Sym; readonly when: Formula }[] = [];
+    for (const ec of elemCases) {
+      const items = symListItems(ec.sym);
+      if (items === undefined || items.length !== 2) {
+        return yield* logicError(
+          `proof/rules expects a 2-element pair for aggregate/${kind}.`
+        );
+      }
+      out.push({ sym: items[0] as Sym, when: ec.when });
+    }
+    return out;
+  });
+
+/** Sound abstract symbolic output for an aggregate in a rule head. */
+const abstractAggregateHead = (
+  aggCall: DeferredCall,
+  at: number,
+  premise: Formula,
+  localCtx: Context,
+  localDefs: ReadonlyMap<string, readonly Constraint[]>,
+  localSorts: Map<string, Sort>
+): Effect.Effect<Cases, Error> =>
+  Effect.gen(function* () {
+    const kind = aggCall.aggregate;
+    const arg = aggCall.args[0];
+    if (kind === "min" || kind === "max") {
+      return yield* symbolicTerm(arg, localCtx);
+    }
+    if (kind === "count" || kind === "countUnique") {
+      const vName = `__agg_count_${at}_${localSorts.size}`;
+      localSorts.set(vName, "integer");
+      return [
+        {
+          sym: numberSym(variable(vName)),
+          when: atomFormula({
+            linear: minus(variable(vName), constant(ONE)),
+            relation: ">=",
+          }),
+        },
+      ];
+    }
+    const elemCases = yield* symbolicTerm(arg, localCtx);
+    if (kind === "argMin" || kind === "argMax") {
+      return yield* abstractArgExtremum(kind, elemCases);
+    }
+    if (kind === "unique" || kind === "collect") {
+      return elemCases.map((ec) => ({
+        sym: { items: [ec.sym], kind: "list" } as Sym,
+        when: ec.when,
+      }));
+    }
+    if (kind === "sum" || kind === "mean" || kind === "median") {
+      return yield* abstractNumericAggregate(
+        kind,
+        at,
+        elemCases,
+        premise,
+        localDefs,
+        localSorts
+      );
+    }
+    return yield* logicError(
+      `proof/rules cannot prove aggregate/${kind ?? "unknown"}.`
+    );
+  });
+
 const checkRuleCombo = (
   rule: CompiledRule,
   targetSchema: unknown,
@@ -556,13 +1106,24 @@ const checkRuleCombo = (
     }
     const headArgCases: Cases[] = [];
     for (const [at, arg] of rule.head.args.entries()) {
-      const expr =
+      if (
         rule.aggregates.includes(at) &&
         arg instanceof DeferredCall &&
-        (arg.aggregate === "min" || arg.aggregate === "max")
-          ? arg.args[0]
-          : arg;
-      headArgCases.push(yield* symbolicTerm(expr, localCtx));
+        arg.aggregate !== undefined
+      ) {
+        headArgCases.push(
+          yield* abstractAggregateHead(
+            arg,
+            at,
+            premise,
+            localCtx,
+            localDefs,
+            localSorts
+          )
+        );
+      } else {
+        headArgCases.push(yield* symbolicTerm(arg, localCtx));
+      }
     }
     const headCols = rule.head.relation.columns;
     for (const { syms: headVals, when: headWhen } of product(headArgCases)) {
@@ -587,6 +1148,28 @@ const checkRuleCombo = (
     return { ok: true } as const;
   });
 
+const pruneUnusedAnyColumns = (atom: Atom, schema: unknown): unknown => {
+  if (!isPlainObject(schema)) {
+    return schema;
+  }
+  const cols = atom.relation.columns;
+  let changed = false;
+  const out: Record<string, unknown> = { ...schema };
+  for (let i = 0; i < cols.length; i += 1) {
+    const col = cols[i] as string;
+    const arg = atom.args[i];
+    if (
+      out[col] === ANY_REST_SCHEMA &&
+      arg instanceof LogicVariable &&
+      arg.anonymous
+    ) {
+      out[col] = null;
+      changed = true;
+    }
+  }
+  return changed ? out : schema;
+};
+
 const shapeBodyAtoms = (
   atoms: readonly Atom[],
   targets: ReadonlyMap<
@@ -604,8 +1187,11 @@ const shapeBodyAtoms = (
     const atomShapes: { readonly atom: Atom; readonly cases: Cases }[] = [];
     for (const [at, atom] of atoms.entries()) {
       const { primary, extra } = rowSchemaForAtom(atom, targets, baseSchemas);
-      let cases = (yield* shapeFor(`r${caseIndex}_a${at}`, primary, context))
-        .cases;
+      let cases = (yield* shapeFor(
+        `r${caseIndex}_a${at}`,
+        pruneUnusedAnyColumns(atom, primary),
+        context
+      )).cases;
       for (const extraSchema of extra) {
         const next: { readonly sym: Sym; readonly when: Formula }[] = [];
         for (const c of cases) {
@@ -639,15 +1225,16 @@ const checkRuleByInduction = (
   LogicError
 > =>
   Effect.gen(function* () {
-    const elementPreserving = rule.aggregates.every((at) => {
+    const supportedAggregates = rule.aggregates.every((at) => {
       const arg = rule.head.args[at];
       return (
         arg instanceof DeferredCall &&
-        (arg.aggregate === "min" || arg.aggregate === "max") &&
+        arg.aggregate !== undefined &&
+        SUPPORTED_RULE_AGGREGATES.has(arg.aggregate) &&
         arg.args.length === 1
       );
     });
-    if (!elementPreserving || rule.invents !== undefined) {
+    if (!supportedAggregates || rule.invents !== undefined) {
       return yield* logicError(
         `proof/rules cannot prove a rule with this aggregate or existential head: ${show(rule.source)}.`
       );
@@ -903,4 +1490,722 @@ export const proveRules = (
       proved: true,
       target: names.length === 1 ? (names[0] as string) : names,
     };
+  });
+
+/** Walks structural explanation fields (`because`, `matches`, `but`) of a `why` tree. */
+const walkExplanation = (
+  node: unknown,
+  visit: (record: Record<string, unknown>) => void
+) => {
+  if (!isRecord(node)) {
+    return;
+  }
+  visit(node);
+  if (Array.isArray(node.because)) {
+    for (const child of node.because) {
+      walkExplanation(child, visit);
+    }
+  }
+  if (Array.isArray(node.matches)) {
+    for (const group of node.matches) {
+      if (Array.isArray(group)) {
+        for (const child of group) {
+          walkExplanation(child, visit);
+        }
+      }
+    }
+  }
+  if ("but" in node) {
+    walkExplanation(node.but, visit);
+  }
+};
+
+/** Sorted unique list of every `given: true` base fact in a `why` tree. */
+export const extractExplanationFacts = (
+  explanation: Record<string, unknown>
+): readonly unknown[] => {
+  const found = new Map<string, unknown>();
+  walkExplanation(explanation, (node) => {
+    if (node.given === true && Array.isArray(node.fact)) {
+      found.set(valueKey(node.fact), node.fact);
+    }
+  });
+  return [...found.values()].sort(compareValues);
+};
+
+/** Sorted unique list of every leaf absent goal in a `why` tree (excluding solver-proved impossibilities). */
+export const extractExplanationAssumptions = (
+  explanation: Record<string, unknown>
+): readonly unknown[] => {
+  const found = new Map<string, unknown>();
+  walkExplanation(explanation, (node) => {
+    if (
+      "absent" in node &&
+      !("certificate" in node || "induction" in node) &&
+      (!Array.isArray(node.because) || node.because.length === 0)
+    ) {
+      found.set(valueKey(node.absent), node.absent);
+    }
+  });
+  return [...found.values()].sort(compareValues);
+};
+
+const LENGTH_MARK = /#\d+$/;
+
+const formatWitnessVars = (
+  found: Vars,
+  ownNames: readonly string[],
+  outerVars: Vars
+): Record<string, unknown> => {
+  const picked =
+    ownNames.length > 0
+      ? ownNames
+      : [...found.keys()].filter((name) => !outerVars.has(name));
+  return Object.fromEntries(
+    picked
+      .filter((name) => found.has(name))
+      .map((name) => [`?${name.replace(LENGTH_MARK, "")}`, found.get(name)])
+  );
+};
+
+const firstBodyWitness = (
+  model: Model,
+  body: readonly Literal[],
+  ownNames: readonly string[],
+  vars: Vars
+): LogicEffect<Record<string, unknown> | undefined> =>
+  Effect.gen(function* () {
+    const [only, ...rest] = body;
+    if (rest.length === 0 && only instanceof Solved) {
+      return yield* exampleOf(model, only, vars);
+    }
+    let first: Vars | undefined;
+    yield* each(
+      model,
+      body,
+      (answers) =>
+        Effect.sync(() => {
+          if (first === undefined && answers.length > 0) {
+            first = answers[0];
+          }
+        }),
+      vars
+    );
+    return first === undefined
+      ? undefined
+      : formatWitnessVars(first, ownNames, vars);
+  });
+
+/** Finds one concrete witness matching `goal` (unwrapping top-level `exists`), if any. */
+const witnessOf = (
+  model: Model,
+  goal: unknown,
+  vars: Vars
+): LogicEffect<Record<string, unknown> | undefined> =>
+  Effect.gen(function* () {
+    const ownNames = isForm(goal, "exists")
+      ? (goal.parts[0] as readonly string[])
+      : [];
+    const inner = isForm(goal, "exists") ? goal.parts[1] : goal;
+    const plans = yield* compiling(() =>
+      questionPlans(inner as LogicForm, (name) => vars.has(name))
+    );
+    for (const { body } of plans) {
+      const found = yield* firstBodyWitness(model, body, ownNames, vars);
+      if (found !== undefined) {
+        return found;
+      }
+    }
+    return undefined;
+  });
+
+/** Normalizes a `whyGoal` tree so every proved result is accepted by `proof/valid?`. */
+const ensureKernelProof = (tree: unknown): unknown => {
+  if (
+    isRecord(tree) &&
+    Array.isArray(tree.certificate) &&
+    tree.certificate.length === 0
+  ) {
+    return { ...tree, certificate: [contradictionCertificate()] };
+  }
+  if (verifyProof(tree)) {
+    return tree;
+  }
+  if (isRecord(tree) && "absent" in tree) {
+    return { ...tree, because: [] };
+  }
+  return { check: true };
+};
+
+const heldProofRecord = (
+  proof: unknown,
+  treeRecord: Record<string, unknown> | undefined,
+  facts: readonly unknown[],
+  assumptions: readonly unknown[],
+  example: Record<string, unknown> | undefined
+): Record<string, unknown> => ({
+  proved: true,
+  proof,
+  ...(treeRecord?.vacuous === true ? { vacuous: true } : {}),
+  ...(Array.isArray(treeRecord?.contradicting)
+    ? { contradicting: treeRecord.contradicting }
+    : {}),
+  ...(facts.length > 0 ? { facts } : {}),
+  ...(assumptions.length > 0 ? { assumptions } : {}),
+  ...(example === undefined ? {} : { example }),
+});
+
+const unprovedRecord = (
+  counterexample: Record<string, unknown> | undefined,
+  treeRecord: Record<string, unknown> | undefined,
+  assumptions: readonly unknown[]
+): Record<string, unknown> => ({
+  proved: false,
+  ...(counterexample === undefined ? {} : { counterexample }),
+  ...(treeRecord === undefined ? {} : { reason: treeRecord }),
+  ...(assumptions.length > 0 ? { assumptions } : {}),
+});
+
+/**
+ * First-class goal prover (`proof/prove`): proves or refutes any closed goal,
+ * returning a kernel-verifiable `proof` (linear/split certificate, induction
+ * proof, or `why` derivation), ground `facts`, closed-world `assumptions`,
+ * `vacuous` / `contradicting` metadata, or a concrete `counterexample` witness.
+ */
+export const proveGoal = (
+  model: Model,
+  goal: unknown,
+  vars: Vars = NO_VARS
+): LogicEffect<Record<string, unknown>> =>
+  Effect.gen(function* () {
+    if (typeof goal === "boolean") {
+      return goal
+        ? { proof: { check: true }, proved: true }
+        : { proved: false };
+    }
+    const { held, tree } = yield* whyGoal(model, goal, vars);
+    const treeRecord = isRecord(tree) ? tree : undefined;
+    const facts =
+      treeRecord === undefined ? [] : extractExplanationFacts(treeRecord);
+    const assumptions =
+      treeRecord === undefined ? [] : extractExplanationAssumptions(treeRecord);
+
+    if (held) {
+      const example = isForm(goal, "exists")
+        ? yield* witnessOf(model, goal, vars)
+        : undefined;
+      return heldProofRecord(
+        ensureKernelProof(tree),
+        treeRecord,
+        facts,
+        assumptions,
+        example
+      );
+    }
+    const counterexample = isForm(goal, "not")
+      ? yield* witnessOf(model, goal.parts[0], vars)
+      : undefined;
+    return unprovedRecord(counterexample, treeRecord, assumptions);
+  });
+
+const witnessRecord = (
+  symbols: ReadonlyMap<string, Cases>,
+  values: Values | undefined,
+  outerVars: Vars
+): Record<string, unknown> | undefined => {
+  if (values === undefined) {
+    return undefined;
+  }
+  const out: Record<string, unknown> = {};
+  for (const [name, symCases] of symbols) {
+    const first = symCases[0];
+    if (first === undefined) {
+      continue;
+    }
+    const v = concrete(first.sym, values);
+    if (v !== undefined) {
+      out[`?${name.replace(LENGTH_MARK, "")}`] = v;
+    }
+  }
+  for (const [name, v] of outerVars) {
+    const key = `?${name.replace(LENGTH_MARK, "")}`;
+    if (!(key in out)) {
+      out[key] = v;
+    }
+  }
+  return out;
+};
+
+interface BoundEntry {
+  readonly inclusive: boolean;
+  readonly value: Rational;
+  readonly witness?: Record<string, unknown> | undefined;
+}
+
+interface BoundAccumulator {
+  anySat: boolean;
+  high: BoundEntry | undefined;
+  highUnbounded: boolean;
+  low: BoundEntry | undefined;
+  lowUnbounded: boolean;
+}
+
+const mergeBoundAcc = (
+  acc: BoundAccumulator,
+  low: BoundAccumulator["low"],
+  high: BoundAccumulator["high"]
+) => {
+  if (!acc.anySat) {
+    acc.anySat = true;
+    if (low === undefined) {
+      acc.lowUnbounded = true;
+    } else {
+      acc.low = low;
+    }
+    if (high === undefined) {
+      acc.highUnbounded = true;
+    } else {
+      acc.high = high;
+    }
+    return;
+  }
+  if (low === undefined) {
+    acc.lowUnbounded = true;
+    acc.low = undefined;
+  } else if (!acc.lowUnbounded && acc.low !== undefined) {
+    const cmp = compare(low.value, acc.low.value);
+    if (cmp < 0 || (cmp === 0 && low.inclusive && !acc.low.inclusive)) {
+      acc.low = low;
+    }
+  }
+  if (high === undefined) {
+    acc.highUnbounded = true;
+    acc.high = undefined;
+  } else if (!acc.highUnbounded && acc.high !== undefined) {
+    const cmp = compare(high.value, acc.high.value);
+    if (cmp > 0 || (cmp === 0 && high.inclusive && !acc.high.inclusive)) {
+      acc.high = high;
+    }
+  }
+};
+
+interface SymbolicBoundCase {
+  readonly constraints: readonly Constraint[];
+  readonly den?: ReturnType<typeof constant>;
+  readonly num: ReturnType<typeof constant>;
+  readonly sorts: ReadonlyMap<string, Sort>;
+}
+
+const refuteAllPieces = (
+  constraints: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  out: ProofCertificate[]
+): boolean => {
+  for (const piece of splitCases(constraints)) {
+    const cert = refuteWithSplits(piece, sortsFor(piece, sorts));
+    if (cert === undefined) {
+      return false;
+    }
+    out.push(cert);
+  }
+  return true;
+};
+
+const boundViolationBranches = (
+  item: SymbolicBoundCase,
+  bound: Rational,
+  inclusive: boolean,
+  isMin: boolean
+): readonly (readonly Constraint[])[] => {
+  const rhs = item.den === undefined ? constant(bound) : times(item.den, bound);
+  const violation: Constraint = {
+    linear: isMin ? minus(rhs, item.num) : minus(item.num, rhs),
+    relation: inclusive ? ">" : ">=",
+  };
+  if (item.den === undefined) {
+    return [[...item.constraints, violation]];
+  }
+  return [
+    [...item.constraints, { linear: item.den, relation: ">" }, violation],
+    [
+      ...item.constraints,
+      { linear: times(item.den, negate(ONE)), relation: ">" },
+      {
+        linear: times(violation.linear, negate(ONE)),
+        relation: violation.relation,
+      },
+    ],
+  ];
+};
+
+const proveSymbolicBound = (
+  casesList: readonly SymbolicBoundCase[],
+  bound: Rational,
+  inclusive: boolean,
+  isMin: boolean
+): readonly ProofCertificate[] | undefined => {
+  const certs: ProofCertificate[] = [];
+  for (const item of casesList) {
+    for (const branch of boundViolationBranches(
+      item,
+      bound,
+      inclusive,
+      isMin
+    )) {
+      if (!refuteAllPieces(branch, item.sorts, certs)) {
+        return undefined;
+      }
+    }
+  }
+  return certs.length > 0 ? certs : undefined;
+};
+
+interface BoundsRunState {
+  readonly acc: BoundAccumulator;
+  allSymbolic: boolean;
+  readonly symbolicCases: SymbolicBoundCase[];
+  unsatCertComplete: boolean;
+  readonly unsatCerts: ProofCertificate[];
+}
+
+const collectMatches = (
+  model: Model,
+  body: readonly Literal[],
+  vars: Vars
+): LogicEffect<readonly Vars[]> =>
+  Effect.gen(function* () {
+    if (body.length === 0) {
+      return [vars];
+    }
+    const found: Vars[] = [];
+    yield* each(
+      model,
+      body,
+      (batch) =>
+        Effect.sync(() => {
+          found.push(...batch);
+        }),
+      vars
+    );
+    return found;
+  });
+
+const accumulateGroundBounds = (
+  model: Model,
+  target: unknown,
+  body: readonly Literal[],
+  vars: Vars,
+  state: BoundsRunState
+): LogicEffect<void> =>
+  Effect.gen(function* () {
+    state.allSymbolic = false;
+    const foundAnswers = yield* collectMatches(model, body, vars);
+    for (const ans of foundAnswers) {
+      const val = yield* evalTerm(model, target, ans);
+      if (!isNumber(val)) {
+        return yield* logicError(
+          `proof/bounds expects a numeric target, but found ${show(val)}.`
+        );
+      }
+      const r = toRational(val);
+      const witness = Object.fromEntries(
+        [...ans.entries()].map(([k, v]) => [
+          `?${k.replace(LENGTH_MARK, "")}`,
+          v,
+        ])
+      );
+      mergeBoundAcc(
+        state.acc,
+        { inclusive: true, value: r, witness },
+        { inclusive: true, value: r, witness }
+      );
+    }
+  });
+
+const sortsWithTarget = (
+  constraints: readonly Constraint[],
+  num: ReturnType<typeof constant>,
+  den: ReturnType<typeof constant> | undefined,
+  baseSorts: ReadonlyMap<string, Sort>
+): Map<string, Sort> => {
+  const fullSorts = sortsFor(constraints, baseSorts);
+  for (const name of num.coefficients.keys()) {
+    if (!fullSorts.has(name)) {
+      fullSorts.set(name, baseSorts.get(name) ?? "real");
+    }
+  }
+  if (den !== undefined) {
+    for (const name of den.coefficients.keys()) {
+      if (!fullSorts.has(name)) {
+        fullSorts.set(name, baseSorts.get(name) ?? "real");
+      }
+    }
+  }
+  return fullSorts;
+};
+
+const toBoundEntry = (
+  end:
+    | {
+        readonly strict: boolean;
+        readonly value: Rational;
+        readonly witness?: Values;
+      }
+    | undefined,
+  symbols: ReadonlyMap<string, Cases>,
+  bVars: Vars
+): BoundEntry | undefined =>
+  end === undefined
+    ? undefined
+    : {
+        inclusive: !end.strict,
+        value: end.value,
+        ...(end.witness === undefined
+          ? {}
+          : { witness: witnessRecord(symbols, end.witness, bVars) }),
+      };
+
+const solveTargetConjunction = (
+  full: readonly Constraint[],
+  num: ReturnType<typeof constant>,
+  den: ReturnType<typeof constant> | undefined,
+  evalCtx: Context,
+  symbols: ReadonlyMap<string, Cases>,
+  bVars: Vars,
+  state: BoundsRunState
+): void => {
+  const fullSorts = sortsWithTarget(full, num, den, evalCtx.sorts);
+  const res =
+    den === undefined
+      ? linearBoundsOf(full, fullSorts, num)
+      : ratioBoundsOf(full, fullSorts, num, den);
+  if (res === undefined) {
+    if (!refuteAllPieces(full, fullSorts, state.unsatCerts)) {
+      state.unsatCertComplete = false;
+    }
+    return;
+  }
+  state.symbolicCases.push({
+    constraints: full,
+    ...(den === undefined ? {} : { den }),
+    num,
+    sorts: fullSorts,
+  });
+  mergeBoundAcc(
+    state.acc,
+    toBoundEntry(res.low, symbols, bVars),
+    toBoundEntry(res.high, symbols, bVars)
+  );
+};
+
+const processSymbolicChoice = (
+  model: Model,
+  target: unknown,
+  choice: {
+    readonly definitions: ReadonlyMap<string, readonly Constraint[]>;
+    readonly formula: Formula;
+    readonly symbols: ReadonlyMap<string, Cases>;
+    readonly waiting: readonly {
+      readonly goal: unknown;
+      readonly why: string;
+    }[];
+  },
+  sorts: ReadonlyMap<string, Sort>,
+  bVars: Vars,
+  state: BoundsRunState
+): LogicEffect<void> =>
+  Effect.gen(function* () {
+    if (choice.waiting.length > 0) {
+      return yield* logicError(
+        `proof/bounds cannot solve waiting goal ${show(choice.waiting[0]?.goal)}: ${choice.waiting[0]?.why ?? ""}`
+      );
+    }
+    const evalCtx: Context = {
+      definitions: new Map(choice.definitions),
+      evaluate: (part) =>
+        evalTerm(model, part, bVars) as unknown as Effect.Effect<
+          unknown,
+          Error
+        >,
+      floors: new Map(),
+      sorts: new Map(sorts),
+      symbols: new Map(choice.symbols),
+    };
+    const targetCases = yield* symbolicTerm(target, evalCtx).pipe(
+      Effect.mapError((e) =>
+        e instanceof LogicError ? e : new LogicError({ message: e.message })
+      )
+    );
+    for (const tc of targetCases) {
+      if (tc.sym.kind !== "number") {
+        return yield* logicError(
+          `proof/bounds expects a numeric target, but found a ${tc.sym.kind}.`
+        );
+      }
+      if (tc.sym.nonlinear !== undefined) {
+        return yield* logicError(
+          "proof/bounds supports linear and linear-fractional numeric targets, not higher-degree polynomials."
+        );
+      }
+      for (const conj of choice.formula) {
+        for (const tConj of tc.when) {
+          const full = withDefinitions(
+            [...conj, ...tConj],
+            evalCtx.definitions
+          );
+          solveTargetConjunction(
+            full,
+            tc.sym.linear,
+            tc.sym.denominator,
+            evalCtx,
+            choice.symbols,
+            bVars,
+            state
+          );
+        }
+      }
+    }
+  });
+
+const accumulateSolvedPlan = (
+  model: Model,
+  target: unknown,
+  prefix: readonly Literal[],
+  step: Solved,
+  hasSuffix: boolean,
+  vars: Vars,
+  state: BoundsRunState
+): LogicEffect<void> =>
+  Effect.gen(function* () {
+    if (hasSuffix) {
+      state.allSymbolic = false;
+    }
+    const prefixAnswers = yield* collectMatches(model, prefix, vars);
+    for (const bVars of prefixAnswers) {
+      const { choices, sorts } = yield* stepFormulas(model, step, bVars).pipe(
+        Effect.mapError((e) =>
+          e instanceof LogicError
+            ? e
+            : new LogicError({
+                message: e instanceof Error ? e.message : String(e),
+              })
+        )
+      );
+      for (const choice of choices) {
+        yield* processSymbolicChoice(
+          model,
+          target,
+          choice,
+          sorts,
+          bVars,
+          state
+        );
+      }
+      if (!state.acc.anySat && state.unsatCerts.length === 0) {
+        const fallback = yield* certificateOf(model, step, bVars);
+        if (fallback !== undefined) {
+          state.unsatCerts.push(...fallback);
+        }
+      }
+    }
+  });
+
+const formatBoundsResult = (state: BoundsRunState): Record<string, unknown> => {
+  const { acc } = state;
+  if (!acc.anySat) {
+    return {
+      satisfiable: false,
+      ...(state.unsatCertComplete && state.unsatCerts.length > 0
+        ? { proof: state.unsatCerts }
+        : {}),
+    };
+  }
+  const minProof =
+    state.allSymbolic && !acc.lowUnbounded && acc.low !== undefined
+      ? proveSymbolicBound(
+          state.symbolicCases,
+          acc.low.value,
+          acc.low.inclusive,
+          true
+        )
+      : undefined;
+  const maxProof =
+    state.allSymbolic && !acc.highUnbounded && acc.high !== undefined
+      ? proveSymbolicBound(
+          state.symbolicCases,
+          acc.high.value,
+          acc.high.inclusive,
+          false
+        )
+      : undefined;
+  return {
+    max:
+      acc.highUnbounded || acc.high === undefined
+        ? null
+        : fromRational(acc.high.value),
+    maxInclusive:
+      !acc.highUnbounded && acc.high !== undefined && acc.high.inclusive,
+    min:
+      acc.lowUnbounded || acc.low === undefined
+        ? null
+        : fromRational(acc.low.value),
+    minInclusive:
+      !acc.lowUnbounded && acc.low !== undefined && acc.low.inclusive,
+    satisfiable: true,
+    ...(acc.low?.witness === undefined ? {} : { witnessMin: acc.low.witness }),
+    ...(acc.high?.witness === undefined
+      ? {}
+      : { witnessMax: acc.high.witness }),
+    ...(minProof === undefined ? {} : { minProof }),
+    ...(maxProof === undefined ? {} : { maxProof }),
+  };
+};
+
+/**
+ * Exact symbolic & relational interval bounds (`proof/bounds`): projects Lion's
+ * Fourier-Motzkin / Omega / Charnes-Cooper solver onto `target` under `goal`,
+ * returning tight `[min, max]` bounds, endpoint witnesses, and kernel-checkable
+ * bound or unsat certificates.
+ */
+export const boundsGoal = (
+  model: Model,
+  target: unknown,
+  goal: unknown,
+  vars: Vars = NO_VARS
+): LogicEffect<Record<string, unknown>> =>
+  Effect.gen(function* () {
+    const plans = yield* compiling(() =>
+      questionPlans(goal as LogicForm, (name) => vars.has(name))
+    );
+    const state: BoundsRunState = {
+      acc: {
+        anySat: false,
+        high: undefined,
+        highUnbounded: false,
+        low: undefined,
+        lowUnbounded: false,
+      },
+      allSymbolic: true,
+      symbolicCases: [],
+      unsatCertComplete: true,
+      unsatCerts: [],
+    };
+
+    for (const { body } of plans) {
+      const solvedIdx = body.findIndex((lit) => lit instanceof Solved);
+      if (solvedIdx === -1) {
+        yield* accumulateGroundBounds(model, target, body, vars, state);
+      } else {
+        yield* accumulateSolvedPlan(
+          model,
+          target,
+          body.slice(0, solvedIdx),
+          body[solvedIdx] as Solved,
+          solvedIdx + 1 < body.length,
+          vars,
+          state
+        );
+      }
+    }
+    return formatBoundsResult(state);
   });

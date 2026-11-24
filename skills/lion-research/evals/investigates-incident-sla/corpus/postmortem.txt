@@ -1,0 +1,14 @@
+Meridian Pay Post-Incident Review — Incident #4418
+Published: 2026-04-17
+URL: https://meridianpay.example/postmortems/4418
+
+All times below are reported in Eastern Daylight Time (EDT, UTC-04:00) on April 10, 2026.
+
+Timeline:
+- Outage onset window: Telemetry indicates checkout failures began between 09:05 EDT (2026-04-10T09:05:00-04:00) and 09:15 EDT (2026-04-10T09:15:00-04:00).
+- Incident detection: Pager alerts fired at 09:22 EDT (2026-04-10T09:22:00-04:00).
+- Full recovery window: Traffic stabilized between 12:20 EDT (2026-04-10T12:20:00-04:00) and 12:35 EDT (2026-04-10T12:35:00-04:00).
+
+Root Cause & Architecture:
+We have ruled out a BGP routing flap. The confirmed root cause was an expired signing key on auth-vault.
+Service dependencies: checkout depends on token-broker; token-broker depends on auth-vault; payouts depends on ledger-sync; ledger-sync depends on auth-vault.

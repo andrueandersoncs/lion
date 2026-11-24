@@ -33,11 +33,13 @@ import {
   type PolyComparison,
   polyAdd,
   polyIntegral,
-  polyMul,
   polyPow,
   polyScale,
   polySub,
   polySubstitute,
+  polyTryAdd,
+  polyTryMul,
+  polyTrySub,
   polyWithinLimits,
 } from "@/logic/polynomial";
 import {
@@ -56,6 +58,7 @@ import {
   and,
   atom,
   type Cases,
+  compareNumbers,
   FALSE,
   type Formula,
   fieldsOf,
@@ -299,6 +302,9 @@ const linearOf = (sym: Sym, what: string, context?: Context) => {
   if (sym.kind === "number") {
     const resolved =
       context === undefined ? sym : applySubstitutions(sym, context);
+    if (resolved.denominator !== undefined) {
+      return refused(`${what} of a ratio`);
+    }
     if (resolved.nonlinear !== undefined) {
       return twoUnknowns("number/multiply");
     }
@@ -360,6 +366,10 @@ const equalSym = (
   if (a.kind === "number" && b.kind === "number") {
     const pa = applySubstitutions(a, context);
     const pb = applySubstitutions(b, context);
+    if (pa.denominator !== undefined || pb.denominator !== undefined) {
+      const f = compareNumbers(pa, pb, "=", context.sorts);
+      return f === undefined ? twoUnknowns("number/divide") : Effect.succeed(f);
+    }
     const diff = polySub(pa, pb);
     if (diff.nonlinear === undefined) {
       return Effect.succeed(atom({ linear: diff.linear, relation: "=" }));
@@ -404,7 +414,7 @@ const comparePoly = (
   Effect.flatMap(
     Effect.all([polyOf(a, name, context), polyOf(b, name, context)]),
     ([pa, pb]) => {
-      const f = polyFormula(polySub(pa, pb), op, context.sorts);
+      const f = compareNumbers(pa, pb, op, context.sorts);
       return f === undefined ? twoUnknowns(name) : Effect.succeed(f);
     }
   );
@@ -491,6 +501,9 @@ const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "quantity/subtract": [2, 2],
   "schema/assert": [2, 2],
   "schema/fits?": [2, 2],
+  "time/add": [3, 3],
+  "time/diff": [2, 3],
+  "time/fromParts": [3, 7],
   "value/any?": [1, 1],
   "value/array?": [1, 1],
   "value/boolean?": [1, 1],
@@ -519,28 +532,39 @@ type LibraryFn = (
 /** How a library function works on symbolic values, by its name. */
 const LIBRARY: Readonly<Record<string, LibraryFn>> = {
   "number/add": (args, name, context) =>
-    Effect.map(
+    Effect.flatMap(
       Effect.forEach(args, (arg) => polyOf(arg, name, context)),
-      (polys) =>
-        one(
-          polys.reduce<NumberSym>(
-            (a, b) => polyAdd(a, b),
-            numberSym(constant(ZERO))
-          )
-        )
+      (polys) => {
+        let total: NumberSym = numberSym(constant(ZERO));
+        for (const p of polys) {
+          const next = polyTryAdd(total, p);
+          if (next === undefined || !polyWithinLimits(next)) {
+            return refused(`${name} of two unknowns`);
+          }
+          total = next;
+        }
+        return Effect.succeed(one(total));
+      }
     ),
   "number/subtract": (args, name, context) =>
-    Effect.map(
+    Effect.flatMap(
       Effect.forEach(args, (arg) => polyOf(arg, name, context)),
-      ([first, ...rest]) =>
-        one(
-          rest.length === 0
-            ? polyScale(first as NumberSym, negate(ONE))
-            : rest.reduce<NumberSym>(
-                (a, b) => polySub(a, b),
-                first as NumberSym
-              )
-        )
+      ([first, ...rest]) => {
+        if (rest.length === 0) {
+          return Effect.succeed(
+            one(polyScale(first as NumberSym, negate(ONE)))
+          );
+        }
+        let total = first as NumberSym;
+        for (const p of rest) {
+          const next = polyTrySub(total, p);
+          if (next === undefined || !polyWithinLimits(next)) {
+            return refused(`${name} of two unknowns`);
+          }
+          total = next;
+        }
+        return Effect.succeed(one(total));
+      }
     ),
   "number/multiply": (args, name, context) =>
     Effect.flatMap(
@@ -548,10 +572,11 @@ const LIBRARY: Readonly<Record<string, LibraryFn>> = {
       (polys) => {
         let total: NumberSym = numberSym(constant(ONE));
         for (const p of polys) {
-          total = polyMul(total, p);
-          if (!polyWithinLimits(total)) {
+          const next = polyTryMul(total, p);
+          if (next === undefined || !polyWithinLimits(next)) {
             return refused(`${name} of two unknowns`);
           }
+          total = next;
         }
         return Effect.succeed(one(total));
       }
@@ -564,6 +589,15 @@ const LIBRARY: Readonly<Record<string, LibraryFn>> = {
       ]),
       ([base, exp]) => {
         if (exp.coefficients.size > 0 || exp.constant.d !== 1n) {
+          return refused(name);
+        }
+        if (base.denominator !== undefined) {
+          if (exp.constant.n === 0n) {
+            return Effect.succeed(one(numberSym(constant(ONE))));
+          }
+          if (exp.constant.n === 1n) {
+            return Effect.succeed(one(base));
+          }
           return refused(name);
         }
         const powered = polyPow(base, Number(exp.constant.n));
@@ -580,7 +614,19 @@ const LIBRARY: Readonly<Record<string, LibraryFn>> = {
       ]),
       ([a, b]) => {
         if (b.coefficients.size > 0) {
-          return refused(`${name} by an unknown`);
+          if (a.denominator !== undefined) {
+            return refused(`${name} by an unknown`);
+          }
+          const posWhen = atom({ linear: b, relation: ">" });
+          const negWhen = atom({
+            linear: times(b, negate(ONE)),
+            relation: ">",
+          });
+          const ratioSym = numberSym(a.linear, a.nonlinear, b);
+          return Effect.succeed<Cases>([
+            ...(posWhen.length === 0 ? [] : [{ sym: ratioSym, when: posWhen }]),
+            ...(negWhen.length === 0 ? [] : [{ sym: ratioSym, when: negWhen }]),
+          ]);
         }
         return isZero(b.constant)
           ? logicError(`${name} by zero has no finite result.`)
@@ -589,6 +635,9 @@ const LIBRARY: Readonly<Record<string, LibraryFn>> = {
     ),
   "number/floor": (args, name, context) =>
     Effect.flatMap(polyOf(args[0] as Sym, name, context), (p) => {
+      if (p.denominator !== undefined) {
+        return refused(name);
+      }
       if (p.nonlinear !== undefined) {
         return polyIntegral(p, context.sorts)
           ? Effect.succeed(one(p))
@@ -598,6 +647,9 @@ const LIBRARY: Readonly<Record<string, LibraryFn>> = {
     }),
   "number/ceiling": (args, name, context) =>
     Effect.flatMap(polyOf(args[0] as Sym, name, context), (p) => {
+      if (p.denominator !== undefined) {
+        return refused(name);
+      }
       if (p.nonlinear !== undefined) {
         return polyIntegral(p, context.sorts)
           ? Effect.succeed(one(p))
@@ -623,6 +675,9 @@ const LIBRARY: Readonly<Record<string, LibraryFn>> = {
           : linearOf(args[1], name, context),
       ]),
       ([subject, places]) => {
+        if (subject.denominator !== undefined) {
+          return refused(name);
+        }
         if (places !== undefined) {
           if (places.coefficients.size > 0) {
             return refused(name);
@@ -1148,7 +1203,146 @@ const LIBRARY: Readonly<Record<string, LibraryFn>> = {
     quantityPower(a as Sym, exp as Sym, name, context, depth),
   "quantity/in": ([a, unitSym], name) =>
     quantityIn(a as Sym, unitSym as Sym, name),
+  "time/add": ([instantSym, amountSym, unitSym], name, context) =>
+    Effect.gen(function* () {
+      const unitMs = timeUnitMs(unitSym);
+      if (unitMs === undefined) {
+        return yield* refused(name);
+      }
+      const instant = yield* polyOf(instantSym as Sym, name, context);
+      if (!polyIntegral(instant, context.sorts)) {
+        return yield* refused(name);
+      }
+      const amount = yield* polyOf(amountSym as Sym, name, context);
+      const next = polyTryAdd(instant, polyScale(amount, ratio(unitMs)));
+      if (next === undefined || !polyWithinLimits(next)) {
+        return yield* refused(name);
+      }
+      return one(next);
+    }),
+  "time/diff": ([aSym, bSym, unitSym], name, context) =>
+    Effect.gen(function* () {
+      const unitMs = unitSym === undefined ? 1n : timeUnitMs(unitSym);
+      if (unitMs === undefined) {
+        return yield* refused(name);
+      }
+      const a = yield* polyOf(aSym as Sym, name, context);
+      const b = yield* polyOf(bSym as Sym, name, context);
+      if (!(polyIntegral(a, context.sorts) && polyIntegral(b, context.sorts))) {
+        return yield* refused(name);
+      }
+      const diff = polyTrySub(a, b);
+      if (diff === undefined || !polyWithinLimits(diff)) {
+        return yield* refused(name);
+      }
+      return one(polyScale(diff, ratio(1n, unitMs)));
+    }),
+  "time/fromParts": (args, name, context) =>
+    timeFromPartsSymbolic(args, name, context),
 };
+
+const TIME_UNIT_MS: Readonly<Record<string, bigint>> = {
+  days: 86_400_000n,
+  hours: 3_600_000n,
+  minutes: 60_000n,
+  ms: 1n,
+  seconds: 1000n,
+};
+
+const timeUnitMs = (unitSym: Sym | undefined): bigint | undefined =>
+  unitSym?.kind === "value" && typeof unitSym.value === "string"
+    ? TIME_UNIT_MS[unitSym.value]
+    : undefined;
+
+const DAYS_IN_MONTH_SYM = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+const daysFromCivilSym = (year: bigint, month: number, day: number): bigint => {
+  const y = month <= 2 ? year - 1n : year;
+  const era = y >= 0n ? y / 400n : (y - 399n) / 400n;
+  const yoe = y - era * 400n;
+  const m = BigInt(month);
+  const doy = (153n * (m + (m > 2n ? -3n : 9n)) + 2n) / 5n + BigInt(day) - 1n;
+  const doe = yoe * 365n + yoe / 4n - yoe / 100n + doy;
+  return era * 146_097n + doe - 719_468n;
+};
+
+const exactIntOf = (sym: Sym | undefined): bigint | undefined =>
+  sym?.kind === "number" &&
+  sym.nonlinear === undefined &&
+  sym.denominator === undefined &&
+  sym.linear.coefficients.size === 0 &&
+  sym.linear.constant.d === 1n
+    ? sym.linear.constant.n
+    : undefined;
+
+const validCivilDate = (year: bigint, month: number, day: number): boolean => {
+  const leap = (year % 4n === 0n && year % 100n !== 0n) || year % 400n === 0n;
+  const maxDay = month === 2 && leap ? 29 : (DAYS_IN_MONTH_SYM[month] ?? 0);
+  return month >= 1 && month <= 12 && day >= 1 && day <= maxDay;
+};
+
+const guaranteedIntPart = (
+  part: NumberSym,
+  lo: bigint,
+  hi: bigint,
+  context: Context
+): boolean =>
+  polyIntegral(part, context.sorts) &&
+  isGuaranteed(
+    and(
+      atom({ linear: minus(part.linear, constant(ratio(lo))), relation: ">=" }),
+      atom({ linear: minus(constant(ratio(hi)), part.linear), relation: ">=" })
+    ),
+    context
+  );
+
+const optionalTimePart = (
+  arg: Sym | undefined,
+  name: string,
+  context: Context
+): Effect.Effect<NumberSym, Error> =>
+  arg === undefined
+    ? Effect.succeed(numberSym(constant(ZERO)))
+    : polyOf(arg, name, context);
+
+const timeFromPartsSymbolic = (
+  args: readonly Sym[],
+  name: string,
+  context: Context
+): Effect.Effect<Cases, Error> =>
+  Effect.gen(function* () {
+    const year = exactIntOf(args[0]);
+    const monthBig = exactIntOf(args[1]);
+    const dayBig = exactIntOf(args[2]);
+    if (year === undefined || monthBig === undefined || dayBig === undefined) {
+      return yield* refused(name);
+    }
+    const month = Number(monthBig);
+    const day = Number(dayBig);
+    if (!validCivilDate(year, month, day)) {
+      return yield* refused(name);
+    }
+    const hour = yield* optionalTimePart(args[3], name, context);
+    const minute = yield* optionalTimePart(args[4], name, context);
+    const second = yield* optionalTimePart(args[5], name, context);
+    const offset = yield* optionalTimePart(args[6], name, context);
+    const ranges: readonly (readonly [NumberSym, bigint, bigint])[] = [
+      [hour, 0n, 23n],
+      [minute, 0n, 59n],
+      [second, 0n, 59n],
+      [offset, -840n, 840n],
+    ];
+    if (!ranges.every(([p, lo, hi]) => guaranteedIntPart(p, lo, hi, context))) {
+      return yield* refused(name);
+    }
+    const baseMs = daysFromCivilSym(year, month, day) * 86_400_000n;
+    let total = numberSym(constant(ratio(baseMs)));
+    total = polyAdd(total, polyScale(hour, ratio(3_600_000n)));
+    total = polyAdd(total, polyScale(minute, ratio(60_000n)));
+    total = polyAdd(total, polyScale(second, ratio(1000n)));
+    total = polySub(total, polyScale(offset, ratio(60_000n)));
+    return one(total);
+  });
 
 /** Whether `fit` holds everywhere under `context.guard` (i.e. `guard & !fit` is unsat). */
 const isGuaranteed = (fit: Formula, context: Context): boolean => {
@@ -3158,6 +3352,9 @@ const fitsInteger = (sym: Sym, context: Context): Fit => {
     return Effect.succeed(FALSE);
   }
   const resolved = applySubstitutions(sym, context);
+  if (resolved.denominator !== undefined) {
+    return refused(`${"value/integer?"} of a ratio`);
+  }
   if (resolved.nonlinear !== undefined) {
     return polyIntegral(resolved, context.sorts)
       ? Effect.succeed(TRUE)

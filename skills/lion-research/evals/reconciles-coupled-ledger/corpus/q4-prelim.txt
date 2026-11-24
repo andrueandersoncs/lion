@@ -1,0 +1,7 @@
+Vespera Grid Storage — Preliminary Q4 Operational Note
+Published: 2026-01-12
+URL: https://vesperagrid.example/ir/q4-prelim
+
+Management estimates shared fixed plant overhead for FY25 at $20.0 million.
+
+Operational fleet note: Vespera's regional site plan requires at least 2 times the West region's site count plus 2 sites in the North region (north >= 2*west + 2), and at least 5 more sites in the South region than in the West region (south >= west + 5).

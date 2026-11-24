@@ -27,7 +27,8 @@ export interface KbTask {
     | "graph-investigation"
     | "belief-revision"
     | "epistemics"
-    | "synthesis";
+    | "synthesis"
+    | "verification";
   readonly check: unknown;
   readonly description: string;
   readonly id: string;
@@ -1089,6 +1090,301 @@ export const KB_TASKS: readonly KbTask[] = [
           ["quote", [{ med: 112.5, top: "b" }]],
         ],
         ["=", ["object/get", "out", "perShare"], 30],
+      ],
+    ],
+  },
+
+  // 11. First-class universal verification & counterexample synthesis
+  {
+    id: "kb-proof-counterexample",
+    category: "verification",
+    description:
+      "Prove a margin floor holds across rounded revenue/cost intervals with a kernel-valid certificate, and synthesize a concrete counterexample for a tighter floor",
+    nativeProgram: [
+      "begin",
+      [
+        "define",
+        "holds25",
+        [
+          "proof/prove",
+          [
+            "not",
+            [
+              "exists",
+              ["?rev", "?cost"],
+              [
+                "and",
+                ["schema/fits?", "?rev", "value/number?"],
+                ["schema/fits?", "?cost", "value/number?"],
+                ["number/greaterThanOrEqualTo", "?rev", 405],
+                ["number/lessThanOrEqualTo", "?rev", 415],
+                ["number/greaterThanOrEqualTo", "?cost", 300],
+                ["number/lessThanOrEqualTo", "?cost", 303],
+                [
+                  "number/lessThan",
+                  [
+                    "number/divide",
+                    ["number/subtract", "?rev", "?cost"],
+                    "?rev",
+                  ],
+                  0.25,
+                ],
+              ],
+            ],
+          ],
+        ],
+      ],
+      [
+        "define",
+        "holds26",
+        [
+          "proof/prove",
+          [
+            "not",
+            [
+              "exists",
+              ["?rev", "?cost"],
+              [
+                "and",
+                ["schema/fits?", "?rev", "value/number?"],
+                ["schema/fits?", "?cost", "value/number?"],
+                ["number/greaterThanOrEqualTo", "?rev", 405],
+                ["number/lessThanOrEqualTo", "?rev", 415],
+                ["number/greaterThanOrEqualTo", "?cost", 300],
+                ["number/lessThanOrEqualTo", "?cost", 303],
+                [
+                  "number/lessThan",
+                  [
+                    "number/divide",
+                    ["number/subtract", "?rev", "?cost"],
+                    "?rev",
+                  ],
+                  0.26,
+                ],
+              ],
+            ],
+          ],
+        ],
+      ],
+      {
+        proved25: ["object/get", "holds25", "proved"],
+        valid25: ["proof/valid?", "holds25"],
+        proved26: ["object/get", "holds26", "proved"],
+        hasCounterexample: ["object/has?", "holds26", "counterexample"],
+      },
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["object/get", "out", "proved25"], true],
+        ["=", ["object/get", "out", "valid25"], true],
+        ["=", ["object/get", "out", "proved26"], false],
+        ["=", ["object/get", "out", "hasCounterexample"], true],
+      ],
+    ],
+  },
+
+  // 12. Exact linear-fractional interval bounds under rounding uncertainty
+  {
+    id: "kb-ratio-interval-bounds",
+    category: "verification",
+    description:
+      "Compute exact tight [min, max] gross margin bounds and endpoint witnesses over rounded revenue/cost intervals with kernel-checked bound certificates",
+    nativeProgram: [
+      "begin",
+      [
+        "define",
+        "b",
+        [
+          "proof/bounds",
+          ["number/divide", ["number/subtract", "?rev", "?cost"], "?rev"],
+          [
+            "and",
+            ["schema/fits?", "?rev", "value/number?"],
+            ["schema/fits?", "?cost", "value/number?"],
+            ["number/greaterThanOrEqualTo", "?rev", 405],
+            ["number/lessThanOrEqualTo", "?rev", 415],
+            ["number/greaterThanOrEqualTo", "?cost", 300],
+            ["number/lessThanOrEqualTo", "?cost", 303],
+          ],
+        ],
+      ],
+      {
+        minExact: [
+          "=",
+          ["object/get", "b", "min"],
+          ["number/divide", 102, 405],
+        ],
+        maxExact: [
+          "=",
+          ["object/get", "b", "max"],
+          ["number/divide", 115, 415],
+        ],
+        minCert: ["proof/valid?", ["object/get", "b", "minProof"]],
+        maxCert: ["proof/valid?", ["object/get", "b", "maxProof"]],
+      },
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["object/get", "out", "minExact"], true],
+        ["=", ["object/get", "out", "maxExact"], true],
+        ["=", ["object/get", "out", "minCert"], true],
+        ["=", ["object/get", "out", "maxCert"], true],
+      ],
+    ],
+  },
+
+  // 13. Universal frame & research-aggregate soundness via rule induction
+  {
+    id: "kb-frame-rule-soundness",
+    category: "verification",
+    description:
+      "Prove universally via proof/rules that a research frame with column-level Says invariant, record destructuring, and count/sum/mean rules preserves output schemas",
+    nativeProgram: [
+      "begin",
+      [
+        "schema",
+        "Pos",
+        [
+          "schema/allOf",
+          "value/number?",
+          ["lambda", ["n"], ["number/greaterThan", "n", 0]],
+        ],
+      ],
+      [
+        "schema",
+        "Says",
+        ["schema/anyOf", { revenue: "value/string?", usd_m: "Pos" }],
+      ],
+      ["relation", "claim", ["id", "source", "quote", "says"]],
+      [
+        "invariant",
+        [
+          "and",
+          ["claim", "?id", "?_", "?_", "?says"],
+          ["not", ["Says", "?says"]],
+        ],
+        { assert: "none" },
+      ],
+      ["relation", "ans", ["co", "v"]],
+      [
+        "rule",
+        ["ans", "?co", "?v"],
+        ["claim", "?_", "?_", "?_", { revenue: "?co", usd_m: "?v" }],
+      ],
+      ["relation", "tot", ["co", "s"]],
+      ["rule", ["tot", "?co", ["aggregate/sum", "?v"]], ["ans", "?co", "?v"]],
+      ["schema", "AnsRow", { co: "value/string?", v: "Pos" }],
+      ["schema", "TotRow", { co: "value/string?", s: "Pos" }],
+      ["define", "p", ["proof/rules", { ans: "AnsRow", tot: "TotRow" }]],
+      { proved: ["object/get", "p", "proved"], valid: ["proof/valid?", "p"] },
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["object/get", "out", "proved"], true],
+        ["=", ["object/get", "out", "valid"], true],
+      ],
+    ],
+  },
+
+  // 14. Formal temporal SLA proof & duration envelope over uncertain UTC windows
+  {
+    id: "kb-temporal-window-proof",
+    category: "chronology",
+    description:
+      "Bound incident outage duration and prove minimum SLA breach across uncertain UTC detection windows using symbolic time/add and time/diff",
+    nativeProgram: [
+      "begin",
+      ["define", "t0", ["time/parse", "2026-03-03T14:00:00Z"]],
+      ["define", "tMit", ["time/parse", "2026-03-03T16:40:00Z"]],
+      [
+        "define",
+        "b",
+        [
+          "proof/bounds",
+          ["time/diff", "tMit", "?det", "minutes"],
+          [
+            "and",
+            ["schema/fits?", "?det", "value/integer?"],
+            ["number/greaterThanOrEqualTo", "?det", "t0"],
+            [
+              "number/lessThanOrEqualTo",
+              "?det",
+              ["time/add", "t0", 10, "minutes"],
+            ],
+          ],
+        ],
+      ],
+      {
+        min: ["object/get", "b", "min"],
+        max: ["object/get", "b", "max"],
+        cert: ["proof/valid?", ["object/get", "b", "minProof"]],
+      },
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["object/get", "out", "min"], 150],
+        ["=", ["object/get", "out", "max"], 160],
+        ["=", ["object/get", "out", "cert"], true],
+      ],
+    ],
+  },
+
+  // 15. Empirical obligation proving with counterfactual source retraction
+  {
+    id: "kb-obligation-counterfactual",
+    category: "epistemics",
+    description:
+      "Prove an empirical corroborated finding with ground facts and closed-world assumptions, then prove its fragility under counterfactual retraction via assuming",
+    nativeProgram: [
+      "begin",
+      ["relation", "backs", ["pub", "q", "v"]],
+      ["relation", "corroborated", ["q", "v"]],
+      ["fact", ["backs", "acme", "wh", 37], ["backs", "registry", "wh", 37]],
+      [
+        "rule",
+        ["corroborated", "?q", "?v"],
+        ["backs", "?p1", "?q", "?v"],
+        ["backs", "?p2", "?q", "?v"],
+        ["not", ["=", "?p1", "?p2"]],
+      ],
+      ["define", "now", ["proof/prove", ["corroborated", "wh", 37]]],
+      [
+        "define",
+        "withoutReg",
+        [
+          "assuming",
+          ["retract", ["backs", "registry", "wh", 37]],
+          ["proof/prove", ["corroborated", "wh", 37]],
+        ],
+      ],
+      {
+        provedNow: ["object/get", "now", "proved"],
+        validNow: ["proof/valid?", "now"],
+        factCount: ["array/length", ["object/get", "now", "facts"]],
+        provedWithoutReg: ["object/get", "withoutReg", "proved"],
+      },
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["object/get", "out", "provedNow"], true],
+        ["=", ["object/get", "out", "validNow"], true],
+        ["=", ["object/get", "out", "factCount"], 2],
+        ["=", ["object/get", "out", "provedWithoutReg"], false],
       ],
     ],
   },

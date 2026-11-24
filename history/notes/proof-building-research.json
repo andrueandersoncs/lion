@@ -1,0 +1,84 @@
+{
+  "claims": [
+    {
+      "quote": "Standard library adds `proof/prove` to prove universal (`[\"not\", [\"exists\", ...]]`) or empirical database goals in one call, returning kernel-verifiable certificates, induction proofs, `why` provenance trees with `facts` and `assumptions`, or concrete `counterexample` witnesses when a universal claim fails.",
+      "says": {
+        "feature": "proof-prove-and-counterexample-synthesis",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`proof/prove` returns kernel-verifiable certificates for valid universal claims, concrete counterexample witnesses for failing universal claims, and grounded `why` provenance (`facts` and `assumptions`) for empirical database goals.",
+      "says": {
+        "behavior": "proof-prove-and-counterexample-synthesis",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Standard library adds `proof/bounds` to compute exact tight `[min, max]` intervals with endpoint witnesses and kernel-checkable `minProof` / `maxProof` certificates across continuous linear, integer, Charnes-Cooper linear-fractional ratio, and relational database constraints.",
+      "says": {
+        "feature": "proof-bounds-exact-intervals",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`proof/bounds` computes exact tight `[min, max]` intervals, endpoint witnesses, and `proof/valid?` certificates across continuous linear, integer, linear-fractional ratio, and database constraints.",
+      "says": {
+        "behavior": "proof-bounds-exact-intervals",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "The symbolic solver supports exact linear-fractional ratios (`num / den` with symbolic linear denominators, splitting positive and negative denominator signs and optimizing ratios via Charnes-Cooper transformation).",
+      "says": {
+        "feature": "symbolic-linear-fractional-ratios",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Symbolic division by a linear expression handles both positive and negative denominators with exact sign flips and proves or refutes coupled ratio inequalities.",
+      "says": {
+        "behavior": "symbolic-linear-fractional-ratios",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`proof/rules` handles research-grade frames: single-column schema invariants, nested pattern destructuring in atom columns, `in` and `schema/fits?` rule filters, sound abstract output domains for `count`/`countUnique`/`sum`/`mean`/`median`/`unique`/`collect`/`argMin`/`argMax`, and pruning of unused anonymous schema columns.",
+      "says": {
+        "feature": "proof-rules-research-frames",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`proof/rules` proves schema preservation over relations with single-column schema invariants, nested record patterns, `in`/`schema/fits?` filters, and aggregate heads.",
+      "says": {
+        "behavior": "proof-rules-research-frames",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "The symbolic solver interprets `time/add`, `time/diff`, and `time/fromParts` (with concrete calendar dates and symbolic clock/offset parts) as exact linear expressions over UTC milliseconds.",
+      "says": {
+        "feature": "symbolic-time-reasoning",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`proof/prove` and `proof/bounds` reason symbolically over `time/add`, `time/diff`, and `time/fromParts` for exact UTC interval proofs and SLA checks.",
+      "says": {
+        "behavior": "symbolic-time-reasoning",
+        "is": "works",
+        "area": "logic"
+      }
+    }
+  ]
+}

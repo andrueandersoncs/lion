@@ -1,0 +1,11 @@
+Kestrel BioLabs Form 10-K — Fiscal Year 2025
+Published: 2026-02-20
+URL: https://sec.example/kestrel/fy25-10k
+
+Item 7. Management's Discussion and Analysis
+
+Following revenue-recognition adjustments for multi-year hospital contracts, Kestrel BioLabs restated its preliminary FY25 revenue estimate. Final FY25 total revenue will fall between $238.0 million and $242.0 million pending final auditor sign-off on a $4.0 million deferral band.
+
+Direct Cost of Goods Sold (COGS) for FY25 will fall between $161.0 million and $165.0 million pending final cold-chain inventory write-down reconciliation.
+
+Management notes that the midpoint estimates ($240.0 million revenue and $163.0 million COGS) imply a gross margin of 32.08%, above the 32.0% threshold discussed with prospective lenders.

@@ -4,6 +4,8 @@
 // Lion it gives with `lion worker`, so a page's check and the page run the
 // same Lion.
 import { spawnSync } from "node:child_process";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 /** What separates the words of a command. */
 const SPACES = /\s+/;
@@ -36,3 +38,25 @@ export const lion = (args, encoding = "utf8") => {
     ? spawnSync("npx", ["-y", "@lionlang/cli", ...args], options)
     : first;
 };
+
+const isMain = () => {
+  try {
+    return (
+      realpathSync(process.argv[1] ?? "") ===
+      realpathSync(fileURLToPath(import.meta.url))
+    );
+  } catch {
+    return false;
+  }
+};
+
+if (isMain()) {
+  const ran = lion(process.argv.slice(2));
+  if (ran.stdout) {
+    process.stdout.write(ran.stdout);
+  }
+  if (ran.stderr) {
+    process.stderr.write(ran.stderr);
+  }
+  process.exit(ran.status ?? 1);
+}

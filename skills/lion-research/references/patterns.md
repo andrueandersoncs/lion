@@ -424,11 +424,92 @@ An observation that only one explanation predicts is the one worth a search. `ag
 
 ## What if
 
-To ask what would follow from a fact you do not have, or from reading an ambiguous source another way, run it against a copy, so the model stays as the evidence left it:
+To ask what would follow from a fact you do not have, or from retracting a shaky source, use `assuming` directly inside a query or rule (never mutating `model.json`):
 
-```bash
-cp model.json what-if.json
-bunx @lionlang/cli what-if-step.json --database what-if.json
+```json
+["assuming",
+  ["retract", ["claim", "c-rumor", "blog", ["quote", "..."], ["quote", {"stake": "helios", "in": "apex", "pct": 50}]]],
+  ["proof/prove", ["controls_majority", "helios", "vespera"]]]
 ```
 
-The explorer page does the same in the browser: a query there can add facts, and its reset button loads the saved model again.
+You can also test larger step changes on a copy (`cp model.json what-if.json`) or with `lion diff model.json --apply next-step.json --derived`.
+
+## Proof-building patterns
+
+### Coupled constraints & exact ratio bounds (`proof/bounds` + `proof/prove`)
+
+When sources give coupled inequalities or rounded bands (such as segment revenue shares, overhead ranges, and gross margin ratios), **never hard-code hand-enumerated vertices**. Read the constraint parameters from `backing`/`accepted` facts inside a rule and let `proof/bounds` compute the exact rational `[min, max]`, witnesses, and kernel-checkable `minProof`/`maxProof` certificates:
+
+```json
+["relation", "margin_envelope", ["min_pct", "max_pct", "witness_min", "witness_max", "certified"]],
+["rule", ["margin_envelope",
+    ["number/round", ["number/multiply", 100, ["object/get", "?b", "min"]], 2],
+    ["number/round", ["number/multiply", 100, ["object/get", "?b", "max"]], 2],
+    ["object/get", "?b", "witnessMin"],
+    ["object/get", "?b", "witnessMax"],
+    ["boolean/and", ["proof/valid?", ["object/get", "?b", "minProof"]], ["proof/valid?", ["object/get", "?b", "maxProof"]]]],
+  ["accepted", "rev_min", "?rmin"], ["accepted", "rev_max", "?rmax"],
+  ["accepted", "cogs_min", "?cmin"], ["accepted", "cogs_max", "?cmax"],
+  ["=", "?b", ["proof/bounds",
+    ["number/divide", ["number/subtract", "?rev", "?cogs"], "?rev"],
+    ["and",
+      ["schema/fits?", "?rev", "value/number?"], ["schema/fits?", "?cogs", "value/number?"],
+      ["number/greaterThanOrEqualTo", "?rev", "?rmin"], ["number/lessThanOrEqualTo", "?rev", "?rmax"],
+      ["number/greaterThanOrEqualTo", "?cogs", "?cmin"], ["number/lessThanOrEqualTo", "?cogs", "?cmax"]]]]]
+```
+
+Because the bounds come from `accepted`, if a later filing revises `?rmin` or `?cmax`, `margin_envelope` recomputes automatically! Always round exact rationals with `["number/round", ..., 2]` before outputting JSON or showing them on `page.json`.
+
+To test a covenant or threshold (e.g. gross margin strictly above 32.0%) and get a proof certificate OR concrete counterexample:
+
+```json
+["proof/prove", ["not", ["exists", ["?rev", "?cogs"],
+  ["and",
+    ["schema/fits?", "?rev", "value/number?"], ["schema/fits?", "?cogs", "value/number?"],
+    ["number/greaterThanOrEqualTo", "?rev", 238], ["number/lessThanOrEqualTo", "?rev", 242],
+    ["number/greaterThanOrEqualTo", "?cogs", 161], ["number/lessThanOrEqualTo", "?cogs", 165],
+    ["number/lessThanOrEqualTo", ["number/multiply", 100, ["number/divide", ["number/subtract", "?rev", "?cogs"], "?rev"]], 32]]]]]
+```
+
+### Cross-source impossibility proofs (`proof/prove` + `contradicting`)
+
+When disclosures across several documents constrain integer or numeric counts (such as regional site counts and a total cap), ask `proof/prove` whether *any* consistent assignment exists. If none exists, `proved` is `true`, `proof/valid?` checks the certificate, and `contradicting` returns the minimal contradicting subset of constraints:
+
+```json
+["proof/prove", ["not", ["exists", ["?n", "?so", "?w"],
+  ["and",
+    ["schema/fits?", "?n", "value/integer?"], ["schema/fits?", "?so", "value/integer?"], ["schema/fits?", "?w", "value/integer?"],
+    ["number/lessThanOrEqualTo", ["number/add", "?n", "?so", "?w"], 43],
+    ["number/greaterThanOrEqualTo", "?n", ["number/add", ["number/multiply", 2, "?w"], 2]],
+    ["number/greaterThanOrEqualTo", "?so", ["number/add", "?w", 5]],
+    ["number/greaterThanOrEqualTo", "?w", 9],
+    ["number/greaterThanOrEqualTo", "?n", ["number/add", "?so", 7]]]]]]
+```
+
+### Uncertain UTC SLA windows (`time/parse` + `time/diff` + `proof/bounds`)
+
+Normalize every ISO-8601 timestamp with `time/parse` (works across `Z`, `-04:00`, `+09:00` without legacy `@utc-minutes`), format for readers with `["time/format", "?ms", "minute"]`, and bound uncertain windows directly with symbolic `time/diff` and `proof/bounds`:
+
+```json
+["proof/bounds",
+  ["time/diff", "?rec", "?start", "minutes"],
+  ["and",
+    ["schema/fits?", "?start", "value/integer?"], ["schema/fits?", "?rec", "value/integer?"],
+    ["number/greaterThanOrEqualTo", "?start", ["time/parse", "2026-04-10T09:05:00-04:00"]],
+    ["number/lessThanOrEqualTo", "?start", ["time/parse", "2026-04-10T09:15:00-04:00"]],
+    ["number/greaterThanOrEqualTo", "?rec", ["time/parse", "2026-04-10T12:20:00-04:00"]],
+    ["number/lessThanOrEqualTo", "?rec", ["time/parse", "2026-04-10T12:35:00-04:00"]]]]
+```
+
+### Dependency cycles & single points of failure (`graph/cycles`, `graph/dominators`)
+
+- **Cycle detection (non-throwing)**: `["query", ["graph/cycles", "depends", "?cycle"]]` returns every minimal dependency cycle without failing the query!
+- **Single points of failure (chokepoints)**: `["query", ["graph/dominators", "depends", "clinical-assays", "?node", "?idom"]]` computes the exact immediate dominator tree — every ancestor of a critical leaf in the dominator tree (or every node that dominates all paths to a terminal supplier) is a proven single point of failure!
+
+### Frame rule soundness (`proof/rules`)
+
+Prove universally that your frame's `answer` and aggregation rules preserve their output schemas across *all* valid `Says` claims (not just the sources loaded so far):
+
+```json
+["proof/rules", {"rev_answer": "RevAnswerRow", "rev_total": "RevTotalRow"}]
+```

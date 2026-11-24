@@ -2,6 +2,24 @@
 
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Standard library adds `proof/bounds` to compute exact tight `[min, max]` intervals with endpoint witnesses and kernel-checkable `minProof` / `maxProof` certificates across continuous linear, integer, Charnes-Cooper linear-fractional ratio, and relational database constraints. (`proof-bounds-exact-intervals` added)
+- Standard library adds `proof/prove` to prove universal (`["not", ["exists", ...]]`) or empirical database goals in one call, returning kernel-verifiable certificates, induction proofs, `why` provenance trees with `facts` and `assumptions`, or concrete `counterexample` witnesses when a universal claim fails. (`proof-prove-and-counterexample-synthesis` added)
+- `proof/rules` handles research-grade frames: single-column schema invariants, nested pattern destructuring in atom columns, `in` and `schema/fits?` rule filters, sound abstract output domains for `count`/`countUnique`/`sum`/`mean`/`median`/`unique`/`collect`/`argMin`/`argMax`, and pruning of unused anonymous schema columns. (`proof-rules-research-frames` added)
+- The symbolic solver supports exact linear-fractional ratios (`num / den` with symbolic linear denominators, splitting positive and negative denominator signs and optimizing ratios via Charnes-Cooper transformation). (`symbolic-linear-fractional-ratios` added)
+- The symbolic solver interprets `time/add`, `time/diff`, and `time/fromParts` (with concrete calendar dates and symbolic clock/offset parts) as exact linear expressions over UTC milliseconds. (`symbolic-time-reasoning` added)
+
+### Changed
+
+- `proof/bounds` computes exact tight `[min, max]` intervals, endpoint witnesses, and `proof/valid?` certificates across continuous linear, integer, linear-fractional ratio, and database constraints. (`proof-bounds-exact-intervals` is `works`)
+- `proof/prove` returns kernel-verifiable certificates for valid universal claims, concrete counterexample witnesses for failing universal claims, and grounded `why` provenance (`facts` and `assumptions`) for empirical database goals. (`proof-prove-and-counterexample-synthesis` is `works`)
+- `proof/rules` proves schema preservation over relations with single-column schema invariants, nested record patterns, `in`/`schema/fits?` filters, and aggregate heads. (`proof-rules-research-frames` is `works`)
+- Symbolic division by a linear expression handles both positive and negative denominators with exact sign flips and proves or refutes coupled ratio inequalities. (`symbolic-linear-fractional-ratios` is `works`)
+- `proof/prove` and `proof/bounds` reason symbolically over `time/add`, `time/diff`, and `time/fromParts` for exact UTC interval proofs and SLA checks. (`symbolic-time-reasoning` is `works`)
+
 ## 2026-11-24 — @lionlang/core 0.17.0, @lionlang/cli 0.16.0
 
 Lion proves universal properties by structural, numeric, and rule induction (`proof/rules`) with a zero-solver proof kernel (`proof/valid?`), decides `schema/includes?` across every value kind and recursive named schemas, and extends the symbolic solver to exact multivariate polynomials, univariate quadratics, division/rounding/remainder, bounded recursive lambdas, and idiomatic object, array, boolean, aggregate, and quantity operations. `why` is now a first-class composable question across `query`, `find`, `rule`, `cond`, `invariant`, and `assuming`, paired with `proof/facts` and `proof/assumptions` for ground provenance extraction. The standard library adds the deterministic UTC `time` module (`time/parse`, `time/fromParts`, `time/format`, `time/parts`, `time/diff`, `time/add`), Unicode regex and quote normalization (`string/matches?`, `string/match`, `string/matchAll`, `string/normalize`), string/value ordering and structural `array/includes?`, everyday array/string/object helpers (`array/filter`, `array/reverse`, `array/sort`, `array/at`, `array/indexOf`, `array/find`, `string/chars`, `string/trim`, `string/toLowerCase`, `string/toUpperCase`, `string/replaceAll`, `object/json-parse`, `object/entries`, `object/fromEntries`, `object/merge`), `aggregate/median`, `aggregate/argMin`/`argMax`, and six ontology and knowledge-graph algorithms (`graph/cycles`, `graph/transitiveReduction`, `graph/betweenness`, `graph/lca`, `graph/simplePaths`, `graph/dominators`). Recursive and mutually recursive lambdas close and snapshot cleanly in rules, and static analysis catches wrong-arity calls and unsafe declarations with runtime messages. `@lionlang/cli` adds `--eval`, stdin `-`, `--bind`/`--bind-file`, multi-file atomic runs, `--read-only`, `lion check --database`, `lion inspect [--derived]`, and `lion diff [--derived]` with read-only `--apply` counterfactual preview.

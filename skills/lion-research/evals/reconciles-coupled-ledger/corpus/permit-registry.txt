@@ -1,0 +1,7 @@
+Regional Energy Commission — 2025 Grid Storage Permit Registry
+Published: 2026-02-26
+URL: https://energycommission.example/permits/vespera-2025
+
+Verified minimum active site commitments for Vespera Grid Storage:
+- West region holds at least 9 permitted modular battery sites (west >= 9).
+- North region exceeds the South region by at least 7 permitted modular battery sites (north >= south + 7).

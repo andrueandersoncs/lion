@@ -801,3 +801,31 @@ export const why = (model: Model, atom: Atom): LogicEffect<unknown> =>
       ? yield* explain(telling, atom.relation, atom.args)
       : yield* missing(telling, atom, NO_VARS);
   });
+
+/** Explains how any closed goal holds, or why it does not (with certificates, induction, or why trees). */
+export const whyGoal = (
+  model: Model,
+  goal: unknown,
+  vars: Vars = NO_VARS
+): LogicEffect<{ readonly held: boolean; readonly tree: unknown }> =>
+  Effect.gen(function* () {
+    const telling: Telling = {
+      fed: new Map(),
+      looking: new Map(),
+      model,
+      opened: new Map(),
+      rests: Number.POSITIVE_INFINITY,
+      resting: new Map(),
+      told: new Set(),
+    };
+    if (typeof goal === "boolean") {
+      return goal
+        ? { held: true, tree: { check: true } }
+        : { held: false, tree: { absent: false, because: [] } };
+    }
+    const ok = yield* holds(model, goal as Parameters<typeof holds>[1], vars);
+    if (ok) {
+      return { held: true, tree: yield* held(telling, goal, vars) };
+    }
+    return { held: false, tree: yield* missing(telling, goal, vars) };
+  });

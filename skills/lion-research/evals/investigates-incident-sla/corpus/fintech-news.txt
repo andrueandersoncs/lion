@@ -1,0 +1,7 @@
+FinTech Daily: Meridian Pay Suffers Four-Hour Checkout Blackout
+Published: 2026-04-11
+URL: https://fintechdaily.example/meridian-blackout
+
+According to Meridian Pay's status page, checkout failed at 13:15 UTC and engineers initially suspected a BGP flap.
+
+Citing Meridian's post-incident figures, FinTech Daily reported recovery at 17:20 UTC — a 245-minute outage — and stated that Meridian's payouts service was not affected during the incident.

@@ -1,0 +1,7 @@
+Meridian Pay Customer Advisory — Final Impact Tally
+Published: 2026-04-18
+URL: https://meridianpay.example/advisories/4418-final
+
+After reconciling billing logs, Meridian Pay revised its affected merchant count from the initial 12,000 estimate down to 9,400 merchants.
+
+Meridian Pay also confirmed that the payouts service was affected during the incident due to its shared dependency on auth-vault.

@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: investigates-incident-sla
+expected_outcome: |
+  Working only from the saved corpus, the run investigates the April 10, 2026
+  Meridian Pay payment outage across UTC, EDT (-04:00), and JST (+09:00)
+  sources. It establishes: (1) NetPulse Monitor independently corroborates
+  both 13:15 UTC outage onset and 16:20 UTC recovery across time zones;
+  (2) measuring SLA from outage start ([13:05Z, 13:15Z]) to recovery
+  ([16:20Z, 16:35Z]), the duration lies in [185, 210] minutes, so Meridian
+  PROVABLY breached the 180-minute SLA under every consistent reading;
+  (3) measuring SLA from detection (13:22Z) to recovery ([16:20Z, 16:35Z]),
+  the duration lies in [178, 193] minutes, so the breach is NOT provable under
+  the detection reading (counterexample at 16:20Z = 178 min < 180);
+  (4) FinTech Daily misconverted 12:20 EDT as 17:20 UTC (245 min);
+  (5) OpsTalk Forum's claim that auth-vault depends on checkout introduces a
+  circular dependency cycle (checkout -> token-broker -> auth-vault -> checkout);
+  (6) Meridian restated affected merchants from 12,000 down to 9,400, and
+  sources dispute whether payouts was affected.

@@ -1,0 +1,150 @@
+{
+  "about": "Known-correct substantive checks for the Meridian Pay April 10, 2026 SLA incident investigation corpus.",
+  "checks": [
+    {
+      "stage": "reading",
+      "check": "Every quote is in its source's saved text",
+      "quotes": true,
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every figure recorded is written in the words quoted",
+      "query": ["find", "?claim", ["unquoted", "?claim", "?_", "?_"]],
+      "expect": "none",
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every source in the corpus was read and recorded",
+      "query": [
+        "array/length",
+        [
+          "aggregate/unique",
+          ["find", "?source", ["claim", "?_", "?source", "?_", "?_"]]
+        ]
+      ],
+      "expect": 6,
+      "rests_on": [
+        "status-page",
+        "postmortem",
+        "uptime-probe",
+        "fintech-news",
+        "ops-forum",
+        "customer-advisory"
+      ]
+    },
+    {
+      "stage": "framing",
+      "check": "Every statement recorded is read by an answer rule",
+      "query": [
+        "find",
+        "?claim",
+        [
+          "and",
+          ["claim", "?claim", "?_", "?_", "?_"],
+          ["not", ["answer", "?_", "?_", "?claim"]]
+        ]
+      ],
+      "expect": "none",
+      "rests_on": []
+    },
+    {
+      "stage": "conclusions",
+      "check": "Meridian restated affected merchants from 12,000 to 9,400",
+      "query": ["find", "?p", ["restated", "?_", "?p", 12000, 9400]],
+      "expect": "some",
+      "rests_on": ["status-page", "customer-advisory"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "Nobody stands behind the withdrawn 12,000 merchant count any more",
+      "query": ["find", "?q", ["backing", "?q", 12000, "?_"]],
+      "expect": "none",
+      "rests_on": ["customer-advisory"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "Sources dispute whether payouts was affected (true vs false)",
+      "query": [
+        "find",
+        "?q",
+        [
+          "and",
+          ["disputed", "?q", "?vs"],
+          ["in", true, "?vs"],
+          ["in", false, "?vs"]
+        ]
+      ],
+      "expect": "some",
+      "rests_on": ["fintech-news", "customer-advisory"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "At least one UTC-normalized timeline timestamp is independently corroborated across time zones",
+      "query": ["find", "?q", ["corroborated", "?q", "?_"]],
+      "expect": "some",
+      "rests_on": ["status-page", "uptime-probe"]
+    },
+    {
+      "stage": "page",
+      "check": "The page was built",
+      "file": "explorer.html",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "Every text and query of the page runs",
+      "page": "runs",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "The page reports the start-to-recovery SLA minimum (185 minutes)",
+      "page": "\\b185\\b",
+      "rests_on": ["postmortem"]
+    },
+    {
+      "stage": "report",
+      "check": "The report proves the start-to-recovery duration is 185 to 210 minutes (provably breaches 180-minute SLA)",
+      "report": "185[\\s\\S]{0,80}210",
+      "rests_on": ["postmortem"]
+    },
+    {
+      "stage": "report",
+      "check": "The report computes detection-to-recovery duration as 178 to 193 minutes (breach NOT provable; counterexample 178 min at 16:20 UTC)",
+      "report": "178[\\s\\S]{0,80}193",
+      "rests_on": ["postmortem"]
+    },
+    {
+      "stage": "report",
+      "check": "The report confirms NetPulse corroborates 13:15 UTC and 16:20 UTC from JST (+09:00)",
+      "report": "13:15[\\s\\S]{0,200}16:20|16:20[\\s\\S]{0,200}13:15",
+      "rests_on": ["status-page", "uptime-probe"]
+    },
+    {
+      "stage": "report",
+      "check": "The report flags FinTech Daily's 17:20 UTC / 245-minute timezone conversion error",
+      "report": "(17:20[\\s\\S]{0,160}245|245[\\s\\S]{0,160}17:20)",
+      "rests_on": ["fintech-news"]
+    },
+    {
+      "stage": "report",
+      "check": "The report detects the dependency cycle introduced by OpsTalk Forum (checkout -> token-broker -> auth-vault -> checkout)",
+      "report": "(?i)(cycle|circular|loop)[\\s\\S]{0,220}(auth-vault|token-broker|checkout)|(auth-vault[\\s\\S]{0,120}checkout[\\s\\S]{0,220}(cycle|circular|loop))",
+      "rests_on": ["postmortem", "ops-forum"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives the restated merchant count 9,400 (down from 12,000)",
+      "report": "9,?400[\\s\\S]{0,150}12,?000|12,?000[\\s\\S]{0,150}9,?400",
+      "rests_on": ["status-page", "customer-advisory"]
+    },
+    {
+      "stage": "report",
+      "check": "The report notes the payouts dispute (Meridian confirmed affected vs FinTech Daily claiming unaffected)",
+      "report": "(?i)payouts[\\s\\S]{0,220}(disput|affected[\\s\\S]{0,120}not affected|confirmed[\\s\\S]{0,120}fintech)",
+      "rests_on": ["fintech-news", "customer-advisory"]
+    }
+  ]
+}

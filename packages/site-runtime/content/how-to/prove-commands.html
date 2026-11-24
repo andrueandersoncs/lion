@@ -127,6 +127,34 @@
   {"proved": ["object/get", "p", "proved"], "kernel valid": ["proof/valid?", "p"]}]
 </lion-example>
 
+<h2>Prove goals, synthesize counterexamples, and compute exact bounds</h2>
+<p><code>proof/prove</code> decides a universal or empirical goal in one call, returning a kernel-checked certificate or a concrete <code>counterexample</code> witness when a universal claim fails. <code>proof/bounds</code> computes exact tight <code>min</code> and <code>max</code> bounds across continuous linear, integer, Charnes-Cooper linear-fractional ratio, and symbolic <code>time/</code> constraints, with endpoint witnesses and kernel-valid <code>minProof</code> / <code>maxProof</code> certificates:</p>
+<lion-example name="Exact ratio bounds and counterexample synthesis">
+["begin",
+  ["define", "start", ["time/parse", "2026-03-03T14:00:00Z"]],
+  ["define", "sla", ["proof/bounds",
+    ["time/diff", "?end", "?t0", "minutes"],
+    ["and",
+      ["schema/fits?", "?t0", "value/integer?"], ["schema/fits?", "?end", "value/integer?"],
+      ["number/greaterThanOrEqualTo", "?t0", "start"],
+      ["number/lessThanOrEqualTo", "?t0", ["time/add", "start", 10, "minutes"]],
+      ["number/greaterThanOrEqualTo", "?end", ["time/add", "start", 195, "minutes"]],
+      ["number/lessThanOrEqualTo", "?end", ["time/add", "start", 210, "minutes"]]]]],
+  ["define", "breach", ["proof/prove", ["not", ["exists", ["?t0", "?end"],
+    ["and",
+      ["schema/fits?", "?t0", "value/integer?"], ["schema/fits?", "?end", "value/integer?"],
+      ["number/greaterThanOrEqualTo", "?t0", "start"],
+      ["number/lessThanOrEqualTo", "?t0", ["time/add", "start", 10, "minutes"]],
+      ["number/greaterThanOrEqualTo", "?end", ["time/add", "start", 195, "minutes"]],
+      ["number/lessThanOrEqualTo", "?end", ["time/add", "start", 210, "minutes"]],
+      ["number/lessThanOrEqualTo", ["time/diff", "?end", "?t0", "minutes"], 180]]]]]],
+  {"minMinutes": ["object/get", "sla", "min"],
+   "maxMinutes": ["object/get", "sla", "max"],
+   "slaBoundsValid": ["boolean/and", ["proof/valid?", ["object/get", "sla", "minProof"]], ["proof/valid?", ["object/get", "sla", "maxProof"]]],
+   "provablyBreached": ["object/get", "breach", "proved"],
+   "breachProofValid": ["proof/valid?", "breach"]}]
+</lion-example>
+
 <h2>Ask whether one schema includes another</h2>
 <p><code>schema/includes?</code> says whether every value one schema allows fits another, exactly: by listing the first schema's values when it can list them, and by the solver otherwise — across value kinds, open records and lists, unbounded collections, and recursive or mutually recursive named schemas (including uninhabited recursive schemas). It refuses, and says why, only when neither can decide an arbitrary predicate:</p>
 <lion-example name="One schema in another">

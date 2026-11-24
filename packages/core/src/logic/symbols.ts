@@ -14,10 +14,14 @@
 import { LogicError } from "@/errors/evaluation";
 import { Delayed } from "@/evaluation/special-forms/delay";
 import {
+  flipOp,
   type NumberSym,
   numberSym,
+  numeratorOf,
   type PolyComparison,
+  polyMul,
   polySub,
+  sameLinear,
   solveUnivariateQuadratic,
 } from "@/logic/polynomial";
 import {
@@ -434,6 +438,20 @@ export const polyFormula = (
   op: PolyComparison,
   sorts?: ReadonlyMap<string, Sort>
 ): Formula | undefined => {
+  if (sym.denominator !== undefined) {
+    const num = numeratorOf(sym);
+    const posNum = polyFormula(num, op, sorts);
+    const negNum = polyFormula(num, flipOp(op), sorts);
+    if (posNum === undefined || negNum === undefined) {
+      return undefined;
+    }
+    const posDen = atom({ linear: sym.denominator, relation: ">" });
+    const negDen = atom({
+      linear: times(sym.denominator, negate(ONE)),
+      relation: ">",
+    });
+    return or(and(posDen, posNum), and(negDen, negNum));
+  }
   if (sym.nonlinear === undefined) {
     if (op === "<") {
       return atom({ linear: times(sym.linear, negate(ONE)), relation: ">" });
@@ -444,6 +462,57 @@ export const polyFormula = (
     return atom({ linear: sym.linear, relation: op });
   }
   return quadraticFormula(sym, op, sorts);
+};
+
+/** Reduces `a op b` (supporting exact linear-fractional ratios) to a canonical linear formula, or undefined. */
+export const compareNumbers = (
+  a: NumberSym,
+  b: NumberSym,
+  op: PolyComparison,
+  sorts?: ReadonlyMap<string, Sort>
+): Formula | undefined => {
+  if (a.denominator === undefined && b.denominator === undefined) {
+    return polyFormula(polySub(a, b), op, sorts);
+  }
+  if (a.denominator !== undefined && b.denominator === undefined) {
+    const diff = polySub(numeratorOf(a), polyMul(b, numberSym(a.denominator)));
+    return polyFormula(
+      numberSym(diff.linear, diff.nonlinear, a.denominator),
+      op,
+      sorts
+    );
+  }
+  if (a.denominator === undefined && b.denominator !== undefined) {
+    const diff = polySub(polyMul(a, numberSym(b.denominator)), numeratorOf(b));
+    return polyFormula(
+      numberSym(diff.linear, diff.nonlinear, b.denominator),
+      op,
+      sorts
+    );
+  }
+  const d1 = a.denominator as Linear;
+  const d2 = b.denominator as Linear;
+  if (sameLinear(d1, d2)) {
+    const diff = polySub(numeratorOf(a), numeratorOf(b));
+    return polyFormula(numberSym(diff.linear, diff.nonlinear, d1), op, sorts);
+  }
+  const diff = polySub(
+    polyMul(numeratorOf(a), numberSym(d2)),
+    polyMul(numeratorOf(b), numberSym(d1))
+  );
+  const posF = polyFormula(diff, op, sorts);
+  const negF = polyFormula(diff, flipOp(op), sorts);
+  if (posF === undefined || negF === undefined) {
+    return undefined;
+  }
+  const p1 = atom({ linear: d1, relation: ">" });
+  const n1 = atom({ linear: times(d1, negate(ONE)), relation: ">" });
+  const p2 = atom({ linear: d2, relation: ">" });
+  const n2 = atom({ linear: times(d2, negate(ONE)), relation: ">" });
+  return or(
+    and(or(and(p1, p2), and(n1, n2)), posF),
+    and(or(and(p1, n2), and(n1, p2)), negF)
+  );
 };
 
 export const truthSym = (formula: Formula): Sym => ({ formula, kind: "truth" });
@@ -464,19 +533,25 @@ const concreteNumber = (sym: NumberSym, values: Values): unknown => {
   if (total === undefined) {
     return undefined;
   }
-  if (sym.nonlinear === undefined) {
-    return toNumber(total);
-  }
-  for (const [key, k] of sym.nonlinear) {
-    let term = k;
-    for (const factor of key.split("*")) {
-      const v = values.get(factor);
-      if (v === undefined) {
-        return undefined;
+  if (sym.nonlinear !== undefined) {
+    for (const [key, k] of sym.nonlinear) {
+      let term = k;
+      for (const factor of key.split("*")) {
+        const v = values.get(factor);
+        if (v === undefined) {
+          return undefined;
+        }
+        term = multiply(term, v);
       }
-      term = multiply(term, v);
+      total = add(total, term);
     }
-    total = add(total, term);
+  }
+  if (sym.denominator !== undefined) {
+    const den = valueAt(sym.denominator, values);
+    if (den === undefined || compare(den, ZERO) === 0) {
+      return undefined;
+    }
+    return toNumber(divide(total, den));
   }
   return toNumber(total);
 };
@@ -546,6 +621,9 @@ export const leavesOf = (sym: Sym): string[] => {
         ...(sym.nonlinear === undefined
           ? []
           : [...sym.nonlinear.keys()].flatMap((k) => k.split("*"))),
+        ...(sym.denominator === undefined
+          ? []
+          : [...sym.denominator.coefficients.keys()]),
       ];
     case "opaque":
       return [...sym.id.coefficients.keys()];
@@ -681,10 +759,15 @@ export const tryEqual = (
   sorts?: ReadonlyMap<string, Sort>
 ): Formula | undefined => {
   if (a.kind === "number" && b.kind === "number") {
-    if (a.nonlinear === undefined && b.nonlinear === undefined) {
+    if (
+      a.nonlinear === undefined &&
+      b.nonlinear === undefined &&
+      a.denominator === undefined &&
+      b.denominator === undefined
+    ) {
       return atom({ linear: minus(a.linear, b.linear), relation: "=" });
     }
-    return polyFormula(polySub(a, b), "=", sorts);
+    return compareNumbers(a, b, "=", sorts);
   }
   if (a.kind === "truth" && b.kind === "truth") {
     return or(and(a.formula, b.formula), and(not(a.formula), not(b.formula)));

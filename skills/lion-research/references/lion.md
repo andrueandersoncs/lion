@@ -200,9 +200,36 @@ Each takes a relation whose first two columns are an edge's from and to, and giv
 | `["graph/components", edges, "?node", "?group"]` | Which nodes are connected, ignoring direction. A group is named after its smallest node. |
 | `["graph/stronglyConnected", edges, "?node", "?group"]` | Which nodes can each reach the other. |
 | `["graph/topologicalOrder", edges, "?node", "?position"]` | An order in which every edge points forward, or an error that names a cycle. |
+| `["graph/cycles", edges, "?cycle"]` | Non-throwing canonical shortest cycle per cyclic SCC (including self-loops); empty when acyclic. |
+| `["graph/dominators", edges, root, "?node", "?idom"]` | Immediate dominator tree from `root` — finds single-point-of-failure chokepoints (every path from `root` to `node` passes through `idom`). |
+| `["graph/lca", edges, a, b, "?ancestor", "?distA", "?distB"]` | Lowest common ancestors of `a` and `b` in a DAG with shortest hop distances. |
+| `["graph/simplePaths", edges, start, end, maxHops, "?cost", "?path"]` | All cycle-free directed paths from `start` to `end` up to `maxHops`. |
+| `["graph/transitiveReduction", edges, "?from", "?to"]` | Unique minimal Hasse DAG edges removing redundant shortcuts. |
+| `["graph/betweenness", edges, "?node", "?score"]` | Brandes directed betweenness centrality. |
 | `["graph/pageRank", edges, "?node", "?rank"]` | How central each node is. The ranks add up to 1. |
 
 With `owns` as above, `["query", ["graph/shortestPath", "owns", "a", "c", "?hops", "?path"]]` gives `[{"hops": 2, "path": ["a", "b", "c"]}]`. The edge relation can be one that rules derive.
+
+## Formal Verification & Proof-Building (`proof/`, `assuming`, `time/`)
+
+Lion's exact solver and proof kernel work directly inside rules, queries, `checks.json`, and `page.json`:
+
+- **`["proof/prove", goal]`**: Proves or refutes any closed goal — either a universal solver theorem `["not", ["exists", ["?x", ...], body]]` or an empirical database goal like `["corroborated", q, v]`.
+  - When **proved**: returns `{"proved": true, "proof": ..., "facts"?: [...], "assumptions"?: [...], "contradicting"?: [...], "vacuous"?: true}`. `["proof/valid?", result]` checks the proof with zero solver calls.
+  - When **refuted**: returns `{"proved": false, "counterexample": {"?x": ...}, "reason": ...}` — giving you the exact concrete witness that breaks the claim!
+- **`["proof/bounds", targetExpr, goal]`**: Projects Lion's exact Fourier-Motzkin (continuous), Pugh's Omega (integer), and Charnes-Cooper (linear-fractional ratio `N / D` over `value/number?`) solver onto `targetExpr` across every assignment matching `goal` (including coupled multi-variable constraints and database relations!).
+  - When **satisfiable**: returns `{"satisfiable": true, "min": ..., "minInclusive": true, "max": ..., "maxInclusive": true, "witnessMin": {...}, "witnessMax": {...}, "minProof": [...], "maxProof": [...]}`. Both `minProof` and `maxProof` pass `proof/valid?`.
+  - When **unsatisfiable** (sources contradict each other!): returns `{"satisfiable": false, "proof": [...]}` (checkable by `proof/valid?`).
+  - **JSON rounding note**: `proof/bounds` computes exact rationals (such as `1/3` or `102/405`). Lion refuses to print non-terminating fractions directly as JSON — always wrap ratio outputs with `["number/round", ["number/multiply", 100, ["object/get", b, "min"]], 2]` (or `number/round` to desired decimals) before returning them in JSON or `page.json`!
+- **`["proof/rules", rel, Schema]`** (or `["proof/rules", {"relA": SchemaA, "relB": SchemaB}]`): Proves by rule induction across *all* valid databases that derived rows fit target schemas, supporting column invariants (like `Says` on `claim.says`), record/open-record/list pattern destructuring, and aggregates (`min`, `max`, `count`, `countUnique`, `sum`, `mean`, `median`, `unique`, `collect`, `argMin`, `argMax`).
+- **`["proof/valid?", p]`**: Trusted zero-solver proof kernel checking `proof/prove` outputs, `minProof`/`maxProof`, `proof/rules` proofs, and `why` trees.
+- **`["proof/facts", ["why", atom]]`** and **`["proof/assumptions", ["why", atom]]`**: Extract sorted deduplicated ground facts and closed-world negative assumptions from any `why` tree.
+- **`["assuming", ["retract", fact], expr]`** / **`["assuming", ["fact", fact], expr]`**: Counterfactual query without mutating `model.json` — composes directly with `proof/prove` and `proof/bounds`!
+- **Deterministic UTC `time/`** (works in plain code, rules, AND inside `proof/prove` and `proof/bounds`!):
+  - `["time/parse", "2026-04-10T09:05:00-04:00"]` → exact integer UTC epoch ms (or `null` if invalid calendar date).
+  - `["time/fromParts", y, m, d, h, mi, s, offsetMin]` → UTC epoch ms (strict Gregorian check).
+  - `["time/format", ms, "minute"]` → `"2026-04-10T13:05Z"` (`"date"`, `"minute"`, `"second"`, `"ms"`).
+  - `["time/diff", tEnd, tStart, "minutes"]` and `["time/add", t, 15, "minutes"]` (`"ms"`, `"seconds"`, `"minutes"`, `"hours"`, `"days"`): both are linear inside the symbolic solver!
 
 ## Schemas and invariants
 
@@ -269,4 +296,5 @@ All take their arguments in the order shown and wait for logic variables.
 - `object/`: `get`, `get-path` (`"a.b.0"`), `keys`, `values`.
 - `value/`: `number?`, `integer?`, `string?`, `boolean?`, `object?`, `array?`, `null?`, `any?`, `identity`.
 - `boolean/`: `not`, `and`, `or`.
-- `aggregate/`, `graph/`, `schema/`: as above.
+- `aggregate/`, `graph/`, `schema/`, `proof/`, `time/`: as above.
+- `number/round` takes 1 or 2 arguments: `["number/round", x, 2]` rounds `x` to 2 decimal places cleanly (great for converting exact rationals from `proof/bounds` to JSON decimals).
