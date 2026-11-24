@@ -2,7 +2,9 @@
 
 # Changelog
 
-## Unreleased
+## 2026-11-24 — @lionlang/core 0.17.0, @lionlang/cli 0.16.0
+
+Lion proves universal properties by structural, numeric, and rule induction (`proof/rules`) with a zero-solver proof kernel (`proof/valid?`), decides `schema/includes?` across every value kind and recursive named schemas, and extends the symbolic solver to exact multivariate polynomials, univariate quadratics, division/rounding/remainder, bounded recursive lambdas, and idiomatic object, array, boolean, aggregate, and quantity operations. `why` is now a first-class composable question across `query`, `find`, `rule`, `cond`, `invariant`, and `assuming`, paired with `proof/facts` and `proof/assumptions` for ground provenance extraction. The standard library adds the deterministic UTC `time` module (`time/parse`, `time/fromParts`, `time/format`, `time/parts`, `time/diff`, `time/add`), Unicode regex and quote normalization (`string/matches?`, `string/match`, `string/matchAll`, `string/normalize`), string/value ordering and structural `array/includes?`, everyday array/string/object helpers (`array/filter`, `array/reverse`, `array/sort`, `array/at`, `array/indexOf`, `array/find`, `string/chars`, `string/trim`, `string/toLowerCase`, `string/toUpperCase`, `string/replaceAll`, `object/json-parse`, `object/entries`, `object/fromEntries`, `object/merge`), `aggregate/median`, `aggregate/argMin`/`argMax`, and six ontology and knowledge-graph algorithms (`graph/cycles`, `graph/transitiveReduction`, `graph/betweenness`, `graph/lca`, `graph/simplePaths`, `graph/dominators`). Recursive and mutually recursive lambdas close and snapshot cleanly in rules, and static analysis catches wrong-arity calls and unsafe declarations with runtime messages. `@lionlang/cli` adds `--eval`, stdin `-`, `--bind`/`--bind-file`, multi-file atomic runs, `--read-only`, `lion check --database`, `lion inspect [--derived]`, and `lion diff [--derived]` with read-only `--apply` counterfactual preview.
 
 ### Added
 

@@ -23,7 +23,7 @@ import { stdlib } from "@lionlang/core/modules";
 import { Console, Effect, Option } from "effect";
 import { Argument, CliError, Command, Flag } from "effect/cli";
 
-export const VERSION = "0.15.0";
+export const VERSION = "0.16.0";
 
 const file = Argument.String("file").pipe(
   Argument.withDescription(
