@@ -82,6 +82,7 @@
     "./modules/quantity": "./dist/modules/quantity.mjs",
     "./modules/schema": "./dist/modules/schema.mjs",
     "./modules/string": "./dist/modules/string.mjs",
+    "./modules/time": "./dist/modules/time.mjs",
     "./modules/value": "./dist/modules/value.mjs",
     "./numbers/exact": "./dist/numbers/exact.mjs",
     "./schemas/evaluation": "./dist/schemas/evaluation.mjs",

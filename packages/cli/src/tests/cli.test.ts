@@ -368,4 +368,132 @@ describe("lion CLI --eval, stdin, and check --database", () => {
     },
     { arbitrary: { runs: 6 } }
   );
+
+  it.prop(
+    "lion diff reports exact base and --derived deltas across two files or --apply/--eval without mutating disk",
+    {
+      baseCount: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 2, maximum: 5 }))
+      ),
+      addedValue: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 10, maximum: 50 }))
+      ),
+    },
+    ({ baseCount, addedValue }) => {
+      const dir = mkdtempSync(join(tmpdir(), "lion-cli-diff-"));
+      const dbBefore = join(dir, "before.json");
+      const dbAfter = join(dir, "after.json");
+      const setup = join(dir, "setup.json");
+      const update = join(dir, "update.json");
+
+      const initialFacts = Array.from({ length: baseCount }, (_, i) => [
+        "item",
+        `k${i}`,
+        i + 1,
+      ]);
+      writeFileSync(
+        setup,
+        JSON.stringify([
+          "begin",
+          ["relation", "item", ["id", "val"], { key: "id" }],
+          ["relation", "big", ["id"]],
+          ["fact", ...initialFacts],
+          [
+            "rule",
+            ["big", "?id"],
+            ["item", "?id", "?v"],
+            ["number/greaterThan", "?v", 2],
+          ],
+        ])
+      );
+      writeFileSync(
+        update,
+        JSON.stringify([
+          "begin",
+          ["fact", ["item", "k_new", addedValue]],
+          ["retract", ["item", "k0", 1]],
+        ])
+      );
+
+      expect(
+        spawnSync("bun", [BIN, setup, "--database", dbBefore], {
+          encoding: "utf8",
+        }).status
+      ).toBe(0);
+      expect(
+        spawnSync("bun", [BIN, setup, update, "--database", dbAfter], {
+          encoding: "utf8",
+        }).status
+      ).toBe(0);
+
+      const beforeDisk = readFileSync(dbBefore, "utf8");
+
+      // Reflexivity: diff against self is empty.
+      const selfDiff = spawnSync(
+        "bun",
+        [BIN, "diff", dbBefore, dbBefore, "--derived"],
+        { encoding: "utf8" }
+      );
+      expect(selfDiff.status).toBe(0);
+      const selfJson = JSON.parse(selfDiff.stdout) as {
+        counts: Record<string, number>;
+      };
+      expect(selfJson.counts.factsAdded).toBe(0);
+      expect(selfJson.counts.factsRemoved).toBe(0);
+      expect(selfJson.counts.derivedAdded).toBe(0);
+      expect(selfJson.counts.derivedRemoved).toBe(0);
+
+      // Two-file diff matches --apply preview identically and never modifies dbBefore.
+      const fileDiff = spawnSync(
+        "bun",
+        [BIN, "diff", dbBefore, dbAfter, "--derived"],
+        { encoding: "utf8" }
+      );
+      const previewDiff = spawnSync(
+        "bun",
+        [BIN, "diff", dbBefore, "--apply", update, "--derived"],
+        { encoding: "utf8" }
+      );
+      expect(fileDiff.status).toBe(0);
+      expect(previewDiff.status).toBe(0);
+      expect(previewDiff.stdout).toBe(fileDiff.stdout);
+      expect(readFileSync(dbBefore, "utf8")).toBe(beforeDisk);
+
+      const parsed = JSON.parse(fileDiff.stdout) as {
+        facts: Record<string, { added: unknown[][]; removed: unknown[][] }>;
+        derived: Record<string, { added: unknown[][]; removed: unknown[][] }>;
+        counts: Record<string, number>;
+      };
+      expect(parsed.facts.item).toEqual({
+        added: [["k_new", addedValue]],
+        removed: [["k0", 1]],
+      });
+      expect(parsed.derived.big).toEqual({
+        added: [["k_new"]],
+        removed: [],
+      });
+      expect(parsed.counts.factsAdded).toBe(1);
+      expect(parsed.counts.factsRemoved).toBe(1);
+      expect(parsed.counts.derivedAdded).toBe(2);
+      expect(parsed.counts.derivedRemoved).toBe(1);
+
+      // Symmetry: diff(after, before) swaps added and removed.
+      const revDiff = spawnSync(
+        "bun",
+        [BIN, "diff", dbAfter, dbBefore, "--derived"],
+        { encoding: "utf8" }
+      );
+      expect(revDiff.status).toBe(0);
+      const rev = JSON.parse(revDiff.stdout) as typeof parsed;
+      expect(rev.facts.item).toEqual({
+        added: parsed.facts.item?.removed,
+        removed: parsed.facts.item?.added,
+      });
+      expect(rev.derived.big).toEqual({
+        added: parsed.derived.big?.removed,
+        removed: parsed.derived.big?.added,
+      });
+    },
+    { arbitrary: { runs: 6 } }
+  );
 });

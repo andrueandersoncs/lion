@@ -27,6 +27,11 @@
 - `why` is a first-class question obeying Lion's asking and waiting rules: inside a `query`, `find`, `rule`, `cond`, `invariant`, or `assuming`, `["why", fact]` waits for its variables to be bound and explains the row against the current (or assumed) database, snapshots cleanly, and re-derives when underlying facts change. (`composable-why` added)
 - Graph module adds `graph/cycles` (non-throwing canonical shortest directed cycle per cyclic strongly connected component, including self-loops), `graph/transitiveReduction` (unique minimal Hasse DAG edges), and `graph/betweenness` (Brandes's directed betweenness centrality, supporting optional non-negative edge weights). (`graph-ontology-algorithms` added)
 - Standard library adds `string/lessThan`, `string/greaterThan`, `string/lessThanOrEqualTo`, `string/greaterThanOrEqualTo` (code-unit order matching `query` `"order"` and `array/sort`), `value/equals?`, and `value/compare` (-1, 0, 1 total order, with symbolic solver support), and unifies `array/includes?` on Lion's structural `sameValue` equality (matching `array/indexOf`, `=`, and `in`). (`string-order-value-compare-and-structural-includes` added)
+- The `lion` CLI adds `lion diff` to compute deterministic semantic diffs between two saved databases or preview the in-memory impact of `--apply` / `--eval` steps without touching disk, including derived conclusion deltas with `--derived`; `@lionlang/metrics` adds `bun run efficacy [--against <ref>]` to benchmark Lion's efficacy for AI agents building deep research knowledge bases, ontologies, and graphs. (`cli-semantic-diff-and-kb-efficacy-benchmark` added)
+- Graph module adds `graph/lca` (lowest common ancestors and shortest hop distances in any DAG), `graph/simplePaths` (all cycle-free directed paths up to `maxHops` with optional weights), and `graph/dominators` (immediate dominator tree rooted at `start`). (`graph-lca-simplepaths-dominators` added)
+- Proof module adds `proof/facts` and `proof/assumptions` to extract deduplicated, canonically sorted ground (`given: true`) facts and leaf closed-world absences from any `why` explanation tree. (`proof-provenance-extractors` added)
+- String module adds Unicode regular expression matching and extraction (`string/matches?`, `string/match`, `string/matchAll` with stateless flags from `i`, `m`, `s` and pure JSON match records) and canonical quote/entity normalization (`string/normalize`). (`string-regex-and-normalize` added)
+- Standard library adds the deterministic proleptic Gregorian UTC `time` module (`time/parse`, `time/fromParts`, `time/format`, `time/parts`, `time/diff`, `time/add`) operating on exact integer UTC epoch milliseconds with zero host-timezone dependency. (`utc-time-module` added)
 
 ### Changed
 
@@ -44,6 +49,10 @@
 - `why` inside `query`, `find`, `rule`, and `assuming` explains rows against the current or assumed database, matching top-level `why`. (`composable-why` is `works`)
 - `graph/cycles`, `graph/transitiveReduction`, and `graph/betweenness` run deterministically over base and derived edge relations. (`graph-ontology-algorithms` is `works`)
 - `string/lessThan`..`greaterThanOrEqualTo`, `value/equals?`, `value/compare`, and structural `array/includes?` agree with `=`, `in`, `array/indexOf`, and `array/sort`. (`string-order-value-compare-and-structural-includes` is `works`)
+- `graph/lca`, `graph/simplePaths`, and `graph/dominators` run deterministically over base and derived edge relations. (`graph-lca-simplepaths-dominators` is `works`)
+- `proof/facts` and `proof/assumptions` compose with `why` across rules, queries, `find`, and `assuming` to derive ground evidence lineage and negative dependencies. (`proof-provenance-extractors` is `works`)
+- `string/matches?`, `string/match`, `string/matchAll`, and `string/normalize` extract structured matches and canonicalize typographic quotes, dashes, ellipses, and whitespace inside plain code and Datalog rules. (`string-regex-and-normalize` is `works`)
+- `time/parse`, `time/fromParts`, `time/format`, `time/parts`, `time/diff`, and `time/add` normalize timezones, reject impossible dates, round-trip ISO-8601 UTC strings, and compute exact durations. (`utc-time-module` is `works`)
 
 ### Fixed
 

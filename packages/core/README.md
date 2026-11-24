@@ -1404,8 +1404,14 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["string/toLowerCase", "Lion"]
 ["string/toUpperCase", "Lion"]
 ["string/replaceAll", "a-b-c", "-", "_"]
+["string/matches?", "CVE-2026-0091", "^CVE-\\d{4}-\\d{4}$"]
+["string/match", "feat(core): add time", "^(?<type>[a-z]+)\\((?<scope>[a-z]+)\\):"]
+["string/matchAll", "See [1] and [2].", "\\[(\\d+)\\]"]
+["string/normalize", " “Acme’s FY25”\n— up 12%… "]
 ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","]
 ```
+
+`string/matches?`, `string/match`, and `string/matchAll` match Unicode regular expressions with optional stateless flags from `"i"`, `"m"`, `"s"`; `match` and `matchAll` return pure JSON records `{"match", "index", "groups", "named"}` (with `null` for unmatched optional groups) that rules can destructure directly. `string/normalize` applies canonical NFKC, typographic quote/dash/ellipsis, and whitespace normalization for quote verification and entity matching.
 
 `string/join` is a list of strings with the separator between them: `"a, b, c"`. With a third string, that one stands before the last item in place of the separator, as `#:before-last` does in Racket: `"a, b and c"`, and `"a and b"` for two items. One item is itself, and an empty list is `""`. Every item must be a string, so a list of numbers is joined after `["array/map", numbers, "number/toString"]`.
 
@@ -1450,6 +1456,9 @@ Algorithm goals over an edge relation; see [Graph algorithms](#graph-algorithms)
 
 ```json
 ["graph/shortestPath", "road", "a", "?to", "?cost", "?path"]
+["graph/simplePaths", "road", "a", "d", 4, "?cost", "?path"]
+["graph/lca", "isa", "seaplane", "drone", "?lca", "?distA", "?distB"]
+["graph/dominators", "feeds", "root", "?node", "?dominator"]
 ["graph/pageRank", "edge", "?node", "?rank"]
 ["graph/betweenness", "edge", "?node", "?score"]
 ["graph/components", "edge", "?node", "?component"]
@@ -1539,15 +1548,32 @@ The second evaluates to `[{ "path": ["id"], "expected": "value/integer?", "found
 
 ### `proof`
 
-Checks proof values with a small trusted kernel (without invoking the solver), and proves universal properties of rule-defined relations by rule induction.
+Checks proof values with a small trusted kernel (without invoking the solver), proves universal properties of rule-defined relations by rule induction, and extracts ground evidence and closed-world absences from `why` explanations.
 
 ```json
 ["proof/valid?", proof]
 ["proof/rules", "path", "PosPath"]
 ["proof/rules", {"even": "PosRow", "odd": "PosRow"}]
+["proof/facts", ["why", ["reach", "a", "d"]]]
+["proof/assumptions", ["why", ["reach", "a", "d"]]]
 ```
 
-`proof/valid?` verifies linear refutation certificates, Omega integer split trees (`kind: "split"`), case splits (`kind: "cases"`), induction proofs (`kind: "induction"`), lemma compositions (`kind: "lemma"`), and `why` derivation trees. `proof/rules` checks existing facts, base relation schemas, and every rule (including element-preserving `aggregate/min` and `aggregate/max` heads), returning a kernel-checkable induction proof or a counterexample.
+`proof/valid?` verifies linear refutation certificates, Omega integer split trees (`kind: "split"`), case splits (`kind: "cases"`), induction proofs (`kind: "induction"`), lemma compositions (`kind: "lemma"`), and `why` derivation trees. `proof/rules` checks existing facts, base relation schemas, and every rule (including element-preserving `aggregate/min` and `aggregate/max` heads), returning a kernel-checkable induction proof or a counterexample. `proof/facts` returns the sorted, deduplicated list of recorded (`given: true`) base facts that a `why` explanation rests on, and `proof/assumptions` returns the sorted, deduplicated list of leaf absent goals (closed-world negative premises or missing facts) it depends on.
+
+### `time`
+
+Deterministic proleptic Gregorian UTC calendar and timestamp functions with zero host-timezone dependency. Instants are exact integer UTC milliseconds since `1970-01-01T00:00:00.000Z`.
+
+```json
+["time/parse", "2026-03-03T11:40:00-05:00"]
+["time/fromParts", 2026, 3, 3, 11, 40, 0, -300]
+["time/format", 1772556000000, "minute"]
+["time/parts", 1772556000000]
+["time/diff", 1772556000000, 1772546700000, "minutes"]
+["time/add", 1772556000000, 1, "days"]
+```
+
+`time/parse` accepts ISO-8601 dates (`"YYYY-MM-DD"`) and timestamps with an explicit zone (`Z`, `UTC`, or `±HH:MM`) and returns `null` for malformed or impossible calendar dates. `time/fromParts` validates Gregorian dates/times strictly and fails cleanly on impossible dates. `time/format` formats UTC instants at `"date"`, `"minute"`, `"second"` (default), or `"ms"`. `time/parts` returns `{"year", "month", "day", "hour", "minute", "second", "ms", "dayOfWeek"}`. `time/diff` and `time/add` compute exact Lion rational/integer durations in `"ms"`, `"seconds"`, `"minutes"`, `"hours"`, or `"days"`.
 
 ### `console`
 

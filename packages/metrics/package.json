@@ -17,6 +17,7 @@
     "pairs": "bun run pairs.ts",
     "skill-eval": "bun run skill-eval.ts",
     "capability": "bun run capability.ts",
+    "efficacy": "bun run efficacy.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

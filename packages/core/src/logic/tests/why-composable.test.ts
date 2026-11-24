@@ -267,4 +267,42 @@ describe("composable why", () => {
       }),
     { arbitrary: { runs: 20 } }
   );
+
+  it.effect.prop(
+    "why evaluates nested questions with their own variables identically inside query and plain code",
+    {
+      n: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 5 }))
+      ),
+    },
+    ({ n }) =>
+      Effect.gen(function* () {
+        const setup = [
+          ["relation", "link", ["from", "to"]],
+          ["relation", "flag", ["v"]],
+          ["fact", ["link", n, n + 1], ["flag", true]],
+        ];
+        const plain = yield* run(
+          ["begin", ...setup, ["why", ["flag", ["link", n, "?y"]]]],
+          stdlib
+        );
+        const queried = (yield* run(
+          [
+            "begin",
+            ...setup,
+            [
+              "query",
+              [
+                "and",
+                ["link", "?x", "?_"],
+                ["=", "?w", ["why", ["flag", ["link", "?x", "?y"]]]],
+              ],
+            ],
+          ],
+          stdlib
+        )) as readonly { w: unknown }[];
+        expect(queried).toEqual([{ x: n, w: plain }]);
+      }),
+    { arbitrary: { runs: 20 } }
+  );
 });

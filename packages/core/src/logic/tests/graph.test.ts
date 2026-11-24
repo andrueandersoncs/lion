@@ -29,6 +29,13 @@ const errorMessage = (expression: unknown, environment = stdlib) =>
     Effect.map((error) => String((error as { message?: unknown }).message))
   );
 
+const smallNode = Arbitrary.map(
+  Arbitrary.schema(
+    Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 }))
+  ),
+  (i) => `n${i}`
+);
+
 describe("graph algorithms", () => {
   it.effect("find weighted shortest paths from a start node", () =>
     Effect.gen(function* () {
@@ -609,5 +616,425 @@ describe("graph/cycles, graph/transitiveReduction, and graph/betweenness", () =>
         }
       }),
     { arbitrary: { runs: 50 } }
+  );
+
+  it.effect.prop(
+    "graph/lca matches an independent BFS+reachability oracle on arbitrary DAGs and refuses cycles",
+    {
+      rawEdges: Arbitrary.array(
+        Arbitrary.all([
+          Arbitrary.map(
+            Arbitrary.schema(
+              Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 }))
+            ),
+            (i) => `n${i}`
+          ),
+          Arbitrary.map(
+            Arbitrary.schema(
+              Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 }))
+            ),
+            (i) => `n${i}`
+          ),
+        ]),
+        {
+          minLength: 0,
+          maxLength: 14,
+        }
+      ),
+      a: Arbitrary.map(
+        Arbitrary.schema(
+          Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 }))
+        ),
+        (i) => `n${i}`
+      ),
+      b: Arbitrary.map(
+        Arbitrary.schema(
+          Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 }))
+        ),
+        (i) => `n${i}`
+      ),
+    },
+    ({ rawEdges, a, b }) =>
+      Effect.gen(function* () {
+        // Build a DAG by orienting edges strictly from smaller to larger node id.
+        const dag = [
+          ...new Map(
+            rawEdges
+              .filter(([u, v]) => u < v)
+              .map(([u, v]) => [`${u},${v}`, [u, v] as const])
+          ).values(),
+        ];
+        const out = new Map<string, Set<string>>();
+        for (const [u, v] of dag) {
+          const set = out.get(u) ?? new Set<string>();
+          set.add(v);
+          out.set(u, set);
+        }
+        const bfs = (start: string) => {
+          const dist = new Map<string, number>([[start, 0]]);
+          const q = [start];
+          for (const u of q) {
+            const d = (dist.get(u) as number) + 1;
+            for (const v of out.get(u) ?? []) {
+              if (!dist.has(v)) {
+                dist.set(v, d);
+                q.push(v);
+              }
+            }
+          }
+          return dist;
+        };
+        const distA = bfs(a);
+        const distB = bfs(b);
+        const common = [...distA.keys()].filter((k) => distB.has(k));
+        const expected = common
+          .filter((x) => !common.some((y) => y !== x && bfs(y).has(x)))
+          .sort()
+          .map((lca) => ({
+            lca,
+            da: distA.get(lca),
+            db: distB.get(lca),
+          }));
+
+        const actual = yield* run(
+          [
+            "begin",
+            ["relation", "isa", ["child", "parent"]],
+            ...(dag.length === 0
+              ? []
+              : [["fact", ...dag.map(([u, v]) => ["isa", u, v])]]),
+            [
+              "query",
+              ["graph/lca", "isa", a, b, "?lca", "?da", "?db"],
+              { order: "lca" },
+            ],
+          ],
+          stdlib
+        );
+        expect(actual).toEqual(expected);
+
+        // Order independence
+        const reversed = yield* run(
+          [
+            "begin",
+            ["relation", "isa", ["child", "parent"]],
+            ...(dag.length === 0
+              ? []
+              : [
+                  [
+                    "fact",
+                    ...[...dag].reverse().map(([u, v]) => ["isa", u, v]),
+                  ],
+                ]),
+            [
+              "query",
+              ["graph/lca", "isa", a, b, "?lca", "?da", "?db"],
+              { order: "lca" },
+            ],
+          ],
+          stdlib
+        );
+        expect(actual).toEqual(reversed);
+      }),
+    { arbitrary: { runs: 60 } }
+  );
+
+  it.effect.prop(
+    "graph/simplePaths matches an independent brute-force DFS oracle on arbitrary weighted cyclic graphs",
+    {
+      edges: Arbitrary.array(
+        Arbitrary.all([
+          smallNode,
+          smallNode,
+          Arbitrary.schema(
+            Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 }))
+          ),
+        ]),
+        { minLength: 0, maxLength: 10 }
+      ),
+      start: smallNode,
+      end: smallNode,
+      maxHops: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 4 }))
+      ),
+    },
+    ({ edges, start, end, maxHops }) =>
+      Effect.gen(function* () {
+        // Independent brute-force DFS over deduplicated minimum-weight edges.
+        const minEdge = new Map<string, Map<string, number>>();
+        for (const [u, v, w] of edges) {
+          const row = minEdge.get(u) ?? new Map<string, number>();
+          const prev = row.get(v);
+          if (prev === undefined || w < prev) {
+            row.set(v, w);
+          }
+          minEdge.set(u, row);
+        }
+        const expected: { cost: number; path: string[] }[] = [];
+        const walk = (u: string, cost: number, path: string[]) => {
+          if (u === end) {
+            expected.push({ cost, path: [...path] });
+            return;
+          }
+          if (path.length - 1 >= maxHops) {
+            return;
+          }
+          for (const [v, w] of minEdge.get(u) ?? []) {
+            if (!path.includes(v)) {
+              walk(v, cost + w, [...path, v]);
+            }
+          }
+        };
+        walk(start, 0, [start]);
+        expected.sort((x, y) =>
+          x.cost === y.cost
+            ? JSON.stringify(x.path).localeCompare(JSON.stringify(y.path))
+            : x.cost - y.cost
+        );
+
+        const actual = yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to", "w"]],
+            ...(edges.length === 0
+              ? []
+              : [["fact", ...edges.map(([u, v, w]) => ["e", u, v, w])]]),
+            [
+              "query",
+              ["graph/simplePaths", "e", start, end, maxHops, "?cost", "?path"],
+              { order: ["cost", "path"] },
+            ],
+          ],
+          stdlib
+        );
+        expect(actual).toEqual(expected);
+
+        const reversed = yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to", "w"]],
+            ...(edges.length === 0
+              ? []
+              : [
+                  [
+                    "fact",
+                    ...[...edges].reverse().map(([u, v, w]) => ["e", u, v, w]),
+                  ],
+                ]),
+            [
+              "query",
+              ["graph/simplePaths", "e", start, end, maxHops, "?cost", "?path"],
+              { order: ["cost", "path"] },
+            ],
+          ],
+          stdlib
+        );
+        expect(actual).toEqual(reversed);
+      }),
+    { arbitrary: { runs: 60 } }
+  );
+
+  it.effect.prop(
+    "graph/dominators matches an independent set-intersection dominator oracle on arbitrary cyclic graphs and forms a DAG tree",
+    {
+      edges: Arbitrary.array(Arbitrary.all([smallNode, smallNode]), {
+        minLength: 0,
+        maxLength: 14,
+      }),
+      start: smallNode,
+    },
+    ({ edges, start }) =>
+      Effect.gen(function* () {
+        // Independent set-intersection fixed-point dominator solver:
+        // Dom(start) = {start}; Dom(v) = {v} U intersect_{p in pred(v)} Dom(p).
+        const out = new Map<string, Set<string>>();
+        for (const [u, v] of edges) {
+          const s = out.get(u) ?? new Set<string>();
+          s.add(v);
+          out.set(u, s);
+        }
+        const reachable = new Set<string>([start]);
+        const queue = [start];
+        for (const u of queue) {
+          for (const v of out.get(u) ?? []) {
+            if (!reachable.has(v)) {
+              reachable.add(v);
+              queue.push(v);
+            }
+          }
+        }
+        const preds = new Map<string, Set<string>>();
+        for (const u of reachable) {
+          for (const v of out.get(u) ?? []) {
+            if (reachable.has(v)) {
+              const s = preds.get(v) ?? new Set<string>();
+              s.add(u);
+              preds.set(v, s);
+            }
+          }
+        }
+        const dom = new Map<string, Set<string>>();
+        for (const v of reachable) {
+          dom.set(v, v === start ? new Set([start]) : new Set(reachable));
+        }
+        let changed = true;
+        while (changed) {
+          changed = false;
+          for (const v of reachable) {
+            if (v === start) {
+              continue;
+            }
+            const ps = [...(preds.get(v) ?? [])];
+            const next = new Set<string>([v]);
+            for (const candidate of reachable) {
+              if (ps.every((p) => dom.get(p)?.has(candidate))) {
+                next.add(candidate);
+              }
+            }
+            const prev = dom.get(v) as Set<string>;
+            if (
+              next.size !== prev.size ||
+              [...next].some((x) => !prev.has(x))
+            ) {
+              dom.set(v, next);
+              changed = true;
+            }
+          }
+        }
+        // Immediate dominator of v != start is the unique strict dominator d
+        // dominated by every other strict dominator of v (i.e. |Dom(d)| == |Dom(v)| - 1).
+        const expected = [...reachable]
+          .filter((v) => v !== start)
+          .sort()
+          .map((v) => {
+            const vDom = dom.get(v) as Set<string>;
+            const idom = [...vDom].find(
+              (d) => d !== v && (dom.get(d)?.size ?? 0) === vDom.size - 1
+            );
+            return { node: v, idom };
+          });
+
+        const actual = yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to"]],
+            ["relation", "idom", ["node", "dom"]],
+            ...(edges.length === 0
+              ? []
+              : [["fact", ...edges.map(([u, v]) => ["e", u, v])]]),
+            [
+              "rule",
+              ["idom", "?n", "?d"],
+              ["graph/dominators", "e", start, "?n", "?d"],
+            ],
+            // Also verify the dominator tree is always acyclic (topologicalOrder succeeds).
+            {
+              doms: ["query", ["idom", "?node", "?idom"], { order: "node" }],
+              topo: ["query", ["graph/topologicalOrder", "idom", "?n", "?pos"]],
+            },
+          ],
+          stdlib
+        );
+        expect((actual as { doms: unknown }).doms).toEqual(expected);
+      }),
+    { arbitrary: { runs: 60 } }
+  );
+
+  it.effect.prop(
+    "graph/simplePaths never revisits a node when a cycle sits between start and end",
+    {
+      w1: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 5 }))
+      ),
+      w2: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 5 }))
+      ),
+      w3: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 5 }))
+      ),
+      extraHops: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 3 }))
+      ),
+    },
+    ({ w1, w2, w3, extraHops }) =>
+      Effect.gen(function* () {
+        // s -> a <-> b -> t has a 2-cycle a <-> b; maxHops >= 4 would loop without visited check.
+        const rows = (yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to", "w"]],
+            [
+              "fact",
+              ["e", "s", "a", w1],
+              ["e", "a", "b", w2],
+              ["e", "b", "a", w2],
+              ["e", "b", "t", w3],
+            ],
+            [
+              "query",
+              [
+                "graph/simplePaths",
+                "e",
+                "s",
+                "t",
+                3 + extraHops,
+                "?cost",
+                "?path",
+              ],
+            ],
+          ],
+          stdlib
+        )) as readonly { cost: number; path: string[] }[];
+        expect(rows).toEqual([
+          { cost: w1 + w2 + w3, path: ["s", "a", "b", "t"] },
+        ]);
+      }),
+    { arbitrary: { runs: 25 } }
+  );
+
+  it.effect.prop(
+    "graph/dominators converges on irreducible graphs needing multiple passes",
+    {
+      tail: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 4 }))
+      ),
+    },
+    ({ tail }) =>
+      Effect.gen(function* () {
+        // Irreducible graph where RPO visits s -> a -> b -> c -> d, and edge s -> c
+        // plus back-edge c -> b forces a second pass to lower idom(b) from a to s.
+        const tailEdges = Array.from({ length: tail }, (_, i) => [
+          "e",
+          i === 0 ? "b" : `t${i - 1}`,
+          `t${i}`,
+        ]);
+        const rows = (yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to"]],
+            [
+              "fact",
+              ["e", "s", "a"],
+              ["e", "s", "c"],
+              ["e", "a", "b"],
+              ["e", "b", "c"],
+              ["e", "c", "b"],
+              ...tailEdges,
+            ],
+            [
+              "query",
+              ["graph/dominators", "e", "s", "?node", "?dom"],
+              { order: "node" },
+            ],
+          ],
+          stdlib
+        )) as readonly { node: string; dom: string }[];
+        const byNode = Object.fromEntries(rows.map((r) => [r.node, r.dom]));
+        expect(byNode.a).toBe("s");
+        expect(byNode.b).toBe("s");
+        expect(byNode.c).toBe("s");
+        expect(byNode.t0).toBe("b");
+      }),
+    { arbitrary: { runs: 10 } }
   );
 });

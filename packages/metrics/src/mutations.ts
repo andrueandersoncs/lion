@@ -5463,4 +5463,63 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "    if (better) {",
     tests: ["src/logic/tests/aggregates.test.ts"],
   },
+  {
+    name: "time/fromParts ignores timezone offset sign",
+    file: core("modules/time.ts"),
+    find: "        BigInt(ms) -\n        BigInt(offsetMinutes) * MS_PER_MINUTE",
+    replace:
+      "        BigInt(ms) +\n        BigInt(offsetMinutes) * MS_PER_MINUTE",
+    tests: ["src/modules/tests/time.test.ts"],
+  },
+  {
+    name: "time/parse skips calendar date validation",
+    file: core("modules/time.ts"),
+    find: "    return validParts(year, month, day, 0, 0, 0, 0, 0)\n      ? toEpochMs(year, month, day, 0, 0, 0, 0, 0)\n      : null;",
+    replace: "    return toEpochMs(year, month, day, 0, 0, 0, 0, 0);",
+    tests: ["src/modules/tests/time.test.ts"],
+  },
+  {
+    name: "string/normalize skips typographic dash conversion",
+    file: core("modules/string.ts"),
+    find: '    .replace(DASHES, "-")',
+    replace: '    .replace(DASHES, "—")',
+    tests: ["src/modules/tests/string-patterns.test.ts"],
+  },
+  {
+    name: "string/matches? allows unsafe regex flags",
+    file: core("modules/string.ts"),
+    find: "  if (!SAFE_FLAGS.test(flags)) {",
+    replace: "  if (false && !SAFE_FLAGS.test(flags)) {",
+    tests: ["src/modules/tests/string-patterns.test.ts"],
+  },
+  {
+    name: "proof/facts ignores matches inside aggregate derivations",
+    file: core("modules/proof.ts"),
+    find: "  if (Array.isArray(node.matches)) {",
+    replace: "  if (false && Array.isArray(node.matches)) {",
+    tests: ["src/logic/tests/proof-provenance.test.ts"],
+  },
+  {
+    name: "graph/lca returns dominated non-lowest common ancestors",
+    file: core("modules/graph.ts"),
+    find: "    const dominated = commonKeys.some(\n      (other) => other !== candidate && reach.get(other)?.has(candidate)\n    );",
+    replace: "    const dominated = false;",
+    tests: ["src/logic/tests/graph.test.ts"],
+  },
+  {
+    name: "graph/simplePaths ignores visited check allowing cycles",
+    file: core("modules/graph.ts"),
+    find: "      if (visited.has(next.key)) {\n        continue;\n      }",
+    replace:
+      "      if (false && visited.has(next.key)) {\n        continue;\n      }",
+    tests: ["src/logic/tests/graph.test.ts"],
+  },
+  {
+    name: "graph/dominators skips iterative refinement after first pass",
+    file: core("modules/graph.ts"),
+    find: "      if (nextIdom !== -1 && idom[at] !== nextIdom) {\n        idom[at] = nextIdom;\n        changed = true;\n      }",
+    replace:
+      "      if (nextIdom !== -1 && idom[at] !== nextIdom) {\n        idom[at] = nextIdom;\n      }",
+    tests: ["src/logic/tests/graph.test.ts"],
+  },
 ];

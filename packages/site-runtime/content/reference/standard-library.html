@@ -106,6 +106,10 @@
     <tr data-entry="string/toLowerCase"><td><code>["string/toLowerCase", text]</code></td><td><code>text</code> converted to lowercase</td></tr>
     <tr data-entry="string/toUpperCase"><td><code>["string/toUpperCase", text]</code></td><td><code>text</code> converted to uppercase</td></tr>
     <tr data-entry="string/replaceAll"><td><code>["string/replaceAll", text, search, replacement]</code></td><td><code>text</code> with every occurrence of <code>search</code> replaced literally by <code>replacement</code></td></tr>
+    <tr data-entry="string/matches?"><td><code>["string/matches?", text, pattern]</code><br><code>["string/matches?", text, pattern, flags]</code></td><td>Whether <code>text</code> matches the Unicode regular expression <code>pattern</code> (optional flags from <code>"i"</code>, <code>"m"</code>, <code>"s"</code>)</td></tr>
+    <tr data-entry="string/match"><td><code>["string/match", text, pattern]</code><br><code>["string/match", text, pattern, flags]</code></td><td>The first match as <code>{"match", "index", "groups", "named"}</code>, or <code>null</code> when nothing matches</td></tr>
+    <tr data-entry="string/matchAll"><td><code>["string/matchAll", text, pattern]</code><br><code>["string/matchAll", text, pattern, flags]</code></td><td>Every non-overlapping match in order as a list of match records</td></tr>
+    <tr data-entry="string/normalize"><td><code>["string/normalize", text]</code></td><td>Canonical text for quote verification and entity matching: NFKC, typographic quotes/dashes/ellipsis normalized to ASCII, whitespace collapsed to single spaces and trimmed</td></tr>
     <tr data-entry="string/numbers"><td><code>["string/numbers", text]</code><br><code>["string/numbers", text, separator]</code></td><td>Every number written in <code>text</code>, in order, each read as <code>number/fromString</code> reads it with the same separator. A minus sign counts only where no letter, digit, or point is right before it, so <code>"2023-24"</code> holds 2023 and 24. Words for amounts are not read: <code>"$1.2 billion"</code> holds 1.2</td></tr>
     <tr data-entry="string/equals?"><td><code>["string/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
     <tr data-entry="string/lessThan"><td><code>["string/lessThan", a, b]</code></td><td>Whether <code>a</code> comes before <code>b</code> in code-unit order (the same order <code>query</code> <code>"order"</code>, <code>array/sort</code>, and <code>aggregate/min</code> use)</td></tr>
@@ -134,6 +138,10 @@
  "toLowerCase": ["string/toLowerCase", "Lion"],
  "toUpperCase": ["string/toUpperCase", "Lion"],
  "replaceAll": ["string/replaceAll", "a-b-c", "-", "_"],
+ "matches?": ["string/matches?", "CVE-2026-0091", "^CVE-\\d{4}-\\d{4}$"],
+ "match": ["string/match", "feat(core): add time", "^(?<type>[a-z]+)\\((?<scope>[a-z]+)\\):"],
+ "matchAll": ["array/map", ["string/matchAll", "See [1] and [2].", "\\[(\\d+)\\]"], ["lambda", ["m"], ["object/get", "m", "match"]]],
+ "normalize": ["string/normalize", " “Acme’s FY25”\n— up 12%… "],
  "numbers": ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","],
  "equals?": ["string/equals?", "lion", "lion"],
  "lessThan": ["string/lessThan", "2025-02-01", "2026-03-03"],
@@ -502,6 +510,9 @@
   <thead><tr><th>Goal</th><th>Rows</th></tr></thead>
   <tbody>
     <tr data-entry="graph/shortestPath"><td><code>["graph/shortestPath", edges, start, to, cost, path]</code></td><td>Dijkstra's algorithm from <code>start</code>, in order of cost, starting with <code>start</code> itself at cost 0. A third edge column is the weight, at least 0; without one, each edge costs 1.</td></tr>
+    <tr data-entry="graph/simplePaths"><td><code>["graph/simplePaths", edges, start, end, maxHops, cost, path]</code></td><td>Every cycle-free directed path from <code>start</code> to <code>end</code> of at most <code>maxHops</code> edges, with optional non-negative third-column weights, ordered by cost then path</td></tr>
+    <tr data-entry="graph/lca"><td><code>["graph/lca", edges, a, b, lca, distA, distB]</code></td><td>Lowest (most specific) common ancestors of <code>a</code> and <code>b</code> in a DAG following edges from child to parent, with shortest hop distances from <code>a</code> and <code>b</code></td></tr>
+    <tr data-entry="graph/dominators"><td><code>["graph/dominators", edges, start, node, dominator]</code></td><td>Immediate dominator tree for every node reachable from <code>start</code> (excluding <code>start</code> itself, so the output edges form a rooted tree DAG)</td></tr>
     <tr data-entry="graph/pageRank"><td><code>["graph/pageRank", edges, node, rank]</code></td><td>PageRank with damping 0.85, rounded to 6 decimal places. Ranks add up to 1.</td></tr>
     <tr data-entry="graph/betweenness"><td><code>["graph/betweenness", edges, node, score]</code></td><td>Directed betweenness centrality by Brandes's algorithm, rounded to 6 decimal places. A third edge column is a non-negative weight; without one, each edge costs 1.</td></tr>
     <tr data-entry="graph/components"><td><code>["graph/components", edges, node, component]</code></td><td>Connected components, ignoring direction, named after their smallest node</td></tr>
@@ -516,6 +527,9 @@
   ["relation", "edge", ["from", "to"]],
   ["fact", ["edge", "a", "b"], ["edge", "b", "c"], ["edge", "c", "d"], ["edge", "a", "c"]],
   {"shortestPath": ["query", ["graph/shortestPath", "edge", "a", "d", "?cost", "?path"]],
+   "simplePaths": ["query", ["graph/simplePaths", "edge", "a", "d", 3, "?cost", "?path"], {"order": ["cost", "path"]}],
+   "lca": ["query", ["graph/lca", "edge", "a", "b", "?lca", "?da", "?db"]],
+   "dominators": ["query", ["graph/dominators", "edge", "a", "?node", "?dom"], {"order": "node"}],
    "pageRank": ["query", ["graph/pageRank", "edge", "?node", "?rank"], {"order": "-rank", "limit": 1}],
    "betweenness": ["query", ["graph/betweenness", "edge", "?node", "?score"], {"order": "-score", "limit": 1}],
    "components": ["query", ["graph/components", "edge", "?node", "?c"], {"limit": 1}],
@@ -532,16 +546,49 @@
   <dd>Whether a proof value (linear refutation certificate, Omega integer split tree, case split, induction proof, lemma composition, or <code>why</code> derivation) checks out under the trusted kernel.</dd>
   <dt><code>proof/rules</code></dt>
   <dd>Takes a relation and a target schema, or a record mapping mutually recursive relation names to schemas, and proves by rule induction that every derived row fits its schema across all databases whose base relations fit their declared schemas.</dd>
+  <dt><code>proof/facts</code></dt>
+  <dd>Returns the sorted, deduplicated list of recorded (<code>given: true</code>) base facts that a <code>why</code> explanation rests on.</dd>
+  <dt><code>proof/assumptions</code></dt>
+  <dd>Returns the sorted, deduplicated list of leaf absent goals (closed-world negative premises or missing facts) that a <code>why</code> explanation rests on.</dd>
 </dl>
 <lion-example name="proof">
 ["begin",
   ["schema", "PosRow", {"id": "value/string?", "score": ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThanOrEqualTo", "n", 1]]]}],
   ["relation", "base", ["id", "score"], {"schema": "PosRow"}],
+  ["relation", "blocked", ["id"]],
   ["relation", "reach", ["id", "score"]],
-  ["rule", ["reach", "?x", ["aggregate/min", "?s"]], ["base", "?x", "?s"]],
+  ["fact", ["base", "a", 2]],
+  ["rule", ["reach", "?x", ["aggregate/min", "?s"]], ["base", "?x", "?s"], ["not", ["blocked", "?x"]]],
   ["rule", ["reach", "?x", ["aggregate/min", ["number/add", "?s", 1]]], ["reach", "?x", "?s"]],
   ["define", "p", ["proof/rules", "reach", "PosRow"]],
-  {"proved": ["object/get", "p", "proved"], "valid": ["proof/valid?", "p"]}]
+  ["define", "w", ["why", ["reach", "a", 2]]],
+  {"proved": ["object/get", "p", "proved"],
+   "valid": ["proof/valid?", "p"],
+   "facts": ["proof/facts", "w"],
+   "assumptions": ["proof/assumptions", "w"]}]
+</lion-example>
+
+<h2 id="module-time"><code>time</code></h2>
+<p>Deterministic proleptic Gregorian UTC calendar and timestamp functions, with zero dependence on the host's local time zone. Instants are exact integer UTC milliseconds since <code>1970-01-01T00:00:00.000Z</code>.</p>
+<table>
+  <thead><tr><th>Call</th><th>Gives</th></tr></thead>
+  <tbody>
+    <tr data-entry="time/parse"><td><code>["time/parse", text]</code></td><td>Exact integer UTC epoch milliseconds for an ISO-8601 date (<code>"2026-03-03"</code>) or timestamp with explicit zone (<code>"2026-03-03T11:40:00-05:00"</code>, <code>"2026-03-03 16:40 UTC"</code>), or <code>null</code> when invalid</td></tr>
+    <tr data-entry="time/fromParts"><td><code>["time/fromParts", year, month, day, hour?, minute?, second?, offsetMinutes?]</code></td><td>Exact integer UTC epoch milliseconds from Gregorian calendar parts, failing on impossible dates</td></tr>
+    <tr data-entry="time/format"><td><code>["time/format", epochMs]</code><br><code>["time/format", epochMs, precision]</code></td><td>ISO-8601 UTC string at <code>"date"</code>, <code>"minute"</code>, <code>"second"</code> (default), or <code>"ms"</code></td></tr>
+    <tr data-entry="time/parts"><td><code>["time/parts", epochMs]</code></td><td>Record <code>{"year", "month", "day", "hour", "minute", "second", "ms", "dayOfWeek"}</code> in UTC (<code>dayOfWeek</code> 0=Sunday..6=Saturday)</td></tr>
+    <tr data-entry="time/diff"><td><code>["time/diff", endMs, startMs]</code><br><code>["time/diff", endMs, startMs, unit]</code></td><td>Exact elapsed duration <code>endMs - startMs</code> in <code>"ms"</code> (default), <code>"seconds"</code>, <code>"minutes"</code>, <code>"hours"</code>, or <code>"days"</code></td></tr>
+    <tr data-entry="time/add"><td><code>["time/add", epochMs, amount, unit]</code></td><td>Shifts <code>epochMs</code> by an exact <code>amount</code> in <code>"ms"</code>, <code>"seconds"</code>, <code>"minutes"</code>, <code>"hours"</code>, or <code>"days"</code></td></tr>
+  </tbody>
+</table>
+<lion-example name="time">
+["begin",
+  ["define", "detected", ["time/parse", "2026-03-03T14:05:00Z"]],
+  ["define", "mitigated", ["time/parse", "2026-03-03T11:40:00-05:00"]],
+  {"sameAsFromParts": ["=", "mitigated", ["time/fromParts", 2026, 3, 3, 11, 40, 0, -300]],
+   "elapsedMinutes": ["time/diff", "mitigated", "detected", "minutes"],
+   "nextDay": ["time/format", ["time/add", "mitigated", 1, "days"], "minute"],
+   "parts": ["time/parts", "mitigated"]}]
 </lion-example>
 
 <h2 id="module-symbols">Module symbols</h2>

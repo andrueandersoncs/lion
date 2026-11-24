@@ -585,6 +585,77 @@ export const EXPRESSIONS: readonly Expression[] = [
     form: ["why", ["small", X]],
   },
   {
+    name: "provenance facts and assumptions of why",
+    form: [
+      "array/make",
+      ["proof/facts", ["why", ["small", X]]],
+      ["proof/assumptions", ["why", ["small", X]]],
+    ],
+  },
+  {
+    name: "UTC time parse, add, diff, and format",
+    form: [
+      "time/format",
+      [
+        "time/add",
+        ["time/parse", "2026-03-03T10:00:00Z"],
+        [
+          "time/diff",
+          ["time/fromParts", 2026, 3, 3, 10, X],
+          ["time/fromParts", 2026, 3, 3, 10, 0],
+          "minutes",
+        ],
+        "minutes",
+      ],
+      "minute",
+    ],
+  },
+  {
+    name: "time parts record",
+    form: [
+      "object/get",
+      ["time/parts", ["time/fromParts", 2026, 3, ["number/add", X, 1]]],
+      "day",
+    ],
+  },
+  {
+    name: "regex match and normalize",
+    form: [
+      "array/make",
+      [
+        "string/matches?",
+        [
+          "string/normalize",
+          ["string/concat", " “item-", ["number/toString", X], "” "],
+        ],
+        '^"item-\\d+"$',
+      ],
+      [
+        "object/get",
+        [
+          "string/match",
+          ["string/concat", "v=", ["number/toString", X]],
+          "(?<k>[a-z]+)=(\\d+)",
+        ],
+        "groups",
+      ],
+      [
+        "array/length",
+        [
+          "string/matchAll",
+          [
+            "string/concat",
+            "a",
+            ["number/toString", X],
+            "b",
+            ["number/toString", X],
+          ],
+          "\\d+",
+        ],
+      ],
+    ],
+  },
+  {
     name: "string ordering",
     form: [
       "string/lessThan",
@@ -641,6 +712,19 @@ export const EXPRESSIONS: readonly Expression[] = [
       ["fact", ["dag", 1, 2], ["dag", 2, 3], ["dag", 1, 3]],
     ],
     form: ["find", "?to", ["graph/transitiveReduction", "dag", X, "?to"]],
+  },
+  {
+    name: "graph lca, simple paths, and dominators",
+    setup: [
+      ["relation", "dag", ["from", "to"]],
+      ["fact", ["dag", 1, 2], ["dag", 2, 3], ["dag", 1, 3]],
+    ],
+    form: [
+      "array/make",
+      ["find", "?l", ["graph/lca", "dag", X, 2, "?l", "?_", "?_"]],
+      ["find", "?p", ["graph/simplePaths", "dag", X, 3, 2, "?_", "?p"]],
+      ["find", "?d", ["graph/dominators", "dag", 1, X, "?d"]],
+    ],
   },
   {
     name: "goal built by a function",

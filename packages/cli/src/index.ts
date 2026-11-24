@@ -13,7 +13,12 @@ import {
 } from "@lionlang/core/logic/database";
 import { keyColumns } from "@lionlang/core/logic/model";
 import { loadDatabase, saveDatabase } from "@lionlang/core/logic/snapshot";
-import { render, schemaOf } from "@lionlang/core/logic/terms";
+import {
+  compareValues,
+  render,
+  schemaOf,
+  valueKey,
+} from "@lionlang/core/logic/terms";
 import { stdlib } from "@lionlang/core/modules";
 import { Console, Effect, Option } from "effect";
 import { Argument, CliError, Command, Flag } from "effect/cli";
@@ -37,6 +42,25 @@ const files = Argument.String("file").pipe(
 const inspectFile = Argument.String("file").pipe(
   Argument.withDescription("Path to a saved Lion database file to inspect"),
   Argument.optional
+);
+
+const diffBeforeFile = Argument.String("before").pipe(
+  Argument.withDescription("Path to the base Lion database file")
+);
+
+const diffAfterFile = Argument.String("after").pipe(
+  Argument.withDescription(
+    "Path to the updated Lion database file (omit when using --apply or --eval)"
+  ),
+  Argument.optional
+);
+
+const applyFlag = Flag.String("apply").pipe(
+  Flag.withAlias("a"),
+  Flag.withDescription(
+    "Lion program file to apply in memory to the base database to preview its semantic diff (repeatable; never modifies disk)"
+  ),
+  Flag.atLeast(0)
 );
 
 const evalFlag = Flag.String("eval").pipe(
@@ -604,15 +628,412 @@ const inspectCommand = Command.make(
   )
 );
 
+interface RelationSpec {
+  readonly columns: readonly string[];
+  readonly key?: readonly string[];
+  readonly merge?: Record<string, unknown>;
+}
+
+export interface RowDelta {
+  readonly added: readonly (readonly unknown[])[];
+  readonly removed: readonly (readonly unknown[])[];
+}
+
+export interface DatabaseDiff {
+  readonly counts: {
+    readonly derivedAdded?: number;
+    readonly derivedRemoved?: number;
+    readonly factsAdded: number;
+    readonly factsRemoved: number;
+    readonly invariantsAdded: number;
+    readonly invariantsRemoved: number;
+    readonly relationsAdded: number;
+    readonly relationsChanged: number;
+    readonly relationsRemoved: number;
+    readonly rulesAdded: number;
+    readonly rulesRemoved: number;
+    readonly schemasAdded: number;
+    readonly schemasChanged: number;
+    readonly schemasRemoved: number;
+  };
+  readonly derived?: Readonly<Record<string, RowDelta>>;
+  readonly facts: Readonly<Record<string, RowDelta>>;
+  readonly invariants: {
+    readonly added: readonly {
+      readonly assert: "none" | "some";
+      readonly goal: unknown;
+    }[];
+    readonly removed: readonly {
+      readonly assert: "none" | "some";
+      readonly goal: unknown;
+    }[];
+  };
+  readonly relations: {
+    readonly added: readonly string[];
+    readonly changed: readonly {
+      readonly after: RelationSpec;
+      readonly before: RelationSpec;
+      readonly name: string;
+    }[];
+    readonly removed: readonly string[];
+  };
+  readonly rules: {
+    readonly added: readonly unknown[];
+    readonly removed: readonly unknown[];
+  };
+  readonly schemas: {
+    readonly added: readonly string[];
+    readonly changed: readonly string[];
+    readonly removed: readonly string[];
+  };
+}
+
+const relationSpec = (
+  relation: Parameters<typeof mergeOption>[0]
+): RelationSpec => {
+  const merge = mergeOption(relation);
+  return {
+    columns: relation.columns,
+    ...(relation.key === undefined
+      ? {}
+      : {
+          key: keyColumns(relation).filter(
+            (col): col is string => col !== undefined
+          ),
+        }),
+    ...(merge === undefined ? {} : { merge }),
+  };
+};
+
+const diffTupleMaps = (
+  beforeRows: ReadonlyMap<string, readonly unknown[]>,
+  afterRows: ReadonlyMap<string, readonly unknown[]>
+): RowDelta | undefined => {
+  const added: (readonly unknown[])[] = [];
+  const removed: (readonly unknown[])[] = [];
+  for (const [key, tuple] of afterRows) {
+    if (!beforeRows.has(key)) {
+      added.push(tuple);
+    }
+  }
+  for (const [key, tuple] of beforeRows) {
+    if (!afterRows.has(key)) {
+      removed.push(tuple);
+    }
+  }
+  if (added.length === 0 && removed.length === 0) {
+    return undefined;
+  }
+  return {
+    added: added.sort(compareValues),
+    removed: removed.sort(compareValues),
+  };
+};
+
+const baseRowsOf = (
+  store: LogicDatabase,
+  name: string
+): ReadonlyMap<string, readonly unknown[]> => {
+  const rows = new Map<string, readonly unknown[]>();
+  const set = store.facts.get(name);
+  if (set !== undefined) {
+    for (const tuple of set.values()) {
+      rows.set(valueKey(tuple), tuple);
+    }
+  }
+  return rows;
+};
+
+const derivedRowsOf = (
+  store: LogicDatabase,
+  name: string
+): Effect.Effect<ReadonlyMap<string, readonly unknown[]>, unknown> => {
+  const relation = store.relations.get(name);
+  if (relation === undefined) {
+    return Effect.succeed(new Map());
+  }
+  const vars = relation.columns.map((_, at) => `?c${at}`);
+  return Effect.map(
+    run(["find", ["array/make", ...vars], [relation.name, ...vars]], stdlib, {
+      database: store,
+    }),
+    (found) => {
+      const rows = new Map<string, readonly unknown[]>();
+      if (Array.isArray(found)) {
+        for (const tuple of found as readonly (readonly unknown[])[]) {
+          rows.set(valueKey(tuple), tuple);
+        }
+      }
+      return rows;
+    }
+  );
+};
+
+const userRulesMap = (store: LogicDatabase) => {
+  const map = new Map<string, unknown>();
+  for (const rule of writtenRules(store.rules)) {
+    if (rule.given) {
+      continue;
+    }
+    map.set(valueKey(rule.source), rule.source);
+  }
+  return map;
+};
+
+const invariantsMap = (store: LogicDatabase) => {
+  const map = new Map<
+    string,
+    { readonly assert: "none" | "some"; readonly goal: unknown }
+  >();
+  for (const { assert, goal } of store.invariants) {
+    const entry = { assert, goal: render(goal) };
+    map.set(valueKey(entry), entry);
+  }
+  return map;
+};
+
+const diffRelations = (
+  before: LogicDatabase,
+  after: LogicDatabase,
+  names: readonly string[]
+) => {
+  const added: string[] = [];
+  const removed: string[] = [];
+  const changed: {
+    readonly after: RelationSpec;
+    readonly before: RelationSpec;
+    readonly name: string;
+  }[] = [];
+  for (const name of names) {
+    const prev = before.relations.get(name);
+    const next = after.relations.get(name);
+    if (prev === undefined && next !== undefined) {
+      added.push(name);
+    } else if (prev !== undefined && next === undefined) {
+      removed.push(name);
+    } else if (prev !== undefined && next !== undefined) {
+      const beforeSpec = relationSpec(prev);
+      const afterSpec = relationSpec(next);
+      if (valueKey(beforeSpec) !== valueKey(afterSpec)) {
+        changed.push({ name, before: beforeSpec, after: afterSpec });
+      }
+    }
+  }
+  return { added, removed, changed };
+};
+
+const diffSchemas = (before: LogicDatabase, after: LogicDatabase) => {
+  const names = [
+    ...new Set([...before.schemas.keys(), ...after.schemas.keys()]),
+  ].sort();
+  const added: string[] = [];
+  const removed: string[] = [];
+  const changed: string[] = [];
+  for (const name of names) {
+    const prev = before.schemas.get(name);
+    const next = after.schemas.get(name);
+    if (prev === undefined && next !== undefined) {
+      added.push(name);
+    } else if (prev !== undefined && next === undefined) {
+      removed.push(name);
+    } else if (
+      prev !== undefined &&
+      next !== undefined &&
+      valueKey(render(schemaOf(prev)?.definition)) !==
+        valueKey(render(schemaOf(next)?.definition))
+    ) {
+      changed.push(name);
+    }
+  }
+  return { added, removed, changed };
+};
+
+const diffEntries = <T>(
+  prev: ReadonlyMap<string, T>,
+  next: ReadonlyMap<string, T>
+) => ({
+  added: [...next.entries()]
+    .filter(([key]) => !prev.has(key))
+    .map(([, item]) => item)
+    .sort(compareValues),
+  removed: [...prev.entries()]
+    .filter(([key]) => !next.has(key))
+    .map(([, item]) => item)
+    .sort(compareValues),
+});
+
+const diffBaseFacts = (
+  before: LogicDatabase,
+  after: LogicDatabase,
+  names: readonly string[]
+) => {
+  const facts: Record<string, RowDelta> = {};
+  let added = 0;
+  let removed = 0;
+  for (const name of names) {
+    const delta = diffTupleMaps(
+      baseRowsOf(before, name),
+      baseRowsOf(after, name)
+    );
+    if (delta !== undefined) {
+      facts[name] = delta;
+      added += delta.added.length;
+      removed += delta.removed.length;
+    }
+  }
+  return { facts, added, removed };
+};
+
+const diffDerivedRows = (
+  before: LogicDatabase,
+  after: LogicDatabase,
+  names: readonly string[]
+) =>
+  Effect.gen(function* () {
+    const derived: Record<string, RowDelta> = {};
+    let added = 0;
+    let removed = 0;
+    for (const name of names) {
+      const delta = diffTupleMaps(
+        yield* derivedRowsOf(before, name),
+        yield* derivedRowsOf(after, name)
+      );
+      if (delta !== undefined) {
+        derived[name] = delta;
+        added += delta.added.length;
+        removed += delta.removed.length;
+      }
+    }
+    return { derived, added, removed };
+  });
+
+/** Semantic diff between two Lion databases (ontology, rules, invariants, facts, and optionally derived rows). */
+export const diffDatabases = (
+  before: LogicDatabase,
+  after: LogicDatabase,
+  options: { readonly derived?: boolean } = {}
+): Effect.Effect<DatabaseDiff, unknown> =>
+  Effect.gen(function* () {
+    const relationNames = [
+      ...new Set([...before.relations.keys(), ...after.relations.keys()]),
+    ].sort();
+    const relations = diffRelations(before, after, relationNames);
+    const schemas = diffSchemas(before, after);
+    const rules = diffEntries(userRulesMap(before), userRulesMap(after));
+    const invariants = diffEntries(invariantsMap(before), invariantsMap(after));
+    const base = diffBaseFacts(before, after, relationNames);
+    const derived = options.derived
+      ? yield* diffDerivedRows(before, after, relationNames)
+      : undefined;
+
+    return {
+      relations,
+      schemas,
+      rules,
+      invariants,
+      facts: base.facts,
+      ...(derived === undefined ? {} : { derived: derived.derived }),
+      counts: {
+        relationsAdded: relations.added.length,
+        relationsRemoved: relations.removed.length,
+        relationsChanged: relations.changed.length,
+        schemasAdded: schemas.added.length,
+        schemasRemoved: schemas.removed.length,
+        schemasChanged: schemas.changed.length,
+        rulesAdded: rules.added.length,
+        rulesRemoved: rules.removed.length,
+        invariantsAdded: invariants.added.length,
+        invariantsRemoved: invariants.removed.length,
+        factsAdded: base.added,
+        factsRemoved: base.removed,
+        ...(derived === undefined
+          ? {}
+          : { derivedAdded: derived.added, derivedRemoved: derived.removed }),
+      },
+    };
+  });
+
+const diffCommand = Command.make(
+  "diff",
+  {
+    before: diffBeforeFile,
+    after: diffAfterFile,
+    apply: applyFlag,
+    eval: evalFlag,
+    derived: derivedFlag,
+    bind: bindFlag,
+    bindFile: bindFileFlag,
+  },
+  Effect.fn(
+    function* ({
+      before: beforePath,
+      after: afterOption,
+      apply: applyFiles,
+      eval: inline,
+      derived,
+      bind,
+      bindFile,
+    }) {
+      const afterPath = Option.getOrUndefined(afterOption);
+      const hasPreview = applyFiles.length > 0 || Option.isSome(inline);
+      if (afterPath !== undefined && hasPreview) {
+        return yield* Effect.fail(
+          new Error(
+            "Give either a second database file or --apply/--eval, not both."
+          )
+        );
+      }
+      if (afterPath === undefined && !hasPreview) {
+        return yield* Effect.fail(
+          new Error(
+            "Give a second database file to compare against, or pass --apply <file> or --eval '<json>' to preview changes."
+          )
+        );
+      }
+      const beforeStore = yield* loadExistingDatabase(beforePath);
+      let afterStore: LogicDatabase;
+      if (afterPath === undefined) {
+        afterStore = yield* loadExistingDatabase(beforePath);
+        const bindings = yield* readBindings(bind, bindFile);
+        const sources = yield* readProgramSources(applyFiles, inline);
+        for (const [label, text] of sources) {
+          const program = yield* readJson(text).pipe(
+            Effect.mapError((cause) =>
+              label === undefined
+                ? cause
+                : new Error(`${label}: ${cause.message}`)
+            )
+          );
+          yield* run(
+            program,
+            { ...stdlib, ...bindings },
+            { database: afterStore }
+          );
+        }
+      } else {
+        afterStore = yield* loadExistingDatabase(afterPath);
+      }
+      const diff = yield* diffDatabases(beforeStore, afterStore, { derived });
+      yield* Console.log(yield* writeJson(diff, 2));
+    },
+    Effect.mapError((cause) => new CliError.UserError({ cause }))
+  )
+).pipe(
+  Command.withDescription(
+    "Compute the semantic diff between two Lion databases (or preview the impact of --apply/--eval steps in memory), including derived conclusions with --derived"
+  )
+);
+
 export const command = evaluateCommand.pipe(
   Command.withSubcommands([
     replCommand,
     workerCommand,
     checkCommand,
     inspectCommand,
+    diffCommand,
   ]),
   Command.withDescription(
-    "Evaluate Lion programs, inspect databases, serve the graph editor, and print Lion for a browser"
+    "Evaluate Lion programs, inspect and diff databases, serve the graph editor, and print Lion for a browser"
   )
 );
 

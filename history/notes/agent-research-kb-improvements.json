@@ -1,0 +1,76 @@
+{
+  "claims": [
+    {
+      "quote": "Standard library adds the deterministic proleptic Gregorian UTC `time` module (`time/parse`, `time/fromParts`, `time/format`, `time/parts`, `time/diff`, `time/add`) operating on exact integer UTC epoch milliseconds with zero host-timezone dependency.",
+      "says": {
+        "feature": "utc-time-module",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`time/parse`, `time/fromParts`, `time/format`, `time/parts`, `time/diff`, and `time/add` normalize timezones, reject impossible dates, round-trip ISO-8601 UTC strings, and compute exact durations.",
+      "says": {
+        "behavior": "utc-time-module",
+        "is": "works",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "String module adds Unicode regular expression matching and extraction (`string/matches?`, `string/match`, `string/matchAll` with stateless flags from `i`, `m`, `s` and pure JSON match records) and canonical quote/entity normalization (`string/normalize`).",
+      "says": {
+        "feature": "string-regex-and-normalize",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`string/matches?`, `string/match`, `string/matchAll`, and `string/normalize` extract structured matches and canonicalize typographic quotes, dashes, ellipses, and whitespace inside plain code and Datalog rules.",
+      "says": {
+        "behavior": "string-regex-and-normalize",
+        "is": "works",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "Proof module adds `proof/facts` and `proof/assumptions` to extract deduplicated, canonically sorted ground (`given: true`) facts and leaf closed-world absences from any `why` explanation tree.",
+      "says": {
+        "feature": "proof-provenance-extractors",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`proof/facts` and `proof/assumptions` compose with `why` across rules, queries, `find`, and `assuming` to derive ground evidence lineage and negative dependencies.",
+      "says": {
+        "behavior": "proof-provenance-extractors",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Graph module adds `graph/lca` (lowest common ancestors and shortest hop distances in any DAG), `graph/simplePaths` (all cycle-free directed paths up to `maxHops` with optional weights), and `graph/dominators` (immediate dominator tree rooted at `start`).",
+      "says": {
+        "feature": "graph-lca-simplepaths-dominators",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`graph/lca`, `graph/simplePaths`, and `graph/dominators` run deterministically over base and derived edge relations.",
+      "says": {
+        "behavior": "graph-lca-simplepaths-dominators",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "The `lion` CLI adds `lion diff` to compute deterministic semantic diffs between two saved databases or preview the in-memory impact of `--apply` / `--eval` steps without touching disk, including derived conclusion deltas with `--derived`; `@lionlang/metrics` adds `bun run efficacy [--against <ref>]` to benchmark Lion's efficacy for AI agents building deep research knowledge bases, ontologies, and graphs.",
+      "says": {
+        "feature": "cli-semantic-diff-and-kb-efficacy-benchmark",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

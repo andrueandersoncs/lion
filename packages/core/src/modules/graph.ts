@@ -574,6 +574,292 @@ const betweenness = (tuples: readonly Row[]) => {
   return nodes.map((node, at) => [node, round(centrality[at] ?? 0)]);
 };
 
+/** Shortest hop distances from `start` following directed edges. */
+const bfsDistances = (
+  start: unknown,
+  out: ReadonlyMap<string, readonly Edge[]>
+) => {
+  const startKey = valueKey(start);
+  const dist = new Map<string, number>([[startKey, 0]]);
+  const byKey = new Map<string, unknown>([[startKey, start]]);
+  const queue: string[] = [startKey];
+  for (const current of queue) {
+    const nextDist = (dist.get(current) as number) + 1;
+    for (const edge of out.get(current) ?? []) {
+      const nextKey = valueKey(edge.to);
+      if (!dist.has(nextKey)) {
+        dist.set(nextKey, nextDist);
+        byKey.set(nextKey, edge.to);
+        queue.push(nextKey);
+      }
+    }
+  }
+  return { byKey, dist };
+};
+
+/**
+ * Lowest (most specific) common ancestors of `a` and `b` in a DAG, following
+ * edges from child to parent, with shortest hop distances from `a` and `b`.
+ */
+const lca = (tuples: readonly Row[], a: unknown, b: unknown) => {
+  const edges = readEdges("graph/lca", tuples, false);
+  if (typeof edges === "string") {
+    return edges;
+  }
+  const ordered = topologicalNodes("graph/lca", edges);
+  if (typeof ordered === "string") {
+    return ordered;
+  }
+  const out = adjacency(edges);
+  const fromA = bfsDistances(a, out);
+  const fromB = bfsDistances(b, out);
+  const commonKeys = [...fromA.dist.keys()].filter((key) =>
+    fromB.dist.has(key)
+  );
+  if (commonKeys.length === 0) {
+    return [];
+  }
+  const uniqueOut = new Map<string, Set<string>>();
+  for (const { from, to } of edges) {
+    const u = valueKey(from);
+    const set = uniqueOut.get(u) ?? new Set<string>();
+    set.add(valueKey(to));
+    uniqueOut.set(u, set);
+  }
+  const reach = dagReach(ordered, uniqueOut);
+  const rows: Row[] = [];
+  for (const candidate of commonKeys) {
+    const dominated = commonKeys.some(
+      (other) => other !== candidate && reach.get(other)?.has(candidate)
+    );
+    if (!dominated) {
+      rows.push([
+        fromA.byKey.get(candidate),
+        fromA.dist.get(candidate),
+        fromB.dist.get(candidate),
+      ]);
+    }
+  }
+  return rows.sort((x, y) => compareValues(x[0], y[0]));
+};
+
+const MAX_SIMPLE_PATHS = 10_000;
+
+/**
+ * Deduplicated outgoing edges per node with minimum weight for parallel edges,
+ * sorted canonically by target node.
+ */
+const minOutgoing = (edges: readonly Edge[]) => {
+  const map = new Map<
+    string,
+    Map<string, { to: unknown; weight: LionNumber }>
+  >();
+  for (const { from, to, weight } of edges) {
+    const fromKey = valueKey(from);
+    const toKey = valueKey(to);
+    const row = map.get(fromKey) ?? new Map();
+    const known = row.get(toKey);
+    if (known === undefined || compareNumbers(weight, known.weight) < 0) {
+      row.set(toKey, { to, weight });
+    }
+    map.set(fromKey, row);
+  }
+  const out = new Map<
+    string,
+    readonly {
+      readonly key: string;
+      readonly to: unknown;
+      readonly weight: LionNumber;
+    }[]
+  >();
+  for (const [fromKey, targets] of map) {
+    out.set(
+      fromKey,
+      [...targets.entries()]
+        .map(([key, item]) => ({ key, ...item }))
+        .sort((x, y) => compareValues(x.to, y.to))
+    );
+  }
+  return out;
+};
+
+/**
+ * All cycle-free directed paths from `start` to `end` of at most `maxHops`
+ * edges, with optional non-negative 3rd-column edge weights.
+ */
+const simplePaths = (
+  tuples: readonly Row[],
+  start: unknown,
+  end: unknown,
+  maxHops: unknown
+) => {
+  const edges = readEdges("graph/simplePaths", tuples, true);
+  if (typeof edges === "string") {
+    return edges;
+  }
+  if (
+    typeof maxHops !== "number" ||
+    !Number.isInteger(maxHops) ||
+    maxHops < 0
+  ) {
+    return `graph/simplePaths needs a whole number of at least 0 for maxHops, but found ${show(maxHops)}.`;
+  }
+  const startKey = valueKey(start);
+  const endKey = valueKey(end);
+  const out = minOutgoing(edges);
+  const rows: Row[] = [];
+  const visited = new Set<string>([startKey]);
+  const path: unknown[] = [start];
+  let exceeded = false;
+
+  const dfs = (currentKey: string, hops: number, cost: LionNumber) => {
+    if (exceeded) {
+      return;
+    }
+    if (currentKey === endKey) {
+      if (rows.length >= MAX_SIMPLE_PATHS) {
+        exceeded = true;
+        return;
+      }
+      rows.push([cost, [...path]]);
+      return;
+    }
+    if (hops >= maxHops) {
+      return;
+    }
+    for (const next of out.get(currentKey) ?? []) {
+      if (visited.has(next.key)) {
+        continue;
+      }
+      visited.add(next.key);
+      path.push(next.to);
+      dfs(next.key, hops + 1, sum(cost, next.weight));
+      path.pop();
+      visited.delete(next.key);
+      if (exceeded) {
+        return;
+      }
+    }
+  };
+
+  dfs(startKey, 0, 0);
+  if (exceeded) {
+    return `graph/simplePaths found more than ${MAX_SIMPLE_PATHS} paths; lower maxHops to bound the search.`;
+  }
+  return rows.sort((a, b) => {
+    const order = compareNumbers(a[0] as LionNumber, b[0] as LionNumber);
+    return order === 0 ? compareValues(a[1], b[1]) : order;
+  });
+};
+
+/** Deterministic iterative DFS producing reverse postorder and predecessor sets. */
+const reachableRpo = (
+  startKey: string,
+  start: unknown,
+  out: ReadonlyMap<
+    string,
+    readonly { readonly key: string; readonly to: unknown }[]
+  >
+) => {
+  const byKey = new Map<string, unknown>([[startKey, start]]);
+  const postorder: string[] = [];
+  const seen = new Set<string>([startKey]);
+  const preds = new Map<string, Set<string>>();
+  const stack: { key: string; at: number }[] = [{ key: startKey, at: 0 }];
+
+  while (stack.length > 0) {
+    const top = stack.at(-1) as { key: string; at: number };
+    const neighbors = out.get(top.key) ?? [];
+    if (top.at >= neighbors.length) {
+      stack.pop();
+      postorder.push(top.key);
+      continue;
+    }
+    const next = neighbors[top.at] as (typeof neighbors)[number];
+    top.at += 1;
+    byKey.set(next.key, next.to);
+    const set = preds.get(next.key) ?? new Set<string>();
+    set.add(top.key);
+    preds.set(next.key, set);
+    if (!seen.has(next.key)) {
+      seen.add(next.key);
+      stack.push({ key: next.key, at: 0 });
+    }
+  }
+  return { byKey, preds, rpo: [...postorder].reverse() };
+};
+
+const intersectDom = (idom: readonly number[], a: number, b: number) => {
+  let f1 = a;
+  let f2 = b;
+  while (f1 !== f2) {
+    while (f1 > f2) {
+      f1 = idom[f1] as number;
+    }
+    while (f2 > f1) {
+      f2 = idom[f2] as number;
+    }
+  }
+  return f1;
+};
+
+const stepIdom = (
+  idom: readonly number[],
+  rpoIndex: ReadonlyMap<string, number>,
+  predKeys: ReadonlySet<string> | undefined
+) => {
+  let nextIdom = -1;
+  for (const predKey of predKeys ?? []) {
+    const predAt = rpoIndex.get(predKey);
+    if (predAt !== undefined && idom[predAt] !== -1) {
+      nextIdom =
+        nextIdom === -1 ? predAt : intersectDom(idom, predAt, nextIdom);
+    }
+  }
+  return nextIdom;
+};
+
+/**
+ * Immediate dominator tree for every node reachable from `start` (excluding
+ * `start` itself, so the output edges form a rooted tree DAG).
+ * Uses the Cooper–Harvey–Kennedy iterative algorithm on deterministic RPO.
+ */
+const dominators = (tuples: readonly Row[], start: unknown) => {
+  const edges = readEdges("graph/dominators", tuples, false);
+  if (typeof edges === "string") {
+    return edges;
+  }
+  const { byKey, preds, rpo } = reachableRpo(
+    valueKey(start),
+    start,
+    minOutgoing(edges)
+  );
+  const rpoIndex = new Map(rpo.map((key, at) => [key, at]));
+  const idom = new Array<number>(rpo.length).fill(-1);
+  idom[0] = 0;
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let at = 1; at < rpo.length; at += 1) {
+      const nextIdom = stepIdom(idom, rpoIndex, preds.get(rpo[at] as string));
+      if (nextIdom !== -1 && idom[at] !== nextIdom) {
+        idom[at] = nextIdom;
+        changed = true;
+      }
+    }
+  }
+
+  const rows: Row[] = [];
+  for (let at = 1; at < rpo.length; at += 1) {
+    rows.push([
+      byKey.get(rpo[at] as string),
+      byKey.get(rpo[idom[at] as number] as string),
+    ]);
+  }
+  return rows.sort((a, b) => compareValues(a[0], b[0]));
+};
+
 const EDGES = { kind: "relation", name: "edges" } as const;
 
 export const module = {
@@ -584,6 +870,33 @@ export const module = {
     inputs: [EDGES, { kind: "value", name: "start" }],
     columns: ["to", "cost", "path"],
     run: ([tuples, start]) => shortestPath(tuples as readonly Row[], start),
+  }),
+
+  simplePaths: defineAlgorithm({
+    name: "graph/simplePaths",
+    inputs: [
+      EDGES,
+      { kind: "value", name: "start" },
+      { kind: "value", name: "end" },
+      { kind: "value", name: "maxHops" },
+    ],
+    columns: ["cost", "path"],
+    run: ([tuples, start, end, maxHops]) =>
+      simplePaths(tuples as readonly Row[], start, end, maxHops),
+  }),
+
+  lca: defineAlgorithm({
+    name: "graph/lca",
+    inputs: [EDGES, { kind: "value", name: "a" }, { kind: "value", name: "b" }],
+    columns: ["lca", "distA", "distB"],
+    run: ([tuples, a, b]) => lca(tuples as readonly Row[], a, b),
+  }),
+
+  dominators: defineAlgorithm({
+    name: "graph/dominators",
+    inputs: [EDGES, { kind: "value", name: "start" }],
+    columns: ["node", "dominator"],
+    run: ([tuples, start]) => dominators(tuples as readonly Row[], start),
   }),
 
   pageRank: defineAlgorithm({

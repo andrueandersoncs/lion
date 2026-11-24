@@ -26486,5 +26486,152 @@
         ["else", ["quote", "broken"]]
       ]
     ]
+  },
+  {
+    "case": "utc-time-module",
+    "area": "library",
+    "program": [
+      "begin",
+      ["define", "a", ["time/parse", "2026-03-03T14:05:00Z"]],
+      ["define", "b", ["time/parse", "2026-03-03T11:40:00-05:00"]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", "b", ["time/fromParts", 2026, 3, 3, 11, 40, 0, -300]],
+            ["=", ["time/diff", "b", "a", "minutes"], 155],
+            [
+              "=",
+              ["time/format", ["time/add", "b", 1, "days"], "minute"],
+              "2026-03-04T16:40Z"
+            ],
+            ["=", ["object/get", ["time/parts", "b"], "dayOfWeek"], 2],
+            ["value/null?", ["time/parse", "2026-02-29"]]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "string-regex-and-normalize",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "and",
+          ["string/matches?", "CVE-2026-0091", "^CVE-\\d{4}-\\d{4}$"],
+          [
+            "=",
+            [
+              "object/get",
+              [
+                "string/match",
+                "feat(core): x",
+                "^(?<t>[a-z]+)\\((?<s>[a-z]+)\\):"
+              ],
+              "named"
+            ],
+            ["quote", { "t": "feat", "s": "core" }]
+          ],
+          [
+            "=",
+            [
+              "array/length",
+              ["string/matchAll", "See [1] and [2].", "\\[\\d+\\]"]
+            ],
+            2
+          ],
+          ["=", ["string/normalize", " “Acme’s”\n— ok… "], "\"Acme's\" - ok..."]
+        ],
+        ["quote", "works"]
+      ],
+      ["else", ["quote", "broken"]]
+    ]
+  },
+  {
+    "case": "proof-provenance-extractors",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "base", ["x"]],
+      ["relation", "blocked", ["x"]],
+      ["relation", "ok", ["x"]],
+      ["fact", ["base", "a"]],
+      ["rule", ["ok", "?x"], ["base", "?x"], ["not", ["blocked", "?x"]]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              ["proof/facts", ["why", ["ok", "a"]]],
+              ["quote", [["base", "a"]]]
+            ],
+            [
+              "=",
+              ["proof/assumptions", ["why", ["ok", "a"]]],
+              ["quote", [["blocked", "a"]]]
+            ]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "graph-lca-simplepaths-dominators",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "e", ["from", "to"]],
+      [
+        "fact",
+        ["e", "a", "b"],
+        ["e", "a", "c"],
+        ["e", "b", "d"],
+        ["e", "c", "d"]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              ["query", ["graph/lca", "e", "b", "c", "?l", "?da", "?db"]],
+              ["quote", [{ "l": "d", "da": 1, "db": 1 }]]
+            ],
+            [
+              "=",
+              [
+                "query",
+                ["graph/simplePaths", "e", "a", "d", 3, "?c", "?p"],
+                { "order": "p" }
+              ],
+              [
+                "quote",
+                [
+                  { "c": 2, "p": ["a", "b", "d"] },
+                  { "c": 2, "p": ["a", "c", "d"] }
+                ]
+              ]
+            ],
+            [
+              "=",
+              ["query", ["graph/dominators", "e", "a", "d", "?dom"]],
+              ["quote", [{ "dom": "a" }]]
+            ]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
   }
 ]

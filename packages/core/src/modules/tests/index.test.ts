@@ -14,6 +14,7 @@ import { module as proof } from "../proof.ts";
 import { module as quantity } from "../quantity.ts";
 import { module as schema } from "../schema.ts";
 import { module as string } from "../string.ts";
+import { module as time } from "../time.ts";
 import { module as value } from "../value.ts";
 
 const modules: Record<string, Record<string, unknown>> = {
@@ -29,6 +30,7 @@ const modules: Record<string, Record<string, unknown>> = {
   quantity,
   schema,
   string,
+  time,
   value,
 };
 

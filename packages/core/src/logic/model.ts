@@ -787,6 +787,20 @@ const substitute = (value: unknown, vars: Vars) =>
   );
 
 /** What a `why` gives for an answer: the explanation tree of its ground row. */
+const hasUnbound = (value: unknown, vars: Vars): boolean => {
+  if (
+    !(value instanceof LogicValue) ||
+    isQuestion(value) ||
+    isForm(value, "some")
+  ) {
+    return false;
+  }
+  if (value instanceof LogicVariable) {
+    return !vars.has(value.name);
+  }
+  return value.parts.some((part) => hasUnbound(part, vars));
+};
+
 const explained = (
   model: Model,
   question: LogicForm,
@@ -799,7 +813,7 @@ const explained = (
     }
     const [atom] = question.parts as [Atom];
     const args = yield* Effect.forEach(atom.args, (arg) =>
-      arg instanceof LogicValue && arg.variables.some((name) => !vars.has(name))
+      hasUnbound(arg, vars)
         ? Effect.succeed(substitute(arg, vars))
         : term(model, arg, vars)
     );

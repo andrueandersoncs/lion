@@ -2916,6 +2916,114 @@
         "quote",
         "each names the specific CIC guard condition a recursive function violated"
       ]
-    ]
+    ],
+    [
+      "stated",
+      "graph-simple-paths-limit",
+      "limits",
+      ["quote", "graph/simplePaths bounds the number of enumerated paths"]
+    ],
+    [
+      "stated",
+      "graph-max-hops",
+      "library",
+      ["quote", "graph/simplePaths takes a non-negative integer hop bound"]
+    ],
+    [
+      "stated",
+      "time-precision",
+      "library",
+      ["quote", "time/format takes a known precision"]
+    ],
+    [
+      "stated",
+      "time-calendar-valid",
+      "library",
+      ["quote", "time/fromParts takes a valid Gregorian calendar date and time"]
+    ],
+    [
+      "stated",
+      "time-unit",
+      "library",
+      ["quote", "time/add and time/diff take a known time unit"]
+    ],
+    [
+      "stated",
+      "time-whole-ms",
+      "library",
+      [
+        "quote",
+        "time/format and time/parts take a whole number of UTC milliseconds"
+      ]
+    ],
+    [
+      "stated",
+      "regex-flags",
+      "library",
+      [
+        "quote",
+        "string regex functions take only the stateless flags i, m, and s"
+      ]
+    ],
+    [
+      "stated",
+      "regex-pattern",
+      "library",
+      [
+        "quote",
+        "string regex functions take a valid Unicode regular expression"
+      ]
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "graph/simplePaths found more than … paths; lower maxHops to bound the search."
+      ],
+      "graph-simple-paths-limit"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "graph/simplePaths needs a whole number of at least 0 for maxHops, but found …."
+      ],
+      "graph-max-hops"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "time/format expects precision \"date\", \"minute\", \"second\", or \"ms\", but found …."
+      ],
+      "time-precision"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "time/fromParts: …-…-… …:…:… (offset …) is not a valid calendar date or time."
+      ],
+      "time-calendar-valid"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… expects a unit of \"ms\", \"seconds\", \"minutes\", \"hours\", or \"days\", but found …."
+      ],
+      "time-unit"
+    ],
+    [
+      "reads",
+      ["quote", "… expects a whole number of UTC milliseconds, but found …."],
+      "time-whole-ms"
+    ],
+    [
+      "reads",
+      ["quote", "… accepts only flags from \"i\", \"m\", \"s\", but found …."],
+      "regex-flags"
+    ],
+    ["reads", ["quote", "…: invalid pattern …: …."], "regex-pattern"]
   ]
 ]
