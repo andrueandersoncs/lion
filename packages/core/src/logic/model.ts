@@ -599,6 +599,11 @@ export class Model {
     changes: readonly LogicForm[],
     expression: unknown
   ) => LogicEffect<unknown>;
+  /**
+   * Explains how a ground relation call holds, or why it does not. The
+   * database that keeps this model sets it.
+   */
+  explain?: (atom: Atom) => LogicEffect<unknown>;
 
   constructor(
     facts: ReadonlyMap<string, TupleSet>,
@@ -765,10 +770,41 @@ export const term = (
   if (isForm(value, "assuming")) {
     return assumed(model, value, vars);
   }
+  if (isForm(value, "why")) {
+    return explained(model, value, vars);
+  }
   return isForm(value, "find")
     ? findAll(model, value, vars)
     : holds(model, value as Goal, vars);
 };
+
+const needsDatabase = (question: LogicForm, vars: Vars) =>
+  logicError(`${show(instantiate(question, vars))} needs a database to ask.`);
+
+const substitute = (value: unknown, vars: Vars) =>
+  replaceVariables(value, (variable) =>
+    vars.has(variable.name) ? vars.get(variable.name) : undefined
+  );
+
+/** What a `why` gives for an answer: the explanation tree of its ground row. */
+const explained = (
+  model: Model,
+  question: LogicForm,
+  vars: Vars
+): LogicEffect<unknown> =>
+  Effect.gen(function* () {
+    const home = model.base ?? model;
+    if (home.explain === undefined) {
+      return yield* needsDatabase(question, vars);
+    }
+    const [atom] = question.parts as [Atom];
+    const args = yield* Effect.forEach(atom.args, (arg) =>
+      arg instanceof LogicValue && arg.variables.some((name) => !vars.has(name))
+        ? Effect.succeed(substitute(arg, vars))
+        : term(model, arg, vars)
+    );
+    return yield* home.explain(new Atom(atom.relation, args));
+  });
 
 /**
  * What an `assuming` gives for an answer: its changes with the values of
@@ -785,14 +821,8 @@ const assumed = (
   Effect.gen(function* () {
     const home = model.base ?? model;
     if (home.assume === undefined) {
-      return yield* logicError(
-        `${show(instantiate(question, vars))} needs a database to ask: assuming asks the database as it would be after its changes.`
-      );
+      return yield* needsDatabase(question, vars);
     }
-    const bound = (term: unknown) =>
-      replaceVariables(term, (variable) =>
-        vars.has(variable.name) ? vars.get(variable.name) : undefined
-      );
     // A fact holds values; a rule or invariant holds goals.
     const valued = (part: unknown) =>
       part instanceof Atom
@@ -800,18 +830,18 @@ const assumed = (
             Effect.forEach(part.args, (arg) => term(model, arg, vars)),
             (args) => new Atom(part.relation, args)
           )
-        : Effect.succeed(bound(part));
+        : Effect.succeed(substitute(part, vars));
     const changes = yield* Effect.forEach(
       question.parts.slice(0, -1) as LogicForm[],
       (change) =>
         change.form === "rule"
-          ? Effect.succeed(bound(change) as LogicForm)
+          ? Effect.succeed(substitute(change, vars) as LogicForm)
           : Effect.map(
               Effect.forEach(change.parts, valued),
               (parts) => new LogicForm(change.form, parts)
             )
     );
-    return yield* home.assume(changes, bound(question.parts.at(-1)));
+    return yield* home.assume(changes, substitute(question.parts.at(-1), vars));
   });
 
 /**

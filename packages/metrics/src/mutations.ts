@@ -5388,4 +5388,79 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "  const nearest = null;",
     tests: ["src/analysis/tests/checks.test.ts"],
   },
+  {
+    name: "composable why evaluates eagerly inside writing contexts",
+    file: core("evaluation/special-forms/logic.ts"),
+    find: "    if (yield* isWriting) {\n      const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));",
+    replace:
+      "    if (false) {\n      const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));",
+    tests: ["src/logic/tests/why-composable.test.ts"],
+  },
+  {
+    name: "maintain skips re-deriving rules that ask why when facts change",
+    file: core("logic/maintain.ts"),
+    find: '  isForm(term, "assuming", "why") ||',
+    replace: '  isForm(term, "assuming") ||',
+    tests: ["src/logic/tests/why-composable.test.ts"],
+  },
+  {
+    name: "array/includes? uses reference equality instead of sameValue",
+    file: core("modules/array.ts"),
+    find: '  "includes?": over([List, Schema.Any], (list, item) =>\n    list.some((each) => sameValue(each, item))\n  ),',
+    replace:
+      '  "includes?": over([List, Schema.Any], (list, item) =>\n    list.includes(item)\n  ),',
+    tests: ["src/modules/tests/order-and-equality.test.ts"],
+  },
+  {
+    name: "string/lessThan reverses comparison order",
+    file: core("modules/string.ts"),
+    find: "  lessThan: onTwo((a, b) => a < b),",
+    replace: "  lessThan: onTwo((a, b) => a > b),",
+    tests: ["src/modules/tests/order-and-equality.test.ts"],
+  },
+  {
+    name: "value/compare inverts comparison sign",
+    file: core("modules/value.ts"),
+    find: "    Effect.succeed(Math.sign(compareValues(a, b)))",
+    replace: "    Effect.succeed(Math.sign(compareValues(b, a)))",
+    tests: ["src/modules/tests/order-and-equality.test.ts"],
+  },
+  {
+    name: "graph/cycles ignores single-node self-loops",
+    file: core("modules/graph.ts"),
+    find: "      memberKeys.length > 1 ||\n      (memberKeys.length === 1 &&\n        (targets.get(memberKeys[0] as string) ?? []).includes(\n          memberKeys[0] as string\n        ));",
+    replace: "      memberKeys.length > 1;",
+    tests: ["src/logic/tests/graph.test.ts"],
+  },
+  {
+    name: "graph/transitiveReduction keeps redundant shortcut edges",
+    file: core("modules/graph.ts"),
+    find: "    if (w !== v && reach.get(w)?.has(v)) {\n      return true;\n    }",
+    replace:
+      "    if (false && w !== v && reach.get(w)?.has(v)) {\n      return true;\n    }",
+    tests: ["src/logic/tests/graph.test.ts"],
+  },
+  {
+    name: "graph/betweenness drops predecessor path accumulation",
+    file: core("modules/graph.ts"),
+    find: "      if (w !== s) {\n        centrality[w] = (centrality[w] as number) + (delta[w] as number);\n      }",
+    replace:
+      "      if (false && w !== s) {\n        centrality[w] = (centrality[w] as number) + (delta[w] as number);\n      }",
+    tests: ["src/logic/tests/graph.test.ts"],
+  },
+  {
+    name: "weights deduplicates values before computing aggregate/median",
+    file: core("logic/weights.ts"),
+    find: '  const repeats = ["collect", "count", "mean", "median", "sum"].includes(kind);',
+    replace:
+      '  const repeats = ["collect", "count", "mean", "sum"].includes(kind);',
+    tests: ["src/logic/tests/aggregates.test.ts"],
+  },
+  {
+    name: "aggregate/argMin and argMax ignore deterministic value tie-breaking",
+    file: core("logic/aggregates.ts"),
+    find: "    if (better || (order === 0 && compareValues(pair[1], best[1]) < 0)) {",
+    replace: "    if (better) {",
+    tests: ["src/logic/tests/aggregates.test.ts"],
+  },
 ];

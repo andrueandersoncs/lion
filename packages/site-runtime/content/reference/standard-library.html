@@ -108,6 +108,10 @@
     <tr data-entry="string/replaceAll"><td><code>["string/replaceAll", text, search, replacement]</code></td><td><code>text</code> with every occurrence of <code>search</code> replaced literally by <code>replacement</code></td></tr>
     <tr data-entry="string/numbers"><td><code>["string/numbers", text]</code><br><code>["string/numbers", text, separator]</code></td><td>Every number written in <code>text</code>, in order, each read as <code>number/fromString</code> reads it with the same separator. A minus sign counts only where no letter, digit, or point is right before it, so <code>"2023-24"</code> holds 2023 and 24. Words for amounts are not read: <code>"$1.2 billion"</code> holds 1.2</td></tr>
     <tr data-entry="string/equals?"><td><code>["string/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
+    <tr data-entry="string/lessThan"><td><code>["string/lessThan", a, b]</code></td><td>Whether <code>a</code> comes before <code>b</code> in code-unit order (the same order <code>query</code> <code>"order"</code>, <code>array/sort</code>, and <code>aggregate/min</code> use)</td></tr>
+    <tr data-entry="string/greaterThan"><td><code>["string/greaterThan", a, b]</code></td><td>Whether <code>a</code> comes after <code>b</code> in code-unit order</td></tr>
+    <tr data-entry="string/lessThanOrEqualTo"><td><code>["string/lessThanOrEqualTo", a, b]</code></td><td>Whether <code>a</code> is less than or equal to <code>b</code> in code-unit order</td></tr>
+    <tr data-entry="string/greaterThanOrEqualTo"><td><code>["string/greaterThanOrEqualTo", a, b]</code></td><td>Whether <code>a</code> is greater than or equal to <code>b</code> in code-unit order</td></tr>
   </tbody>
 </table>
 <lion-example name="string">
@@ -131,7 +135,11 @@
  "toUpperCase": ["string/toUpperCase", "Lion"],
  "replaceAll": ["string/replaceAll", "a-b-c", "-", "_"],
  "numbers": ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","],
- "equals?": ["string/equals?", "lion", "lion"]}
+ "equals?": ["string/equals?", "lion", "lion"],
+ "lessThan": ["string/lessThan", "2025-02-01", "2026-03-03"],
+ "greaterThan": ["string/greaterThan", "b", "a"],
+ "lessThanOrEqualTo": ["string/lessThanOrEqualTo", "a", "a"],
+ "greaterThanOrEqualTo": ["string/greaterThanOrEqualTo", "b", "b"]}
 </lion-example>
 
 <h2 id="module-array">array</h2>
@@ -208,6 +216,8 @@
     <tr data-entry="value/undefined?"><td><code>["value/undefined?", x]</code></td><td>Whether <code>x</code> is JavaScript's <code>undefined</code>, which only host values produce</td></tr>
     <tr data-entry="value/symbol?"><td><code>["value/symbol?", x]</code></td><td>Whether <code>x</code> is a JavaScript symbol</td></tr>
     <tr data-entry="value/any?"><td><code>["value/any?", x]</code></td><td><code>true</code> for every value: the schema that anything fits</td></tr>
+    <tr data-entry="value/equals?"><td><code>["value/equals?", a, b]</code></td><td>Structural equality on any two values, the same rule <code>=</code> and <code>in</code> use</td></tr>
+    <tr data-entry="value/compare"><td><code>["value/compare", a, b]</code></td><td>Total value order (<code>-1</code>, <code>0</code>, or <code>1</code>), the same order <code>array/sort</code> and query <code>"order"</code> use</td></tr>
     <tr data-entry="value/identity"><td><code>["value/identity", x]</code></td><td><code>x</code></td></tr>
     <tr data-entry="value/promise?"><td><code>["value/promise?", x]</code></td><td>Whether <code>x</code> is a promise <a href="#form-delay"><code>delay</code></a> made</td></tr>
     <tr data-entry="value/force"><td><code>["value/force", x]</code></td><td>The value of a promise: its expression run the first time, and kept, as Racket's <code>force</code> gives it; any other <code>x</code> as it is</td></tr>
@@ -227,6 +237,8 @@
  "symbol? of a module's own symbol": ["value/symbol?", "number/symbol"],
  "symbol? of text": ["value/symbol?", ["quote", "number/symbol"]],
  "any?": ["value/any?", null],
+ "equals?": ["value/equals?", {"a": 1}, {"a": 1}],
+ "compare": ["value/compare", {"a": 1}, {"a": 2}],
  "identity": ["value/identity", 42],
  "promise?": ["value/promise?", ["delay", 1]],
  "force": ["value/force", ["delay", ["number/add", 1, 2]]],
@@ -449,6 +461,9 @@
     <tr data-entry="aggregate/countUnique"><td><code>["aggregate/countUnique", values]</code></td><td>How many distinct values</td><td><code>0</code></td></tr>
     <tr data-entry="aggregate/sum"><td><code>["aggregate/sum", values]</code></td><td>The exact sum, so the order of the values never changes it; values must be numbers</td><td><code>0</code></td></tr>
     <tr data-entry="aggregate/mean"><td><code>["aggregate/mean", values]</code></td><td>The exact mean: the sum divided by how many values there are, which may be a fraction such as 7/3; values must be numbers</td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/median"><td><code>["aggregate/median", values]</code></td><td>The exact median: the middle number for an odd count, or the exact midpoint of the two middle numbers for an even count; values must be numbers</td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/argMin"><td><code>["aggregate/argMin", pairs]</code></td><td>The value of the <code>[key, value]</code> pair with the smallest key (all numbers or all strings); ties go to the smaller value</td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/argMax"><td><code>["aggregate/argMax", pairs]</code></td><td>The value of the <code>[key, value]</code> pair with the largest key (all numbers or all strings); ties go to the smaller value</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/min"><td><code>["aggregate/min", values]</code></td><td>The smallest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/max"><td><code>["aggregate/max", values]</code></td><td>The largest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/shortest"><td><code>["aggregate/shortest", values]</code></td><td>The shortest list or string; ties go to the smaller value. Lattice.</td><td><code>null</code></td></tr>
@@ -470,6 +485,9 @@
    "countUnique": ["aggregate/countUnique", "values"],
    "sum": ["aggregate/sum", "values"],
    "mean": ["aggregate/mean", "values"],
+   "median": ["aggregate/median", "values"],
+   "argMin": ["aggregate/argMin", ["quote", [[2024, "draft"], [2025, "final"]]]],
+   "argMax": ["aggregate/argMax", ["quote", [[2024, "draft"], [2025, "final"]]]],
    "min": ["aggregate/min", "values"],
    "max": ["aggregate/max", "values"],
    "shortest": ["aggregate/shortest", ["quote", [[1, 2], [3], "ab"]]],
@@ -485,19 +503,25 @@
   <tbody>
     <tr data-entry="graph/shortestPath"><td><code>["graph/shortestPath", edges, start, to, cost, path]</code></td><td>Dijkstra's algorithm from <code>start</code>, in order of cost, starting with <code>start</code> itself at cost 0. A third edge column is the weight, at least 0; without one, each edge costs 1.</td></tr>
     <tr data-entry="graph/pageRank"><td><code>["graph/pageRank", edges, node, rank]</code></td><td>PageRank with damping 0.85, rounded to 6 decimal places. Ranks add up to 1.</td></tr>
+    <tr data-entry="graph/betweenness"><td><code>["graph/betweenness", edges, node, score]</code></td><td>Directed betweenness centrality by Brandes's algorithm, rounded to 6 decimal places. A third edge column is a non-negative weight; without one, each edge costs 1.</td></tr>
     <tr data-entry="graph/components"><td><code>["graph/components", edges, node, component]</code></td><td>Connected components, ignoring direction, named after their smallest node</td></tr>
     <tr data-entry="graph/stronglyConnected"><td><code>["graph/stronglyConnected", edges, node, component]</code></td><td>Strongly connected components, named after their smallest node</td></tr>
+    <tr data-entry="graph/cycles"><td><code>["graph/cycles", edges, component, cycle]</code></td><td>One canonical shortest directed cycle per cyclic strongly connected component (including self-loops), named after its smallest node; empty on an acyclic graph</td></tr>
+    <tr data-entry="graph/transitiveReduction"><td><code>["graph/transitiveReduction", edges, from, to]</code></td><td>The unique minimal edge set of a DAG with the same reachability (Hasse diagram), or an error naming a cycle</td></tr>
     <tr data-entry="graph/topologicalOrder"><td><code>["graph/topologicalOrder", edges, node, position]</code></td><td>Positions from 0 in a topological order, or an error that names a cycle</td></tr>
   </tbody>
 </table>
 <lion-example name="graph">
 ["begin",
   ["relation", "edge", ["from", "to"]],
-  ["fact", ["edge", "a", "b"], ["edge", "b", "c"], ["edge", "c", "d"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"], ["edge", "c", "d"], ["edge", "a", "c"]],
   {"shortestPath": ["query", ["graph/shortestPath", "edge", "a", "d", "?cost", "?path"]],
    "pageRank": ["query", ["graph/pageRank", "edge", "?node", "?rank"], {"order": "-rank", "limit": 1}],
+   "betweenness": ["query", ["graph/betweenness", "edge", "?node", "?score"], {"order": "-score", "limit": 1}],
    "components": ["query", ["graph/components", "edge", "?node", "?c"], {"limit": 1}],
    "stronglyConnected": ["query", ["graph/stronglyConnected", "edge", "c", "?c"]],
+   "cycles": ["query", ["graph/cycles", "edge", "?component", "?cycle"]],
+   "transitiveReduction": ["query", ["graph/transitiveReduction", "edge", "?from", "?to"], {"order": ["from", "to"]}],
    "topologicalOrder": ["query", ["graph/topologicalOrder", "edge", "?node", "?position"], {"order": "position"}]}]
 </lion-example>
 

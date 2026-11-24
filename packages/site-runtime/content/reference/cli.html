@@ -1,19 +1,33 @@
 <article id="cli" data-title="Command line" data-summary="The lion command from @lionlang/cli: evaluating files, keeping a database file, serving the graph editor, and printing Lion as a Web Worker.">
 <p>Install with <code>bun add --dev @lionlang/cli</code>. The package provides the <code>lion</code> command.</p>
 
-<h2 id="cli-evaluate"><code>lion [&lt;file&gt;]</code></h2>
+<h2 id="cli-evaluate"><code>lion [&lt;file&gt;...]</code></h2>
 <code-block lang="shell">
-lion [--database &lt;path&gt;] [--bind &lt;name=json&gt;]... [--bind-file &lt;name=path&gt;]... [--eval &lt;json&gt;] [&lt;file&gt;]
+lion [--database &lt;path&gt;] [--read-only] [--bind &lt;name=json&gt;]... [--bind-file &lt;name=path&gt;]... [--eval &lt;json&gt;] [&lt;file&gt;...]
 </code-block>
-<p>Reads a Lion program as JSON from <code>file</code>, <code>--eval</code> (<code>-e</code>), or standard input (when <code>file</code> is <code>-</code> or omitted while stdin is piped), evaluates it with the standard library and any <code>--bind</code> / <code>--bind-file</code> bindings, and prints the result as JSON indented by two spaces.</p>
+<p>Reads one or more Lion programs as JSON from <code>file</code>s (evaluated sequentially against one database, each with a fresh top-level environment), <code>--eval</code> (<code>-e</code>), or standard input (when <code>file</code> is <code>-</code> or omitted while stdin is piped), evaluates them with the standard library and any <code>--bind</code> / <code>--bind-file</code> bindings, and prints the final result as JSON indented by two spaces.</p>
 <table>
   <thead><tr><th>Argument or flag</th><th>Meaning</th></tr></thead>
   <tbody>
-    <tr data-entry="lion file"><td><code>file</code></td><td>Path to a Lion program in JSON, or <code>-</code> to read from standard input. Optional when <code>--eval</code> is passed or stdin is piped.</td></tr>
-    <tr data-entry="--eval"><td><code>--eval &lt;json&gt;</code>, <code>-e &lt;json&gt;</code></td><td>Evaluate a Lion program written directly on the command line instead of reading a file.</td></tr>
+    <tr data-entry="lion file"><td><code>file...</code></td><td>One or more paths to Lion programs in JSON (run in order against one database), or <code>-</code> to read from standard input. Optional when <code>--eval</code> is passed or stdin is piped.</td></tr>
+    <tr data-entry="--eval"><td><code>--eval &lt;json&gt;</code>, <code>-e &lt;json&gt;</code></td><td>Evaluate a Lion program written directly on the command line instead of reading files.</td></tr>
     <tr data-entry="--bind"><td><code>--bind &lt;name=json&gt;</code>, <code>-b &lt;name=json&gt;</code></td><td>Bind a top-level name to a JSON value, preserving exact decimals and large integers. Repeatable; overrides <code>--bind-file</code> for the same name.</td></tr>
     <tr data-entry="--bind-file"><td><code>--bind-file &lt;name=path&gt;</code></td><td>Bind a top-level name to the JSON value read from a file, preserving exact numbers. Repeatable.</td></tr>
-    <tr data-entry="--database"><td><code>--database &lt;path&gt;</code></td><td>A JSON file that holds the logic database. It is loaded before the program runs; if it does not exist, the database starts empty. After the program succeeds, the database is saved back as a <a href="#form-snapshot">snapshot</a>, one form and one fact per line. If the program fails, the file is not written.</td></tr>
+    <tr data-entry="--database"><td><code>--database &lt;path&gt;</code></td><td>A JSON file that holds the logic database. It is loaded before the programs run; if it does not exist, the database starts empty. After all programs succeed, the database is saved back as a <a href="#form-snapshot">snapshot</a> (one form and one fact per line) only if the file did not exist or the database changed. If any program fails, the file is not written.</td></tr>
+    <tr data-entry="--read-only"><td><code>--read-only</code>, <code>-r</code></td><td>Load <code>--database</code> without ever writing changes back to disk, even if the program asserts or retracts facts or rules.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="cli-inspect"><code>lion inspect [&lt;file&gt;]</code></h2>
+<code-block lang="shell">
+lion inspect [--derived] (&lt;file&gt; | --database &lt;path&gt;)
+</code-block>
+<p>Loads a saved database read-only and prints a concise JSON summary of its ontology: every relation (columns, key, merge, base fact count, rule count, and optionally total derived row count with <code>--derived</code>), every named schema and its shape, every invariant, and summary totals.</p>
+<table>
+  <thead><tr><th>Argument or flag</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr data-entry="lion inspect file"><td><code>file</code> / <code>--database &lt;path&gt;</code></td><td>Path to the saved Lion database file to inspect. Never modified.</td></tr>
+    <tr data-entry="lion inspect --derived"><td><code>--derived</code>, <code>-d</code></td><td>Also evaluate rules and include total row counts (<code>rows</code>) for each relation.</td></tr>
   </tbody>
 </table>
 

@@ -4,8 +4,16 @@ import { analyze, flattenAnalysis } from "@lionlang/core/analysis/analyze";
 import { lint } from "@lionlang/core/analysis/lint";
 import { run } from "@lionlang/core/evaluation/evaluate";
 import { readJson, writeJson } from "@lionlang/core/evaluation/reading";
-import { LogicDatabase, relationBindings } from "@lionlang/core/logic/database";
+import { headsOf } from "@lionlang/core/logic/compile";
+import {
+  LogicDatabase,
+  mergeOption,
+  relationBindings,
+  writtenRules,
+} from "@lionlang/core/logic/database";
+import { keyColumns } from "@lionlang/core/logic/model";
 import { loadDatabase, saveDatabase } from "@lionlang/core/logic/snapshot";
+import { render, schemaOf } from "@lionlang/core/logic/terms";
 import { stdlib } from "@lionlang/core/modules";
 import { Console, Effect, Option } from "effect";
 import { Argument, CliError, Command, Flag } from "effect/cli";
@@ -19,6 +27,18 @@ const file = Argument.String("file").pipe(
   Argument.optional
 );
 
+const files = Argument.String("file").pipe(
+  Argument.withDescription(
+    "Paths to Lion JSON programs (evaluated in order against one database), or - to read from standard input"
+  ),
+  Argument.atLeast(0)
+);
+
+const inspectFile = Argument.String("file").pipe(
+  Argument.withDescription("Path to a saved Lion database file to inspect"),
+  Argument.optional
+);
+
 const evalFlag = Flag.String("eval").pipe(
   Flag.withAlias("e"),
   Flag.withDescription("Lion JSON program given directly on the command line"),
@@ -27,9 +47,25 @@ const evalFlag = Flag.String("eval").pipe(
 
 const database = Flag.String("database").pipe(
   Flag.withDescription(
-    "Lion JSON file that holds the logic database. It is loaded before the program runs and saved afterwards as a snapshot program."
+    "Lion JSON file that holds the logic database. It is loaded before the program runs and saved afterwards if changed."
   ),
   Flag.optional
+);
+
+const readOnlyFlag = Flag.Boolean("read-only").pipe(
+  Flag.withAlias("r"),
+  Flag.withDescription(
+    "Load --database without writing any changes back to disk"
+  ),
+  Flag.withDefault(false)
+);
+
+const derivedFlag = Flag.Boolean("derived").pipe(
+  Flag.withAlias("d"),
+  Flag.withDescription(
+    "Also evaluate rules to include total row counts (facts plus derived rows) per relation"
+  ),
+  Flag.withDefault(false)
 );
 
 const checkDatabase = Flag.String("database").pipe(
@@ -133,6 +169,42 @@ const readProgramSource = (
   );
 };
 
+const readProgramSources = (
+  fileList: readonly string[],
+  evalOption: Option.Option<string>
+): Effect.Effect<
+  readonly (readonly [string | undefined, string])[],
+  unknown
+> => {
+  const inline = Option.getOrUndefined(evalOption);
+  if (fileList.length > 0 && inline !== undefined) {
+    return Effect.fail(
+      new Error("Give either a program file or --eval, not both.")
+    );
+  }
+  if (inline !== undefined) {
+    return Effect.succeed([[undefined, inline]]);
+  }
+  if (fileList.length === 0) {
+    if (!process.stdin.isTTY) {
+      return Effect.map(readStdin(), (text) => [[undefined, text]] as const);
+    }
+    return Effect.fail(
+      new Error(
+        "Give a program file, - for standard input, or --eval '<json>'."
+      )
+    );
+  }
+  return Effect.forEach(fileList, (filePath) =>
+    filePath === "-"
+      ? Effect.map(readStdin(), (text) => ["-", text] as const)
+      : Effect.tryPromise({
+          try: () => readFile(filePath, "utf8"),
+          catch: (cause) => cause,
+        }).pipe(Effect.map((text) => [filePath, text] as const))
+  );
+};
+
 /** One form per line, and one fact per line, so saved databases diff well. */
 export const formatSnapshot = (program: readonly unknown[]) => {
   const [head, ...forms] = program;
@@ -147,6 +219,19 @@ export const formatSnapshot = (program: readonly unknown[]) => {
   return `[${JSON.stringify(head)}${lines.map((line) => `,\n  ${line}`).join("")}]\n`;
 };
 
+const loadExistingDatabase = (path: string) =>
+  Effect.tryPromise({
+    try: () => readFile(path, "utf8"),
+    catch: (cause) => cause,
+  }).pipe(
+    Effect.flatMap((text) =>
+      readJson(text).pipe(
+        Effect.mapError((cause) => new Error(`${path}: ${cause.message}`)),
+        Effect.flatMap((saved) => loadDatabase(saved, stdlib))
+      )
+    )
+  );
+
 const readDatabase = (path: string) =>
   Effect.tryPromise({
     try: () => readFile(path, "utf8"),
@@ -156,11 +241,13 @@ const readDatabase = (path: string) =>
     Effect.flatMap(
       Option.match({
         // A database file that does not exist yet starts empty.
-        onNone: () => Effect.succeed(new LogicDatabase()),
+        onNone: () =>
+          Effect.succeed({ existed: false, store: new LogicDatabase() }),
         onSome: (text) =>
           readJson(text).pipe(
             Effect.mapError((cause) => new Error(`${path}: ${cause.message}`)),
-            Effect.flatMap((saved) => loadDatabase(saved, stdlib))
+            Effect.flatMap((saved) => loadDatabase(saved, stdlib)),
+            Effect.map((store) => ({ existed: true, store }))
           ),
       })
     )
@@ -178,28 +265,66 @@ const writeDatabase = (path: string, store: LogicDatabase) =>
 
 const evaluateCommand = Command.make(
   "lion",
-  { file, eval: evalFlag, database, bind: bindFlag, bindFile: bindFileFlag },
+  {
+    files,
+    eval: evalFlag,
+    database,
+    readOnly: readOnlyFlag,
+    bind: bindFlag,
+    bindFile: bindFileFlag,
+  },
   Effect.fn(
-    function* ({ file, eval: inline, database, bind, bindFile }) {
+    function* ({
+      files: fileList,
+      eval: inline,
+      database,
+      readOnly,
+      bind,
+      bindFile,
+    }) {
       const path = Option.getOrUndefined(database);
-      const store =
-        path === undefined ? new LogicDatabase() : yield* readDatabase(path);
+      const { existed, store } =
+        path === undefined
+          ? { existed: false, store: new LogicDatabase() }
+          : yield* readDatabase(path);
+      const before = store.revision;
       const bindings = yield* readBindings(bind, bindFile);
-      const text = yield* readProgramSource(file, inline);
-      const program = yield* readJson(text);
-      const result = yield* run(
-        program,
-        { ...stdlib, ...bindings },
-        { database: store }
-      );
+      const sources = yield* readProgramSources(fileList, inline);
+      let result: unknown;
+      for (const [label, text] of sources) {
+        const program = yield* readJson(text).pipe(
+          Effect.mapError((cause) =>
+            label === undefined
+              ? cause
+              : new Error(`${label}: ${cause.message}`)
+          )
+        );
+        result = yield* run(
+          program,
+          { ...stdlib, ...bindings },
+          { database: store }
+        ).pipe(
+          Effect.mapError((cause) =>
+            sources.length > 1 && label !== undefined
+              ? new Error(
+                  `${label}: ${cause instanceof Error ? cause.message : String(cause)}`
+                )
+              : cause
+          )
+        );
+      }
       yield* Console.log(yield* writeJson(result, 2));
-      if (path !== undefined) {
+      if (
+        path !== undefined &&
+        !readOnly &&
+        (!existed || store.revision !== before)
+      ) {
         yield* writeDatabase(path, store);
       }
     },
     Effect.mapError((cause) => new CliError.UserError({ cause }))
   )
-).pipe(Command.withDescription("Evaluate a Lion JSON program"));
+).pipe(Command.withDescription("Evaluate one or more Lion JSON programs"));
 
 const host = Flag.String("host").pipe(
   Flag.withDescription("Host address for the graph editor"),
@@ -287,7 +412,8 @@ const checkCommand = Command.make(
   Effect.fn(
     function* ({ file, eval: inline, database, bind, bindFile }) {
       const path = Option.getOrUndefined(database);
-      const store = path === undefined ? undefined : yield* readDatabase(path);
+      const store =
+        path === undefined ? undefined : (yield* readDatabase(path)).store;
       const bindings = yield* readBindings(bind, bindFile);
       const text = yield* readProgramSource(file, inline);
       const program = yield* readJson(text);
@@ -326,10 +452,167 @@ const checkCommand = Command.make(
   )
 );
 
-export const command = evaluateCommand.pipe(
-  Command.withSubcommands([replCommand, workerCommand, checkCommand]),
+const ruleCountsByRelation = (store: LogicDatabase) => {
+  const byRelation = new Map<string, Set<unknown>>();
+  const allRules = new Set<unknown>();
+  for (const rule of writtenRules(store.rules)) {
+    if (rule.given) {
+      continue;
+    }
+    allRules.add(rule.source);
+    for (const head of headsOf(rule)) {
+      const set = byRelation.get(head.relation.name) ?? new Set<unknown>();
+      set.add(rule.source);
+      byRelation.set(head.relation.name, set);
+    }
+  }
+  return { byRelation, total: allRules.size };
+};
+
+const derivedRowCount = (
+  store: LogicDatabase,
+  relation: Parameters<typeof mergeOption>[0]
+) =>
+  Effect.map(
+    run(
+      ["query", [relation.name, ...relation.columns.map((_, at) => `?c${at}`)]],
+      stdlib,
+      { database: store }
+    ),
+    (found) => (Array.isArray(found) ? found.length : 0)
+  );
+
+export interface DatabaseSummary {
+  readonly counts: {
+    readonly facts: number;
+    readonly invariants: number;
+    readonly relations: number;
+    readonly rules: number;
+    readonly schemas: number;
+  };
+  readonly invariants: readonly {
+    readonly assert: "none" | "some";
+    readonly goal: unknown;
+  }[];
+  readonly relations: readonly {
+    readonly columns: readonly string[];
+    readonly facts: number;
+    readonly key?: readonly string[];
+    readonly merge?: Record<string, unknown>;
+    readonly name: string;
+    readonly rows?: number;
+    readonly rules: number;
+  }[];
+  readonly schemas: readonly {
+    readonly name: string;
+    readonly shape: unknown;
+  }[];
+}
+
+/** Structured ontology summary of a saved logic database. */
+export const inspectDatabase = (
+  store: LogicDatabase,
+  options: { readonly derived?: boolean } = {}
+): Effect.Effect<DatabaseSummary, unknown> =>
+  Effect.gen(function* () {
+    const { byRelation, total: totalRules } = ruleCountsByRelation(store);
+    const sortedRelations = [...store.relations.values()].sort((a, b) =>
+      a.name < b.name ? -1 : Number(a.name > b.name)
+    );
+    const relations = yield* Effect.forEach(sortedRelations, (relation) =>
+      Effect.gen(function* () {
+        const facts = store.facts.get(relation.name)?.size ?? 0;
+        const merge = mergeOption(relation);
+        const rows = options.derived
+          ? yield* derivedRowCount(store, relation)
+          : undefined;
+        return {
+          name: relation.name,
+          columns: relation.columns,
+          ...(relation.key === undefined
+            ? {}
+            : {
+                key: keyColumns(relation).filter(
+                  (col): col is string => col !== undefined
+                ),
+              }),
+          ...(merge === undefined ? {} : { merge }),
+          facts,
+          rules: byRelation.get(relation.name)?.size ?? 0,
+          ...(rows === undefined ? {} : { rows }),
+        };
+      })
+    );
+    const totalFacts = relations.reduce((acc, item) => acc + item.facts, 0);
+    const schemas = [...store.schemas.entries()]
+      .sort(([a], [b]) => (a < b ? -1 : Number(a > b)))
+      .map(([name, fn]) => ({
+        name,
+        shape: render(schemaOf(fn)?.definition),
+      }));
+    const invariants = store.invariants.map(({ assert, goal }) => ({
+      assert,
+      goal: render(goal),
+    }));
+    return {
+      relations,
+      schemas,
+      invariants,
+      counts: {
+        relations: relations.length,
+        schemas: schemas.length,
+        facts: totalFacts,
+        rules: totalRules,
+        invariants: invariants.length,
+      },
+    };
+  });
+
+const inspectCommand = Command.make(
+  "inspect",
+  {
+    file: inspectFile,
+    database: checkDatabase,
+    derived: derivedFlag,
+  },
+  Effect.fn(
+    function* ({ file: fileOption, database: dbOption, derived }) {
+      const filePath = Option.getOrUndefined(fileOption);
+      const dbPath = Option.getOrUndefined(dbOption);
+      if (filePath !== undefined && dbPath !== undefined) {
+        return yield* Effect.fail(
+          new Error("Give either a database file or --database, not both.")
+        );
+      }
+      const target = filePath ?? dbPath;
+      if (target === undefined) {
+        return yield* Effect.fail(
+          new Error(
+            "Give a database file to inspect, as `lion inspect model.json`."
+          )
+        );
+      }
+      const store = yield* loadExistingDatabase(target);
+      const summary = yield* inspectDatabase(store, { derived });
+      yield* Console.log(yield* writeJson(summary, 2));
+    },
+    Effect.mapError((cause) => new CliError.UserError({ cause }))
+  )
+).pipe(
   Command.withDescription(
-    "Evaluate Lion programs, serve the graph editor, and print Lion for a browser"
+    "Summarize a saved Lion database's relations, columns, keys, merges, schemas, invariants, and counts as JSON without modifying it"
+  )
+);
+
+export const command = evaluateCommand.pipe(
+  Command.withSubcommands([
+    replCommand,
+    workerCommand,
+    checkCommand,
+    inspectCommand,
+  ]),
+  Command.withDescription(
+    "Evaluate Lion programs, inspect databases, serve the graph editor, and print Lion for a browser"
   )
 );
 

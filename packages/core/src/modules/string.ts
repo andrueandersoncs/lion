@@ -17,6 +17,10 @@ export const module = {
   symbol: Symbol("string"),
 
   "equals?": onTwo((a, b) => a === b),
+  lessThan: onTwo((a, b) => a < b),
+  greaterThan: onTwo((a, b) => a > b),
+  lessThanOrEqualTo: onTwo((a, b) => a <= b),
+  greaterThanOrEqualTo: onTwo((a, b) => a >= b),
   length: over([Schema.String], Str.length),
   /** Zero or more strings, joined in order: none is "", as `(string-append)` is in Scheme. */
   concat: combining(

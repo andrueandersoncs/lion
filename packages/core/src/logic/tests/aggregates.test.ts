@@ -595,3 +595,205 @@ describe("aggregate/sum past the largest double", () => {
       })
   );
 });
+
+describe("aggregate/median, aggregate/argMin, and aggregate/argMax", () => {
+  it.effect.prop(
+    "aggregate/median computes the exact middle or midpoint in plain code, rule heads, and incremental updates, independent of order",
+    {
+      nums: Arbitrary.array(int(-50, 50), { minLength: 1, maxLength: 9 }),
+      orderSeed: seed,
+    },
+    ({ nums, orderSeed }) =>
+      Effect.gen(function* () {
+        const sorted = [...nums].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        const expected =
+          sorted.length % 2 === 1
+            ? sorted[mid]
+            : ((sorted[mid - 1] as number) + (sorted[mid] as number)) / 2;
+
+        const plain = yield* run(["aggregate/median", ["quote", nums]], stdlib);
+        const permuted = yield* run(
+          ["aggregate/median", ["quote", shuffled(nums, orderSeed)]],
+          stdlib
+        );
+        const inRule = yield* run(
+          [
+            "begin",
+            ["relation", "obs", ["id", "v"]],
+            ["fact", ...nums.map((v, id) => ["obs", id, v])],
+            ["relation", "med", ["g", "m"]],
+            [
+              "rule",
+              ["med", "all", ["aggregate/median", "?v"]],
+              ["obs", "?id", "?v"],
+            ],
+            ["find", "?m", ["med", "all", "?m"]],
+          ],
+          stdlib
+        );
+        expect(plain).toBe(expected);
+        expect(permuted).toBe(expected);
+        expect(inRule).toEqual([expected]);
+        expect(yield* run(["aggregate/median", ["quote", []]], stdlib)).toBe(
+          null
+        );
+      }),
+    { arbitrary: { runs: 60 } }
+  );
+
+  it.effect.prop(
+    "aggregate/argMin and aggregate/argMax pick the value with least/greatest numeric or string key, break ties by smaller value, and work in rule heads and the solver",
+    {
+      entries: Arbitrary.array(
+        Arbitrary.schema(
+          Schema.Tuple([
+            Schema.Int.check(Schema.isBetween({ minimum: -10, maximum: 10 })),
+            Schema.Literals(["alpha", "beta", "gamma", "delta"]),
+          ])
+        ),
+        { minLength: 1, maxLength: 7 }
+      ),
+      orderSeed: seed,
+    },
+    ({ entries, orderSeed }) =>
+      Effect.gen(function* () {
+        const pick = (desc: boolean) => {
+          let best = entries[0] as readonly [number, string];
+          for (const pair of entries.slice(1)) {
+            const cmp = pair[0] - best[0];
+            const better = desc ? cmp > 0 : cmp < 0;
+            if (better || (cmp === 0 && pair[1] < best[1])) {
+              best = pair;
+            }
+          }
+          return best[1];
+        };
+        const minExpected = pick(false);
+        const maxExpected = pick(true);
+
+        const res = (yield* run(
+          [
+            "begin",
+            ["relation", "item", ["id", "score", "label"]],
+            ["fact", ...entries.map(([k, v], id) => ["item", id, k, v])],
+            ["relation", "best", ["g", "lo", "hi"]],
+            [
+              "rule",
+              [
+                "best",
+                "all",
+                ["aggregate/argMin", ["array/make", "?s", "?l"]],
+                ["aggregate/argMax", ["array/make", "?s", "?l"]],
+              ],
+              ["item", "?_", "?s", "?l"],
+            ],
+            {
+              plainMin: ["aggregate/argMin", ["quote", entries]],
+              plainMax: ["aggregate/argMax", ["quote", entries]],
+              shufMin: [
+                "aggregate/argMin",
+                ["quote", shuffled(entries, orderSeed)],
+              ],
+              shufMax: [
+                "aggregate/argMax",
+                ["quote", shuffled(entries, orderSeed)],
+              ],
+              rule: ["query", ["best", "all", "?lo", "?hi"]],
+              empty: ["aggregate/argMin", ["quote", []]],
+            },
+          ],
+          stdlib
+        )) as Record<string, unknown>;
+
+        expect(res.plainMin).toBe(minExpected);
+        expect(res.plainMax).toBe(maxExpected);
+        expect(res.shufMin).toBe(minExpected);
+        expect(res.shufMax).toBe(maxExpected);
+        expect(res.rule).toEqual([{ lo: minExpected, hi: maxExpected }]);
+        expect(res.empty).toBe(null);
+      }),
+    { arbitrary: { runs: 60 } }
+  );
+
+  it.effect.prop(
+    "symbolic solver agrees with aggregate/median, aggregate/argMin, and aggregate/argMax over symbolic numbers",
+    { a: int(-10, 10), b: int(-10, 10) },
+    ({ a, b }) =>
+      Effect.gen(function* () {
+        // Prove median of [x, x+2, x+4] always equals x+2 for every integer x
+        const medRefuted = yield* run(
+          [
+            "query",
+            [
+              "and",
+              ["schema/fits?", "?x", "value/integer?"],
+              [
+                "not",
+                [
+                  "=",
+                  [
+                    "aggregate/median",
+                    [
+                      "array/make",
+                      "?x",
+                      ["number/add", "?x", 2],
+                      ["number/add", "?x", 4],
+                    ],
+                  ],
+                  ["number/add", "?x", 2],
+                ],
+              ],
+            ],
+          ],
+          stdlib
+        );
+        expect(medRefuted).toEqual([]);
+
+        // Solve for x where argMax([[x, "x"], [a, "a"]]) === "x" and x <= a
+        const argSolved = yield* run(
+          [
+            "query",
+            [
+              "and",
+              ["schema/fits?", "?x", "value/integer?"],
+              ["number/greaterThanOrEqualTo", "?x", a - 1],
+              ["number/lessThanOrEqualTo", "?x", a + 1],
+              [
+                "=",
+                [
+                  "aggregate/argMax",
+                  [
+                    "array/make",
+                    ["array/make", "?x", "x"],
+                    ["array/make", a, "a"],
+                  ],
+                ],
+                "x",
+              ],
+            ],
+          ],
+          stdlib
+        );
+        // "a" < "x", so at x === a tie goes to "a"; only x === a + 1 yields "x".
+        expect(argSolved).toEqual([{ x: a + 1 }]);
+
+        // Check string keys on argMax in plain code
+        const strMax = yield* run(
+          [
+            "aggregate/argMax",
+            [
+              "quote",
+              [
+                ["2024-01-01", a],
+                ["2025-06-15", b],
+              ],
+            ],
+          ],
+          stdlib
+        );
+        expect(strMax).toBe(b);
+      }),
+    { arbitrary: { runs: 25 } }
+  );
+});

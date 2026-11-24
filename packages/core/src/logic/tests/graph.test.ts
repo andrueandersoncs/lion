@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { defineAlgorithm } from "@/logic/algorithms";
 import { stdlib } from "@/modules";
@@ -300,5 +300,314 @@ describe("defineAlgorithm", () => {
         { node: "e", degree: 1 },
       ]);
     })
+  );
+});
+
+const nodeName = Schema.Literals(["a", "b", "c", "d", "e"]);
+const dirEdge = Arbitrary.schema(Schema.Tuple([nodeName, nodeName]));
+const graphEdges = Arbitrary.array(dirEdge, { minLength: 1, maxLength: 10 });
+const dagEdge = Arbitrary.schema(
+  Schema.Tuple([
+    Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 })),
+    Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 })),
+  ])
+);
+const weightedEdge = Arbitrary.schema(
+  Schema.Tuple([
+    Schema.Literals(["a", "b", "c", "d"]),
+    Schema.Literals(["a", "b", "c", "d"]),
+    Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 5 })),
+  ])
+);
+const weightedGraph = Arbitrary.array(weightedEdge, {
+  minLength: 1,
+  maxLength: 8,
+});
+
+/** Independent brute-force all-pairs shortest-path betweenness reference model. */
+const bruteBetweenness = (
+  edges: readonly (readonly [string, string, number])[]
+): Map<string, number> => {
+  const nodeSet = new Set<string>();
+  for (const [u, v] of edges) {
+    nodeSet.add(u);
+    nodeSet.add(v);
+  }
+  const nodes = [...nodeSet].sort();
+  const minW = new Map<string, Map<string, number>>();
+  for (const [u, v, w] of edges) {
+    if (u === v) {
+      continue;
+    }
+    const row = minW.get(u) ?? new Map<string, number>();
+    const prev = row.get(v);
+    if (prev === undefined || w < prev) {
+      row.set(v, w);
+    }
+    minW.set(u, row);
+  }
+  const scores = new Map(nodes.map((n) => [n, 0]));
+  for (const s of nodes) {
+    for (const t of nodes) {
+      if (s === t) {
+        continue;
+      }
+      // Enumerate all simple paths from s to t to find exact shortest cost and count.
+      let bestCost = Number.POSITIVE_INFINITY;
+      let shortestPaths: string[][] = [];
+      const dfs = (cur: string, cost: number, path: string[]) => {
+        if (cost > bestCost) {
+          return;
+        }
+        if (cur === t) {
+          if (cost < bestCost) {
+            bestCost = cost;
+            shortestPaths = [path];
+          } else {
+            shortestPaths.push(path);
+          }
+          return;
+        }
+        for (const [next, w] of minW.get(cur) ?? []) {
+          if (!path.includes(next)) {
+            dfs(next, cost + w, [...path, next]);
+          }
+        }
+      };
+      dfs(s, 0, [s]);
+      if (shortestPaths.length === 0) {
+        continue;
+      }
+      for (const v of nodes) {
+        if (v === s || v === t) {
+          continue;
+        }
+        const through = shortestPaths.filter((p) => p.includes(v)).length;
+        scores.set(v, (scores.get(v) ?? 0) + through / shortestPaths.length);
+      }
+    }
+  }
+  for (const [n, val] of scores) {
+    scores.set(n, Math.round(val * 1e6) / 1e6);
+  }
+  return scores;
+};
+
+describe("graph/cycles, graph/transitiveReduction, and graph/betweenness", () => {
+  it.effect.prop(
+    "graph/cycles is empty iff graph/topologicalOrder succeeds, returns valid simple shortest cycles per cyclic SCC, and is order-independent",
+    { pairs: graphEdges },
+    ({ pairs }) =>
+      Effect.gen(function* () {
+        const edgeSet = new Set(pairs.map(([u, v]) => `${u}->${v}`));
+        const forward = (yield* run(
+          [
+            "begin",
+            ["relation", "edge", ["from", "to"]],
+            ["fact", ...pairs.map(([u, v]) => ["edge", u, v])],
+            ["query", ["graph/cycles", "edge", "?component", "?cycle"]],
+          ],
+          stdlib
+        )) as readonly {
+          readonly component: string;
+          readonly cycle: readonly string[];
+        }[];
+        const reversed = yield* run(
+          [
+            "begin",
+            ["relation", "edge", ["from", "to"]],
+            ["fact", ...[...pairs].reverse().map(([u, v]) => ["edge", u, v])],
+            ["query", ["graph/cycles", "edge", "?component", "?cycle"]],
+          ],
+          stdlib
+        );
+        expect(forward).toEqual(reversed);
+
+        const topo = yield* Effect.result(
+          run(
+            [
+              "begin",
+              ["relation", "edge", ["from", "to"]],
+              ["fact", ...pairs.map(([u, v]) => ["edge", u, v])],
+              ["query", ["graph/topologicalOrder", "edge", "?n", "?p"]],
+            ],
+            stdlib
+          )
+        );
+        expect(forward.length === 0).toBe(topo._tag === "Success");
+
+        for (const { component, cycle } of forward) {
+          expect(cycle.length).toBeGreaterThanOrEqual(2);
+          expect(cycle[0]).toBe(component);
+          expect(cycle.at(-1)).toBe(component);
+          const inner = cycle.slice(0, -1);
+          expect(new Set(inner).size).toBe(inner.length);
+          for (let at = 0; at < cycle.length - 1; at += 1) {
+            expect(edgeSet.has(`${cycle[at]}->${cycle[at + 1]}`)).toBe(true);
+          }
+        }
+      }),
+    { arbitrary: { runs: 60 } }
+  );
+
+  it.effect.prop(
+    "graph/transitiveReduction on a DAG preserves exact reachability, is minimal, and is order-independent; cyclic graphs are refused",
+    { raw: Arbitrary.array(dagEdge, { minLength: 1, maxLength: 12 }) },
+    ({ raw }) =>
+      Effect.gen(function* () {
+        // Strict u < v guarantees a DAG.
+        const dag = raw
+          .filter(([u, v]) => u !== v)
+          .map(([u, v]) => (u < v ? ([u, v] as const) : ([v, u] as const)));
+        if (dag.length === 0) {
+          return;
+        }
+        const uniqueDag = [
+          ...new Map(dag.map((e) => [`${e[0]}:${e[1]}`, e])).values(),
+        ];
+        const reduced = (yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to"]],
+            ["fact", ...uniqueDag.map(([u, v]) => ["e", u, v])],
+            [
+              "query",
+              ["graph/transitiveReduction", "e", "?from", "?to"],
+              { order: ["from", "to"] },
+            ],
+          ],
+          stdlib
+        )) as readonly { readonly from: number; readonly to: number }[];
+        const reversed = yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to"]],
+            ["fact", ...[...uniqueDag].reverse().map(([u, v]) => ["e", u, v])],
+            [
+              "query",
+              ["graph/transitiveReduction", "e", "?from", "?to"],
+              { order: ["from", "to"] },
+            ],
+          ],
+          stdlib
+        );
+        expect(reduced).toEqual(reversed);
+
+        // Subset of original edges.
+        const origKeys = new Set(uniqueDag.map(([u, v]) => `${u}:${v}`));
+        for (const { from, to } of reduced) {
+          expect(origKeys.has(`${from}:${to}`)).toBe(true);
+        }
+
+        // Exact same transitive closure as original DAG.
+        const reachOf = (edgeList: readonly (readonly [number, number])[]) =>
+          run(
+            [
+              "begin",
+              ["relation", "e", ["from", "to"]],
+              ["fact", ...edgeList.map(([u, v]) => ["e", u, v])],
+              ["relation", "r", ["from", "to"]],
+              ["rule", ["r", "?a", "?b"], ["e", "?a", "?b"]],
+              ["rule", ["r", "?a", "?c"], ["r", "?a", "?b"], ["e", "?b", "?c"]],
+              ["query", ["r", "?a", "?b"], { order: ["a", "b"] }],
+            ],
+            stdlib
+          );
+        const origReach = yield* reachOf(uniqueDag);
+        const redPairs = reduced.map(({ from, to }) => [from, to] as const);
+        expect(yield* reachOf(redPairs)).toEqual(origReach);
+
+        // Minimality: removing any single edge loses reachability for that pair.
+        for (let at = 0; at < redPairs.length; at += 1) {
+          const without = redPairs.filter((_, i) => i !== at);
+          const [u, v] = redPairs[at] as readonly [number, number];
+          const stillReaches =
+            without.length > 0 &&
+            (yield* run(
+              [
+                "begin",
+                ["relation", "e", ["from", "to"]],
+                ["fact", ...without.map(([a, b]) => ["e", a, b])],
+                ["relation", "r", ["from", "to"]],
+                ["rule", ["r", "?a", "?b"], ["e", "?a", "?b"]],
+                [
+                  "rule",
+                  ["r", "?a", "?c"],
+                  ["r", "?a", "?b"],
+                  ["e", "?b", "?c"],
+                ],
+                ["query", ["r", u, v]],
+              ],
+              stdlib
+            ));
+          expect(stillReaches).toEqual(without.length === 0 ? false : []);
+        }
+
+        // Adding a back-edge creates a cycle which transitiveReduction refuses.
+        const [firstU, firstV] = uniqueDag[0] as readonly [number, number];
+        const msg = yield* errorMessage([
+          "begin",
+          ["relation", "e", ["from", "to"]],
+          [
+            "fact",
+            ...uniqueDag.map(([u, v]) => ["e", u, v]),
+            ["e", firstV, firstU],
+          ],
+          ["query", ["graph/transitiveReduction", "e", "?from", "?to"]],
+        ]);
+        expect(msg).toContain("found a cycle");
+      }),
+    { arbitrary: { runs: 40 } }
+  );
+
+  it.effect.prop(
+    "graph/betweenness matches brute-force all-pairs shortest paths for unweighted and weighted graphs, and is order-independent",
+    { weighted: weightedGraph },
+    ({ weighted }) =>
+      Effect.gen(function* () {
+        const unweighted = weighted.map(([u, v]) => [u, v, 1] as const);
+        const expectedUnweighted = bruteBetweenness(unweighted);
+        const actualUnweighted = (yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to"]],
+            ["fact", ...weighted.map(([u, v]) => ["e", u, v])],
+            ["query", ["graph/betweenness", "e", "?node", "?score"]],
+          ],
+          stdlib
+        )) as readonly { readonly node: string; readonly score: number }[];
+        for (const { node, score } of actualUnweighted) {
+          expect(score).toBe(expectedUnweighted.get(node));
+        }
+        expect(actualUnweighted.length).toBe(expectedUnweighted.size);
+
+        const expectedWeighted = bruteBetweenness(weighted);
+        const actualWeighted = (yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to", "w"]],
+            ["fact", ...weighted.map(([u, v, w]) => ["e", u, v, w])],
+            ["query", ["graph/betweenness", "e", "?node", "?score"]],
+          ],
+          stdlib
+        )) as readonly { readonly node: string; readonly score: number }[];
+        const reversedWeighted = yield* run(
+          [
+            "begin",
+            ["relation", "e", ["from", "to", "w"]],
+            [
+              "fact",
+              ...[...weighted].reverse().map(([u, v, w]) => ["e", u, v, w]),
+            ],
+            ["query", ["graph/betweenness", "e", "?node", "?score"]],
+          ],
+          stdlib
+        );
+        expect(actualWeighted).toEqual(reversedWeighted);
+        for (const { node, score } of actualWeighted) {
+          expect(score).toBe(expectedWeighted.get(node));
+        }
+      }),
+    { arbitrary: { runs: 50 } }
   );
 });

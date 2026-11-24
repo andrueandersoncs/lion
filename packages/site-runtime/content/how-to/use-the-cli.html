@@ -25,16 +25,19 @@ bun run lion check --database store.json -e '["query", ["edge", "a", "?to"]]'
 bun run lion check --bind-file order=order.json price.json
 </code-block>
 
-<h2>Keep a logic database in a file</h2>
-<p>Add <code>--database</code> with a path. The file is loaded before the program runs and saved after it succeeds, so relations, facts, rules, and invariants carry over to the next run:</p>
+<h2>Keep and inspect a logic database in a file</h2>
+<p>Add <code>--database</code> with a path. Pass multiple step files to run them atomically in one invocation, pass <code>--read-only</code> (<code>-r</code>) for exploratory runs without touching disk, or run <code>lion inspect</code> to summarize a database's relations, schemas, invariants, and counts without reading the raw snapshot:</p>
 <code-block lang="shell">
-bun run lion setup.json --database store.json
-bun run lion more-facts.json --database store.json
+bun run lion 00-core.json 01-frame.json 02-facts.json --database store.json
+bun run lion checks.json --database store.json
+bun run lion --read-only --database store.json -e '["begin", ["fact", ["edge", "a", "z"]], ["find", "?x", ["path", "a", "?x"]]]'
+bun run lion inspect store.json --derived
 </code-block>
 <ul>
   <li>A database file that does not exist yet starts empty.</li>
   <li>The file is a <a href="#save-and-load">snapshot</a>: an ordinary Lion program, one form and one fact per line, so it diffs well in version control.</li>
-  <li>If the program fails, for example because it would break an <a href="#enforce-rules">invariant</a>, the file is left as it was.</li>
+  <li>Read-only queries that make no committed changes do not rewrite an existing database file, so parallel queries stay fast and safe.</li>
+  <li>If any program fails, for example because it would break an <a href="#enforce-rules">invariant</a>, the file is left as it was.</li>
   <li>Running the same setup again keeps one copy of each rule and invariant.</li>
 </ul>
 

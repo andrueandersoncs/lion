@@ -6,6 +6,7 @@
 import { compareValues, DeferredCall, render, valueKey } from "@/logic/terms";
 import {
   sum as add,
+  compareNumbers,
   isNumber,
   type LionNumber,
   quotient,
@@ -71,6 +72,55 @@ const onlyArrays = (values: readonly unknown[]) => {
     : `expects lists, but found ${show(bad)}`;
 };
 
+/** `[key, value]` pairs whose keys are all numbers or all strings. */
+const onlyPairs = (values: readonly unknown[]) => {
+  const bad = values.find(
+    (value) => !(Array.isArray(value) && value.length === 2)
+  );
+  if (bad !== undefined) {
+    return `expects [key, value] pairs, but found ${show(bad)}`;
+  }
+  return onlyComparable(
+    (values as readonly [unknown, unknown][]).map((pair) => pair[0])
+  );
+};
+
+/** The exact middle number, or the exact mean of the two middle numbers. */
+const median = (values: readonly unknown[]) => {
+  if (values.length === 0) {
+    return null;
+  }
+  const ordered = [...(values as readonly LionNumber[])].sort(compareNumbers);
+  const mid = Math.floor(ordered.length / 2);
+  return ordered.length % 2 === 1
+    ? ordered[mid]
+    : quotient(
+        add(ordered[mid - 1] as LionNumber, ordered[mid] as LionNumber),
+        2
+      );
+};
+
+/**
+ * The value of the `[key, value]` pair with the least or greatest key; ties
+ * go to the smaller value, so the result never depends on match order.
+ */
+const byKey = (descending: boolean) => (values: readonly unknown[]) => {
+  if (values.length === 0) {
+    return null;
+  }
+  const pairs = values as readonly [unknown, unknown][];
+  let best = pairs[0] as [unknown, unknown];
+  for (let at = 1; at < pairs.length; at += 1) {
+    const pair = pairs[at] as [unknown, unknown];
+    const order = compareValues(pair[0], best[0]);
+    const better = descending ? order > 0 : order < 0;
+    if (better || (order === 0 && compareValues(pair[1], best[1]) < 0)) {
+      best = pair;
+    }
+  }
+  return best[1];
+};
+
 /**
  * The exact sum of numbers, so it is the same in whatever order the values
  * come: a rule's matches, or the candidates of a key.
@@ -122,6 +172,9 @@ export const AGGREGATORS: Readonly<Record<string, Aggregator>> = {
       values.length === 0 ? null : quotient(sum(values), values.length),
     selects: false,
   },
+  median: { check: onlyNumbers, fold: median, selects: false },
+  argMin: { check: onlyPairs, fold: byKey(false), selects: false },
+  argMax: { check: onlyPairs, fold: byKey(true), selects: false },
   min: selecting(
     onlyComparable,
     (value, current) => compareValues(value, current) < 0

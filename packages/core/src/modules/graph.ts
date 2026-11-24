@@ -275,11 +275,7 @@ const components = groups("graph/components", true);
 const stronglyConnected = groups("graph/stronglyConnected", false);
 
 /** Kahn's algorithm; among nodes that are ready, the smaller comes first. */
-const topologicalOrder = (tuples: readonly Row[]) => {
-  const edges = readEdges("graph/topologicalOrder", tuples, false);
-  if (typeof edges === "string") {
-    return edges;
-  }
+const topologicalNodes = (name: string, edges: readonly Edge[]) => {
   const nodes = nodesOf(edges);
   const out = adjacency(edges);
   const waiting = new Map(nodes.map((node) => [valueKey(node), 0]));
@@ -293,9 +289,9 @@ const topologicalOrder = (tuples: readonly Row[]) => {
       ready.push(node);
     }
   }
-  const rows: Row[] = [];
+  const ordered: unknown[] = [];
   for (let node = ready.pop(); node !== undefined; node = ready.pop()) {
-    rows.push([node, rows.length]);
+    ordered.push(node);
     for (const { to } of out.get(valueKey(node)) ?? []) {
       const key = valueKey(to);
       const left = (waiting.get(key) ?? 0) - 1;
@@ -305,13 +301,277 @@ const topologicalOrder = (tuples: readonly Row[]) => {
       }
     }
   }
-  if (rows.length < nodes.length) {
+  if (ordered.length < nodes.length) {
     const stuck = nodes.filter(
       (node) => (waiting.get(valueKey(node)) ?? 0) > 0
     );
-    return `graph/topologicalOrder found a cycle among ${stuck.slice(0, 5).map(show).join(", ")}${stuck.length > 5 ? ", …" : ""}.`;
+    return `${name} found a cycle among ${stuck.slice(0, 5).map(show).join(", ")}${stuck.length > 5 ? ", …" : ""}.`;
   }
-  return rows;
+  return ordered;
+};
+
+const topologicalOrder = (tuples: readonly Row[]) => {
+  const edges = readEdges("graph/topologicalOrder", tuples, false);
+  if (typeof edges === "string") {
+    return edges;
+  }
+  const ordered = topologicalNodes("graph/topologicalOrder", edges);
+  return typeof ordered === "string"
+    ? ordered
+    : ordered.map((node, position) => [node, position]);
+};
+
+/**
+ * Finds the canonical shortest directed cycle starting and ending at `start`
+ * inside `members`, breaking ties by `compareValues`.
+ */
+const shortestCycleFrom = (
+  start: unknown,
+  startKey: string,
+  members: ReadonlySet<string>,
+  out: ReadonlyMap<string, readonly Edge[]>
+): readonly unknown[] => {
+  const visited = new Set<string>();
+  const queue: { readonly key: string; readonly path: readonly unknown[] }[] = [
+    { key: startKey, path: [start] },
+  ];
+  for (const current of queue) {
+    const nextEdges = [...(out.get(current.key) ?? [])]
+      .filter((edge) => members.has(valueKey(edge.to)))
+      .sort((a, b) => compareValues(a.to, b.to));
+    for (const edge of nextEdges) {
+      const nextKey = valueKey(edge.to);
+      const nextPath = [...current.path, edge.to];
+      if (nextKey === startKey) {
+        return nextPath;
+      }
+      if (!visited.has(nextKey)) {
+        visited.add(nextKey);
+        queue.push({ key: nextKey, path: nextPath });
+      }
+    }
+  }
+  return [start, start];
+};
+
+/**
+ * One canonical shortest directed cycle per cyclic strongly connected
+ * component (including self-loops), named after the component's smallest node.
+ * Returns no rows on an acyclic graph.
+ */
+const cycles = (tuples: readonly Row[]) => {
+  const edges = readEdges("graph/cycles", tuples, false);
+  if (typeof edges === "string") {
+    return edges;
+  }
+  const nodes = nodesOf(edges);
+  const byKey = new Map(nodes.map((node) => [valueKey(node), node]));
+  const out = adjacency(edges);
+  const targets = new Map<string, string[]>();
+  for (const { from, to } of edges) {
+    const key = valueKey(from);
+    const list = targets.get(key) ?? [];
+    list.push(valueKey(to));
+    targets.set(key, list);
+  }
+  const sccs = stronglyConnectedGroups(
+    nodes.map(valueKey),
+    (key) => targets.get(key) ?? []
+  );
+  const rows: Row[] = [];
+  for (const memberKeys of sccs) {
+    const hasCycle =
+      memberKeys.length > 1 ||
+      (memberKeys.length === 1 &&
+        (targets.get(memberKeys[0] as string) ?? []).includes(
+          memberKeys[0] as string
+        ));
+    if (!hasCycle) {
+      continue;
+    }
+    const members = new Set(memberKeys);
+    const smallest = memberKeys
+      .map((key) => byKey.get(key))
+      .sort(compareValues)[0];
+    const startKey = valueKey(smallest);
+    rows.push([smallest, shortestCycleFrom(smallest, startKey, members, out)]);
+  }
+  return rows.sort((a, b) => compareValues(a[0], b[0]));
+};
+
+/** Reachability sets for a DAG, built in reverse topological order. */
+const dagReach = (
+  ordered: readonly unknown[],
+  uniqueOut: ReadonlyMap<string, ReadonlySet<string>>
+) => {
+  const reach = new Map<string, Set<string>>();
+  for (let at = ordered.length - 1; at >= 0; at -= 1) {
+    const u = valueKey(ordered[at]);
+    const reached = new Set<string>();
+    for (const v of uniqueOut.get(u) ?? []) {
+      reached.add(v);
+      for (const w of reach.get(v) ?? []) {
+        reached.add(w);
+      }
+    }
+    reach.set(u, reached);
+  }
+  return reach;
+};
+
+const isRedundantEdge = (
+  neighbors: ReadonlySet<string>,
+  v: string,
+  reach: ReadonlyMap<string, ReadonlySet<string>>
+) => {
+  for (const w of neighbors) {
+    if (w !== v && reach.get(w)?.has(v)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * The unique minimal edge set of a DAG with the same reachability: keeps each
+ * distinct edge (u, v) that has no directed path of length >= 2 from u to v.
+ */
+const transitiveReduction = (tuples: readonly Row[]) => {
+  const edges = readEdges("graph/transitiveReduction", tuples, false);
+  if (typeof edges === "string") {
+    return edges;
+  }
+  const ordered = topologicalNodes("graph/transitiveReduction", edges);
+  if (typeof ordered === "string") {
+    return ordered;
+  }
+  const byKey = new Map(ordered.map((node) => [valueKey(node), node]));
+  const uniqueOut = new Map<string, Set<string>>();
+  for (const { from, to } of edges) {
+    const u = valueKey(from);
+    const set = uniqueOut.get(u) ?? new Set<string>();
+    set.add(valueKey(to));
+    uniqueOut.set(u, set);
+  }
+  const reach = dagReach(ordered, uniqueOut);
+  const rows: Row[] = [];
+  for (const [u, neighbors] of uniqueOut) {
+    for (const v of neighbors) {
+      if (!isRedundantEdge(neighbors, v, reach)) {
+        rows.push([byKey.get(u), byKey.get(v)]);
+      }
+    }
+  }
+  return rows.sort((a, b) => compareValues(a, b));
+};
+
+type WeightedAdj = readonly (readonly [number, LionNumber])[];
+
+/** Minimum-weight adjacency list for indexed nodes, ignoring self-loops. */
+const weightedAdjacency = (
+  nodes: readonly unknown[],
+  edges: readonly Edge[]
+): readonly WeightedAdj[] => {
+  const index = new Map(nodes.map((node, at) => [valueKey(node), at]));
+  const minEdge = new Map<number, Map<number, LionNumber>>();
+  for (const { from, to, weight } of edges) {
+    const u = index.get(valueKey(from)) as number;
+    const v = index.get(valueKey(to)) as number;
+    if (u === v) {
+      continue;
+    }
+    const row = minEdge.get(u) ?? new Map<number, LionNumber>();
+    const known = row.get(v);
+    if (known === undefined || compareNumbers(weight, known) < 0) {
+      row.set(v, weight);
+    }
+    minEdge.set(u, row);
+  }
+  return Array.from({ length: nodes.length }, (_, u) =>
+    [...(minEdge.get(u)?.entries() ?? [])].sort(([a], [b]) => a - b)
+  );
+};
+
+/** Single-source shortest-path DAG and counts for Brandes's algorithm. */
+const brandesSearch = (
+  s: number,
+  count: number,
+  out: readonly WeightedAdj[]
+) => {
+  const stack: number[] = [];
+  const pred: number[][] = Array.from({ length: count }, () => []);
+  const sigma = new Array<number>(count).fill(0);
+  const dist: (LionNumber | undefined)[] = new Array(count);
+  const settled = new Uint8Array(count);
+  sigma[s] = 1;
+  dist[s] = 0;
+
+  const queue = new Heap<{ readonly node: number; readonly cost: LionNumber }>(
+    (a, b) => {
+      const order = compareNumbers(a.cost, b.cost);
+      return order < 0 || (order === 0 && a.node < b.node);
+    }
+  );
+  queue.push({ node: s, cost: 0 });
+  for (let item = queue.pop(); item !== undefined; item = queue.pop()) {
+    const v = item.node;
+    if (settled[v] === 1) {
+      continue;
+    }
+    settled[v] = 1;
+    stack.push(v);
+    const dv = dist[v] as LionNumber;
+    for (const [w, weight] of out[v] ?? []) {
+      if (settled[w] === 1) {
+        continue;
+      }
+      const alt = sum(dv, weight);
+      const known = dist[w];
+      const cmp = known === undefined ? -1 : compareNumbers(alt, known);
+      if (cmp < 0) {
+        dist[w] = alt;
+        sigma[w] = sigma[v] as number;
+        pred[w] = [v];
+        queue.push({ node: w, cost: alt });
+      } else if (cmp === 0) {
+        sigma[w] = (sigma[w] as number) + (sigma[v] as number);
+        pred[w]?.push(v);
+      }
+    }
+  }
+  return { stack, pred, sigma };
+};
+
+/**
+ * Directed betweenness centrality by Brandes's algorithm. A third edge column
+ * is the non-negative weight; without one each edge costs 1.
+ */
+const betweenness = (tuples: readonly Row[]) => {
+  const edges = readEdges("graph/betweenness", tuples, true);
+  if (typeof edges === "string") {
+    return edges;
+  }
+  const nodes = nodesOf(edges);
+  const count = nodes.length;
+  const out = weightedAdjacency(nodes, edges);
+  const centrality = new Array<number>(count).fill(0);
+
+  for (let s = 0; s < count; s += 1) {
+    const { stack, pred, sigma } = brandesSearch(s, count, out);
+    const delta = new Array<number>(count).fill(0);
+    for (let at = stack.length - 1; at >= 0; at -= 1) {
+      const w = stack[at] as number;
+      const coeff = (1 + (delta[w] as number)) / (sigma[w] as number);
+      for (const v of pred[w] ?? []) {
+        delta[v] = (delta[v] as number) + (sigma[v] as number) * coeff;
+      }
+      if (w !== s) {
+        centrality[w] = (centrality[w] as number) + (delta[w] as number);
+      }
+    }
+  }
+
+  return nodes.map((node, at) => [node, round(centrality[at] ?? 0)]);
 };
 
 const EDGES = { kind: "relation", name: "edges" } as const;
@@ -333,6 +593,13 @@ export const module = {
     run: ([tuples]) => pageRank(tuples as readonly Row[]),
   }),
 
+  betweenness: defineAlgorithm({
+    name: "graph/betweenness",
+    inputs: [EDGES],
+    columns: ["node", "score"],
+    run: ([tuples]) => betweenness(tuples as readonly Row[]),
+  }),
+
   components: defineAlgorithm({
     name: "graph/components",
     inputs: [EDGES],
@@ -345,6 +612,20 @@ export const module = {
     inputs: [EDGES],
     columns: ["node", "component"],
     run: ([tuples]) => stronglyConnected(tuples as readonly Row[]),
+  }),
+
+  cycles: defineAlgorithm({
+    name: "graph/cycles",
+    inputs: [EDGES],
+    columns: ["component", "cycle"],
+    run: ([tuples]) => cycles(tuples as readonly Row[]),
+  }),
+
+  transitiveReduction: defineAlgorithm({
+    name: "graph/transitiveReduction",
+    inputs: [EDGES],
+    columns: ["from", "to"],
+    run: ([tuples]) => transitiveReduction(tuples as readonly Row[]),
   }),
 
   topologicalOrder: defineAlgorithm({

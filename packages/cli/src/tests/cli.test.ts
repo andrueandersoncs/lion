@@ -4,7 +4,7 @@
  * modifying the database file.
  */
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "@effect/vitest";
@@ -194,5 +194,178 @@ describe("lion CLI --eval, stdin, and check --database", () => {
       expect(bad.status).not.toBe(0);
     },
     { arbitrary: { runs: 8 } }
+  );
+
+  it.prop(
+    "multi-file execution matches sequential runs atomically, read-only queries skip rewriting --database, --read-only discards mutations, and lion inspect summarizes ontology metadata",
+    {
+      count: between(1, 4),
+      offset: between(1, 20),
+    },
+    ({ count, offset }) => {
+      const folder = mkdtempSync(join(tmpdir(), "lion-cli-kb-"));
+      const step1 = join(folder, "01-schema.json");
+      const step2 = join(folder, "02-facts.json");
+      const step3 = join(folder, "03-query.json");
+      const badStep = join(folder, "04-bad.json");
+      const multiDb = join(folder, "multi.json");
+      const seqDb = join(folder, "seq.json");
+
+      writeFileSync(
+        step1,
+        JSON.stringify([
+          "begin",
+          [
+            "schema",
+            "Positive",
+            [
+              "schema/allOf",
+              "value/integer?",
+              ["lambda", ["n"], ["number/greaterThan", "n", 0]],
+            ],
+          ],
+          ["relation", "node", ["id", "score"], { key: "id" }],
+          ["relation", "high", ["id"]],
+          [
+            "rule",
+            ["high", "?id"],
+            ["node", "?id", "?s"],
+            ["number/greaterThan", "?s", offset],
+          ],
+          [
+            "invariant",
+            ["and", ["node", "?_", "?s"], ["not", ["Positive", "?s"]]],
+            { assert: "none" },
+          ],
+          "framed",
+        ])
+      );
+      const facts = Array.from({ length: count }, (_, i) => [
+        "node",
+        `n${i}`,
+        offset + i,
+      ]);
+      writeFileSync(step2, JSON.stringify(["fact", ...facts]));
+      writeFileSync(
+        step3,
+        JSON.stringify(["query", ["high", "?id"], { order: "id" }])
+      );
+      writeFileSync(badStep, JSON.stringify(["fact", ["node", "bad", -1]]));
+
+      // Multi-file build in one invocation matches sequential invocations.
+      const multi = spawnSync(
+        "bun",
+        [BIN, step1, step2, step3, "--database", multiDb],
+        { encoding: "utf8" }
+      );
+      expect(multi.status).toBe(0);
+
+      for (const s of [step1, step2]) {
+        const r = spawnSync("bun", [BIN, s, "--database", seqDb], {
+          encoding: "utf8",
+        });
+        expect(r.status).toBe(0);
+      }
+      const seqLast = spawnSync("bun", [BIN, step3, "--database", seqDb], {
+        encoding: "utf8",
+      });
+      expect(seqLast.status).toBe(0);
+      expect(multi.stdout).toBe(seqLast.stdout);
+      expect(readFileSync(multiDb, "utf8")).toBe(readFileSync(seqDb, "utf8"));
+
+      // Read-only query does not rewrite the database file (mtime unchanged).
+      const beforeStat = statSync(multiDb);
+      const beforeBytes = readFileSync(multiDb, "utf8");
+      const roQuery = spawnSync("bun", [BIN, step3, "--database", multiDb], {
+        encoding: "utf8",
+      });
+      expect(roQuery.status).toBe(0);
+      expect(statSync(multiDb).mtimeMs).toBe(beforeStat.mtimeMs);
+      expect(readFileSync(multiDb, "utf8")).toBe(beforeBytes);
+
+      // --read-only executes mutations in memory without touching disk.
+      const whatIf = spawnSync(
+        "bun",
+        [
+          BIN,
+          "--read-only",
+          "--database",
+          multiDb,
+          "-e",
+          JSON.stringify([
+            "begin",
+            ["fact", ["node", "temp", offset + 100]],
+            ["find", "?id", ["high", "?id"]],
+          ]),
+        ],
+        { encoding: "utf8" }
+      );
+      expect(whatIf.status).toBe(0);
+      expect(JSON.parse(whatIf.stdout)).toContain("temp");
+      expect(readFileSync(multiDb, "utf8")).toBe(beforeBytes);
+
+      // Atomic failure: if a later step breaks an invariant, database stays unchanged.
+      const failed = spawnSync(
+        "bun",
+        [BIN, step2, badStep, "--database", multiDb],
+        { encoding: "utf8" }
+      );
+      expect(failed.status).not.toBe(0);
+      expect(readFileSync(multiDb, "utf8")).toBe(beforeBytes);
+
+      // lion inspect reports relations, schemas, invariants, and --derived row counts.
+      const inspected = spawnSync(
+        "bun",
+        [BIN, "inspect", multiDb, "--derived"],
+        { encoding: "utf8" }
+      );
+      expect(inspected.status).toBe(0);
+      const summary = JSON.parse(inspected.stdout) as {
+        readonly relations: readonly {
+          readonly name: string;
+          readonly columns: readonly string[];
+          readonly key?: readonly string[];
+          readonly facts: number;
+          readonly rules: number;
+          readonly rows?: number;
+        }[];
+        readonly schemas: readonly { readonly name: string }[];
+        readonly invariants: readonly unknown[];
+        readonly counts: {
+          readonly relations: number;
+          readonly schemas: number;
+          readonly facts: number;
+          readonly rules: number;
+          readonly invariants: number;
+        };
+      };
+      expect(summary.counts).toEqual({
+        relations: 2,
+        schemas: 1,
+        facts: count,
+        rules: 1,
+        invariants: 1,
+      });
+      expect(summary.relations).toEqual([
+        {
+          name: "high",
+          columns: ["id"],
+          facts: 0,
+          rules: 1,
+          rows: count - 1,
+        },
+        {
+          name: "node",
+          columns: ["id", "score"],
+          key: ["id"],
+          facts: count,
+          rules: 0,
+          rows: count,
+        },
+      ]);
+      expect(summary.schemas.map((s) => s.name)).toEqual(["Positive"]);
+      expect(readFileSync(multiDb, "utf8")).toBe(beforeBytes);
+    },
+    { arbitrary: { runs: 6 } }
   );
 });

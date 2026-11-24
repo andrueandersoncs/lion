@@ -1081,7 +1081,7 @@ const combine = (run: Run, rule: CompiledRule, vars: Vars, by: number) =>
 
 /** The values some candidates give an aggregate, each as often as it is given. */
 const given = (kind: string, { values: counted }: Tally) => {
-  const repeats = ["collect", "count", "mean", "sum"].includes(kind);
+  const repeats = ["collect", "count", "mean", "median", "sum"].includes(kind);
   const values: unknown[] = [];
   for (const [value, times] of counted.values()) {
     for (let left = repeats ? times : 1; left > 0; left -= 1) {

@@ -1,0 +1,76 @@
+{
+  "claims": [
+    {
+      "quote": "`why` is a first-class question obeying Lion's asking and waiting rules: inside a `query`, `find`, `rule`, `cond`, `invariant`, or `assuming`, `[\"why\", fact]` waits for its variables to be bound and explains the row against the current (or assumed) database, snapshots cleanly, and re-derives when underlying facts change.",
+      "says": {
+        "feature": "composable-why",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`why` inside `query`, `find`, `rule`, and `assuming` explains rows against the current or assumed database, matching top-level `why`.",
+      "says": {
+        "behavior": "composable-why",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Standard library adds `string/lessThan`, `string/greaterThan`, `string/lessThanOrEqualTo`, `string/greaterThanOrEqualTo` (code-unit order matching `query` `\"order\"` and `array/sort`), `value/equals?`, and `value/compare` (-1, 0, 1 total order, with symbolic solver support), and unifies `array/includes?` on Lion's structural `sameValue` equality (matching `array/indexOf`, `=`, and `in`).",
+      "says": {
+        "feature": "string-order-value-compare-and-structural-includes",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`string/lessThan`..`greaterThanOrEqualTo`, `value/equals?`, `value/compare`, and structural `array/includes?` agree with `=`, `in`, `array/indexOf`, and `array/sort`.",
+      "says": {
+        "behavior": "string-order-value-compare-and-structural-includes",
+        "is": "works",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "Graph module adds `graph/cycles` (non-throwing canonical shortest directed cycle per cyclic strongly connected component, including self-loops), `graph/transitiveReduction` (unique minimal Hasse DAG edges), and `graph/betweenness` (Brandes's directed betweenness centrality, supporting optional non-negative edge weights).",
+      "says": {
+        "feature": "graph-ontology-algorithms",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`graph/cycles`, `graph/transitiveReduction`, and `graph/betweenness` run deterministically over base and derived edge relations.",
+      "says": {
+        "behavior": "graph-ontology-algorithms",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Aggregate module adds `aggregate/median` (exact rational middle or midpoint, preserving match multiplicity in rules) and `aggregate/argMin` / `aggregate/argMax` (value of the `[key, value]` pair with least or greatest numeric or string key, breaking ties deterministically by smaller value), integrated across plain code, rules, incremental maintenance, and the symbolic solver.",
+      "says": {
+        "feature": "aggregate-median-and-arg-extrema",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`aggregate/median`, `aggregate/argMin`, and `aggregate/argMax` agree across plain lists, rule heads, and the symbolic solver.",
+      "says": {
+        "behavior": "aggregate-median-and-arg-extrema",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "The `lion` CLI adds `lion inspect [--derived]` to summarize a saved database's ontology (relations, columns, keys, merges, schemas, invariants, and counts) as JSON, accepts multiple program files executed atomically in one invocation, skips rewriting an existing `--database` when no committed changes occurred, and adds `--read-only` (`-r`) to run exploratory programs without touching disk.",
+      "says": {
+        "feature": "cli-inspect-multifile-readonly",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

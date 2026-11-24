@@ -34,7 +34,6 @@ import {
   checkAssertion,
   declareRelation,
   declareSchemas,
-  explainFact,
   queryDatabase,
   relationValue,
   retract,
@@ -697,8 +696,19 @@ export const evaluateWhy = (
   scope?: Scope
 ) =>
   Effect.gen(function* () {
+    if (yield* isWriting) {
+      const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));
+      if (isTaken(fact)) {
+        return yield* notCalls("why", fact);
+      }
+      const value = yield* writing(part(fact));
+      if (!(value instanceof Atom)) {
+        return yield* notCalls("why", value);
+      }
+      return new LogicForm("why", [value]);
+    }
     const [atom] = yield* atoms("why", [fact], part, scope);
-    return yield* explainFact(yield* database, atom as Atom);
+    return yield* answer(new LogicForm("why", [atom as Atom]));
   });
 
 /** What `not`, `and`, and `or` give a value that is no goal or boolean. */

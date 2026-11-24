@@ -152,6 +152,8 @@ export class LogicDatabase {
    */
   readonly goals = new Map<string, GoalModel>();
   readonly goalDirected: boolean;
+  /** Incremented whenever a committed change alters the database's state. */
+  revision = 0;
 
   constructor(options: LogicDatabaseOptions = {}) {
     this.goalDirected = options.goalDirected ?? true;
@@ -284,6 +286,7 @@ export const declareRelation = (
     database.rules = [...database.rules, factsRule(relation)];
     touch(database);
   }
+  database.revision += 1;
   return Effect.succeed(relation);
 };
 
@@ -386,6 +389,9 @@ export const declareSchemas = (
       info.strings = new Set(strings);
       database.schemas.set(info.name, schema);
     }
+  }
+  if (fresh.length > 0) {
+    database.revision += 1;
   }
   return Effect.succeed(
     names.flatMap((name) => database.schemas.get(name) ?? [])
@@ -916,6 +922,7 @@ const commit = (
       // Kept, the change leaves the rows it was not followed through stale.
       Effect.tap(() =>
         Effect.sync(() => {
+          database.revision += 1;
           if (database.model !== undefined) {
             forgetBehind(database.model);
           }
@@ -1577,10 +1584,11 @@ const assumeIn =
       return yield* reading(copy, (model) => answer(model, expression));
     });
 
-/** A model of the database's facts and rules, which can ask what it assumes. */
+/** A model of the database's facts and rules, which can ask what it assumes or why. */
 const modelOf = (database: LogicDatabase) => {
   const model = new Model(database.facts, database.rules);
   model.assume = assumeIn(database);
+  model.explain = explainIn(database, model);
   return model;
 };
 
@@ -1717,7 +1725,7 @@ export const queryDatabase = (
 export const askDatabase = (database: LogicDatabase, question: LogicValue) =>
   reading(database, (model) =>
     Effect.gen(function* () {
-      if (isForm(question, "assuming")) {
+      if (isForm(question, "assuming", "why")) {
         return yield* term(model, question, new Map());
       }
       const plans = yield* compiling(() =>
@@ -2027,11 +2035,13 @@ export const addInvariant = (database: LogicDatabase, invariant: Invariant) =>
       ...database.invariants,
       { ...invariant, ...(key === undefined ? {} : { key }) },
     ];
+    database.revision += 1;
   });
 
-/** Explains how a fact holds, or why it does not. */
-export const explainFact = (database: LogicDatabase, atom: Atom) =>
-  reading(database, (model) =>
+/** Explains how a ground relation call holds, or why it does not, in `model`. */
+const explainIn =
+  (database: LogicDatabase, model: Model) =>
+  (atom: Atom): LogicEffect<unknown> =>
     Effect.gen(function* () {
       if (atom.relation.computed === undefined) {
         yield* groundTuple(database, atom);
@@ -2041,5 +2051,8 @@ export const explainFact = (database: LogicDatabase, atom: Atom) =>
         );
       }
       return yield* why(model, atom);
-    })
-  );
+    });
+
+/** Explains how a fact holds, or why it does not. */
+export const explainFact = (database: LogicDatabase, atom: Atom) =>
+  reading(database, (model) => explainIn(database, model)(atom));

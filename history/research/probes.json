@@ -17446,17 +17446,22 @@
         [
           "boolean/and",
           [
-            "string/includes",
-            ["repo/read", "packages/cli/src/index.ts"],
+            "boolean/and",
             [
-              "quote",
-              "const program = yield* readJson(text);\n      const result = yield* run(\n        program,"
+              "string/includes",
+              ["repo/read", "packages/cli/src/index.ts"],
+              ["quote", "const program = yield* readJson(text)"]
+            ],
+            [
+              "string/includes",
+              ["repo/read", "packages/cli/src/index.ts"],
+              ["quote", "result = yield* run(\n          program,"]
             ]
           ],
           [
             "string/includes",
             ["repo/read", "packages/cli/src/index.ts"],
-            ["quote", "const file = Argument.String(\"file\")"]
+            ["quote", "const files = Argument.String(\"file\")"]
           ]
         ],
         ["quote", "lion-expression-schema"]
@@ -26342,6 +26347,143 @@
           ["quote", "decided"]
         ],
         ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "composable-why",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "e", ["from", "to"]],
+      ["fact", ["e", "a", "b"]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              ["find", ["why", ["e", "a", "?t"]], ["e", "a", "?t"]],
+              ["array/make", ["why", ["e", "a", "b"]]]
+            ],
+            [
+              "=",
+              [
+                "object/get",
+                [
+                  "assuming",
+                  ["fact", ["e", "b", "c"]],
+                  ["why", ["e", "b", "c"]]
+                ],
+                "given",
+                false
+              ],
+              true
+            ]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "string-order-value-compare-and-structural-includes",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "and",
+          ["string/lessThan", "2025-02-01", "2026-03-03"],
+          ["value/equals?", { "a": 1 }, { "a": 1 }],
+          ["=", ["value/compare", { "a": 1 }, { "a": 2 }], -1],
+          [
+            "array/includes?",
+            ["array/make", { "v": ["number/divide", 1, 3] }],
+            { "v": ["number/divide", 1, 3] }
+          ]
+        ],
+        ["quote", "works"]
+      ],
+      ["else", ["quote", "broken"]]
+    ]
+  },
+  {
+    "case": "graph-ontology-algorithms",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "dag", ["from", "to"]],
+      ["fact", ["dag", "a", "b"], ["dag", "b", "c"], ["dag", "a", "c"]],
+      ["relation", "cyc", ["from", "to"]],
+      ["fact", ["cyc", "x", "y"], ["cyc", "y", "x"]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              ["query", ["graph/cycles", "cyc", "?c", "?p"]],
+              ["quote", [{ "c": "x", "p": ["x", "y", "x"] }]]
+            ],
+            [
+              "=",
+              [
+                "query",
+                ["graph/transitiveReduction", "dag", "?u", "?v"],
+                { "order": ["u", "v"] }
+              ],
+              ["quote", [{ "u": "a", "v": "b" }, { "u": "b", "v": "c" }]]
+            ],
+            [
+              "=",
+              ["query", ["graph/betweenness", "dag", "b", "?s"]],
+              ["quote", [{ "s": 0 }]]
+            ]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "aggregate-median-and-arg-extrema",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "obs", ["id", "v"]],
+      ["fact", ["obs", 1, 48], ["obs", 2, 0], ["obs", 3, 0]],
+      ["relation", "med", ["g", "m"]],
+      [
+        "rule",
+        ["med", "all", ["aggregate/median", "?v"]],
+        ["obs", "?id", "?v"]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", ["find", "?m", ["med", "all", "?m"]], ["quote", [0]]],
+            ["=", ["aggregate/median", ["quote", [1, 2, 3, 4]]], 2.5],
+            [
+              "=",
+              ["aggregate/argMax", ["quote", [[2024, "old"], [2025, "new"]]]],
+              "new"
+            ],
+            [
+              "=",
+              ["aggregate/argMin", ["quote", [[2024, "old"], [2025, "new"]]]],
+              "old"
+            ]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
       ]
     ]
   }

@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 import { takes } from "@/errors/evaluation";
 import { Delayed } from "@/evaluation/special-forms/delay";
-import { allowsOnly, Unknown } from "@/logic/terms";
+import { allowsOnly, compareValues, sameValue, Unknown } from "@/logic/terms";
 import { Exact, isInteger, isNumber } from "@/numbers/exact";
 
 /** A predicate on one value. */
@@ -69,6 +69,19 @@ export const module = {
 
   /** True for every value: the schema that anything fits. */
   "any?": is(() => true),
+
+  /** Structural equality, the same rule `=` and `in` use. */
+  "equals?": takes(2, (a: unknown, b: unknown) =>
+    Effect.succeed(sameValue(a, b))
+  ),
+
+  /**
+   * Total value order (-1, 0, or 1), the same order `array/sort`, query
+   * `"order"`, and `aggregate/min` use.
+   */
+  compare: takes(2, (a: unknown, b: unknown) =>
+    Effect.succeed(Math.sign(compareValues(a, b)))
+  ),
 
   identity: takes(1, (x: unknown) => Effect.succeed(x)),
 };

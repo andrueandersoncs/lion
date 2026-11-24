@@ -1856,7 +1856,7 @@
       "reads",
       [
         "quote",
-        "Unsafe assuming …: what its changes state must be known, but … is not bound by the rule or query around it."
+        "Unsafe … …: its inputs must be known, but … is not bound by the rule or query around it."
       ],
       "bound-before-use"
     ],
@@ -2022,6 +2022,11 @@
     ["reads", ["quote", "expects lists, but found …"], "aggregate-value-kind"],
     [
       "reads",
+      ["quote", "expects [key, value] pairs, but found …"],
+      "aggregate-value-kind"
+    ],
+    [
+      "reads",
       ["quote", "expects numbers, but found …"],
       "aggregate-value-kind"
     ],
@@ -2049,11 +2054,7 @@
       ],
       "shift-needs-reset"
     ],
-    [
-      "reads",
-      ["quote", "graph/topologicalOrder found a cycle among ……."],
-      "topological-acyclic"
-    ],
+    ["reads", ["quote", "… found a cycle among ……."], "topological-acyclic"],
     ["reads", ["quote", "has no finite result"], "arithmetic-finite"],
     [
       "reads",
@@ -2428,14 +2429,7 @@
     ],
     ["reads", ["quote", "… must fit … but is missing"], "fits-missing"],
     ["reads", ["quote", "… must fit … but is …"], "fits-schema"],
-    [
-      "reads",
-      [
-        "quote",
-        "… needs a database to ask: assuming asks the database as it would be after its changes."
-      ],
-      "database-available"
-    ],
+    ["reads", ["quote", "… needs a database to ask."], "database-available"],
     [
       "reads",
       ["quote", "… needs a relation with at least two columns, from and to."],

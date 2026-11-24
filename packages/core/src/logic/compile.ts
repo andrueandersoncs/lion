@@ -968,6 +968,9 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
   if (isForm(question, "assuming")) {
     return planAssuming(question, outer);
   }
+  if (isForm(question, "why")) {
+    return planWhy(question, outer);
+  }
   if (!isForm(question, "find")) {
     // A question asks only whether its goal has a match.
     return plan(question, outer, NOTHING);
@@ -1003,6 +1006,13 @@ export const unsafeRuleHead = (headText: string, names: string) =>
  * with the variables the rule or query around it binds. A rule it adds or
  * takes back has variables of its own, and is checked when it is made.
  */
+const unsafeKnown = (
+  form: "assuming" | "why",
+  question: LogicValue,
+  names: string
+) =>
+  `Unsafe ${form} ${show(question)}: its inputs must be known, but ${names} is not bound by the rule or query around it.`;
+
 const planAssuming = (
   question: LogicValue,
   outer: readonly string[]
@@ -1019,10 +1029,25 @@ const planAssuming = (
           )
     ),
     bound,
-    (names) =>
-      `Unsafe assuming ${show(question)}: what its changes state must be known, but ${names} is not bound by the rule or query around it.`
+    (names) => unsafeKnown("assuming", question, names)
   );
   checkQuestions([(question as LogicForm).parts.at(-1)], bound);
+  return [{ body: [], bound }];
+};
+
+/**
+ * A `why` explains one ground row, so every variable in the row's arguments
+ * must be bound by the rule or query around it.
+ */
+const planWhy = (
+  question: LogicValue,
+  outer: readonly string[]
+): readonly Plan[] => {
+  const bound = new Set(outer);
+  const [atom] = (question as LogicForm).parts as [Atom];
+  checkValues(question, atom.args, bound, (names) =>
+    unsafeKnown("why", question, names)
+  );
   return [{ body: [], bound }];
 };
 

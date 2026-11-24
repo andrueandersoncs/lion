@@ -153,7 +153,7 @@ export const module = {
   ),
 
   "includes?": over([List, Schema.Any], (list, item) =>
-    Arr.contains(list, item)
+    list.some((each) => sameValue(each, item))
   ),
 
   /** The first index of an equal item in the list, or -1 if none matches. */

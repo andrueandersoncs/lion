@@ -659,7 +659,8 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 |---|---|
 | `aggregate/count` | Number of matches |
 | `aggregate/countUnique` | Number of distinct values |
-| `aggregate/sum`, `aggregate/mean` | Sum and mean of numbers, both exact, so the order of the values never changes them (`mean` of nothing is `null`) |
+| `aggregate/sum`, `aggregate/mean`, `aggregate/median` | Sum, mean, and median of numbers, all exact, so the order of the values never changes them (`mean` and `median` of nothing are `null`) |
+| `aggregate/argMin`, `aggregate/argMax` | Value of the `[key, value]` pair with the least or greatest key (all numbers or all strings); ties go to the smaller value (`null` of nothing) |
 | `aggregate/min`, `aggregate/max` | Smallest and largest value; all numbers or all strings |
 | `aggregate/shortest` | Shortest list or string; ties go to the smaller value |
 | `aggregate/union` | Every element of every list, distinct and sorted |
@@ -803,8 +804,11 @@ Evaluates to `[{ "to": "a", "km": 0, "path": ["a"] }, { "to": "c", "km": 1, "pat
 |---|---|
 | `["graph/shortestPath", edges, start, to, cost, path]` | Dijkstra's algorithm from `start`, in order of cost, starting with `start` itself at cost 0. A third edge column is the weight, at least 0; without one, every edge costs 1. |
 | `["graph/pageRank", edges, node, rank]` | PageRank with damping 0.85, rounded to 6 decimal places. The ranks add up to 1. |
+| `["graph/betweenness", edges, node, score]` | Directed betweenness centrality by Brandes's algorithm, rounded to 6 decimal places. A third edge column is the non-negative weight; without one, every edge costs 1. |
 | `["graph/components", edges, node, component]` | Connected components, ignoring edge direction. |
 | `["graph/stronglyConnected", edges, node, component]` | Strongly connected components. |
+| `["graph/cycles", edges, component, cycle]` | One canonical shortest directed cycle per cyclic strongly connected component (including self-loops), named after its smallest node; empty on a DAG. |
+| `["graph/transitiveReduction", edges, from, to]` | The unique minimal edge set of a DAG with the same reachability (Hasse diagram), or an error naming a cycle. |
 | `["graph/topologicalOrder", edges, node, position]` | Positions from 0 in a topological order, or an error that names a cycle. |
 
 - The first two columns of `edges` are the edge's from and to.
@@ -1331,6 +1335,9 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["aggregate/countUnique", ["array/make", 3, 1, 3]]
 ["aggregate/sum", ["array/make", 3, 1, 3]]
 ["aggregate/mean", ["array/make", 3, 1, 3]]
+["aggregate/median", ["array/make", 3, 1, 3, 2]]
+["aggregate/argMin", ["quote", [[2024, "draft"], [2025, "final"]]]]
+["aggregate/argMax", ["quote", [[2024, "draft"], [2025, "final"]]]]
 ["aggregate/min", ["array/make", 3, 1, 3]]
 ["aggregate/max", ["array/make", 3, 1, 3]]
 ["aggregate/collect", ["array/make", 3, 1, 3]]
@@ -1374,6 +1381,10 @@ Called on a list, each function combines it. Called on anything else, it waits f
 
 ```json
 ["string/equals?", "a", "a"]
+["string/lessThan", "2025-02-01", "2026-03-03"]
+["string/greaterThan", "b", "a"]
+["string/lessThanOrEqualTo", "a", "a"]
+["string/greaterThanOrEqualTo", "b", "b"]
 ["string/length", "lion"]
 ["string/concat", "lion", "ized"]
 ["string/concat", "lion", "-", "ized", "!"]
@@ -1440,8 +1451,11 @@ Algorithm goals over an edge relation; see [Graph algorithms](#graph-algorithms)
 ```json
 ["graph/shortestPath", "road", "a", "?to", "?cost", "?path"]
 ["graph/pageRank", "edge", "?node", "?rank"]
+["graph/betweenness", "edge", "?node", "?score"]
 ["graph/components", "edge", "?node", "?component"]
 ["graph/stronglyConnected", "edge", "?node", "?component"]
+["graph/cycles", "edge", "?component", "?cycle"]
+["graph/transitiveReduction", "edge", "?from", "?to"]
 ["graph/topologicalOrder", "edge", "?node", "?position"]
 ```
 
@@ -1497,6 +1511,8 @@ Evaluates to `{"speed": {"value": 15, "unit": {"m": 1, "s": -1}}, "no unit left"
 ["value/null?", null]
 ["value/unknown?", "lion"]
 ["value/any?", 42]
+["value/equals?", {"a": 1}, {"a": 1}]
+["value/compare", {"a": 1}, {"a": 2}]
 ["value/identity", 42]
 ```
 

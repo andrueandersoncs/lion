@@ -325,9 +325,9 @@ const deriveAgain = (pass: Pass, stratum: Stratum) =>
 
 const BLIND = new WeakMap<Stratum, boolean>();
 
-/** True for a term that asks `assuming`, however deep. */
+/** True for a term that asks `assuming` or `why`, however deep. */
 const assumes = (term: unknown): boolean =>
-  isForm(term, "assuming") ||
+  isForm(term, "assuming", "why") ||
   (term instanceof LogicValue && term.parts.some(assumes));
 
 /**

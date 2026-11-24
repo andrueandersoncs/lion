@@ -478,6 +478,7 @@
   <li>An aggregated fact lists every match it combines under <code>matches</code>, in the order of their answers; for <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the match that produced the value, the least where several did.</li>
   <li>A relation goal's premise is the row it matched, also when the goal says which rows with a <a href="#logic-patterns">pattern</a> or a predicate. When several rows fit, since a variable of the goal is its own, it is the row that sorts first. A schema check that held is a <code>check</code>.</li>
   <li>Explanations use every relation computed in full.</li>
+  <li><code>why</code> is a question, like <code>find</code> and <code>assuming</code>: inside a <code>query</code>, <code>find</code>, <code>rule</code>, <code>cond</code>, or <code>assuming</code>, it waits for the variables in <code>fact</code> to be bound and explains the row against the current (or assumed) database.</li>
 </ul>
 <lion-example name="why">
 ["begin",
@@ -488,7 +489,8 @@
   ["rule", ["order", "?id"],
     ["inbox", "?doc"], ["Order", "?doc"],
     ["inbox", ["schema/open", {"id": "?id"}]]],
-  ["why", ["order", 1]]]
+  {"direct": ["why", ["order", 1]],
+   "in find": ["find", {"id": "?id", "proof": ["why", ["order", "?id"]]}, ["order", "?id"]]}]
 </lion-example>
 <p>No document has the id 3, and <code>why</code> says where the rule stopped: at the goal that looks for one.</p>
 <lion-example name="why, for a fact that does not hold">

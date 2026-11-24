@@ -581,8 +581,66 @@ export const EXPRESSIONS: readonly Expression[] = [
     form: ["array/map", ["array/make", X, 9], "small"],
   },
   {
+    name: "why of a row",
+    form: ["why", ["small", X]],
+  },
+  {
+    name: "string ordering",
+    form: [
+      "string/lessThan",
+      "a",
+      ["string/concat", "b", ["number/toString", X]],
+    ],
+    boolean: true,
+  },
+  {
+    name: "value equality",
+    form: ["value/equals?", { v: X }, { v: 2 }],
+    boolean: true,
+  },
+  {
+    name: "value comparison",
+    form: ["value/compare", { v: X }, { v: 2 }],
+  },
+  {
+    name: "array structural membership",
+    form: ["array/includes?", ["array/make", { v: 1 }, { v: 2 }], { v: X }],
+    boolean: true,
+  },
+  {
+    name: "median of a find",
+    form: ["aggregate/median", ["find", "?y", ["link", X, "?y"]]],
+  },
+  {
+    name: "argMax of a find",
+    form: [
+      "aggregate/argMax",
+      [
+        "find",
+        ["array/make", "?y", ["number/add", "?y", 10]],
+        ["link", X, "?y"],
+      ],
+    ],
+  },
+  {
     name: "graph algorithm",
     form: ["find", "?to", ["graph/shortestPath", "link", X, "?to", "?_", "?_"]],
+  },
+  {
+    name: "graph cycles and betweenness",
+    form: [
+      "array/make",
+      ["find", "?c", ["graph/cycles", "link", "?c", "?_"]],
+      ["find", "?s", ["graph/betweenness", "link", X, "?s"]],
+    ],
+  },
+  {
+    name: "graph transitive reduction",
+    setup: [
+      ["relation", "dag", ["from", "to"]],
+      ["fact", ["dag", 1, 2], ["dag", 2, 3], ["dag", 1, 3]],
+    ],
+    form: ["find", "?to", ["graph/transitiveReduction", "dag", X, "?to"]],
   },
   {
     name: "goal built by a function",

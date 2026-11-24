@@ -85,6 +85,7 @@ import {
   Atom,
   allowedBy,
   buildOf,
+  compareValues,
   DeferredCall,
   isListTerm,
   isLogicVariableName,
@@ -415,11 +416,14 @@ const ANY = Number.POSITIVE_INFINITY;
  * says: a call with any other number is not run on symbolic values.
  */
 const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
+  "aggregate/argMax": [1, 1],
+  "aggregate/argMin": [1, 1],
   "aggregate/collect": [1, 1],
   "aggregate/count": [1, 1],
   "aggregate/countUnique": [1, 1],
   "aggregate/max": [1, 1],
   "aggregate/mean": [1, 1],
+  "aggregate/median": [1, 1],
   "aggregate/min": [1, 1],
   "aggregate/sum": [1, 1],
   "aggregate/union": [1, 1],
@@ -490,6 +494,8 @@ const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "value/any?": [1, 1],
   "value/array?": [1, 1],
   "value/boolean?": [1, 1],
+  "value/compare": [2, 2],
+  "value/equals?": [2, 2],
   "value/function?": [1, 1],
   "value/identity": [1, 1],
   "value/integer?": [1, 1],
@@ -965,6 +971,33 @@ const LIBRARY: Readonly<Record<string, LibraryFn>> = {
         );
   },
   "value/identity": ([arg]) => Effect.succeed(one(arg as Sym)),
+  "value/equals?": ([a, b], _name, context) =>
+    Effect.map(equalSym(a as Sym, b as Sym, context), (f) => one(truthSym(f))),
+  "value/compare": ([a, b], name, context) => {
+    const left = a as Sym;
+    const right = b as Sym;
+    if (isConcrete(left) && isConcrete(right)) {
+      return Effect.succeed(
+        one(fromValue(Math.sign(compareValues(plainOf(left), plainOf(right)))))
+      );
+    }
+    if (left.kind === "number" && right.kind === "number") {
+      return Effect.all([
+        comparePoly(left, right, "<", name, context),
+        comparePoly(left, right, "=", name, context),
+        comparePoly(left, right, ">", name, context),
+      ]).pipe(
+        Effect.map(([lt, eq, gt]) =>
+          [
+            { sym: fromValue(-1), when: lt },
+            { sym: fromValue(0), when: eq },
+            { sym: fromValue(1), when: gt },
+          ].filter(({ when }) => when.length > 0)
+        )
+      );
+    }
+    return refused(name);
+  },
   "value/any?": () => Effect.succeed(one(truthSym(TRUE))),
   "value/boolean?": ([arg]) =>
     Effect.succeed(one(truthSym(arg?.kind === "truth" ? TRUE : FALSE))),
@@ -1034,6 +1067,44 @@ const LIBRARY: Readonly<Record<string, LibraryFn>> = {
               )
           )
     ),
+  "aggregate/median": ([list], name, context, depth) =>
+    Effect.flatMap(listOf(list, name), (items) => {
+      if (items.length === 0) {
+        return Effect.succeed(one(fromValue(null)));
+      }
+      return Effect.flatMap(
+        Effect.forEach(items, (item) => polyOf(item, name, context)),
+        () =>
+          Effect.flatMap(
+            sortSymbolic(items, undefined, name, context, depth),
+            (ways) =>
+              Effect.forEach(ways, ({ sym, when }) =>
+                Effect.flatMap(listOf(sym, name), (ordered) => {
+                  const mid = Math.floor(ordered.length / 2);
+                  if (ordered.length % 2 === 1) {
+                    return Effect.succeed({
+                      sym: ordered[mid] as Sym,
+                      when,
+                    });
+                  }
+                  return Effect.all([
+                    polyOf(ordered[mid - 1] as Sym, name, context),
+                    polyOf(ordered[mid] as Sym, name, context),
+                  ]).pipe(
+                    Effect.map(([a, b]) => ({
+                      sym: polyScale(polyAdd(a, b), divide(ONE, ratio(2n))),
+                      when,
+                    }))
+                  );
+                })
+              )
+          )
+      );
+    }),
+  "aggregate/argMin": ([list], name, context) =>
+    argExtremum(list as Sym, name, false, context),
+  "aggregate/argMax": ([list], name, context) =>
+    argExtremum(list as Sym, name, true, context),
   "aggregate/min": ([list], name, context) =>
     Effect.flatMap(listOf(list, name), (items) =>
       items.length === 0
@@ -2110,6 +2181,44 @@ const extremum = (
       const when = yield* extremumGuard(polys, at, greatest, context);
       if (when.length > 0) {
         cases.push({ sym: polys[at] as NumberSym, when });
+      }
+    }
+    return cases;
+  });
+
+const argExtremum = (
+  list: Sym,
+  name: string,
+  greatest: boolean,
+  context: Context
+): Result =>
+  Effect.gen(function* () {
+    const items = yield* listOf(list, name);
+    if (items.length === 0) {
+      return one(fromValue(null));
+    }
+    const pairs = yield* Effect.forEach(items, (item) =>
+      Effect.flatMap(listOf(item, name), (parts) =>
+        parts.length === 2
+          ? Effect.succeed([parts[0] as Sym, parts[1] as Sym] as const)
+          : refused(name)
+      )
+    );
+    const keys = yield* Effect.forEach(pairs, ([key]) =>
+      polyOf(key, name, context)
+    );
+    if (!pairs.every(([, val]) => isConcrete(val))) {
+      return yield* refused(name);
+    }
+    const ordered = pairs
+      .map(([, val], at) => ({ key: keys[at] as NumberSym, val }))
+      .sort((a, b) => compareValues(plainOf(a.val), plainOf(b.val)));
+    const orderedKeys = ordered.map((each) => each.key);
+    const cases: { sym: Sym; when: Formula }[] = [];
+    for (let at = 0; at < ordered.length; at += 1) {
+      const when = yield* extremumGuard(orderedKeys, at, greatest, context);
+      if (when.length > 0) {
+        cases.push({ sym: (ordered[at] as { readonly val: Sym }).val, when });
       }
     }
     return cases;
