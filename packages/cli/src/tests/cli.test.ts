@@ -106,4 +106,93 @@ describe("lion CLI --eval, stdin, and check --database", () => {
     },
     { arbitrary: { runs: 10 } }
   );
+
+  it.prop(
+    "--bind and --bind-file inject exact JSON data into both lion and lion check, with --bind overriding --bind-file",
+    {
+      cents: between(1, 99),
+      extra: between(-50, 50),
+      tag: Arbitrary.schema(Schema.Literals(["a=b", "ok", "x=1"])),
+    },
+    ({ cents, extra, tag }) => {
+      const folder = mkdtempSync(join(tmpdir(), "lion-cli-bind-"));
+      const dataPath = join(folder, "input.json");
+      writeFileSync(
+        dataPath,
+        JSON.stringify({ items: [extra, 10], label: tag })
+      );
+
+      // Exact decimal arithmetic through --bind plus record loaded via --bind-file.
+      const program = JSON.stringify({
+        exact: [
+          "number/equals?",
+          ["number/add", "price", 0.2],
+          (cents + 20) / 100,
+        ],
+        label: ["object/get", "cfg", "label"],
+        over: "override",
+        total: [
+          "number/add",
+          ["array/at", ["object/get", "cfg", "items"], 0],
+          "bonus",
+        ],
+      });
+
+      const ran = spawnSync(
+        "bun",
+        [
+          BIN,
+          "--bind-file",
+          `cfg=${dataPath}`,
+          "--bind-file",
+          `override=${dataPath}`,
+          "-b",
+          `price=${(cents / 100).toFixed(2)}`,
+          "--bind",
+          `bonus=${extra}`,
+          "--bind",
+          `override=${JSON.stringify(tag)}`,
+          "-e",
+          program,
+        ],
+        { encoding: "utf8" }
+      );
+      expect(ran.status).toBe(0);
+      expect(JSON.parse(ran.stdout)).toEqual({
+        exact: true,
+        label: tag,
+        over: tag,
+        total: extra * 2,
+      });
+
+      // lion check also accepts --bind and --bind-file and flags typos against them.
+      const checked = spawnSync(
+        "bun",
+        [
+          BIN,
+          "check",
+          "--bind-file",
+          `cfg=${dataPath}`,
+          "--bind",
+          `bonus=${extra}`,
+          "-e",
+          JSON.stringify([
+            "number/add",
+            "bonus",
+            ["array/length", ["object/get", "cfg", "items"]],
+          ]),
+        ],
+        { encoding: "utf8" }
+      );
+      expect(checked.status).toBe(0);
+      expect(JSON.parse(checked.stdout)).toEqual([]);
+
+      // Invalid --bind syntax fails cleanly.
+      const bad = spawnSync("bun", [BIN, "--bind", "__proto__=1", "-e", "1"], {
+        encoding: "utf8",
+      });
+      expect(bad.status).not.toBe(0);
+    },
+    { arbitrary: { runs: 8 } }
+  );
 });

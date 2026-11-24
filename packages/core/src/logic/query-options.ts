@@ -8,6 +8,7 @@
  */
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
+import { AGGREGATORS } from "@/logic/aggregates";
 import { compareValues, render } from "@/logic/terms";
 
 interface SortKey {
@@ -90,7 +91,7 @@ export const readOptions = (form: keyof typeof FORMS, options: unknown) => {
 /** `"-points"` sorts by `?points` in descending order; a `?` is optional. */
 const SORT_KEY = /^(-?)\??([A-Za-z_][\w-]*)$/;
 
-const parseOrder = (order: unknown, outputs: readonly string[]) =>
+const parseOrder = (order: unknown, outputs: readonly string[] | undefined) =>
   Effect.gen(function* () {
     const specs = typeof order === "string" ? [order] : order;
     if (
@@ -104,14 +105,171 @@ const parseOrder = (order: unknown, outputs: readonly string[]) =>
     for (const spec of specs) {
       const match = SORT_KEY.exec(spec);
       const name = match?.[2];
-      if (name === undefined || !outputs.includes(name)) {
+      if (
+        name === undefined ||
+        (outputs !== undefined && !outputs.includes(name))
+      ) {
+        const available =
+          outputs === undefined
+            ? "none"
+            : outputs.map((output) => `?${output}`).join(", ") || "none";
         return yield* fail(
-          `Cannot order by ${JSON.stringify(spec)}: the query's variables are ${outputs.map((output) => `?${output}`).join(", ") || "none"}.`
+          `Cannot order by ${JSON.stringify(spec)}: the query's variables are ${available}.`
         );
       }
       keys.push({ descending: match?.[1] === "-", name });
     }
     return keys;
+  });
+
+/** Checks a query's options shape and sort-key syntax without requiring goal variables. */
+export const parseQueryOptionsShape = (
+  options: unknown
+): Effect.Effect<QueryOptions, LogicError> =>
+  options === undefined
+    ? Effect.succeed({ order: [] })
+    : Effect.gen(function* () {
+        const { order, ...rest } = yield* readOptions("query", options);
+        return {
+          ...(rest as Omit<QueryOptions, "order">),
+          order: order === undefined ? [] : yield* parseOrder(order, undefined),
+        };
+      });
+
+/** The first name a list repeats. */
+const repeatedIn = (names: readonly string[]) =>
+  names.find((name, at) => names.indexOf(name) !== at);
+
+const repeats = (name: string, column: string, where: string) =>
+  `Relation "${name}" repeats the column "${column}"${where}.`;
+
+const noColumn = (
+  name: string,
+  column: string,
+  use: "key" | "merge",
+  columns: readonly string[]
+) =>
+  `Relation "${name}" has no column "${column}" for its ${use}. Its columns are ${JSON.stringify(columns)}.`;
+
+const keyProblem = (
+  name: string,
+  columns: readonly string[],
+  key: readonly string[]
+) => {
+  if (key.length === 0) {
+    return `Relation "${name}" needs at least one key column.`;
+  }
+  const unknown = key.find((column) => !columns.includes(column));
+  if (unknown !== undefined) {
+    return noColumn(name, unknown, "key", columns);
+  }
+  const repeated = repeatedIn(key);
+  return repeated === undefined
+    ? undefined
+    : repeats(name, repeated, " in its key");
+};
+
+const MERGES = Object.keys(AGGREGATORS).map((kind) => `"aggregate/${kind}"`);
+
+const mergeProblem = (
+  name: string,
+  columns: readonly string[],
+  key: readonly string[] | undefined,
+  merge: readonly (readonly [string, string])[]
+) => {
+  if (key === undefined) {
+    return `Relation "${name}" merges the rows a key gets, so it needs a key, as in {"key": ["id"], "merge": {...}}.`;
+  }
+  for (const [column, kind] of merge) {
+    if (!columns.includes(column)) {
+      return noColumn(name, column, "merge", columns);
+    }
+    if (key.includes(column)) {
+      return `Relation "${name}" cannot merge "${column}": it is part of the key, and the key says which rows merge.`;
+    }
+    if (!MERGES.includes(JSON.stringify(kind))) {
+      return `Relation "${name}" merges "${column}" with ${JSON.stringify(kind)}, but a merge combines values with an aggregate, such as "aggregate/sum" or "aggregate/min".`;
+    }
+  }
+  return;
+};
+
+/** Checks a relation's columns, key, and merge against each other; undefined if valid. */
+export const validateRelationParts = (
+  name: string,
+  columns: readonly string[],
+  key?: readonly string[],
+  merge?: readonly (readonly [string, string])[]
+): string | undefined => {
+  const repeated = repeatedIn(columns);
+  if (repeated !== undefined) {
+    return repeats(name, repeated, "");
+  }
+  const badKey = key === undefined ? undefined : keyProblem(name, columns, key);
+  if (badKey !== undefined) {
+    return badKey;
+  }
+  return merge === undefined || merge.length === 0
+    ? undefined
+    : mergeProblem(name, columns, key, merge);
+};
+
+/** Parses and validates a relation's options record (`key`, `schema`, `merge`). */
+export const parseRelationOptions = (name: string, options: unknown) =>
+  Effect.gen(function* () {
+    const {
+      key: given,
+      merge,
+      schema,
+    } = options === undefined ? {} : yield* readOptions("relation", options);
+    const key = typeof given === "string" ? [given] : given;
+    const isKey =
+      Array.isArray(key) && key.every((column) => typeof column === "string");
+    if (!(key === undefined || isKey)) {
+      return yield* fail(
+        `The key of "${name}" must be a column name or a list of them, but found ${show(given)}.`
+      );
+    }
+    if (!(schema === undefined || typeof schema === "string")) {
+      return yield* fail(
+        `The schema of "${name}" must be the name of a declared schema, but found ${show(schema)}.`
+      );
+    }
+    const merges =
+      typeof merge === "object" && merge !== null && !Array.isArray(merge)
+        ? Object.entries(merge as Record<string, unknown>)
+        : undefined;
+    if (
+      !(
+        merge === undefined ||
+        merges?.every(([, kind]) => typeof kind === "string")
+      )
+    ) {
+      return yield* fail(
+        `The merge of "${name}" must be a record from a column to the aggregate that joins its values, as in {"price": "aggregate/min"}, but found ${show(merge)}.`
+      );
+    }
+    return {
+      key: key as readonly string[] | undefined,
+      merge: merges as readonly (readonly [string, string])[] | undefined,
+      schema,
+    };
+  });
+
+/** Validates a relation declaration's options, columns, key, and merge together. */
+export const parseRelationDeclaration = (
+  name: string,
+  columns: readonly string[],
+  options: unknown
+) =>
+  Effect.flatMap(parseRelationOptions(name, options), (parsed) => {
+    const problem = validateRelationParts(
+      name,
+      columns,
+      parsed.key,
+      parsed.merge
+    );
+    return problem === undefined ? Effect.succeed(parsed) : fail(problem);
   });
 
 /**

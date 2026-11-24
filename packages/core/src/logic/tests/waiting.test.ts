@@ -23,9 +23,6 @@ const SAVEABLE = { saveable: true };
 
 const OPTIONS = { timeout: 120_000 };
 
-/** What a snapshot cannot write: the prelude's lambda that calls itself. */
-const UNWRITABLE = /triangle|func\/partial/;
-
 /** Every value of `?x`, given to the expression by `in`. */
 const each = (inputs: readonly number[]) => ["in", "?x", ["quote", inputs]];
 
@@ -238,13 +235,8 @@ describe("a rule that holds waiting forms", () => {
           database
         );
         const snapshot = yield* attempt([["snapshot"]], database);
+        expect(snapshot.ok).toBe(true);
         if (!snapshot.ok) {
-          // Only a lambda that calls itself, or a function made while the
-          // program ran, has no written form.
-          expect(JSON.stringify([value, filter])).toMatch(UNWRITABLE);
-          expect(snapshot.message).toContain(
-            "is a function a snapshot cannot write"
-          );
           return;
         }
         // The loading environment has no prelude: the saved rule stands alone.

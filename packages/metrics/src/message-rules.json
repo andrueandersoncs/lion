@@ -1017,8 +1017,35 @@
       "data",
       [
         "quote",
-        "A snapshot writes data, the functions the environment names, and lambdas that do not call themselves"
+        "A snapshot writes data, the functions the environment names, and lambdas"
       ]
+    ],
+    [
+      "stated",
+      "call-head-typo",
+      "names",
+      [
+        "quote",
+        "An unbound bare call head near a special form or in-scope name warns of a possible typo"
+      ]
+    ],
+    [
+      "stated",
+      "cond-branch-reachable",
+      "forms",
+      ["quote", "No branch of a cond follows an else branch"]
+    ],
+    [
+      "stated",
+      "find-matches",
+      "library",
+      ["quote", "array/find without a fallback needs a matching item"]
+    ],
+    [
+      "stated",
+      "unique-parameters",
+      "forms",
+      ["quote", "Each parameter of a lambda is listed once"]
     ],
     [
       "stated",
@@ -1496,9 +1523,31 @@
     ],
     [
       "reads",
-      ["quote", "Index … is past the end of a list of length …."],
+      ["quote", "Index … is outside a list of length …."],
       "index-in-range"
     ],
+    [
+      "reads",
+      ["quote", "Nothing in scope binds \"…\". Did you mean \"…\"?"],
+      "call-head-typo"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Parameter \"…\" is listed more than once; only the last value is bound."
+      ],
+      "unique-parameters"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "This branch can never be reached: an \"else\" branch comes first and always matches."
+      ],
+      "cond-branch-reachable"
+    ],
+    ["reads", ["quote", "array/find found no matching item."], "find-matches"],
     [
       "reads",
       ["quote", "Invent the value in a rule that does not recurse."],
@@ -2325,7 +2374,7 @@
       "reads",
       [
         "quote",
-        "… is a function a snapshot cannot write. It can write the functions the environment names, and lambdas that do not call themselves"
+        "… is a function a snapshot cannot write. It can write the functions the environment names, and lambdas"
       ],
       "snapshot-writes-data"
     ],
@@ -2560,11 +2609,6 @@
       "reads",
       ["quote", "no inductive schema or lower-bounded integer variable found"],
       "solver-induction"
-    ],
-    [
-      "reads",
-      ["quote", "unverified recursive function …"],
-      "solver-induction-guard"
     ],
     [
       "reads",

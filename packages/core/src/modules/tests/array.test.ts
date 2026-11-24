@@ -504,3 +504,139 @@ describe("array/filter, array/reverse, and array/sort", () => {
     { arbitrary: { runs: 4 } }
   );
 });
+
+describe("array/at, array/indexOf, and array/find", () => {
+  const item = Arbitrary.schema(
+    Schema.Union([
+      Schema.Int.check(Schema.isBetween({ minimum: -5, maximum: 5 })),
+      Schema.Null,
+    ])
+  );
+  const items = Arbitrary.array(item, { maxLength: 6 });
+  const idx = Arbitrary.schema(
+    Schema.Int.check(Schema.isBetween({ minimum: -8, maximum: 8 }))
+  );
+
+  it.effect.prop(
+    "array/at indexes forward and backward, uses optional fallback, and fails with IndexOutOfBoundsError without one",
+    { list: items, index: idx, fallback: item },
+    ({ fallback, index, list }) =>
+      Effect.gen(function* () {
+        const resolved = index < 0 ? list.length + index : index;
+        const inBounds = resolved >= 0 && resolved < list.length;
+        const withFallback = yield* run(
+          ["array/at", ["quote", list], index, ["quote", fallback]],
+          stdlib
+        );
+        expect(withFallback).toEqual(inBounds ? list[resolved] : fallback);
+        const withoutFallback = yield* Effect.exit(
+          run(["array/at", ["quote", list], index], stdlib)
+        );
+        if (inBounds) {
+          expect(withoutFallback._tag).toBe("Success");
+          if (withoutFallback._tag === "Success") {
+            expect(withoutFallback.value).toEqual(list[resolved]);
+          }
+        } else {
+          expect(withoutFallback._tag).toBe("Failure");
+          expect(String(withoutFallback)).toContain("IndexOutOfBoundsError");
+        }
+        // Waiting on logic variables gives the same result as plain code.
+        expect(
+          yield* run(
+            [
+              "find",
+              ["array/at", "?xs", "?i", ["quote", fallback]],
+              ["and", ["=", "?xs", ["quote", list]], ["=", "?i", index]],
+            ],
+            stdlib
+          )
+        ).toEqual([withFallback]);
+      })
+  );
+
+  it.effect.prop(
+    "array/indexOf finds the first structurally equal item (including lists and records) or -1",
+    {
+      pairs: Arbitrary.array(Arbitrary.all([zipItem, zipItem]), {
+        maxLength: 6,
+      }),
+      target: Arbitrary.all([zipItem, zipItem]),
+    },
+    ({ pairs, target }) =>
+      Effect.gen(function* () {
+        const expected = pairs.findIndex(
+          ([a, b]) => a === target[0] && b === target[1]
+        );
+        expect(
+          yield* run(
+            ["array/indexOf", ["quote", pairs], ["quote", target]],
+            stdlib
+          )
+        ).toBe(expected);
+        const records = pairs.map(([a, b]) => ({ a, b }));
+        const reversedTarget = { b: target[1], a: target[0] };
+        expect(
+          yield* run(
+            ["array/indexOf", ["quote", records], ["quote", reversedTarget]],
+            stdlib
+          )
+        ).toBe(expected);
+      })
+  );
+
+  it.effect.prop(
+    "array/find returns the first matching item, stops early, respects optional fallback, and rejects non-boolean predicates",
+    {
+      list: Arbitrary.array(zipItem, { maxLength: 7 }),
+      limit: zipItem,
+      fallback: zipItem,
+    },
+    ({ fallback, limit, list }) =>
+      Effect.gen(function* () {
+        const pred = ["lambda", ["v"], ["number/greaterThan", "v", limit]];
+        const expected = list.find((v) => v > limit);
+        const withFallback = yield* run(
+          ["array/find", ["quote", list], pred, fallback],
+          stdlib
+        );
+        expect(withFallback).toBe(expected === undefined ? fallback : expected);
+        const withoutFallback = yield* Effect.exit(
+          run(["array/find", ["quote", list], pred], stdlib)
+        );
+        if (expected === undefined) {
+          expect(withoutFallback._tag).toBe("Failure");
+        } else {
+          expect(withoutFallback._tag).toBe("Success");
+          if (withoutFallback._tag === "Success") {
+            expect(withoutFallback.value).toBe(expected);
+          }
+        }
+        // Stops early: counts calls up to and including the first match.
+        const calls = (yield* run(
+          [
+            "begin",
+            ["define", "seen", 0],
+            [
+              "array/find",
+              ["quote", list],
+              [
+                "lambda",
+                ["v"],
+                [
+                  "begin",
+                  ["set!", "seen", ["number/add", "seen", 1]],
+                  ["number/greaterThan", "v", limit],
+                ],
+              ],
+              null,
+            ],
+            "seen",
+          ],
+          stdlib
+        )) as number;
+        const firstIdx = list.findIndex((v) => v > limit);
+        expect(calls).toBe(firstIdx < 0 ? list.length : firstIdx + 1);
+      })
+  );
+});

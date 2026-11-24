@@ -35,6 +35,24 @@ const distance = (a: string, b: string, limit: number) => {
 
 const MAX_EDITS = 2;
 
+/** The closest name in `candidates` within `maxEdits`, or null if none is close. */
+export const nearestName = (
+  name: string,
+  candidates: Iterable<string>,
+  maxEdits = MAX_EDITS
+): string | null => {
+  let nearest: string | null = null;
+  let fewest = maxEdits + 1;
+  for (const candidate of [...candidates].sort()) {
+    const edits = distance(name, candidate, maxEdits);
+    if (edits < fewest) {
+      fewest = edits;
+      nearest = candidate;
+    }
+  }
+  return nearest;
+};
+
 /**
  * What an unbound string of the form `module/name` is. It is a misspelled
  * name, and so an error, when it can only have been meant as a name: other
@@ -45,20 +63,10 @@ export const nameOrString = (
   scope: Scope,
   name: string
 ): Exit.Exit<string, UnboundNameError> => {
-  const names = boundNames(scope);
+  const names = [...boundNames(scope)].filter(isNamespacedName);
   const module = name.slice(0, name.indexOf("/") + 1);
-  let inModule = false;
-  let nearest: string | null = null;
-  let fewest = MAX_EDITS + 1;
-  // Only a name of the same form can be what was meant.
-  for (const candidate of [...names].filter(isNamespacedName).sort()) {
-    inModule ||= candidate.startsWith(module);
-    const edits = distance(name, candidate, MAX_EDITS);
-    if (edits < fewest) {
-      fewest = edits;
-      nearest = candidate;
-    }
-  }
+  const inModule = names.some((candidate) => candidate.startsWith(module));
+  const nearest = nearestName(name, names, MAX_EDITS);
   return inModule || nearest !== null
     ? Exit.fail(new UnboundNameError({ nearest, unbound: name }))
     : Exit.succeed(name);

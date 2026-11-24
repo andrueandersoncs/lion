@@ -9,6 +9,13 @@
 
 import { Effect, Exit, Option } from "effect";
 import {
+  collectRelationColumns,
+  formDiagnostic,
+  suggestBareCallHead,
+  warnDuplicateParams,
+  warnUnreachableCond,
+} from "@/analysis/checks";
+import {
   countOf,
   MalformedFormError,
   unboundSet,
@@ -350,7 +357,22 @@ const headMeaning = (
   return meaning[0].kind === "data" ? [{ kind: "unbound" }] : meaning;
 };
 
-/** Reads an expression, written in `context`. */
+const headNode = (
+  value: string,
+  path: StructuralPath,
+  context: Context
+): SemanticNode => {
+  const result = headMeaning(value, context);
+  const [meaning, diagnostic] = result;
+  const warning =
+    meaning.kind === "unbound" && diagnostic === undefined
+      ? suggestBareCallHead(value, context.scope)
+      : undefined;
+  return {
+    ...stringNode(value, path, false, result),
+    ...(warning === undefined ? {} : { warning }),
+  };
+};
 const analyzeNode = (
   expression: LionExpressionType,
   path: StructuralPath,
@@ -412,12 +434,7 @@ const analyzeNode = (
         order,
         node:
           order === 0 && typeof value === "string"
-            ? stringNode(
-                value,
-                [...path, 0],
-                false,
-                headMeaning(value, context)
-              )
+            ? headNode(value, [...path, 0], context)
             : analyzeNode(value, [...path, order], context),
       })),
     };
@@ -993,6 +1010,14 @@ const arityDiagnostic = (
  * flags calls that pass the wrong number of arguments to a statically known
  * function, relation, schema, or lambda.
  */
+const ENCLOSING_SCOPE = new Set([
+  "lambda",
+  "rule",
+  "query",
+  "find",
+  "invariant",
+]);
+
 const withCaseWarnings = (
   root: SemanticNode,
   expression: LionExpressionType,
@@ -1001,17 +1026,41 @@ const withCaseWarnings = (
   const flat = flattenAnalysis(root);
   const nodes = new Map(flat.map((node) => [node.pointer, node] as const));
   const arities = collectArities(flat, expression);
-  const warn = (node: SemanticNode): SemanticNode => {
-    const children = node.children.map((child) => ({
+  const relationColumns = collectRelationColumns(flat, expression);
+  const warn = (
+    node: SemanticNode,
+    inScope: boolean,
+    inAssuming: boolean
+  ): SemanticNode => {
+    const nextScope =
+      inScope ||
+      (node.specialForm !== undefined && ENCLOSING_SCOPE.has(node.specialForm));
+    let children = node.children.map((child) => ({
       ...child,
-      node: warn(child.node),
+      node: warn(
+        child.node,
+        nextScope,
+        node.specialForm === "assuming" && child.role === "change"
+      ),
     }));
-    const arityError = arityDiagnostic(node, expression, environment, arities);
+    if (node.specialForm === "lambda" && !node.quoted) {
+      children = warnDuplicateParams(children);
+    } else if (node.specialForm === "cond" && !node.quoted) {
+      children = warnUnreachableCond(children);
+    }
+    const diagnostic =
+      arityDiagnostic(node, expression, environment, arities) ??
+      formDiagnostic(node, expression, {
+        environment,
+        inAssuming,
+        inScope,
+        relationColumns,
+      });
     if (node.specialForm !== "match") {
       return {
         ...node,
         children,
-        ...(arityError === undefined ? {} : { diagnostic: arityError }),
+        ...(diagnostic === undefined ? {} : { diagnostic }),
       };
     }
     const cases = children.filter(
@@ -1056,5 +1105,5 @@ const withCaseWarnings = (
       ...(leftOut === undefined ? {} : { warning: leftOut }),
     };
   };
-  return warn(root);
+  return warn(root, false, false);
 };

@@ -10,7 +10,6 @@ import {
 } from "@/errors/evaluation";
 import { madeNow } from "@/evaluation/environment";
 import {
-  AGGREGATORS,
   aggregateCall,
   aggregator,
   LATTICE_AGGREGATES,
@@ -58,6 +57,7 @@ import {
   type Assertion,
   assertionProblem,
   exampleOf,
+  validateRelationParts,
 } from "@/logic/query-options";
 import {
   asked,
@@ -158,23 +158,6 @@ export class LogicDatabase {
   }
 }
 
-/** The first name a list repeats. */
-const repeatedIn = (names: readonly string[]) =>
-  names.find((name, at) => names.indexOf(name) !== at);
-
-/** A relation's columns, and its key's, are each named once. */
-const repeats = (name: string, column: string, where: string) =>
-  `Relation "${name}" repeats the column "${column}"${where}.`;
-
-/** A key and a merge name columns the relation has. */
-const noColumn = (
-  name: string,
-  column: string,
-  use: "key" | "merge",
-  columns: readonly string[]
-) =>
-  `Relation "${name}" has no column "${column}" for its ${use}. Its columns are ${JSON.stringify(columns)}.`;
-
 /** A name is a relation or a schema, never both. */
 const namedTwice = (name: string, kind: string, other: string) =>
   `"${name}" is a ${kind} here, so it cannot also name a ${other}.`;
@@ -182,24 +165,6 @@ const namedTwice = (name: string, kind: string, other: string) =>
 /** A relation or schema is declared again only as it was declared. */
 const declaredAlready = (kind: string, name: string, declared: string) =>
   `${kind} "${name}" is already declared with ${declared}.`;
-
-const keyProblem = (
-  name: string,
-  columns: readonly string[],
-  key: readonly string[]
-) => {
-  if (key.length === 0) {
-    return `Relation "${name}" needs at least one key column.`;
-  }
-  const unknown = key.find((column) => !columns.includes(column));
-  if (unknown !== undefined) {
-    return noColumn(name, unknown, "key", columns);
-  }
-  const repeated = repeatedIn(key);
-  return repeated === undefined
-    ? undefined
-    : repeats(name, repeated, " in its key");
-};
 
 /** What a relation's merge says, as the option writes it: column to aggregate. */
 export const mergeOption = (relation: RelationInfo) =>
@@ -223,37 +188,6 @@ const describeRelation = (relation: RelationInfo) => {
       ? ""
       : ` and merge ${JSON.stringify(mergeOption(relation))}`;
   return `${columns}${key}${merge}`;
-};
-
-const MERGES = Object.keys(AGGREGATORS).map((kind) => `"aggregate/${kind}"`);
-
-/**
- * What is wrong with a relation's merge: it needs a key, and names columns
- * outside the key, each with an aggregate. Every aggregate combines a key's
- * candidates counted, so what it gives does not depend on their order; only
- * a lattice aggregate can also go through recursion.
- */
-const mergeProblem = (
-  name: string,
-  columns: readonly string[],
-  key: readonly string[] | undefined,
-  merge: readonly (readonly [string, string])[]
-) => {
-  if (key === undefined) {
-    return `Relation "${name}" merges the rows a key gets, so it needs a key, as in {"key": ["id"], "merge": {...}}.`;
-  }
-  for (const [column, kind] of merge) {
-    if (!columns.includes(column)) {
-      return noColumn(name, column, "merge", columns);
-    }
-    if (key.includes(column)) {
-      return `Relation "${name}" cannot merge "${column}": it is part of the key, and the key says which rows merge.`;
-    }
-    if (!MERGES.includes(JSON.stringify(kind))) {
-      return `Relation "${name}" merges "${column}" with ${JSON.stringify(kind)}, but a merge combines values with an aggregate, such as "aggregate/sum" or "aggregate/min".`;
-    }
-  }
-  return;
 };
 
 /**
@@ -299,9 +233,9 @@ export const declareRelation = (
   key?: readonly string[],
   merge?: readonly (readonly [string, string])[]
 ): Effect.Effect<RelationInfo, LogicError> => {
-  const repeated = repeatedIn(columns);
-  if (repeated !== undefined) {
-    return logicError(repeats(name, repeated, ""));
+  const columnProblem = validateRelationParts(name, columns);
+  if (columnProblem !== undefined) {
+    return logicError(columnProblem);
   }
   if (database.schemas.has(name)) {
     return logicError(namedTwice(name, "schema", "relation"));
@@ -312,11 +246,7 @@ export const declareRelation = (
   if (used !== undefined) {
     return logicError(used);
   }
-  const problem =
-    (key === undefined ? undefined : keyProblem(name, columns, key)) ??
-    (merge === undefined || merge.length === 0
-      ? undefined
-      : mergeProblem(name, columns, key, merge));
+  const problem = validateRelationParts(name, columns, key, merge);
   if (problem !== undefined) {
     return logicError(problem);
   }
@@ -470,6 +400,13 @@ export const schemaBindings = (database: LogicDatabase) =>
 const computedCall = ({ args, relation }: Atom) =>
   show(relation.computed?.form(args.slice(0, relation.computed.inputs)));
 
+export const factNotDataMessage = (
+  column: string,
+  atomText: string,
+  arg: unknown
+) =>
+  `Facts may only contain data, but the "${column}" of ${atomText} is ${notData(arg)}`;
+
 const groundTuple = (
   database: LogicDatabase,
   atom: Atom
@@ -484,7 +421,11 @@ const groundTuple = (
   return at < 0
     ? Effect.succeed(atom.args)
     : logicError(
-        `Facts may only contain data, but the "${atom.relation.columns[at]}" of ${show(atom)} is ${notData(atom.args[at])}`
+        factNotDataMessage(
+          atom.relation.columns[at] as string,
+          show(atom),
+          atom.args[at]
+        )
       );
 };
 

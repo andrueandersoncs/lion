@@ -601,6 +601,12 @@ export interface LambdaInfo {
   readonly environment: Environment | undefined;
   readonly parameters: readonly string[];
   /**
+   * True for a closed expression whose body defines local bindings (such as a
+   * closed recursive lambda): `writeCall` keeps the outer `lambda` wrapper
+   * even with no arguments so those `define` forms stay lexically scoped.
+   */
+  readonly scoped?: true;
+  /**
    * The parameters as written, when some have contracts: names with
    * schemas; or the one name of a lambda that takes any number of
    * arguments, bound to the list of them.
@@ -766,7 +772,7 @@ const writeCall = (call: DeferredCall, writer: Writer) => {
   const kept = info.parameters.flatMap((name, at) =>
     args[at] === name ? [] : [at]
   );
-  return kept.length === 0
+  return kept.length === 0 && !info.scoped
     ? info.body
     : [
         ["lambda", kept.map((at) => info.parameters[at]), info.body],

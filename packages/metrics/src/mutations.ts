@@ -1096,21 +1096,21 @@ export const MUTATIONS: readonly Mutation[] = [
   },
   {
     name: "a relation whose columns repeat a name names a column that is not the one repeated",
-    file: core("logic/database.ts"),
+    file: core("logic/query-options.ts"),
     find: "names.find((name, at) => names.indexOf(name) !== at)",
     replace: "names.find((name, at) => names.lastIndexOf(name) !== at)",
     tests: [WORDING_TESTS],
   },
   {
     name: "a key that repeats a column is told as the columns would be",
-    file: core("logic/database.ts"),
+    file: core("logic/query-options.ts"),
     find: 'repeats(name, repeated, " in its key")',
     replace: 'repeats(name, repeated, "")',
     tests: [WORDING_TESTS],
   },
   {
     name: "a merge that names a column the relation lacks is told as a key would be",
-    file: core("logic/database.ts"),
+    file: core("logic/query-options.ts"),
     find: 'return noColumn(name, column, "merge", columns);',
     replace: 'return noColumn(name, column, "key", columns);',
     tests: [WORDING_TESTS],
@@ -1957,24 +1957,23 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "number/subtract on unknowns adds",
     file: core("logic/symbolic.ts"),
-    find: "              : rest.reduce((a, b) => minus(a, b), first as Linear)",
-    replace:
-      "              : rest.reduce((a, b) => plus(a, b), first as Linear)",
+    find: "                (a, b) => polySub(a, b),",
+    replace: "                (a, b) => polyAdd(a, b),",
     tests: SOLVING_TESTS,
   },
   {
     name: "number/absolute of an unknown forgets the negative case",
     file: core("logic/symbolic.ts"),
-    find: "        sym: numberSym(times(x, negate(ONE))),",
-    replace: "        sym: numberSym(x),",
+    find: "        cases.push({ sym: polyScale(x, negate(ONE)), when: lt });",
+    replace: "        cases.push({ sym: x, when: lt });",
     tests: SOLVING_TESTS,
   },
   {
     name: "number/min and number/max of unknowns choose the other one",
     file: core("logic/symbolic.ts"),
-    find: "              ? minus(chosen, other)\n              : minus(other, chosen);",
+    find: "      const ahead = greatest ? polySub(chosen, other) : polySub(other, chosen);",
     replace:
-      "              ? minus(other, chosen)\n              : minus(chosen, other);",
+      "      const ahead = greatest ? polySub(other, chosen) : polySub(chosen, other);",
     tests: SOLVING_TESTS,
   },
   {
@@ -1994,8 +1993,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a solver step with nothing to keep keeps every answer",
     file: core("logic/model.ts"),
-    find: "    return [...out.values()];\n  }).pipe(",
-    replace: "    return first ? [vars] : [...out.values()];\n  }).pipe(",
+    find: "    return [...out.values()];\n  });",
+    replace: "    return first ? [vars] : [...out.values()];\n  });",
     tests: SOLVING_TESTS,
   },
   {
@@ -2098,9 +2097,9 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "in as a test of a solved list never holds",
     file: core("logic/symbolic.ts"),
-    find: "                    (f, item) => or(f, equal(syms[0] as Sym, item)),",
+    find: "                Effect.map(orEqualAny(syms[0] as Sym, items, context), (f) =>\n                  and(when, f)",
     replace:
-      "                    (f, item) => and(f, equal(syms[0] as Sym, item)),",
+      "                Effect.map(orEqualAny(syms[0] as Sym, items, context), () =>\n                  FALSE",
     tests: SOLVING_TESTS,
   },
   {
@@ -2143,8 +2142,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a lambda written where the solver runs is refused",
     file: core("logic/symbolic.ts"),
-    find: "        : Effect.succeed(one(closureOf(rest, where)));",
-    replace: '        : refused("the form lambda");',
+    find: "    return Effect.succeed(one(closureOf([parameters, body], where)));",
+    replace: '    return refused("the form lambda");',
     tests: SOLVING_TESTS,
   },
   {
@@ -2826,9 +2825,9 @@ export const MUTATIONS: readonly Mutation[] = [
   },
   {
     name: "a merge takes only lattice aggregates",
-    file: core("logic/database.ts"),
+    file: core("logic/query-options.ts"),
     find: "const MERGES = Object.keys(AGGREGATORS).map(",
-    replace: "const MERGES = LATTICE_AGGREGATES.map(",
+    replace: 'const MERGES = ["min", "max", "shortest", "union"].map(',
     tests: [CANDIDATE_TESTS],
   },
   {
@@ -3071,8 +3070,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a name that is not of the form module/name is suggested for one that is",
     file: core("evaluation/base-forms/primitive.ts"),
-    find: "  for (const candidate of [...names].filter(isNamespacedName).sort()) {",
-    replace: "  for (const candidate of [...names].sort()) {",
+    find: "  const names = [...boundNames(scope)].filter(isNamespacedName);",
+    replace: "  const names = [...boundNames(scope)];",
     tests: ["src/evaluation/tests/names.test.ts"],
   },
   {
@@ -3126,7 +3125,7 @@ export const MUTATIONS: readonly Mutation[] = [
   },
   {
     name: "the relation option schema takes a shape written in place",
-    file: core("evaluation/special-forms/logic.ts"),
+    file: core("logic/query-options.ts"),
     find: '    if (!(schema === undefined || typeof schema === "string")) {',
     replace: "    if (false) {",
     tests: ["src/logic/tests/schemas.test.ts"],
@@ -5234,7 +5233,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "static analysis omits wrong-arity diagnostics",
     file: core("analysis/analyze.ts"),
-    find: "        ...(arityError === undefined ? {} : { diagnostic: arityError }),",
+    find: "        ...(diagnostic === undefined ? {} : { diagnostic }),",
     replace: "",
     tests: ["src/analysis/tests/analyze.test.ts"],
   },
@@ -5304,5 +5303,89 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "  if (!Array.isArray(proof.cases) || proof.cases.length === 0) {",
     replace: "  if (!Array.isArray(proof.cases)) {",
     tests: ["src/logic/tests/proof.test.ts"],
+  },
+  // Top-5 user improvements: recursive lambda snapshots, stdlib, polynomial solver,
+  // idiomatic symbolic solver, and static analysis checks.
+  {
+    name: "recursive lambda snapshotting skips cycle closing",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "  if (cycle !== undefined) {\n    return closeCycle(cycle, closed);\n  }",
+    replace: "",
+    tests: ["src/logic/tests/snapshot.test.ts"],
+  },
+  {
+    name: "bodyNames caches parameters on body AST across lambdas",
+    file: core("evaluation/hoisting.ts"),
+    find: "export const bodyNames = (\n  parameters: readonly string[],\n  body: unknown,\n  scope: Scope | undefined\n): readonly string[] => [\n  ...new Set([\n    ...parameters,\n    ...cachedDefined(body, scopeWith(parameters, scope)),\n  ]),\n];",
+    replace:
+      'export const bodyNames = (\n  parameters: readonly string[],\n  body: unknown,\n  scope: Scope | undefined\n): readonly string[] => {\n  const known = typeof body === "object" && body !== null ? DEFINED.get(body) : undefined;\n  if (known !== undefined) return known;\n  const names = [...new Set([...parameters, ...definedIn(body, scopeWith(parameters, scope))])];\n  if (typeof body === "object" && body !== null) DEFINED.set(body, names);\n  return names;\n};',
+    tests: ["src/logic/tests/snapshot.test.ts"],
+  },
+  {
+    name: "string/replaceAll interprets JavaScript replacement patterns like $&",
+    file: core("modules/string.ts"),
+    find: "(text, search, replacement) => text.replaceAll(search, () => replacement)",
+    replace:
+      "(text, search, replacement) => text.replaceAll(search, replacement)",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "object/fromEntries does not reject __proto__ keys",
+    file: core("modules/object.ts"),
+    find: "[Schema.Array(Schema.Tuple([RecordKeySchema, Schema.Unknown]))]",
+    replace: "[Schema.Array(Schema.Tuple([Schema.String, Schema.Unknown]))]",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "polynomial quadratic solver disables integer root bracketing",
+    file: core("logic/polynomial.ts"),
+    find: "    if (next >= x) {\n      return x;\n    }",
+    replace: "    if (next >= x) {\n      return x + 1n;\n    }",
+    tests: ["src/logic/tests/polynomial.test.ts"],
+  },
+  {
+    name: "symbolic solver drops guard check when proving lambda contracts",
+    file: core("logic/symbolic.ts"),
+    find: "const isGuaranteed = (fit: Formula, context: Context): boolean => {\n  const violation = and(context.guard ?? TRUE, not(fit));",
+    replace:
+      "const isGuaranteed = (_fit: Formula, _context: Context): boolean => {\n  return true;\n  const violation = and(_context.guard ?? TRUE, not(_fit));",
+    tests: ["src/logic/tests/symbolic-idiomatic.test.ts"],
+  },
+  {
+    name: "symbolic object/set drops existing record fields",
+    file: core("logic/symbolic.ts"),
+    find: "    const next = new Map(fields);\n    next.set(key.value, value as Sym);",
+    replace:
+      "    const next = new Map<string, Sym>();\n    next.set(key.value, value as Sym);",
+    tests: ["src/logic/tests/symbolic-idiomatic.test.ts"],
+  },
+  {
+    name: "symbolic quantity/add ignores unit mismatch",
+    file: core("logic/symbolic.ts"),
+    find: "    const other = qs.find((q) => !sameSymUnit(q.unit, first.unit));",
+    replace: "    const other = undefined;",
+    tests: ["src/logic/tests/symbolic-idiomatic.test.ts"],
+  },
+  {
+    name: "static analysis skips special-form diagnostics",
+    file: core("analysis/analyze.ts"),
+    find: "    const diagnostic =\n      arityDiagnostic(node, expression, environment, arities) ??\n      formDiagnostic(node, expression, {\n        environment,\n        inAssuming,\n        inScope,\n        relationColumns,\n      });",
+    replace:
+      "    const diagnostic = arityDiagnostic(node, expression, environment, arities);",
+    tests: ["src/analysis/tests/checks.test.ts"],
+  },
+  {
+    name: "static analysis skips unreachable cond warnings",
+    file: core("analysis/checks.ts"),
+    find: '    if (child.node.children[0]?.node.meaning?.kind === "keyword") {',
+    replace: "    if (false) {",
+    tests: ["src/analysis/tests/checks.test.ts"],
+  },
+  {
+    name: "static analysis skips near-miss bare call-head suggestions",
+    file: core("analysis/checks.ts"),
+    find: "  const nearest = nearestName(name, candidates, maxEdits);",
+    replace: "  const nearest = null;",
+    tests: ["src/analysis/tests/checks.test.ts"],
   },
 ];

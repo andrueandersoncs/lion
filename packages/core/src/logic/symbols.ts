@@ -14,6 +14,13 @@
 import { LogicError } from "@/errors/evaluation";
 import { Delayed } from "@/evaluation/special-forms/delay";
 import {
+  type NumberSym,
+  numberSym,
+  type PolyComparison,
+  polySub,
+  solveUnivariateQuadratic,
+} from "@/logic/polynomial";
+import {
   isPredicate,
   listWithoutMost,
   namesItself,
@@ -49,7 +56,6 @@ import {
   compare,
   divide,
   isNumber,
-  isZero,
   multiply,
   negate,
   ONE,
@@ -349,12 +355,7 @@ export const opaqueKindOf = (value: unknown): OpaqueKind | undefined => {
 
 /** What a symbolic value is: a number, a truth, a value, an opaque kind, or a record or list of these. */
 export type Sym =
-  | {
-      readonly kind: "number";
-      readonly linear: Linear;
-      /** Higher-degree monomial terms (sorted `"a*b"` keys); omitted when purely linear. */
-      readonly nonlinear?: ReadonlyMap<string, Rational>;
-    }
+  | NumberSym
   | { readonly kind: "truth"; readonly formula: Formula }
   | { readonly kind: "value"; readonly value: unknown }
   | {
@@ -393,7 +394,11 @@ export type Sym =
    */
   | {
       readonly kind: "closure";
-      readonly apply: (args: readonly Sym[], depth: number) => unknown;
+      readonly apply: (
+        args: readonly Sym[],
+        depth: number,
+        guard?: Formula
+      ) => unknown;
       readonly info?: LambdaInfo;
       readonly scope?: ReadonlyMap<string, Cases>;
     };
@@ -403,153 +408,42 @@ export type Cases = readonly { readonly when: Formula; readonly sym: Sym }[];
 
 export const one = (sym: Sym): Cases => [{ sym, when: TRUE }];
 
-export type NumberSym = Extract<Sym, { readonly kind: "number" }>;
-
-export const numberSym = (
-  linear: Linear,
-  nonlinear?: ReadonlyMap<string, Rational>
-): NumberSym =>
-  nonlinear !== undefined && nonlinear.size > 0
-    ? { kind: "number", linear, nonlinear }
-    : { kind: "number", linear };
-
-const monomialKey = (factors: readonly string[]): string =>
-  [...factors].sort().join("*");
-
-const polyTerms = (sym: NumberSym): [readonly string[], Rational][] => {
-  const out: [readonly string[], Rational][] = [];
-  if (!isZero(sym.linear.constant)) {
-    out.push([[], sym.linear.constant]);
+/** Reduces a univariate quadratic `sym op 0` to a canonical linear formula, or undefined. */
+export const quadraticFormula = (
+  sym: NumberSym,
+  op: PolyComparison,
+  sorts?: ReadonlyMap<string, Sort>
+): Formula | undefined => {
+  const raw = solveUnivariateQuadratic(sym, op, sorts);
+  if (raw === undefined) {
+    return undefined;
   }
-  for (const [name, k] of sym.linear.coefficients) {
-    if (!isZero(k)) {
-      out.push([[name], k]);
-    }
-  }
-  if (sym.nonlinear !== undefined) {
-    for (const [key, k] of sym.nonlinear) {
-      if (!isZero(k)) {
-        out.push([key.split("*"), k]);
-      }
-    }
-  }
-  return out;
-};
-
-const fromPolyTerms = (
-  terms: Iterable<readonly [readonly string[], Rational]>
-): NumberSym => {
-  let constantVal: Rational = ZERO;
-  const coeffs = new Map<string, Rational>();
-  const nonlinear = new Map<string, Rational>();
-  for (const [factors, k] of terms) {
-    if (isZero(k)) {
-      continue;
-    }
-    if (factors.length === 0) {
-      constantVal = add(constantVal, k);
-    } else if (factors.length === 1) {
-      const name = factors[0] as string;
-      const next = add(coeffs.get(name) ?? ZERO, k);
-      if (isZero(next)) {
-        coeffs.delete(name);
-      } else {
-        coeffs.set(name, next);
-      }
-    } else {
-      const key = monomialKey(factors);
-      const next = add(nonlinear.get(key) ?? ZERO, k);
-      if (isZero(next)) {
-        nonlinear.delete(key);
-      } else {
-        nonlinear.set(key, next);
-      }
-    }
-  }
-  return numberSym(
-    { coefficients: coeffs, constant: constantVal },
-    nonlinear.size > 0 ? nonlinear : undefined
+  return raw.reduce<Formula>(
+    (sofar, conj) =>
+      or(
+        sofar,
+        conj.reduce<Formula>((g, c) => and(g, atom(c)), TRUE)
+      ),
+    FALSE
   );
 };
 
-export const polyAdd = (a: NumberSym, b: NumberSym): NumberSym => {
-  if (a.nonlinear === undefined && b.nonlinear === undefined) {
-    const coeffs = new Map(a.linear.coefficients);
-    for (const [name, k] of b.linear.coefficients) {
-      const next = add(coeffs.get(name) ?? ZERO, k);
-      if (isZero(next)) {
-        coeffs.delete(name);
-      } else {
-        coeffs.set(name, next);
-      }
-    }
-    return numberSym({
-      coefficients: coeffs,
-      constant: add(a.linear.constant, b.linear.constant),
-    });
-  }
-  return fromPolyTerms([...polyTerms(a), ...polyTerms(b)]);
-};
-
-export const polySub = (a: NumberSym, b: NumberSym): NumberSym =>
-  a.nonlinear === undefined && b.nonlinear === undefined
-    ? numberSym(minus(a.linear, b.linear))
-    : fromPolyTerms([
-        ...polyTerms(a),
-        ...polyTerms(b).map(([f, k]) => [f, negate(k)] as const),
-      ]);
-
-export const polyScale = (a: NumberSym, factor: Rational): NumberSym => {
-  if (isZero(factor)) {
-    return numberSym(constant(ZERO));
-  }
-  if (a.nonlinear === undefined) {
-    return numberSym(times(a.linear, factor));
-  }
-  const nonlinear = new Map<string, Rational>();
-  for (const [key, k] of a.nonlinear) {
-    const next = multiply(k, factor);
-    if (!isZero(next)) {
-      nonlinear.set(key, next);
-    }
-  }
-  return numberSym(times(a.linear, factor), nonlinear);
-};
-
-export const polyMul = (a: NumberSym, b: NumberSym): NumberSym => {
-  const ta = polyTerms(a);
-  const tb = polyTerms(b);
-  const prod: [readonly string[], Rational][] = [];
-  for (const [fa, ka] of ta) {
-    for (const [fb, kb] of tb) {
-      prod.push([[...fa, ...fb], multiply(ka, kb)]);
-    }
-  }
-  return fromPolyTerms(prod);
-};
-
-export const polySubstitute = (
+/** Reduces `sym op 0` to a canonical linear formula, or undefined when nonlinear cannot be decided. */
+export const polyFormula = (
   sym: NumberSym,
-  varName: string,
-  replacement: NumberSym
-): NumberSym => {
-  let acc: NumberSym = numberSym(constant(ZERO));
-  for (const [factors, k] of polyTerms(sym)) {
-    let termVal: NumberSym = numberSym(constant(k));
-    const kept: string[] = [];
-    for (const f of factors) {
-      if (f === varName) {
-        termVal = polyMul(termVal, replacement);
-      } else {
-        kept.push(f);
-      }
+  op: PolyComparison,
+  sorts?: ReadonlyMap<string, Sort>
+): Formula | undefined => {
+  if (sym.nonlinear === undefined) {
+    if (op === "<") {
+      return atom({ linear: times(sym.linear, negate(ONE)), relation: ">" });
     }
-    if (kept.length > 0) {
-      termVal = polyMul(termVal, fromPolyTerms([[kept, ONE]]));
+    if (op === "<=") {
+      return atom({ linear: times(sym.linear, negate(ONE)), relation: ">=" });
     }
-    acc = polyAdd(acc, termVal);
+    return atom({ linear: sym.linear, relation: op });
   }
-  return acc;
+  return quadraticFormula(sym, op, sorts);
 };
 
 export const truthSym = (formula: Formula): Sym => ({ formula, kind: "truth" });
@@ -725,14 +619,72 @@ const equalInductive = (a: Sym, b: Sym): Formula | undefined => {
   return undefined;
 };
 
-/** The formula that two symbolic values are the same value. */
-export const equal = (
+const equalRecord = (
   a: Sym,
   b: Sym,
-  atoms?: Map<unknown, number>
-): Formula => {
+  atoms?: Map<unknown, number>,
+  sorts?: ReadonlyMap<string, Sort>
+): Formula | undefined => {
+  const [left, right] = [fieldsOf(a), fieldsOf(b)];
+  if (
+    left === undefined ||
+    right === undefined ||
+    left.size !== right.size ||
+    ![...left.keys()].every((key) => right.has(key))
+  ) {
+    return FALSE;
+  }
+  let sofar: Formula = TRUE;
+  for (const [key, field] of left) {
+    const each = tryEqual(field, right.get(key) as Sym, atoms, sorts);
+    if (each === undefined) {
+      return undefined;
+    }
+    sofar = and(sofar, each);
+  }
+  return sofar;
+};
+
+const equalList = (
+  a: Sym,
+  b: Sym,
+  atoms?: Map<unknown, number>,
+  sorts?: ReadonlyMap<string, Sort>
+): Formula | undefined => {
+  const [left, right] = [itemsOf(a), itemsOf(b)];
+  if (
+    left === undefined ||
+    right === undefined ||
+    left.length !== right.length
+  ) {
+    return FALSE;
+  }
+  let sofar: Formula = TRUE;
+  for (let at = 0; at < left.length; at += 1) {
+    const each = tryEqual(left[at] as Sym, right[at] as Sym, atoms, sorts);
+    if (each === undefined) {
+      return undefined;
+    }
+    sofar = and(sofar, each);
+  }
+  return sofar;
+};
+
+/**
+ * The formula that two symbolic values are the same value, or undefined when
+ * equality involves a nonlinear polynomial that cannot be decided.
+ */
+export const tryEqual = (
+  a: Sym,
+  b: Sym,
+  atoms?: Map<unknown, number>,
+  sorts?: ReadonlyMap<string, Sort>
+): Formula | undefined => {
   if (a.kind === "number" && b.kind === "number") {
-    return atom({ linear: minus(a.linear, b.linear), relation: "=" });
+    if (a.nonlinear === undefined && b.nonlinear === undefined) {
+      return atom({ linear: minus(a.linear, b.linear), relation: "=" });
+    }
+    return polyFormula(polySub(a, b), "=", sorts);
   }
   if (a.kind === "truth" && b.kind === "truth") {
     return or(and(a.formula, b.formula), and(not(a.formula), not(b.formula)));
@@ -748,10 +700,10 @@ export const equal = (
     return equalOpaque(b, a, atoms);
   }
   if (a.kind === "record" || b.kind === "record") {
-    return equalRecords(a, b, atoms);
+    return equalRecord(a, b, atoms, sorts);
   }
   if (a.kind === "list" || b.kind === "list") {
-    return equalLists(a, b, atoms);
+    return equalList(a, b, atoms, sorts);
   }
   if (a.kind === "value" && b.kind === "value") {
     return sameValue(a.value, b.value) ? TRUE : FALSE;
@@ -760,40 +712,24 @@ export const equal = (
   return FALSE;
 };
 
-const equalRecords = (
+/** The formula that two symbolic values are the same value (for linear values). */
+export const solverRefusedMessage = (what: string) =>
+  `The solver cannot reason about ${what}: it decides sums of numbers times known numbers, comparisons of them, and equality of values.`;
+
+export const equal = (
   a: Sym,
   b: Sym,
-  atoms?: Map<unknown, number>
+  atoms?: Map<unknown, number>,
+  sorts?: ReadonlyMap<string, Sort>
 ): Formula => {
-  const [left, right] = [fieldsOf(a), fieldsOf(b)];
-  if (
-    left === undefined ||
-    right === undefined ||
-    left.size !== right.size ||
-    ![...left.keys()].every((key) => right.has(key))
-  ) {
-    return FALSE;
+  const result = tryEqual(a, b, atoms, sorts);
+  if (result === undefined) {
+    const op = "number/multiply";
+    throw new LogicError({
+      message: solverRefusedMessage(`${op} of two unknowns`),
+    });
   }
-  return [...left].reduce<Formula>(
-    (sofar, [key, field]) =>
-      and(sofar, equal(field, right.get(key) as Sym, atoms)),
-    TRUE
-  );
-};
-
-const equalLists = (a: Sym, b: Sym, atoms?: Map<unknown, number>): Formula => {
-  const [left, right] = [itemsOf(a), itemsOf(b)];
-  if (
-    left === undefined ||
-    right === undefined ||
-    left.length !== right.length
-  ) {
-    return FALSE;
-  }
-  return left.reduce<Formula>(
-    (sofar, item, at) => and(sofar, equal(item, right[at] as Sym, atoms)),
-    TRUE
-  );
+  return result;
 };
 
 export const fieldsOf = (sym: Sym): ReadonlyMap<string, Sym> | undefined => {
@@ -1222,8 +1158,10 @@ const toSeenMap = (
   seen: ReadonlySet<SchemaInfo> | ReadonlyMap<SchemaInfo, number>
 ): ReadonlyMap<SchemaInfo, number> =>
   seen instanceof Map
-    ? seen
-    : new Map([...seen].map((info) => [info, 0] as const));
+    ? (seen as ReadonlyMap<SchemaInfo, number>)
+    : new Map(
+        [...(seen as ReadonlySet<SchemaInfo>)].map((info) => [info, 0] as const)
+      );
 
 export const shapeOf = (
   schema: unknown,

@@ -17450,7 +17450,7 @@
             ["repo/read", "packages/cli/src/index.ts"],
             [
               "quote",
-              "const program = yield* readJson(text);\n      const result = yield* run(program, stdlib, { database: store });"
+              "const program = yield* readJson(text);\n      const result = yield* run(\n        program,"
             ]
           ],
           [
@@ -26004,6 +26004,342 @@
             ["boolean/not", ["proof/valid?", "forged"]]
           ],
           ["quote", "valid-and-rejects-forged"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "snapshot-rule-holding-recursive-lambda",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "fact-fn",
+        [
+          "lambda",
+          ["n"],
+          [
+            "cond",
+            [["number/lessThanOrEqualTo", "n", 1], 1],
+            [
+              "else",
+              ["number/multiply", "n", ["fact-fn", ["number/subtract", "n", 1]]]
+            ]
+          ]
+        ]
+      ],
+      ["relation", "num", ["n"]],
+      ["relation", "fac", ["n", "f"]],
+      ["fact", ["num", 4]],
+      ["rule", ["fac", "?n", ["fact-fn", "?n"]], ["num", "?n"]],
+      ["define", "saved", ["snapshot"]],
+      [
+        "cond",
+        [["value/array?", "saved"], ["quote", "written"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "recursive-lambda-name-in-rule",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "f",
+        [
+          "lambda",
+          ["n"],
+          [
+            "cond",
+            [["number/lessThanOrEqualTo", "n", 0], 0],
+            ["else", ["number/add", "n", ["f", ["number/subtract", "n", 1]]]]
+          ]
+        ]
+      ],
+      ["relation", "num", ["n"]],
+      ["relation", "out", ["n", "v"]],
+      ["fact", ["num", 3]],
+      ["rule", ["out", "?n", ["f", "?n"]], ["num", "?n"]],
+      ["set!", "f", ["lambda", ["n"], 999]],
+      [
+        "cond",
+        [
+          ["=", ["find", "?v", ["out", 3, "?v"]], ["quote", [6]]],
+          ["quote", "closed"]
+        ],
+        ["else", ["quote", "looked-up-each-run"]]
+      ]
+    ]
+  },
+  {
+    "case": "everyday-stdlib-helpers",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "and",
+          [
+            "number/equals?",
+            [
+              "number/add",
+              ["object/get", ["object/json-parse", "{\"x\": 0.1}"], "x"],
+              0.2
+            ],
+            0.3
+          ],
+          [
+            "=",
+            [
+              "object/fromEntries",
+              [
+                "object/entries",
+                [
+                  "object/merge",
+                  {
+                    "a": 1
+                  },
+                  {
+                    "b": 2
+                  }
+                ]
+              ]
+            ],
+            {
+              "a": 1,
+              "b": 2
+            }
+          ],
+          [
+            "string/equals?",
+            [
+              "string/replaceAll",
+              ["string/toLowerCase", ["string/trim", "  A-B  "]],
+              "-",
+              "_"
+            ],
+            "a_b"
+          ],
+          ["string/equals?", ["string/toUpperCase", "lion"], "LION"],
+          ["=", ["array/at", ["quote", [10, 20, 30]], -1], 30],
+          [
+            "=",
+            [
+              "array/indexOf",
+              [
+                "quote",
+                [
+                  1,
+                  {
+                    "k": 2
+                  }
+                ]
+              ],
+              {
+                "k": 2
+              }
+            ],
+            1
+          ],
+          [
+            "=",
+            [
+              "array/find",
+              ["quote", [1, 4, 2]],
+              ["lambda", ["x"], ["number/greaterThan", "x", 2]]
+            ],
+            4
+          ]
+        ],
+        ["quote", "works"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "solver-univariate-quadratic",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "and",
+          [
+            "=",
+            [
+              "find",
+              "?x",
+              [
+                "and",
+                ["schema/fits?", "?x", "value/integer?"],
+                [
+                  "=",
+                  [
+                    "number/add",
+                    [
+                      "number/subtract",
+                      ["number/power", "?x", 2],
+                      ["number/multiply", 5, "?x"]
+                    ],
+                    6
+                  ],
+                  0
+                ]
+              ]
+            ],
+            ["quote", [2, 3]]
+          ],
+          [
+            "=",
+            [
+              "query",
+              [
+                "not",
+                [
+                  "exists",
+                  ["?n"],
+                  [
+                    "and",
+                    ["schema/fits?", "?n", "value/integer?"],
+                    [
+                      "not",
+                      [
+                        "=",
+                        [
+                          "number/add",
+                          ["number/power", "?n", 2],
+                          ["number/multiply", 2, "?n"],
+                          1
+                        ],
+                        ["number/power", ["number/add", "?n", 1], 2]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            ["quote", [{}]]
+          ]
+        ],
+        ["quote", "decided"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "solver-idiomatic-operations",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["define", "pos", ["lambda", ["v"], ["number/greaterThan", "v", 0]]],
+      [
+        "define",
+        "safeInc",
+        [
+          "lambda",
+          [["x", "pos"]],
+          ["number/add", ["schema/assert", "x", "pos"], 1]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              [
+                "query",
+                [
+                  "and",
+                  ["schema/fits?", "?x", "value/integer?"],
+                  ["number/greaterThan", "?x", 0],
+                  [
+                    "not",
+                    [
+                      "=",
+                      [
+                        "object/get",
+                        [
+                          "object/set",
+                          {
+                            "v": 0
+                          },
+                          "v",
+                          ["safeInc", "?x"]
+                        ],
+                        "v"
+                      ],
+                      ["number/add", "?x", 1]
+                    ]
+                  ]
+                ]
+              ],
+              ["quote", []]
+            ],
+            [
+              "=",
+              [
+                "query",
+                [
+                  "and",
+                  ["schema/fits?", "?a", "value/integer?"],
+                  ["schema/fits?", "?b", "value/integer?"],
+                  [
+                    "not",
+                    [
+                      "number/lessThanOrEqualTo",
+                      ["aggregate/min", ["array/make", "?a", "?b"]],
+                      ["aggregate/mean", ["array/make", "?a", "?b"]]
+                    ]
+                  ]
+                ]
+              ],
+              ["quote", []]
+            ],
+            [
+              "=",
+              [
+                "find",
+                "?d",
+                [
+                  "and",
+                  ["schema/fits?", "?d", "value/number?"],
+                  [
+                    "=",
+                    [
+                      "quantity/in",
+                      [
+                        "quantity/add",
+                        {
+                          "value": "?d",
+                          "unit": {
+                            "m": 1
+                          }
+                        },
+                        {
+                          "value": 5,
+                          "unit": {
+                            "m": 1
+                          }
+                        }
+                      ],
+                      {
+                        "m": 1
+                      }
+                    ],
+                    12
+                  ]
+                ]
+              ],
+              ["quote", [7]]
+            ]
+          ],
+          ["quote", "decided"]
         ],
         ["else", ["quote", "other"]]
       ]

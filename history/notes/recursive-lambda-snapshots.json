@@ -1,0 +1,56 @@
+{
+  "title": "Close recursive and mutually recursive lambdas into self-contained blocks for rules and snapshots",
+  "context": "When a rule or invariant held a lambda, Lion replaced free names with their values so snapshots could write the rule and redefining a name later did not change it. Previously, a lambda that called itself (directly or through a mutual cycle) was left unclosed: it looked its own name up dynamically on every run, could not be saved in a snapshot, had no canonical rule key for deduplication or retraction, and was one of only three remaining exceptions on the interop grid.",
+  "decision": "Detect strongly connected cycles of lambdas (including cycles passing through `func/partial`, arrays, records, or aliases) when closing values for rules, invariants, and snapshots, and rewrite each cycle into a lexically hygienic self-contained block `[[lambda, outerNames, [begin, [define, ...], ..., root]], ...outerValues]`. Mark that outer wrapper as `scoped` so `writeCall` preserves the wrapper even when `outerNames` is empty, keeping the inner `define` bindings lexically private. Reuse safe original binding names so repeated snapshot/reload cycles are idempotent.",
+  "consequences": "Self-recursive and mutually recursive lambdas are closed into self-contained blocks when a rule is written, so redefining a name later does not change the rule, and a snapshot writes a rule holding a recursive or mutually recursive lambda as a self-contained block that reloads, deduplicates, and retracts cleanly. Interop grid exceptions drop from 3 to 2 (`recursive function × snapshot` is eliminated). Only unnamable host functions remain unwritable by `snapshot`.",
+  "alternatives": [
+    {
+      "option": "Keep recursive lambdas unclosed and refuse to snapshot rules containing them",
+      "rejected": "Leaves a surprising gap where any rule using a recursive helper function fails on `snapshot`, breaks `--database` persistence, and cannot be deduplicated or retracted by equality."
+    },
+    {
+      "option": "Emit top-level `define` forms in the snapshot for recursive lambdas",
+      "rejected": "Top-level bindings would pollute the loaded environment and risk colliding with user names on reload; wrapping the cycle in a `scoped` `lambda`/`begin` keeps every internal name private."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Self-recursive and mutually recursive lambdas are closed into self-contained blocks when a rule is written, so redefining a name later does not change the rule, and a snapshot writes a rule holding a recursive or mutually recursive lambda as a self-contained block that reloads, deduplicates, and retracts cleanly.",
+      "says": {
+        "feature": "recursive-lambda-snapshots",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Detect strongly connected cycles of lambdas (including cycles passing through `func/partial`, arrays, records, or aliases) when closing values for rules, invariants, and snapshots, and rewrite each cycle into a lexically hygienic self-contained block `[[lambda, outerNames, [begin, [define, ...], ..., root]], ...outerValues]`.",
+      "says": {
+        "decision": "recursive-lambda-closing",
+        "chose": "scoped-scc-block",
+        "over": ["unclosed-dynamic-lookup", "top-level-defines"],
+        "area": "logic",
+        "because": "a recursive lambda in a rule or snapshot should behave like any other lambda without leaking bindings"
+      }
+    },
+    {
+      "quote": "Self-recursive and mutually recursive lambdas are closed into self-contained blocks when a rule is written, so redefining a name later does not change the rule",
+      "says": {
+        "behavior": "recursive-lambda-name-in-rule",
+        "is": "closed",
+        "was": "looked-up-each-run",
+        "area": "logic",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "a snapshot writes a rule holding a recursive or mutually recursive lambda as a self-contained block that reloads, deduplicates, and retracts cleanly.",
+      "says": {
+        "behavior": "snapshot-rule-holding-recursive-lambda",
+        "is": "written",
+        "was": "error",
+        "area": "logic",
+        "fixes": true
+      }
+    }
+  ]
+}

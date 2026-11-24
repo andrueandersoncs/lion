@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "Static analysis (`analyze`, `lion check`, and the graph editor) shares runtime validation helpers to flag invalid `relation`, `query`, and `invariant` declarations and options, anonymous or unsafe `rule` heads, unsafe top-level `find` templates, and logic variables in ground `fact`s with exact runtime error messages, and warns on duplicate lambda parameters, unreachable `cond` branches after unshadowed `else`, and near-miss unbound bare call heads.",
+      "says": {
+        "feature": "static-declaration-and-safety-checks",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The `lion` and `lion check` commands accept repeatable `--bind` (`-b`) `name=<json>` and `--bind-file` `name=<path>` flags that inject top-level JSON bindings while preserving exact numbers.",
+      "says": {
+        "feature": "cli-bind-and-bind-file",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

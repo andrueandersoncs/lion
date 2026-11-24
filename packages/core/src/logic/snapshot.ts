@@ -46,7 +46,7 @@ const writer = (
   opaque: (item, callee) => {
     throw new Unwritable(
       typeof item === "function"
-        ? `${show(callee ?? item)} is a function a snapshot cannot write. It can write the functions the environment names, and lambdas that do not call themselves`
+        ? `${show(callee ?? item)} is a function a snapshot cannot write. It can write the functions the environment names, and lambdas`
         : `${show(item)} is not data`
     );
   },

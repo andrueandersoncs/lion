@@ -1373,20 +1373,21 @@ const choiceOf = (
     const symbols = new Map<string, Cases>(
       shapes.map(([name, each]) => [name, [{ sym: each.sym, when: TRUE }]])
     );
+    let formula: Formula = shapes.reduce<Formula>(
+      (f, [, each]) => and(f, each.when),
+      TRUE
+    );
     const context: SymbolicContext = {
       ...base,
       definitions: new Map(base.definitions),
       floors: new Map(base.floors),
+      guard: formula,
       symbols,
     };
     const waiting: Waiting[] = [];
     // The variables that waiting goals give values to.
     const pending = new Set<string>();
     const worked = worker(waiting, pending);
-    let formula: Formula = shapes.reduce<Formula>(
-      (f, [, each]) => and(f, each.when),
-      TRUE
-    );
     // Adds what a goal says, or, when the cases grow too many, lets it wait.
     const hold = (goal: Literal, extra: Formula) => {
       const held = joined(formula, extra);
@@ -1395,6 +1396,7 @@ const choiceOf = (
         return false;
       }
       formula = held;
+      context.guard = formula;
       return true;
     };
     for (const [name, value, by] of step.defines) {
@@ -1784,7 +1786,7 @@ const directSolvedAnswers = (
   step: Solved,
   vars: Vars,
   first: boolean
-): LogicEffect<readonly Vars[]> =>
+) =>
   Effect.gen(function* () {
     const { choices, sorts } = yield* stepFormulas(model, step, vars);
     if (first) {
@@ -1892,11 +1894,7 @@ export const exampleOf = (model: Model, step: Solved, vars: Vars) =>
         )
   ) as LogicEffect<Record<string, unknown> | undefined>;
 
-const directFirstAnswer = (
-  model: Model,
-  step: Solved,
-  vars: Vars
-): LogicEffect<Vars | undefined> =>
+const directFirstAnswer = (model: Model, step: Solved, vars: Vars) =>
   Effect.gen(function* () {
     const { choices, sorts } = yield* stepFormulas(model, step, vars);
     const names = [...step.symbols, ...step.defines.map(([name]) => name)];

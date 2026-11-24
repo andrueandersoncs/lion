@@ -7,8 +7,9 @@ import {
   logicError,
   takes,
 } from "@/errors/evaluation";
+import { readJson } from "@/evaluation/reading";
 import { show as written } from "@/logic/terms";
-import { over } from "@/modules/lib/shared";
+import { combining, over, overEffect } from "@/modules/lib/shared";
 import { NotJson } from "@/numbers/exact";
 import { RecordKeySchema } from "@/schemas/lion-expression";
 
@@ -84,7 +85,7 @@ class MethodNotFoundError extends Schema.TaggedError<MethodNotFoundError>()(
   }
 }
 
-class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>()(
+export class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>()(
   "IndexOutOfBoundsError",
   {
     index: Schema.Number,
@@ -92,7 +93,7 @@ class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>()(
   }
 ) {
   override get message() {
-    return `Index ${this.index} is past the end of a list of length ${this.length}.`;
+    return `Index ${this.index} is outside a list of length ${this.length}.`;
   }
 }
 
@@ -310,9 +311,52 @@ export const module = {
     }
   ),
 
+  /**
+   * Parses JSON text into Lion data, reading every number exactly as its
+   * digits write it (the inverse of `object/json-stringify`).
+   */
+  "json-parse": overEffect([Schema.String], readJson),
+
   keys: over([Entries], Record.keys),
 
   values: over([Entries], Record.values),
+
+  /** The record's own [key, value] pairs, in key order. */
+  entries: over([Entries], (record): [string, unknown][] =>
+    Object.entries(record)
+  ),
+
+  /** Builds a record from a list of [key, value] pairs, refusing "__proto__". */
+  fromEntries: over(
+    [Schema.Array(Schema.Tuple([RecordKeySchema, Schema.Unknown]))],
+    (pairs) => {
+      const out: Record<string, unknown> = {};
+      for (const [key, value] of pairs) {
+        out[key] = value;
+      }
+      return out;
+    }
+  ),
+
+  /**
+   * Zero or more records merged left to right into a new record: later keys
+   * win, and none gives `{}`.
+   */
+  merge: combining(
+    Entries,
+    (records) => {
+      const out: Record<string, unknown> = {};
+      for (const record of records) {
+        for (const [key, value] of Object.entries(record)) {
+          if (key !== "__proto__") {
+            out[key] = value;
+          }
+        }
+      }
+      return Effect.succeed(out);
+    },
+    atLeast(0)
+  ),
 
   /**
    * A new record with the key holding the value, as `hash-set` gives in

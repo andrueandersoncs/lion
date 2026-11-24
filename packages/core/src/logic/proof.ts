@@ -29,6 +29,7 @@ import {
   type Sort,
   solve,
   cases as splitCases,
+  type Values,
 } from "@/logic/solver";
 import {
   type Context,
@@ -460,7 +461,7 @@ const bindAtomRows = (
 
 const concreteCounterexample = (
   headRecord: Extract<Sym, { readonly kind: "record" }>,
-  ans: ReadonlyMap<string, Rational>
+  ans: Values
 ): Record<string, unknown> =>
   Object.fromEntries(
     [...headRecord.fields].map(([col, sym]) => {
@@ -707,7 +708,7 @@ const checkRuleByInduction = (
     }
 
     return {
-      ok: true,
+      ok: true as const,
       proof: {
         case: `rule ${caseIndex + 1}: ${show(rule.source)}`,
         certificates:

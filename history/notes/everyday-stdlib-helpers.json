@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "Standard library adds `object/json-parse` (with exact numbers), `object/entries`, `object/fromEntries`, `object/merge`, `string/trim`, `string/toLowerCase`, `string/toUpperCase`, `string/replaceAll`, `array/at` (with negative indices and optional fallback), `array/indexOf` (structural equality), and `array/find` (with optional fallback), integrated across plain code, logic waiting, and the interop grid.",
+      "says": {
+        "feature": "everyday-stdlib-helpers",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The 11 everyday standard library helpers (`object/json-parse`, `object/entries`, `object/fromEntries`, `object/merge`, `string/trim`, `string/toLowerCase`, `string/toUpperCase`, `string/replaceAll`, `array/at`, `array/indexOf`, `array/find`) work in plain code and logic rules with exact JSON numbers and structural equality.",
+      "says": {
+        "behavior": "everyday-stdlib-helpers",
+        "is": "works",
+        "area": "library"
+      }
+    }
+  ]
+}

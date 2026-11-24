@@ -39,6 +39,57 @@ const checkDatabase = Flag.String("database").pipe(
   Flag.optional
 );
 
+const bindFlag = Flag.String("bind").pipe(
+  Flag.withAlias("b"),
+  Flag.withDescription(
+    "Bind a top-level name to a JSON value, as name=<json> (repeatable; exact numbers preserved)"
+  ),
+  Flag.atLeast(0)
+);
+
+const bindFileFlag = Flag.String("bind-file").pipe(
+  Flag.withDescription(
+    "Bind a top-level name to the JSON value in a file, as name=<path> (repeatable; exact numbers preserved)"
+  ),
+  Flag.atLeast(0)
+);
+
+const splitBinding = (flag: string, spec: string) => {
+  const eq = spec.indexOf("=");
+  const name = eq <= 0 ? "" : spec.slice(0, eq);
+  return name.length === 0 || name === "__proto__"
+    ? Effect.fail(
+        new Error(
+          `Invalid ${flag} ${JSON.stringify(spec)}: expected name=value with a valid name.`
+        )
+      )
+    : Effect.succeed([name, spec.slice(eq + 1)] as const);
+};
+
+const readBindings = (binds: readonly string[], bindFiles: readonly string[]) =>
+  Effect.gen(function* () {
+    const out: Record<string, unknown> = {};
+    for (const spec of bindFiles) {
+      const [name, filePath] = yield* splitBinding("--bind-file", spec);
+      const text = yield* Effect.tryPromise({
+        try: () => readFile(filePath, "utf8"),
+        catch: (cause) => cause,
+      });
+      out[name] = yield* readJson(text).pipe(
+        Effect.mapError((cause) => new Error(`${filePath}: ${cause.message}`))
+      );
+    }
+    for (const spec of binds) {
+      const [name, raw] = yield* splitBinding("--bind", spec);
+      out[name] = yield* readJson(raw).pipe(
+        Effect.mapError(
+          (cause) => new Error(`--bind ${name}: ${cause.message}`)
+        )
+      );
+    }
+    return out;
+  });
+
 const readStdin = () =>
   Effect.tryPromise({
     try: async () => {
@@ -127,15 +178,20 @@ const writeDatabase = (path: string, store: LogicDatabase) =>
 
 const evaluateCommand = Command.make(
   "lion",
-  { file, eval: evalFlag, database },
+  { file, eval: evalFlag, database, bind: bindFlag, bindFile: bindFileFlag },
   Effect.fn(
-    function* ({ file, eval: inline, database }) {
+    function* ({ file, eval: inline, database, bind, bindFile }) {
       const path = Option.getOrUndefined(database);
       const store =
         path === undefined ? new LogicDatabase() : yield* readDatabase(path);
+      const bindings = yield* readBindings(bind, bindFile);
       const text = yield* readProgramSource(file, inline);
       const program = yield* readJson(text);
-      const result = yield* run(program, stdlib, { database: store });
+      const result = yield* run(
+        program,
+        { ...stdlib, ...bindings },
+        { database: store }
+      );
       yield* Console.log(yield* writeJson(result, 2));
       if (path !== undefined) {
         yield* writeDatabase(path, store);
@@ -221,21 +277,30 @@ export const findings = (
 
 const checkCommand = Command.make(
   "check",
-  { file, eval: evalFlag, database: checkDatabase },
+  {
+    file,
+    eval: evalFlag,
+    database: checkDatabase,
+    bind: bindFlag,
+    bindFile: bindFileFlag,
+  },
   Effect.fn(
-    function* ({ file, eval: inline, database }) {
+    function* ({ file, eval: inline, database, bind, bindFile }) {
       const path = Option.getOrUndefined(database);
       const store = path === undefined ? undefined : yield* readDatabase(path);
+      const bindings = yield* readBindings(bind, bindFile);
       const text = yield* readProgramSource(file, inline);
       const program = yield* readJson(text);
-      const environment =
-        store === undefined
-          ? stdlib
+      const environment = {
+        ...stdlib,
+        ...(store === undefined
+          ? {}
           : {
-              ...stdlib,
               ...relationBindings(store),
               ...Object.fromEntries(store.schemas),
-            };
+            }),
+        ...bindings,
+      };
       const declared = store === undefined ? [] : [...store.relations.keys()];
       // What the analysis finds, then what the lints written in Lion find.
       const found = [

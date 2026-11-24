@@ -435,7 +435,7 @@ Evaluates to `[{ "sensor": "attic", "summary": { "fahrenheit": 86, "level": "hot
 - What a rule holds runs when the rule runs. A call on values that are already known may be computed when the rule is written. So a rule, a query, and a `find` refuse a `set!` of a binding made outside them, whose change would happen once, or as often as the engine chose, rather than once for each answer.
 - A filter runs as soon as its variables are bound, and filters that are ready together run in the order written. So a guard written first protects the filter after it, as in `["value/number?", "?v"], ["number/greaterThan", "?v", 0]`. A filter given a value it does not take names the function, the argument, and the value, as in `"number/greaterThan" takes a number as argument 1 but got "n/a".`, and any other failure names the call and the values it ran on.
 - A lambda passed to a waiting call, such as the function of `array/map`, waits with it, and can mention the rule's variables.
-- Names are replaced by their values when the rule is written, also inside a waiting `cond` or lambda, so redefining a name later does not change the rule. A lambda that calls itself by name is the exception: it looks its name up each time it runs, as it does outside of rules.
+- Names are replaced by their values when the rule is written, also inside a waiting `cond` or lambda—including recursive and mutually recursive lambdas, which are closed into self-contained blocks—so redefining a name later does not change the rule.
 - Functions run forward only: `["=", ["number/add", "?x", 1], 5]` does not solve for `?x`.
 
 ### Asking
@@ -862,7 +862,7 @@ Evaluates to `["begin", ["relation", "edge", ["from", "to"]], ["relation", "path
 - A function that another function built is written as the call that built it: `["func/partial", "number/add", 1]`, or `["schema/arrayOf", "value/number?"]`.
 - A schema is written with the form of its shape. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it, as in a waiting form. Schemas that one form declared are written in one form, so they can name each other when it is loaded. The schema of a relation's rows is written as the invariant it stands for.
 - A rule whose head says `exists` is written as it was, and an [unknown](#existential-rules) a fact holds as its `some` form, such as `["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]]`. The CLI's `--database` file therefore keeps both.
-- A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda or built by a function it can write. `snapshot` then fails with an error that names the function.
+- Recursive and mutually recursive lambdas are closed into self-contained blocks, so they snapshot, deduplicate, and retract cleanly too. A snapshot only fails on a function that the environment does not name and that is neither a lambda nor built by a function it can write. `snapshot` then fails with an error that names the function.
 
 From TypeScript, `saveDatabase(database)` and `loadDatabase(program, environment)` from `@lionlang/core/logic/snapshot` do the same:
 
@@ -1101,7 +1101,7 @@ Evaluates to `{ "between": [3, 4, 5], "never overdrawn": [{}] }`: for every whol
 - A schema computed where it is written, such as one that holds a lambda or one a function is given, is the same for every answer, so it stands for its values as the same schema under a name does: listed when it can list them, solved for otherwise.
 - `value/integer?` stands for a whole number and `value/number?` for any number. A record or list of schemas stands for a record or list of what its parts stand for, `schema/anyOf` for any of its schemas' values, `["schema/arrayOf", schema, most]` for a list of each length up to `most`, and `schema/allOf` for what its first part stands for that fits the others. A predicate alone, such as a lambda, says no kind.
 - A goal that waits only for such variables joins one step that runs after the goals its other variables need. `=` with such a variable on one side gives it the value of the other.
-- The step works the goals out on the values: `number/add`, `number/subtract`, `number/multiply` and `number/divide` by a known number, `number/floor`, `number/ceiling`, `number/round`, and `number/remainder` by a known non-zero divisor, `value/integer?`, comparisons, `number/equals?`, `=`, `cond`, `match`, `schema/fits?`, `number/min`, `number/max`, `number/absolute`, `boolean/and`, `boolean/or`, `boolean/not`, `and`, `or`, `not`, `object/get` and `object/has?` on a record, and a lambda by its body (including `begin` with local `define` and recursion over bounded inputs). Products of unknowns are tracked as exact polynomials so matching nonlinear terms cancel in equalities and comparisons (for example `n * n + 2n + 1 = (n + 1) * (n + 1)`). A list of known length, such as one `["schema/arrayOf", schema, most]` stands for, keeps its items' values: `array/reduce`, `array/reductions`, `array/map`, `array/filter`, `array/flat-map`, `array/reverse`, `array/sort`, `array/slice`, `array/zip`, `array/some?`, `array/every?`, `array/length`, `array/head`, `array/tail`, `array/concat`, and `array/includes?` run on it item by item, and `in` takes each of its items, so a check of every run of commands or of a recursive sort over bounded lists can leave the values they carry to the solver (see [Checking every run of commands](#checking-every-run-of-commands)). For universal claims (`["not", ["exists", ...]]`) over recursive named schemas, unbounded `schema/arrayOf`, or lower-bounded integers, the solver also proves by structural or numeric induction whenever the recursive functions involved are pure, strictly decrease on a structural sub-part or lower-bounded integer measure, and return a uniform sort. Anything else on such a value, such as an uncancelled product of two unknowns, a string function, or a question, waits: the step lists the values of the variables it needs and runs it on each, as plain code does. When those are infinitely many, the step fails and names what the solver cannot reason about.
+- The step works the goals out on the values: `number/add`, `number/subtract`, `number/multiply`, `number/power` (non-negative integer exponents, exact polynomial cancellation, and univariate quadratics), `number/divide` by a known number, `number/floor`, `number/ceiling`, `number/round`, and `number/remainder` by a known non-zero divisor, `value/integer?` and all `value/*` predicates plus `value/identity`, comparisons, `number/equals?`, `=`, `cond`, `match`, `schema/fits?`, guarded `schema/assert` and contracted lambdas, `func/partial`, `number/min`, `number/max`, `number/absolute`, `boolean/and`, `boolean/or`, `boolean/not`, `boolean/xor`, `boolean/nand`, `boolean/nor`, `boolean/equals?`, `and`, `or`, `not`, `object/get`, `object/has?`, `object/set`, `object/remove`, `object/merge`, `object/keys`, `object/values`, `object/entries`, `object/fromEntries`, and `object/get-path` on a record, `quantity/*` arithmetic and unit checks, and a lambda by its body (including `begin` with local `define` and recursion over bounded inputs). Products of unknowns are tracked as exact polynomials so matching nonlinear terms cancel in equalities and comparisons (for example `n * n + 2n + 1 = (n + 1) * (n + 1)`), and remaining univariate quadratics are solved directly. A list of known length, such as one `["schema/arrayOf", schema, most]` stands for, keeps its items' values: `array/reduce`, `array/reductions`, `array/map`, `array/filter`, `array/flat-map`, `array/reverse`, `array/sort`, `array/slice`, `array/zip`, `array/some?`, `array/every?`, `array/length`, `array/head`, `array/tail`, `array/at` (including symbolic indices), `array/indexOf`, `array/find`, `array/range`, `array/concat`, `array/includes?`, and `aggregate/*` run on it item by item, and `in` takes each of its items, so a check of every run of commands or of a recursive sort over bounded lists can leave the values they carry to the solver (see [Checking every run of commands](#checking-every-run-of-commands)). For universal claims (`["not", ["exists", ...]]`) over recursive named schemas, unbounded `schema/arrayOf`, or lower-bounded integers, the solver also proves by structural or numeric induction whenever the recursive functions involved are pure, strictly decrease on a structural sub-part or lower-bounded integer measure, and return a uniform sort. Anything else on such a value, such as a product of two distinct unknowns that does not cancel, a string function, or a question, waits: the step lists the values of the variables it needs and runs it on each, as plain code does. When those are infinitely many, the step fails and names what the solver cannot reason about.
 - The solver decides with exact numbers: Fourier and Motzkin's method for any number and Pugh's Omega test for whole numbers. Every question gets yes or no, the same on every machine. Plain code computes with the same exact numbers (see [`number`](#number)), so what the solver proves about numbers holds of what plain code computes.
 - The step binds the variables whose values make the answers, to each combination of values they take, when those are finitely many: a whole number bounded on both sides, or a number the goals fix. In a query or a `find`, which give one answer or value for every match, and in a rule that aggregates, which combines one value from each, those are every variable of the body, as for values a schema lists; in any other rule, those its head shows. A variable a `cond` defines takes the value of each case that can hold. One with infinitely many values fails, and says so. The others, a plain rule's own, those `exists` lists, and a question's own under `not`, only need some values to exist. `why` explains a row the step gave with an `example` that meets its goals.
 - A step gives at most 100,000 answers, splits into at most 4,096 cases, and makes at most 20,000 constraints while eliminating its variables; past those it is refused, so every question ends soon.
@@ -1345,6 +1345,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["array/make", 1, 2, 3]
 ["array/head", ["array/make", 1, 2, 3]]
 ["array/tail", ["array/make", 1, 2, 3]]
+["array/at", ["array/make", 10, 20, 30], -1]
+["array/at", ["array/make", 10, 20, 30], 9, null]
 ["array/slice", ["array/make", 1, 2, 3, 4], 1, 3]
 ["array/slice", ["array/make", 1, 2, 3, 4], -2]
 ["array/length", ["array/make", 1, 2, 3]]
@@ -1352,6 +1354,9 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["array/concat", ["array/make", 1], ["array/make", 2], ["array/make", 3]]
 ["array/zip", ["array/make", 1, 2, 3], ["array/make", "a", "b"]]
 ["array/includes?", ["array/make", 1, 2, 3], 2]
+["array/indexOf", ["array/make", 1, {"a": 2}, 3], {"a": 2}]
+["array/find", ["array/make", 1, 5, 2, 4], ["lambda", ["x"], ["number/greaterThan", "x", 3]]]
+["array/find", ["array/make", 1, 2], ["lambda", ["x"], ["number/greaterThan", "x", 3]], null]
 ["array/range", 0, 5]
 ["array/map", ["array/make", 1, 2, 3], ["lambda", ["x"], ["number/add", "x", 1]]]
 ["array/filter", ["array/make", 1, 5, 2, 4], ["lambda", ["x"], ["number/greaterThan", "x", 2]]]
@@ -1384,6 +1389,10 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["string/slice", "lionlang", -4]
 ["string/padStart", "7", 2, "0"]
 ["string/padEnd", "7", 3, "."]
+["string/trim", "  lion  "]
+["string/toLowerCase", "Lion"]
+["string/toUpperCase", "Lion"]
+["string/replaceAll", "a-b-c", "-", "_"]
 ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","]
 ```
 
@@ -1402,9 +1411,13 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["object/get-path", {"a": {"b": {"c": 42}}}, "a.b.c"]
 ["object/keys", {"a": 1, "b": 2}]
 ["object/values", {"a": 1, "b": 2}]
+["object/entries", {"a": 1, "b": 2}]
+["object/fromEntries", ["quote", [["a", 1], ["b", 2]]]]
 ["object/set", {"a": 1}, "b", 2]
 ["object/remove", {"a": 1, "b": 2}, "b"]
+["object/merge", {"a": 1, "b": 2}, {"b": 3, "c": 4}]
 ["object/json-stringify", {"a": 1}, null, 2]
+["object/json-parse", "{\"a\": 0.1}"]
 ["object/get-method", "obj", "methodName"]
 ["object/call-method", "obj", "methodName", 1, 2]
 ["object/get-method-path", "obj", "nested.methodName"]
@@ -1416,9 +1429,9 @@ Called on a list, each function combines it. Called on anything else, it waits f
 
 `object/get-path` understands dot paths and numeric array segments such as `"users.1.name"`.
 
-`object/set` and `object/remove` give a new record, as `hash-set` and `hash-remove` do in Racket: `{"a": 1, "b": 2}` with the key set to the value, and `{"a": 1}` without the key. The record they are given is unchanged, removing a key it does not hold gives the same record, and a key is any string a record can hold, so `"__proto__"` is refused.
+`object/set`, `object/remove`, and `object/merge` give a new record, as `hash-set` and `hash-remove` do in Racket: `{"a": 1, "b": 2}` with the key set to the value, `{"a": 1}` without the key, and `{"a": 1, "b": 3, "c": 4}` combining zero or more records left to right. `object/entries` and `object/fromEntries` convert between a record and its `[key, value]` pairs. The records they are given are unchanged, removing a key it does not hold gives the same record, and a key is any string a record can hold, so `"__proto__"` is refused.
 
-`object/json-stringify` writes any JSON value: a record, a list, a string, a number, a boolean, or `null`. The text of a string has its quotes, so `["object/json-stringify", "lion"]` is `"\"lion\""`, and the text of a number is the number, as `number/toString` gives it. The replacer and the indent are optional. A value JSON cannot write, such as a function, fails with `"number/add" has no JSON text.`
+`object/json-stringify` writes any JSON value: a record, a list, a string, a number, a boolean, or `null`. The text of a string has its quotes, so `["object/json-stringify", "lion"]` is `"\"lion\""`, and the text of a number is the number, as `number/toString` gives it. The replacer and the indent are optional. A value JSON cannot write, such as a function, fails with `"number/add" has no JSON text.` `object/json-parse` reads JSON text back into a Lion value, keeping decimals and large integers exact.
 
 ### `graph`
 

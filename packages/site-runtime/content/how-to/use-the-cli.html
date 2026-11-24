@@ -8,19 +8,21 @@ bun add --dev @lionlang/cli
 <p>In a project, run it with <code>bun run lion</code>. Installed globally, it is just <code>lion</code>.</p>
 
 <h2>Evaluate a file, inline expression, or standard input</h2>
-<p>Pass a JSON file, pass <code>--eval</code> (<code>-e</code>) for a quick one-liner, or pipe JSON into standard input (explicitly with <code>-</code> or implicitly when piped). The result prints as formatted JSON:</p>
+<p>Pass a JSON file, pass <code>--eval</code> (<code>-e</code>) for a quick one-liner, or pipe JSON into standard input (explicitly with <code>-</code> or implicitly when piped). Inject top-level JSON inputs with repeatable <code>--bind</code> (<code>-b</code>) or <code>--bind-file</code> flags, keeping exact numbers intact:</p>
 <code-block lang="shell">
 bun run lion add.json
 bun run lion -e '["number/add", 1, 2]'
+bun run lion -b tax=0.07 --bind-file order=order.json price.json
 echo '["number/add", 1, 2]' | bun run lion -
 </code-block>
 <p>If the input is not valid JSON, or the program fails, <code>lion</code> prints the error and exits with status 1.</p>
 
 <h2>Check a program without running it</h2>
-<p><code>lion check</code> reports malformed forms, misspelled names, wrong-arity calls, unreachable or non-exhaustive <code>match</code> cases, and Lion lints with JSON pointers. Pass <code>--database</code> to check a query against a saved database's relations and schemas read-only:</p>
+<p><code>lion check</code> reports malformed forms, misspelled names, wrong-arity calls, invalid <code>relation</code>/<code>query</code>/<code>invariant</code> options, unsafe rule heads or <code>find</code> templates, logic variables in ground facts, unreachable or non-exhaustive <code>match</code> cases, unreachable <code>cond</code> branches after <code>else</code>, duplicate lambda parameters, near-miss bare call heads, and Lion lints with JSON pointers. Pass <code>--database</code> or <code>--bind</code>/<code>--bind-file</code> to validate against external relations, schemas, and inputs read-only:</p>
 <code-block lang="shell">
 bun run lion check program.json
 bun run lion check --database store.json -e '["query", ["edge", "a", "?to"]]'
+bun run lion check --bind-file order=order.json price.json
 </code-block>
 
 <h2>Keep a logic database in a file</h2>

@@ -67,6 +67,30 @@
        ["not", ["=", ["array/length", ["array/sort", "?xs"]], ["array/length", "?xs"]]]]]]]}
 </lion-example>
 
+<h2>Solve quadratics and reason about records, aggregates, and units</h2>
+<p>The solver cancels higher-degree polynomial terms automatically and solves univariate quadratic equations and inequalities exactly (including integer root bracketing). It also reasons symbolically over <code>object/set</code>, <code>object/merge</code>, <code>object/remove</code>, <code>object/entries</code>, <code>func/partial</code>, guarded <code>schema/assert</code> and contracted lambdas, <code>array/at</code>, <code>array/indexOf</code>, <code>array/find</code>, <code>aggregate/*</code>, and <code>quantity/*</code>:</p>
+<lion-example name="Quadratics, records, aggregates, and units in the solver">
+{"integer roots of x^2 - 5x + 6 = 0": ["find", "?x",
+   ["and", ["schema/fits?", "?x", "value/integer?"],
+     ["=", ["number/add", ["number/subtract", ["number/power", "?x", 2], ["number/multiply", 5, "?x"]], 6], 0]]],
+ "sum of first n odd numbers step": ["query",
+   ["not", ["exists", ["?n"],
+     ["and", ["schema/fits?", "?n", "value/integer?"], ["number/greaterThanOrEqualTo", "?n", 0],
+       ["not", ["=", ["number/add", ["number/power", "?n", 2], ["number/add", ["number/multiply", 2, "?n"], 1]],
+                     ["number/power", ["number/add", "?n", 1], 2]]]]]]],
+ "object/set preserves count": ["query",
+   ["not", ["exists", ["?s", "?d"],
+     ["and", ["schema/fits?", "?s", {"n": "value/integer?"}], ["schema/fits?", "?d", "value/integer?"],
+       ["not", ["=", ["object/get", ["object/set", "?s", "n", ["number/add", ["object/get", "?s", "n"], "?d"]], "n"],
+                     ["number/add", ["object/get", "?s", "n"], "?d"]]]]]]],
+ "mean lies between min and max": ["query",
+   ["not", ["exists", ["?a", "?b"],
+     ["and", ["schema/fits?", "?a", "value/integer?"], ["schema/fits?", "?b", "value/integer?"],
+       ["not", ["number/lessThanOrEqualTo",
+         ["aggregate/min", ["array/make", "?a", "?b"]],
+         ["aggregate/mean", ["array/make", "?a", "?b"]]]]]]]]}
+</lion-example>
+
 <h2>Prove something about decimals</h2>
 <p>Numbers are exact, in the solver and in plain code alike, so what the solver proves about decimals holds of what plain code computes. No number between 0 and 1 changes when 0.2 is added and taken away, and plain code gives 0.1 back:</p>
 <lion-example name="A proof about decimals">

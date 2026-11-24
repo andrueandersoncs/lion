@@ -977,16 +977,24 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
   // is one of each match's values, whether the template shows it or not.
   const planned = plan(goal, outer);
   for (const { bound } of planned) {
-    checkValues(
-      question,
-      [template],
-      bound,
-      (names) =>
-        `Unsafe find ${show(question)}: its goal does not bind ${names}.`
+    checkValues(question, [template], bound, (names) =>
+      unsafeFind(show(question), names)
     );
   }
   return planned;
 };
+
+export const unsafeFind = (findText: string, names: string) =>
+  `Unsafe find ${findText}: its goal does not bind ${names}.`;
+
+export const anonymousRuleHead = (headText: string) =>
+  `A rule head cannot use the anonymous variable "?_": ${headText}.`;
+
+export const unsafeRuleHead = (headText: string, names: string) =>
+  `Unsafe rule head ${headText}: ${names} never appears in a relation in the body. To say the head holds for some value nobody has given, list it in "exists": ["exists", [${names
+    .split(", ")
+    .map((name) => JSON.stringify(name))
+    .join(", ")}], head].`;
 
 /**
  * An `assuming` is asked of another database, so here it has nothing to
@@ -1173,9 +1181,7 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
       call.args.flatMap((arg) => wants(arg, NOTHING))
     );
     if (direct.some((name) => name.startsWith("_"))) {
-      problem(
-        `A rule head cannot use the anonymous variable "?_": ${show(head)}.`
-      );
+      problem(anonymousRuleHead(show(head)));
     }
     // Each variable `exists` lists stands for the unknown that `some` names.
     const heads = calls.map((call) =>
@@ -1213,11 +1219,7 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
         head,
         [...heads, ...sides].flatMap((call) => call.args),
         bound,
-        (names) =>
-          `Unsafe rule head ${show(head)}: ${names} never appears in a relation in the body. To say the head holds for some value nobody has given, list it in "exists": ["exists", [${names
-            .split(", ")
-            .map((name) => JSON.stringify(name))
-            .join(", ")}], head].`
+        (names) => unsafeRuleHead(show(head), names)
       );
     }
     const aggregated = heads.find((call) => aggregatesOf(call).length > 0);

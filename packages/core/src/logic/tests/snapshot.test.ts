@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Arbitrary, Effect, Schema } from "effect";
 import { analyze } from "@/analysis/analyze";
 import { run } from "@/evaluation/evaluate";
-import { LogicDatabase } from "@/logic/database";
+import { LogicDatabase, writtenRules } from "@/logic/database";
 import { loadDatabase, saveDatabase } from "@/logic/snapshot";
 import { stdlib } from "@/modules";
 
@@ -209,4 +209,306 @@ describe("snapshots", () => {
   it("are classified by the analyzer", () => {
     expect(analyze(["snapshot"]).specialForm).toBe("snapshot");
   });
+});
+
+const smallNonNeg = Arbitrary.schema(
+  Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 12 }))
+);
+const smallInt = Arbitrary.schema(
+  Schema.Int.check(Schema.isBetween({ minimum: -5, maximum: 5 }))
+);
+
+describe("recursive and mutually recursive lambdas in snapshots", () => {
+  it.effect.prop(
+    "self-recursive lambda with captured outer value survives snapshot round-trip, deduplication, retraction, and later redefinition",
+    {
+      inputs: Arbitrary.array(smallNonNeg, { minLength: 1, maxLength: 5 }),
+      scale: smallInt,
+    },
+    ({ inputs, scale }) =>
+      Effect.gen(function* () {
+        const distinct = [...new Set(inputs)].sort((a, b) => a - b);
+        const recRule = [
+          "rule",
+          ["out", "?x", ["scaled-sum", "?x"]],
+          ["n", "?x"],
+        ];
+        const setup = [
+          "begin",
+          ["define", "factor", scale],
+          [
+            "define",
+            "scaled-sum",
+            [
+              "lambda",
+              ["v"],
+              [
+                "cond",
+                [["number/lessThanOrEqualTo", "v", 0], 0],
+                [
+                  "else",
+                  [
+                    "number/add",
+                    ["number/multiply", "v", "factor"],
+                    ["scaled-sum", ["number/subtract", "v", 1]],
+                  ],
+                ],
+              ],
+            ],
+          ],
+          ["relation", "n", ["x"]],
+          ["relation", "out", ["x", "v"]],
+          ["fact", ...distinct.map((x) => ["n", x])],
+          recRule,
+          // Re-adding the same rule changes nothing.
+          recRule,
+          // Redefining the name after the rule was added leaves the rule intact.
+          ["define", "scaled-sum", ["lambda", ["v"], -999]],
+        ];
+        const db = new LogicDatabase();
+        yield* run(setup, stdlib, { database: db });
+        expect(writtenRules(db.rules)).toHaveLength(1);
+        const expected = distinct.map((x) => ({
+          x,
+          v: ((x * (x + 1)) / 2) * scale + 0,
+        }));
+        const query = ["query", ["out", "?x", "?v"], { order: "x" }];
+        expect(yield* run(query, stdlib, { database: db })).toEqual(expected);
+
+        const saved = yield* saveDatabase(db);
+        const loaded = yield* loadDatabase(
+          JSON.parse(JSON.stringify(saved)),
+          stdlib
+        );
+        expect(yield* run(query, stdlib, { database: loaded })).toEqual(
+          expected
+        );
+        expect(yield* saveDatabase(loaded)).toEqual(saved);
+
+        // Retracting the rule by its written form removes it.
+        const savedRule = saved.find(
+          (form) => Array.isArray(form) && form[0] === "rule"
+        );
+        yield* run(["retract", savedRule], stdlib, { database: loaded });
+        expect(writtenRules(loaded.rules)).toHaveLength(0);
+        expect(yield* run(query, stdlib, { database: loaded })).toEqual([]);
+      })
+  );
+
+  it.effect.prop(
+    "mutually recursive lambdas and aliased recursive lambdas survive snapshot round-trip",
+    {
+      inputs: Arbitrary.array(smallNonNeg, { minLength: 1, maxLength: 5 }),
+    },
+    ({ inputs }) =>
+      Effect.gen(function* () {
+        const distinct = [...new Set(inputs)].sort((a, b) => a - b);
+        const db = new LogicDatabase();
+        yield* run(
+          [
+            "begin",
+            [
+              "define",
+              "is-even",
+              [
+                "lambda",
+                ["k"],
+                [
+                  "cond",
+                  [["number/equals?", "k", 0], true],
+                  ["else", ["is-odd", ["number/subtract", "k", 1]]],
+                ],
+              ],
+            ],
+            [
+              "define",
+              "is-odd",
+              [
+                "lambda",
+                ["k"],
+                [
+                  "cond",
+                  [["number/equals?", "k", 0], false],
+                  ["else", ["is-even", ["number/subtract", "k", 1]]],
+                ],
+              ],
+            ],
+            ["define", "alias", "is-even"],
+            ["relation", "n", ["x"]],
+            ["relation", "evens", ["x", "ok"]],
+            ["fact", ...distinct.map((x) => ["n", x])],
+            ["rule", ["evens", "?x", ["alias", "?x"]], ["n", "?x"]],
+          ],
+          stdlib,
+          { database: db }
+        );
+        const expected = distinct.map((x) => ({ x, ok: x % 2 === 0 }));
+        const query = ["query", ["evens", "?x", "?ok"], { order: "x" }];
+        const saved = yield* saveDatabase(db);
+        const loaded = yield* loadDatabase(
+          JSON.parse(JSON.stringify(saved)),
+          stdlib
+        );
+        expect(yield* run(query, stdlib, { database: loaded })).toEqual(
+          expected
+        );
+        expect(yield* saveDatabase(loaded)).toEqual(saved);
+      })
+  );
+
+  it.effect.prop(
+    "recursive lambdas passed through func/partial survive snapshot round-trip",
+    {
+      inputs: Arbitrary.array(smallNonNeg, { minLength: 1, maxLength: 4 }),
+      offset: smallInt,
+    },
+    ({ inputs, offset }) =>
+      Effect.gen(function* () {
+        const distinct = [...new Set(inputs)].sort((a, b) => a - b);
+        const db = new LogicDatabase();
+        yield* run(
+          [
+            "begin",
+            [
+              "define",
+              "acc",
+              [
+                "lambda",
+                ["base", "k"],
+                [
+                  "cond",
+                  [["number/lessThanOrEqualTo", "k", 0], "base"],
+                  [
+                    "else",
+                    ["number/add", "k", ["step", ["number/subtract", "k", 1]]],
+                  ],
+                ],
+              ],
+            ],
+            ["define", "step", ["func/partial", "acc", offset]],
+            ["relation", "n", ["x"]],
+            ["relation", "out", ["x", "v"]],
+            ["fact", ...distinct.map((x) => ["n", x])],
+            ["rule", ["out", "?x", ["step", "?x"]], ["n", "?x"]],
+          ],
+          stdlib,
+          { database: db }
+        );
+        const expected = distinct.map((x) => ({
+          x,
+          v: offset + (x * (x + 1)) / 2,
+        }));
+        const query = ["query", ["out", "?x", "?v"], { order: "x" }];
+        const saved = yield* saveDatabase(db);
+        const loaded = yield* loadDatabase(
+          JSON.parse(JSON.stringify(saved)),
+          stdlib
+        );
+        expect(yield* run(query, stdlib, { database: loaded })).toEqual(
+          expected
+        );
+        expect(yield* saveDatabase(loaded)).toEqual(saved);
+      })
+  );
+
+  it.effect.prop(
+    "shadowed mutually recursive lambdas with colliding names survive snapshot round-trip",
+    {
+      inputs: Arbitrary.array(smallNonNeg, { minLength: 1, maxLength: 4 }),
+    },
+    ({ inputs }) =>
+      Effect.gen(function* () {
+        const distinct = [...new Set(inputs)].sort((a, b) => a - b);
+        const db = new LogicDatabase();
+        yield* run(
+          [
+            "begin",
+            [
+              "define",
+              "f",
+              [
+                "lambda",
+                ["n"],
+                [
+                  "cond",
+                  [["number/lessThanOrEqualTo", "n", 0], 0],
+                  [
+                    "else",
+                    [
+                      "number/add",
+                      1,
+                      [
+                        "number/add",
+                        ["f", 0],
+                        ["g", ["number/subtract", "n", 1]],
+                      ],
+                    ],
+                  ],
+                ],
+              ],
+            ],
+            [
+              "define",
+              "g",
+              [
+                [
+                  "lambda",
+                  ["up"],
+                  [
+                    "begin",
+                    [
+                      "define",
+                      "f",
+                      [
+                        "lambda",
+                        ["n"],
+                        [
+                          "cond",
+                          [["number/lessThanOrEqualTo", "n", 0], 0],
+                          [
+                            "else",
+                            [
+                              "number/add",
+                              2,
+                              [
+                                "number/add",
+                                ["f", 0],
+                                ["up", ["number/subtract", "n", 1]],
+                              ],
+                            ],
+                          ],
+                        ],
+                      ],
+                    ],
+                    "f",
+                  ],
+                ],
+                "f",
+              ],
+            ],
+            ["relation", "n", ["x"]],
+            ["relation", "out", ["x", "v"]],
+            ["fact", ...distinct.map((x) => ["n", x])],
+            ["rule", ["out", "?x", ["f", "?x"]], ["n", "?x"]],
+          ],
+          stdlib,
+          { database: db }
+        );
+        const expected = distinct.map((x) => ({
+          x,
+          v: x + Math.floor(x / 2),
+        }));
+        const query = ["query", ["out", "?x", "?v"], { order: "x" }];
+        expect(yield* run(query, stdlib, { database: db })).toEqual(expected);
+        const saved = yield* saveDatabase(db);
+        const loaded = yield* loadDatabase(
+          JSON.parse(JSON.stringify(saved)),
+          stdlib
+        );
+        expect(yield* run(query, stdlib, { database: loaded })).toEqual(
+          expected
+        );
+        expect(yield* saveDatabase(loaded)).toEqual(saved);
+      })
+  );
 });

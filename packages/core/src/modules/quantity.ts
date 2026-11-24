@@ -69,6 +69,17 @@ const said = (quantity: Quantity) =>
     ? numberText(quantity.value)
     : `${numberText(quantity.value)} ${JSON.stringify(quantity.unit)}`;
 
+/** Failure when two quantities added or subtracted have different units. */
+export const differentUnitsError = (name: string, a: string, b: string) =>
+  new ArithmeticError({
+    message: `quantity/${name}: ${a} and ${b} have different units.`,
+  });
+
+/** Failure when `quantity/in` asks for a unit the quantity does not have. */
+export const wrongUnitError = (have: string, want: string) =>
+  new ArithmeticError({
+    message: `quantity/in: ${have} is not in ${want}.`,
+  });
 /** Runs a number function on values, as the number module checks them. */
 const numbers = (
   fn: (...args: unknown[]) => unknown,
@@ -94,11 +105,7 @@ const sameUnits = (name: string, fn: (...args: unknown[]) => unknown) =>
             ),
             (value) => given(value, first.unit)
           )
-        : Effect.fail(
-            new ArithmeticError({
-              message: `quantity/${name}: ${said(first)} and ${said(other)} have different units.`,
-            })
-          );
+        : Effect.fail(differentUnitsError(name, said(first), said(other)));
     },
     name === "add" ? atLeast(0) : 2,
     // Adding no quantities gives 0, a plain number, as number/add does.
@@ -162,9 +169,7 @@ export const module = {
     return sameUnit(quantity.unit, unit)
       ? Effect.succeed(quantity.value)
       : Effect.fail(
-          new ArithmeticError({
-            message: `quantity/in: ${said(quantity)} is not in ${JSON.stringify(normal(unit))}.`,
-          })
+          wrongUnitError(said(quantity), JSON.stringify(normal(unit)))
         );
   }),
 };

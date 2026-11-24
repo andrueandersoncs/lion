@@ -45,7 +45,14 @@ const lambdaParts = (form: readonly unknown[], scope: Scope | undefined) =>
       }
     : undefined;
 
-const BODIES = new WeakMap<object, readonly string[]>();
+const DEFINED = new WeakMap<object, readonly string[]>();
+
+const unshadowed = (scope: Scope | undefined) =>
+  !(
+    declares(scope, "define") ||
+    declares(scope, "lambda") ||
+    declares(scope, "quote")
+  );
 
 /**
  * The names the `define` forms of a body bind, in the order they are
@@ -84,32 +91,34 @@ export const definedIn = (
   return [...new Set(names)];
 };
 
+const cachedDefined = (body: unknown, scope: Scope | undefined) => {
+  if (typeof body !== "object" || body === null || !unshadowed(scope)) {
+    return definedIn(body, scope);
+  }
+  const known = DEFINED.get(body);
+  if (known !== undefined) {
+    return known;
+  }
+  const found = definedIn(body, scope);
+  DEFINED.set(body, found);
+  return found;
+};
+
 /**
  * The names a lambda's body declares: its parameters and what its body
- * defines. Kept for each body, so a lambda made again from the same body
- * finds them at once.
+ * defines. Only the body's own `define`s are cached (never its parameters),
+ * so reusing one body AST under another parameter list never leaks names.
  */
 export const bodyNames = (
   parameters: readonly string[],
   body: unknown,
   scope: Scope | undefined
-): readonly string[] => {
-  const known =
-    typeof body === "object" && body !== null ? BODIES.get(body) : undefined;
-  if (known !== undefined) {
-    return known;
-  }
-  const names = [
-    ...new Set([
-      ...parameters,
-      ...definedIn(body, scopeWith(parameters, scope)),
-    ]),
-  ];
-  if (typeof body === "object" && body !== null) {
-    BODIES.set(body, names);
-  }
-  return names;
-};
+): readonly string[] => [
+  ...new Set([
+    ...parameters,
+    ...cachedDefined(body, scopeWith(parameters, scope)),
+  ]),
+];
 
 /** The names a `relation` or `schema` form binds, when an array is one. */
 const declaredBy = (

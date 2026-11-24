@@ -16,6 +16,12 @@
 - Static analysis (`analyze`, `lion check`, and the graph editor) reports wrong-arity calls to standard library functions, declared relations, declared schemas, immediate lambdas, and unmutated single-site defined lambdas with the exact runtime arity message. (`static-arity-diagnostics` added)
 - `string/chars` splits a string into its Unicode characters in order, keeping astral characters whole: `["string/chars", "a𝄞b"]` gives `["a", "𝄞", "b"]`. (`string/chars` added)
 - Added CIC-inspired recursive schema inclusion (`schema/includes?` over recursive and mutually recursive named schemas, uninhabited recursive schemas, and least-fixed-point loops), structural and numeric induction with CIC purity and termination guard verification plus exact polynomial cancellation, rule induction over rule-defined relations (`proof/rules`), Omega integer split certificates (`kind: "split"`), and a zero-solver trusted proof kernel (`proof/valid?`). (`cic-induction-and-proofs` added)
+- The `lion` and `lion check` commands accept repeatable `--bind` (`-b`) `name=<json>` and `--bind-file` `name=<path>` flags that inject top-level JSON bindings while preserving exact numbers. (`cli-bind-and-bind-file` added)
+- Standard library adds `object/json-parse` (with exact numbers), `object/entries`, `object/fromEntries`, `object/merge`, `string/trim`, `string/toLowerCase`, `string/toUpperCase`, `string/replaceAll`, `array/at` (with negative indices and optional fallback), `array/indexOf` (structural equality), and `array/find` (with optional fallback), integrated across plain code, logic waiting, and the interop grid. (`everyday-stdlib-helpers` added)
+- Self-recursive and mutually recursive lambdas are closed into self-contained blocks when a rule is written, so redefining a name later does not change the rule, and a snapshot writes a rule holding a recursive or mutually recursive lambda as a self-contained block that reloads, deduplicates, and retracts cleanly. (`recursive-lambda-snapshots` added)
+- The symbolic solver reasons over idiomatic Lion expressions: `object/set`, `object/remove`, `object/merge`, `object/keys`, `object/values`, `object/entries`, `object/fromEntries`, `object/get-path`, `boolean/xor`, `boolean/nand`, `boolean/nor`, `boolean/equals?`, all `value/*` predicates plus `value/identity`, concrete and symbolic `func/partial`, guarded `schema/assert` and contracted lambdas, `array/at` (including symbolic indices), `array/indexOf`, `array/find`, `array/range`, `aggregate/*`, and `quantity/*`. (`solver-idiomatic-lion` added)
+- The symbolic solver represents exact multivariate polynomials (including `number/power` with non-negative integer literal exponents) to cancel higher-degree terms automatically and decides univariate quadratic equations and inequalities over reals and integers via exact rational discriminant roots and BigInt integer root bracketing, closing corpus gap `induction-sum-of-odd-numbers`. (`solver-polynomials-and-quadratics` added)
+- Static analysis (`analyze`, `lion check`, and the graph editor) shares runtime validation helpers to flag invalid `relation`, `query`, and `invariant` declarations and options, anonymous or unsafe `rule` heads, unsafe top-level `find` templates, and logic variables in ground `fact`s with exact runtime error messages, and warns on duplicate lambda parameters, unreachable `cond` branches after unshadowed `else`, and near-miss unbound bare call heads. (`static-declaration-and-safety-checks` added)
 
 ### Changed
 
@@ -26,6 +32,18 @@
 - proof/rules proves universally over all databases whose base relations fit their declared schemas that every row derived by a relation or mutually recursive relations (including element-preserving `aggregate/min` and `aggregate/max` rules) fits a target schema, returning a kernel-checkable induction proof. (`proof-rules-induction` is `proved-and-valid`)
 - schema/includes? decides inclusion between recursive and mutually recursive named schemas by strong structural induction, treats structurally uninhabited recursive schemas as empty, and interprets unguarded loops by least fixed point. (`recursive-schema-inclusion` is `decided`)
 - The symbolic solver proves universal claims (`["not", ["exists", ...]]`) over recursive named schemas, unbounded `schema/arrayOf`, and lower-bounded integers by structural and numeric induction when the recursive functions pass purity and termination guard checks, with exact polynomial cancellation for nonlinear terms. (`solver-structural-and-numeric-induction` is `decided`)
+- The 11 everyday standard library helpers (`object/json-parse`, `object/entries`, `object/fromEntries`, `object/merge`, `string/trim`, `string/toLowerCase`, `string/toUpperCase`, `string/replaceAll`, `array/at`, `array/indexOf`, `array/find`) work in plain code and logic rules with exact JSON numbers and structural equality. (`everyday-stdlib-helpers` is `works`)
+- The symbolic solver decides proofs using `object/set`, `func/partial`, guarded contracted lambdas and `schema/assert`, `array/at`/`indexOf`/`find`/`range`, `aggregate/*`, and `quantity/*`. (`solver-idiomatic-operations` is `decided`)
+- The symbolic solver cancels higher-degree polynomial terms and decides univariate quadratic equations and inequalities over integers and reals. (`solver-univariate-quadratic` is `decided`)
+
+### Fixed
+
+- Self-recursive and mutually recursive lambdas are closed into self-contained blocks when a rule is written, so redefining a name later does not change the rule (`recursive-lambda-name-in-rule` is `closed`, was `looked-up-each-run`)
+- a snapshot writes a rule holding a recursive or mutually recursive lambda as a self-contained block that reloads, deduplicates, and retracts cleanly. (`snapshot-rule-holding-recursive-lambda` is `written`, was `error`)
+
+### Decided
+
+- Detect strongly connected cycles of lambdas (including cycles passing through `func/partial`, arrays, records, or aliases) when closing values for rules, invariants, and snapshots, and rewrite each cycle into a lexically hygienic self-contained block `[[lambda, outerNames, [begin, [define, ...], ..., root]], ...outerValues]`. (`recursive-lambda-closing`: `scoped-scc-block` over `unclosed-dynamic-lookup`, `top-level-defines`)
 
 ## 2026-11-22 — @lionlang/core 0.16.0, @lionlang/cli 0.15.0
 
@@ -1438,7 +1456,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - A goal given to a host function is asked first, so the function receives `true` or `false`. (`relation-goal-as-host-function-argument` is `asked`)
 - As a value, a goal is true when it has a match and false when it has none: in a cond condition, as an argument of a function, as an operand of = or in, as a value of a record, as an argument of fact, retract, or why, and as the value match looks at. (`relation-goal-as-retract-argument` is `asked`; `relation-goal-as-why-argument` is `asked`)
 - as a value it is `true` when it has a match and `false` when it has none (`relation-goal-as-value` is `asked`)
-- A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda or built by a function it can write. (`snapshot-rule-holding-recursive-lambda` is `error`; `snapshot-rule-holding-unnamed-function` is `error`)
+- A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda. (`snapshot-rule-holding-recursive-lambda` is `error`; `snapshot-rule-holding-unnamed-function` is `error`)
 - `@lionlang/cli` 0.5.0 bundles `@lionlang/core` 0.6.0. (`cli-0-5-0-bundled-core` is `core-0-6-0`)
 - A program sees it when a <code>fact</code>, <code>retract</code>, or <code>why</code> written inside a rule, query, or <code>find</code> is given a question: those forms act right away, so they cannot wait. (`fact-in-rule-given-question` is `waiting-error`)
 

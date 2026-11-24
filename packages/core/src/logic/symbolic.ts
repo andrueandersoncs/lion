@@ -25,7 +25,21 @@ import {
 } from "@/errors/evaluation";
 import { type Environment, lookup, UNBOUND } from "@/evaluation/environment";
 import { call } from "@/evaluation/special-forms/function";
+import { lambdaOf } from "@/evaluation/special-forms/lambda";
 import { fits } from "@/logic/fit";
+import {
+  type NumberSym,
+  numberSym,
+  type PolyComparison,
+  polyAdd,
+  polyIntegral,
+  polyMul,
+  polyPow,
+  polyScale,
+  polySub,
+  polySubstitute,
+  polyWithinLimits,
+} from "@/logic/polynomial";
 import {
   type Constraint,
   constant,
@@ -42,7 +56,6 @@ import {
   and,
   atom,
   type Cases,
-  equal,
   FALSE,
   type Formula,
   fieldsOf,
@@ -50,26 +63,23 @@ import {
   isConcrete,
   itemsOf,
   MOST_WAYS,
-  type NumberSym,
   not,
-  numberSym,
   one,
   opaqueKindOf,
   or,
   plainOf,
-  polyAdd,
-  polyMul,
-  polyScale,
-  polySub,
-  polySubstitute,
+  polyFormula,
   product,
+  quadraticFormula,
   Shapeless,
   type Sym,
   shapeOf,
+  solverRefusedMessage,
   TRUE,
   throughNames,
   tooManyWays,
   truthSym,
+  tryEqual,
 } from "@/logic/symbols";
 import {
   Atom,
@@ -90,6 +100,7 @@ import {
   schemaOf,
   show,
 } from "@/logic/terms";
+import { differentUnitsError, wrongUnitError } from "@/modules/quantity";
 import {
   DIGITS,
   divide,
@@ -101,7 +112,11 @@ import {
   ratio,
   ZERO,
 } from "@/numbers/exact";
-import { isMatchCase } from "@/schemas/evaluation";
+import {
+  isMatchCase,
+  parameterNames,
+  parameterSchemas,
+} from "@/schemas/evaluation";
 
 /** Sentinel schema that allows no values, used to test inhabitedness. */
 export const EMPTY_SCHEMA = Symbol("empty schema");
@@ -148,6 +163,8 @@ export interface Context {
   readonly evaluate: (term: unknown) => Effect.Effect<unknown, Error>;
   /** Memoizes floor(u) -> integer variable name for a canonical linear expression. */
   readonly floors: Map<string, string>;
+  /** Current path guard (constraints known to hold where a call is evaluated). */
+  guard?: Formula;
   /** Optional hooks active during inductive proofs. */
   readonly inductive?: InductiveContext;
   /** Whether each of the solver's variables is a whole number or any number. */
@@ -157,6 +174,7 @@ export interface Context {
 }
 
 const LEAF_PARTS = /[.#/]/;
+const DIGIT_INDEX = /^\d+$/;
 
 /** Canonical text for a linear expression, so equal expressions share one floor variable. */
 const linearKey = (linear: Linear) =>
@@ -236,10 +254,10 @@ export const withDefinitions = (
 
 const MOST_DEPTH = 64;
 
-const refused = (what: string) =>
-  logicError(
-    `The solver cannot reason about ${what}: it decides sums of numbers times known numbers, comparisons of them, and equality of values.`
-  );
+const refused = (what: string) => logicError(solverRefusedMessage(what));
+
+const twoUnknowns = (op = "number/multiply") =>
+  refused(`${op} of two unknowns`);
 
 /** A symbolic value as a truth: false and true, or a formula. */
 const truthOf = (sym: Sym, what: unknown) => {
@@ -274,8 +292,6 @@ const polyOf = (sym: Sym, what: string, context: Context) => {
   const kind = sym.kind === "value" ? show(sym.value) : `a ${sym.kind}`;
   return refused(`${what} of ${kind}`);
 };
-
-const twoUnknowns = (what: string) => refused(`${what} of two unknowns`);
 
 /** A sum of numbers (purely linear), or a refusal. */
 const linearOf = (sym: Sym, what: string, context?: Context) => {
@@ -334,7 +350,7 @@ const equalListSyms = (
     return f;
   });
 
-/** Equality between two symbolic values, cancelling matching nonlinear terms. */
+/** Equality between two symbolic values, cancelling matching nonlinear terms and solving univariate quadratics. */
 const equalSym = (
   a: Sym,
   b: Sym,
@@ -351,6 +367,10 @@ const equalSym = (
     if (captured !== undefined) {
       return Effect.succeed(captured);
     }
+    const quad = quadraticFormula(diff, "=", context.sorts);
+    if (quad !== undefined) {
+      return Effect.succeed(quad);
+    }
     return twoUnknowns("number/multiply");
   }
   if (a.kind === "record" || b.kind === "record") {
@@ -359,7 +379,8 @@ const equalSym = (
   if (a.kind === "list" || b.kind === "list") {
     return equalListSyms(a, b, context);
   }
-  return Effect.succeed(equal(a, b, context.atoms));
+  const f = tryEqual(a, b, context.atoms, context.sorts);
+  return f === undefined ? twoUnknowns() : Effect.succeed(f);
 };
 
 const orEqualAny = (
@@ -372,6 +393,21 @@ const orEqualAny = (
     (fs) => fs.reduce(or, FALSE)
   );
 
+const comparePoly = (
+  a: Sym,
+  b: Sym,
+  op: PolyComparison,
+  name: string,
+  context: Context
+): Effect.Effect<Formula, Error> =>
+  Effect.flatMap(
+    Effect.all([polyOf(a, name, context), polyOf(b, name, context)]),
+    ([pa, pb]) => {
+      const f = polyFormula(polySub(pa, pb), op, context.sorts);
+      return f === undefined ? twoUnknowns(name) : Effect.succeed(f);
+    }
+  );
+
 const ANY = Number.POSITIVE_INFINITY;
 
 /**
@@ -379,14 +415,27 @@ const ANY = Number.POSITIVE_INFINITY;
  * says: a call with any other number is not run on symbolic values.
  */
 const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
+  "aggregate/collect": [1, 1],
+  "aggregate/count": [1, 1],
+  "aggregate/countUnique": [1, 1],
+  "aggregate/max": [1, 1],
+  "aggregate/mean": [1, 1],
+  "aggregate/min": [1, 1],
+  "aggregate/sum": [1, 1],
+  "aggregate/union": [1, 1],
+  "aggregate/unique": [1, 1],
+  "array/at": [2, 3],
   "array/concat": [0, ANY],
   "array/every?": [2, 2],
   "array/filter": [2, 2],
+  "array/find": [2, 3],
   "array/flat-map": [2, 2],
   "array/head": [1, 1],
   "array/includes?": [2, 2],
+  "array/indexOf": [2, 2],
   "array/length": [1, 1],
   "array/map": [2, 2],
+  "array/range": [2, 2],
   "array/reduce": [3, 3],
   "array/reductions": [3, 3],
   "array/reverse": [1, 1],
@@ -396,8 +445,13 @@ const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "array/tail": [1, 1],
   "array/zip": [1, ANY],
   "boolean/and": [2, 2],
+  "boolean/equals?": [2, 2],
+  "boolean/nand": [2, 2],
+  "boolean/nor": [2, 2],
   "boolean/not": [1, 1],
   "boolean/or": [2, 2],
+  "boolean/xor": [2, 2],
+  "func/partial": [1, ANY],
   "number/absolute": [1, 1],
   "number/add": [0, ANY],
   "number/ceiling": [1, 1],
@@ -411,28 +465,53 @@ const ARITIES: Readonly<Record<string, readonly [number, number]>> = {
   "number/max": [1, ANY],
   "number/min": [1, ANY],
   "number/multiply": [0, ANY],
+  "number/power": [2, 2],
   "number/remainder": [2, 2],
   "number/round": [1, 2],
   "number/subtract": [2, 2],
+  "object/entries": [1, 1],
+  "object/fromEntries": [1, 1],
   "object/get": [2, 3],
+  "object/get-path": [2, 2],
   "object/has?": [2, 2],
+  "object/keys": [1, 1],
+  "object/merge": [0, ANY],
+  "object/remove": [2, 2],
+  "object/set": [3, 3],
+  "object/values": [1, 1],
+  "quantity/add": [0, ANY],
+  "quantity/divide": [2, 2],
+  "quantity/in": [2, 2],
+  "quantity/multiply": [0, ANY],
+  "quantity/power": [2, 2],
+  "quantity/subtract": [2, 2],
+  "schema/assert": [2, 2],
   "schema/fits?": [2, 2],
+  "value/any?": [1, 1],
+  "value/array?": [1, 1],
+  "value/boolean?": [1, 1],
+  "value/function?": [1, 1],
+  "value/identity": [1, 1],
   "value/integer?": [1, 1],
+  "value/null?": [1, 1],
   "value/number?": [1, 1],
+  "value/object?": [1, 1],
+  "value/promise?": [1, 1],
+  "value/string?": [1, 1],
+  "value/symbol?": [1, 1],
+  "value/undefined?": [1, 1],
+  "value/unknown?": [1, 1],
 };
 
+type LibraryFn = (
+  args: readonly Sym[],
+  name: string,
+  context: Context,
+  depth: number
+) => Effect.Effect<Cases, Error>;
+
 /** How a library function works on symbolic values, by its name. */
-const LIBRARY: Readonly<
-  Record<
-    string,
-    (
-      args: readonly Sym[],
-      name: string,
-      context: Context,
-      depth: number
-    ) => Effect.Effect<Cases, Error>
-  >
-> = {
+const LIBRARY: Readonly<Record<string, LibraryFn>> = {
   "number/add": (args, name, context) =>
     Effect.map(
       Effect.forEach(args, (arg) => polyOf(arg, name, context)),
@@ -458,15 +537,34 @@ const LIBRARY: Readonly<
         )
     ),
   "number/multiply": (args, name, context) =>
-    Effect.map(
+    Effect.flatMap(
       Effect.forEach(args, (arg) => polyOf(arg, name, context)),
-      (polys) =>
-        one(
-          polys.reduce<NumberSym>(
-            (a, b) => polyMul(a, b),
-            numberSym(constant(ONE))
-          )
-        )
+      (polys) => {
+        let total: NumberSym = numberSym(constant(ONE));
+        for (const p of polys) {
+          total = polyMul(total, p);
+          if (!polyWithinLimits(total)) {
+            return refused(`${name} of two unknowns`);
+          }
+        }
+        return Effect.succeed(one(total));
+      }
+    ),
+  "number/power": (args, name, context) =>
+    Effect.flatMap(
+      Effect.all([
+        polyOf(args[0] as Sym, name, context),
+        linearOf(args[1] as Sym, name, context),
+      ]),
+      ([base, exp]) => {
+        if (exp.coefficients.size > 0 || exp.constant.d !== 1n) {
+          return refused(name);
+        }
+        const powered = polyPow(base, Number(exp.constant.n));
+        return powered === undefined
+          ? refused(name)
+          : Effect.succeed(one(powered));
+      }
     ),
   "number/divide": (args, name, context) =>
     Effect.flatMap(
@@ -484,21 +582,41 @@ const LIBRARY: Readonly<
       }
     ),
   "number/floor": (args, name, context) =>
-    Effect.map(linearOf(args[0] as Sym, name), (x) =>
-      one(numberSym(floorLinear(x, context)))
-    ),
+    Effect.flatMap(polyOf(args[0] as Sym, name, context), (p) => {
+      if (p.nonlinear !== undefined) {
+        return polyIntegral(p, context.sorts)
+          ? Effect.succeed(one(p))
+          : twoUnknowns("number/multiply");
+      }
+      return Effect.succeed(one(numberSym(floorLinear(p.linear, context))));
+    }),
   "number/ceiling": (args, name, context) =>
-    Effect.map(linearOf(args[0] as Sym, name), (x) =>
-      one(
-        numberSym(
-          times(floorLinear(times(x, negate(ONE)), context), negate(ONE))
+    Effect.flatMap(polyOf(args[0] as Sym, name, context), (p) => {
+      if (p.nonlinear !== undefined) {
+        return polyIntegral(p, context.sorts)
+          ? Effect.succeed(one(p))
+          : twoUnknowns("number/multiply");
+      }
+      return Effect.succeed(
+        one(
+          numberSym(
+            times(
+              floorLinear(times(p.linear, negate(ONE)), context),
+              negate(ONE)
+            )
+          )
         )
-      )
-    ),
+      );
+    }),
   "number/round": (args, name, context) =>
     Effect.flatMap(
-      Effect.forEach(args, (arg) => linearOf(arg, name)),
-      ([x, places]) => {
+      Effect.all([
+        polyOf(args[0] as Sym, name, context),
+        args[1] === undefined
+          ? Effect.succeed(undefined)
+          : linearOf(args[1], name, context),
+      ]),
+      ([subject, places]) => {
         if (places !== undefined) {
           if (places.coefficients.size > 0) {
             return refused(name);
@@ -512,14 +630,16 @@ const LIBRARY: Readonly<
           }
         }
         const p = places === undefined ? 0n : places.constant.n;
-        const subject = x as Linear;
-        if (p >= 0n && integral(subject, context.sorts)) {
-          return Effect.succeed(one(numberSym(subject)));
+        if (p >= 0n && polyIntegral(subject, context.sorts)) {
+          return Effect.succeed(one(subject));
+        }
+        if (subject.nonlinear !== undefined) {
+          return refused(name);
         }
         const scale: Rational =
           p >= 0n ? ratio(10n ** p) : ratio(1n, 10n ** -p);
         const rounded = floorLinear(
-          plus(times(subject, scale), constant(ratio(1n, 2n))),
+          plus(times(subject.linear, scale), constant(ratio(1n, 2n))),
           context
         );
         return Effect.succeed(
@@ -529,7 +649,7 @@ const LIBRARY: Readonly<
     ),
   "number/remainder": (args, name, context) =>
     Effect.flatMap(
-      Effect.forEach(args, (arg) => linearOf(arg, name)),
+      Effect.forEach(args, (arg) => linearOf(arg, name, context)),
       ([a, b]) => {
         if (b === undefined || b.coefficients.size > 0) {
           return refused(`${name} by an unknown`);
@@ -567,24 +687,44 @@ const LIBRARY: Readonly<
         ]);
       }
     ),
-  "number/absolute": (args, name) =>
-    Effect.map(linearOf(args[0] as Sym, name), (x) => [
-      { sym: numberSym(x), when: atom({ linear: x, relation: ">=" }) },
-      {
-        sym: numberSym(times(x, negate(ONE))),
-        when: atom({ linear: times(x, negate(ONE)), relation: ">" }),
-      },
-    ]),
-  "number/min": (args, name) => extremum(args, name, false),
-  "number/max": (args, name) => extremum(args, name, true),
+  "number/absolute": (args, name, context) =>
+    Effect.flatMap(polyOf(args[0] as Sym, name, context), (x) => {
+      const ge = polyFormula(x, ">=", context.sorts);
+      const lt = polyFormula(x, "<", context.sorts);
+      if (ge === undefined || lt === undefined) {
+        return twoUnknowns();
+      }
+      const cases: { sym: Sym; when: Formula }[] = [];
+      if (ge.length > 0) {
+        cases.push({ sym: x, when: ge });
+      }
+      if (lt.length > 0) {
+        cases.push({ sym: polyScale(x, negate(ONE)), when: lt });
+      }
+      return Effect.succeed<Cases>(cases);
+    }),
+  "number/min": (args, name, context) => extremum(args, name, false, context),
+  "number/max": (args, name, context) => extremum(args, name, true, context),
   "number/lessThan": (args, name, context) =>
-    comparison(args, name, ">", true, context),
+    Effect.map(
+      comparePoly(args[0] as Sym, args[1] as Sym, "<", name, context),
+      (f) => one(truthSym(f))
+    ),
   "number/lessThanOrEqualTo": (args, name, context) =>
-    comparison(args, name, ">=", true, context),
+    Effect.map(
+      comparePoly(args[0] as Sym, args[1] as Sym, "<=", name, context),
+      (f) => one(truthSym(f))
+    ),
   "number/greaterThan": (args, name, context) =>
-    comparison(args, name, ">", false, context),
+    Effect.map(
+      comparePoly(args[0] as Sym, args[1] as Sym, ">", name, context),
+      (f) => one(truthSym(f))
+    ),
   "number/greaterThanOrEqualTo": (args, name, context) =>
-    comparison(args, name, ">=", false, context),
+    Effect.map(
+      comparePoly(args[0] as Sym, args[1] as Sym, ">=", name, context),
+      (f) => one(truthSym(f))
+    ),
   "number/equals?": (args, _name, context) =>
     Effect.map(equalSym(args[0] as Sym, args[1] as Sym, context), (f) =>
       one(truthSym(f))
@@ -601,6 +741,53 @@ const LIBRARY: Readonly<
     ),
   "boolean/not": (args) =>
     Effect.map(truthOf(args[0] as Sym, args[0]), (f) => one(truthSym(not(f)))),
+  "boolean/xor": (args) =>
+    Effect.map(
+      Effect.all([
+        truthOf(args[0] as Sym, args[0]),
+        truthOf(args[1] as Sym, args[1]),
+      ]),
+      ([a, b]) => one(truthSym(or(and(a, not(b)), and(not(a), b))))
+    ),
+  "boolean/nand": (args) =>
+    Effect.map(
+      Effect.all([
+        truthOf(args[0] as Sym, args[0]),
+        truthOf(args[1] as Sym, args[1]),
+      ]),
+      ([a, b]) => one(truthSym(not(and(a, b))))
+    ),
+  "boolean/nor": (args) =>
+    Effect.map(
+      Effect.all([
+        truthOf(args[0] as Sym, args[0]),
+        truthOf(args[1] as Sym, args[1]),
+      ]),
+      ([a, b]) => one(truthSym(not(or(a, b))))
+    ),
+  "boolean/equals?": (args) =>
+    Effect.map(
+      Effect.all([
+        truthOf(args[0] as Sym, args[0]),
+        truthOf(args[1] as Sym, args[1]),
+      ]),
+      ([a, b]) => one(truthSym(or(and(a, b), and(not(a), not(b)))))
+    ),
+  "func/partial": ([target, ...fixed], name, context) =>
+    Effect.map(functionOf(target, name), (fn) =>
+      one({
+        apply: (more, depth, callGuard) =>
+          applyCallable(
+            fn,
+            [...fixed, ...more],
+            callGuard === undefined
+              ? context
+              : { ...context, guard: and(context.guard ?? TRUE, callGuard) },
+            depth
+          ),
+        kind: "closure" as const,
+      })
+    ),
   // A record of a known shape has its keys known, so these are known too:
   // a missing key fails, as in plain code, unless a value is given for it.
   "object/get": (args) => {
@@ -630,18 +817,570 @@ const LIBRARY: Readonly<
     }
     return Effect.succeed(one(truthSym(fields.has(key.value) ? TRUE : FALSE)));
   },
-  "schema/fits?": (args, _name, context, depth) =>
-    isConcrete(args[1] as Sym)
+  "object/set": ([record, key, value]) => {
+    const fields = fieldsOf(record as Sym);
+    if (
+      fields === undefined ||
+      key?.kind !== "value" ||
+      typeof key.value !== "string" ||
+      key.value === "__proto__"
+    ) {
+      return refused("object/set");
+    }
+    const next = new Map(fields);
+    next.set(key.value, value as Sym);
+    return Effect.succeed(one({ fields: next, kind: "record" }));
+  },
+  "object/remove": ([record, key]) => {
+    const fields = fieldsOf(record as Sym);
+    if (
+      fields === undefined ||
+      key?.kind !== "value" ||
+      typeof key.value !== "string" ||
+      key.value === "__proto__"
+    ) {
+      return refused("object/remove");
+    }
+    const next = new Map(fields);
+    next.delete(key.value);
+    return Effect.succeed(one({ fields: next, kind: "record" }));
+  },
+  "object/merge": (records) => {
+    const out = new Map<string, Sym>();
+    for (const record of records) {
+      const fields = fieldsOf(record);
+      if (fields === undefined) {
+        return refused("object/merge");
+      }
+      for (const [k, v] of fields) {
+        if (k !== "__proto__") {
+          out.set(k, v);
+        }
+      }
+    }
+    return Effect.succeed(one({ fields: out, kind: "record" }));
+  },
+  "object/keys": ([record]) => {
+    const fields = fieldsOf(record as Sym);
+    return fields === undefined
+      ? refused("object/keys")
+      : Effect.succeed(one(listSym([...fields.keys()].map(fromValue))));
+  },
+  "object/values": ([record]) => {
+    const fields = fieldsOf(record as Sym);
+    return fields === undefined
+      ? refused("object/values")
+      : Effect.succeed(one(listSym([...fields.values()])));
+  },
+  "object/entries": ([record]) => {
+    const fields = fieldsOf(record as Sym);
+    return fields === undefined
+      ? refused("object/entries")
+      : Effect.succeed(
+          one(
+            listSym(
+              [...fields.entries()].map(([k, v]) => listSym([fromValue(k), v]))
+            )
+          )
+        );
+  },
+  "object/fromEntries": ([pairs]) => {
+    const items = itemsOf(pairs as Sym);
+    if (items === undefined) {
+      return refused("object/fromEntries");
+    }
+    const fields = new Map<string, Sym>();
+    for (const pair of items) {
+      const parts = itemsOf(pair);
+      const key = parts?.[0];
+      if (
+        parts === undefined ||
+        parts.length !== 2 ||
+        key?.kind !== "value" ||
+        typeof key.value !== "string" ||
+        key.value === "__proto__"
+      ) {
+        return refused("object/fromEntries");
+      }
+      fields.set(key.value, parts[1] as Sym);
+    }
+    return Effect.succeed(one({ fields, kind: "record" }));
+  },
+  "object/get-path": ([obj, pathSym]) => {
+    if (pathSym?.kind !== "value" || typeof pathSym.value !== "string") {
+      return refused("object/get-path");
+    }
+    let current = obj as Sym;
+    for (const key of pathSym.value.split(".")) {
+      const isIndex = DIGIT_INDEX.test(key);
+      if (isIndex) {
+        const items = itemsOf(current);
+        const idx = Number.parseInt(key, 10);
+        if (items === undefined || idx < 0 || idx >= items.length) {
+          return refused("object/get-path");
+        }
+        current = items[idx] as Sym;
+      } else {
+        const fields = fieldsOf(current);
+        const found = fields?.get(key);
+        if (found === undefined) {
+          return refused("object/get-path");
+        }
+        current = found;
+      }
+    }
+    return Effect.succeed(one(current));
+  },
+  "schema/fits?": ([val, schemaSym], _name, context, depth) => {
+    const schema = schemaSym as Sym;
+    if (isConcrete(schema)) {
+      return Effect.map(
+        fitsOf(val as Sym, plainOf(schema), context, depth),
+        (f) => one(truthSym(f))
+      );
+    }
+    return schema.kind === "closure"
       ? Effect.map(
-          fitsOf(args[0] as Sym, plainOf(args[1] as Sym), context, depth),
+          Effect.flatMap(
+            applyCallable(schema, [val as Sym], context, depth),
+            formulaOf
+          ),
           (f) => one(truthSym(f))
         )
-      : refused("a schema made from a value no goal binds"),
+      : refused("a schema made from a value no goal binds");
+  },
+  "schema/assert": ([val, schemaSym], name, context, depth) => {
+    const schema = schemaSym as Sym;
+    let target: unknown;
+    if (isConcrete(schema)) {
+      target = plainOf(schema);
+    } else if (schema.kind === "closure") {
+      target = schema;
+    }
+    return target === undefined
+      ? refused("a schema made from a value no goal binds")
+      : Effect.flatMap(
+          provenFits(val as Sym, target, context, depth, name),
+          () => Effect.succeed(one(val as Sym))
+        );
+  },
+  "value/identity": ([arg]) => Effect.succeed(one(arg as Sym)),
+  "value/any?": () => Effect.succeed(one(truthSym(TRUE))),
+  "value/boolean?": ([arg]) =>
+    Effect.succeed(one(truthSym(arg?.kind === "truth" ? TRUE : FALSE))),
+  "value/null?": ([arg]) =>
+    Effect.succeed(
+      one(truthSym(arg?.kind === "value" && arg.value === null ? TRUE : FALSE))
+    ),
+  "value/array?": ([arg], _name, context) =>
+    Effect.map(
+      (VALUE_PREDICATES["value/array?"] as (s: Sym, c: Context) => Fit)(
+        arg as Sym,
+        context
+      ),
+      (f) => one(truthSym(f))
+    ),
+  "value/object?": ([arg], _name, context) =>
+    Effect.map(
+      (VALUE_PREDICATES["value/object?"] as (s: Sym, c: Context) => Fit)(
+        arg as Sym,
+        context
+      ),
+      (f) => one(truthSym(f))
+    ),
+  "value/undefined?": ([arg], _name, context) =>
+    Effect.map(
+      (VALUE_PREDICATES["value/undefined?"] as (s: Sym, c: Context) => Fit)(
+        arg as Sym,
+        context
+      ),
+      (f) => one(truthSym(f))
+    ),
+  "value/string?": ([arg]) =>
+    Effect.map(fitsOpaque(arg as Sym, "string"), (f) => one(truthSym(f))),
+  "value/function?": ([arg]) =>
+    Effect.map(fitsOpaque(arg as Sym, "function"), (f) => one(truthSym(f))),
+  "value/promise?": ([arg]) =>
+    Effect.map(fitsOpaque(arg as Sym, "promise"), (f) => one(truthSym(f))),
+  "value/symbol?": ([arg]) =>
+    Effect.map(fitsOpaque(arg as Sym, "symbol"), (f) => one(truthSym(f))),
+  "value/unknown?": ([arg]) =>
+    Effect.map(fitsOpaque(arg as Sym, "unknown"), (f) => one(truthSym(f))),
   "value/number?": (args) =>
     Effect.succeed(one(truthSym(args[0]?.kind === "number" ? TRUE : FALSE))),
   "value/integer?": (args, _name, context) =>
     Effect.map(fitsInteger(args[0] as Sym, context), (f) => one(truthSym(f))),
+  "aggregate/count": ([list], name) =>
+    Effect.map(listOf(list, name), (items) => one(fromValue(items.length))),
+  "aggregate/sum": ([list], name, context, depth) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      (LIBRARY["number/add"] as LibraryFn)(items, name, context, depth)
+    ),
+  "aggregate/mean": ([list], name, context, depth) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      items.length === 0
+        ? Effect.succeed(one(fromValue(null)))
+        : Effect.flatMap(
+            (LIBRARY["number/add"] as LibraryFn)(items, name, context, depth),
+            (sums) =>
+              Effect.map(
+                Effect.forEach(sums, ({ sym, when }) =>
+                  Effect.map(polyOf(sym, name, context), (p) => ({
+                    sym: polyScale(p, divide(ONE, ratio(BigInt(items.length)))),
+                    when,
+                  }))
+                ),
+                (out) => out
+              )
+          )
+    ),
+  "aggregate/min": ([list], name, context) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      items.length === 0
+        ? Effect.succeed(one(fromValue(null)))
+        : extremum(items, name, false, context)
+    ),
+  "aggregate/max": ([list], name, context) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      items.length === 0
+        ? Effect.succeed(one(fromValue(null)))
+        : extremum(items, name, true, context)
+    ),
+  "aggregate/collect": ([list], name, context, depth) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      sortSymbolic(items, undefined, name, context, depth)
+    ),
+  "aggregate/unique": ([list], name, context, depth) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      uniqueSymbolic(items, name, context, depth, false)
+    ),
+  "aggregate/countUnique": ([list], name, context, depth) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      uniqueSymbolic(items, name, context, depth, true)
+    ),
+  "aggregate/union": ([list], name, context, depth) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      Effect.flatMap(
+        Effect.forEach(items, (each) => listOf(each, name)),
+        (nested) => uniqueSymbolic(nested.flat(), name, context, depth, false)
+      )
+    ),
+  "quantity/add": (args, name, context, depth) =>
+    quantitySameUnit(args, "number/add", name, context, depth, 0),
+  "quantity/subtract": (args, name, context, depth) =>
+    quantitySameUnit(args, "number/subtract", name, context, depth),
+  "quantity/multiply": (args, name, context, depth) =>
+    quantityMultiply(args, name, context, depth),
+  "quantity/divide": ([a, b], name, context, depth) =>
+    quantityDivide(a as Sym, b as Sym, name, context, depth),
+  "quantity/power": ([a, exp], name, context, depth) =>
+    quantityPower(a as Sym, exp as Sym, name, context, depth),
+  "quantity/in": ([a, unitSym], name) =>
+    quantityIn(a as Sym, unitSym as Sym, name),
 };
+
+/** Whether `fit` holds everywhere under `context.guard` (i.e. `guard & !fit` is unsat). */
+const isGuaranteed = (fit: Formula, context: Context): boolean => {
+  const violation = and(context.guard ?? TRUE, not(fit));
+  for (const conj of violation) {
+    if (conj.length === 0) {
+      return false;
+    }
+    const all = withDefinitions(conj, context.definitions);
+    try {
+      if (satisfiable(all, sortsForConstraints(all, context.sorts))) {
+        return false;
+      }
+    } catch (error) {
+      if (error instanceof LogicError) {
+        return false;
+      }
+      throw error;
+    }
+  }
+  return true;
+};
+
+/** Proves that `sym` fits `schema` (concrete or closure) under `context.guard`, or refuses with `what`. */
+const provenFits = (
+  sym: Sym,
+  schema: unknown,
+  context: Context,
+  depth: number,
+  what: string
+): Effect.Effect<true, Error> =>
+  Effect.flatMap(
+    isClosure(schema)
+      ? Effect.flatMap(applyCallable(schema, [sym], context, depth), formulaOf)
+      : fitsOf(sym, schema, context, depth),
+    (fit) => (isGuaranteed(fit, context) ? Effect.succeed(true) : refused(what))
+  );
+
+/** Deduplicates an already-sorted symbolic list by branching on adjacent equality. */
+const dedupSorted = (
+  items: readonly Sym[],
+  when: Formula,
+  context: Context
+): Effect.Effect<{ items: Sym[]; when: Formula }[], Error> =>
+  Effect.gen(function* () {
+    if (items.length < 2) {
+      return [{ items: [...items], when }];
+    }
+    let ways: { items: Sym[]; when: Formula }[] = [
+      { items: [items[0] as Sym], when },
+    ];
+    for (let at = 1; at < items.length; at += 1) {
+      const curr = items[at] as Sym;
+      const next: { items: Sym[]; when: Formula }[] = [];
+      for (const way of ways) {
+        const prev = way.items.at(-1) as Sym;
+        const eq = yield* equalSym(prev, curr, context);
+        const same = pruneFormula(and(way.when, eq), context);
+        if (same.length > 0) {
+          next.push({ items: way.items, when: same });
+        }
+        const diff = pruneFormula(and(way.when, not(eq)), context);
+        if (diff.length > 0) {
+          next.push({ items: [...way.items, curr], when: diff });
+        }
+        if (next.length > MOST_WAYS) {
+          return yield* Effect.fail(tooManyWays());
+        }
+      }
+      ways = next;
+    }
+    return ways;
+  });
+
+const uniqueSymbolic = (
+  items: readonly Sym[],
+  name: string,
+  context: Context,
+  depth: number,
+  countOnly: boolean
+): Result =>
+  Effect.gen(function* () {
+    if (items.length === 0) {
+      return one(countOnly ? fromValue(0) : listSym([]));
+    }
+    const sorted = yield* sortSymbolic(items, undefined, name, context, depth);
+    const out: { sym: Sym; when: Formula }[] = [];
+    for (const { sym, when } of sorted) {
+      const list = itemsOf(sym) as readonly Sym[];
+      for (const way of yield* dedupSorted(list, when, context)) {
+        out.push({
+          sym: countOnly ? fromValue(way.items.length) : listSym(way.items),
+          when: way.when,
+        });
+      }
+    }
+    return out;
+  });
+
+type SymUnit = Readonly<Record<string, number>>;
+
+interface SymQuantity {
+  readonly unit: SymUnit;
+  readonly value: Sym;
+}
+
+const normalUnit = (raw: Record<string, unknown>): SymUnit | undefined => {
+  const entries: [string, number][] = [];
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v !== "number" || !Number.isInteger(v)) {
+      return undefined;
+    }
+    if (v !== 0) {
+      entries.push([k, v]);
+    }
+  }
+  return Object.fromEntries(entries.sort(([a], [b]) => (a < b ? -1 : 1)));
+};
+
+const quantityOfSym = (
+  sym: Sym,
+  name: string
+): Effect.Effect<SymQuantity, Error> => {
+  if (sym.kind === "number") {
+    return Effect.succeed({ unit: {}, value: sym });
+  }
+  const fields = fieldsOf(sym);
+  if (fields === undefined || fields.size !== 2) {
+    return refused(name);
+  }
+  const value = fields.get("value");
+  const unitSym = fields.get("unit");
+  if (
+    value === undefined ||
+    unitSym === undefined ||
+    value.kind !== "number" ||
+    !isConcrete(unitSym)
+  ) {
+    return refused(name);
+  }
+  const raw = plainOf(unitSym);
+  const unit = isPlainObject(raw) ? normalUnit(raw) : undefined;
+  return unit === undefined ? refused(name) : Effect.succeed({ unit, value });
+};
+
+const sameSymUnit = (a: SymUnit, b: SymUnit) =>
+  JSON.stringify(a) === JSON.stringify(b);
+
+const multiplyUnits = (a: SymUnit, b: SymUnit, scale = 1): SymUnit => {
+  const out: Record<string, number> = { ...a };
+  for (const [k, v] of Object.entries(b)) {
+    out[k] = (out[k] ?? 0) + scale * v;
+  }
+  return normalUnit(out) as SymUnit;
+};
+
+const wrapQuantity = (value: Sym, unit: SymUnit): Sym =>
+  Object.keys(unit).length === 0
+    ? value
+    : {
+        fields: new Map([
+          ["value", value],
+          ["unit", fromValue(unit)],
+        ]),
+        kind: "record",
+      };
+
+const quantitySameUnit = (
+  args: readonly Sym[],
+  numOp: string,
+  name: string,
+  context: Context,
+  depth: number,
+  empty?: number
+): Result =>
+  Effect.gen(function* () {
+    if (args.length === 0 && empty !== undefined) {
+      return one(fromValue(empty));
+    }
+    const qs = yield* Effect.forEach(args, (arg) => quantityOfSym(arg, name));
+    const [first] = qs as [SymQuantity, ...SymQuantity[]];
+    const other = qs.find((q) => !sameSymUnit(q.unit, first.unit));
+    if (other !== undefined) {
+      return yield* Effect.fail(
+        differentUnitsError(
+          name.replace("quantity/", ""),
+          JSON.stringify(first.unit),
+          JSON.stringify(other.unit)
+        )
+      );
+    }
+    const results = yield* (LIBRARY[numOp] as LibraryFn)(
+      qs.map((q) => q.value),
+      name,
+      context,
+      depth
+    );
+    return results.map(({ sym, when }) => ({
+      sym: wrapQuantity(sym, first.unit),
+      when,
+    }));
+  });
+
+const quantityMultiply = (
+  args: readonly Sym[],
+  name: string,
+  context: Context,
+  depth: number
+): Result =>
+  Effect.gen(function* () {
+    if (args.length === 0) {
+      return one(fromValue(1));
+    }
+    const qs = yield* Effect.forEach(args, (arg) => quantityOfSym(arg, name));
+    const unit = qs.reduce<SymUnit>((acc, q) => multiplyUnits(acc, q.unit), {});
+    const results = yield* (LIBRARY["number/multiply"] as LibraryFn)(
+      qs.map((q) => q.value),
+      name,
+      context,
+      depth
+    );
+    return results.map(({ sym, when }) => ({
+      sym: wrapQuantity(sym, unit),
+      when,
+    }));
+  });
+
+const quantityDivide = (
+  a: Sym,
+  b: Sym,
+  name: string,
+  context: Context,
+  depth: number
+): Result =>
+  Effect.gen(function* () {
+    const [top, bottom] = yield* Effect.all([
+      quantityOfSym(a, name),
+      quantityOfSym(b, name),
+    ]);
+    const unit = multiplyUnits(top.unit, bottom.unit, -1);
+    const results = yield* (LIBRARY["number/divide"] as LibraryFn)(
+      [top.value, bottom.value],
+      name,
+      context,
+      depth
+    );
+    return results.map(({ sym, when }) => ({
+      sym: wrapQuantity(sym, unit),
+      when,
+    }));
+  });
+
+const quantityPower = (
+  a: Sym,
+  expSym: Sym,
+  name: string,
+  context: Context,
+  depth: number
+): Result =>
+  Effect.gen(function* () {
+    if (!isConcrete(expSym)) {
+      return yield* refused(name);
+    }
+    const exp = plainOf(expSym);
+    if (typeof exp !== "number" || !Number.isInteger(exp)) {
+      return yield* refused(name);
+    }
+    const base = yield* quantityOfSym(a, name);
+    const unit = normalUnit(
+      Object.fromEntries(
+        Object.entries(base.unit).map(([k, v]) => [k, v * exp])
+      )
+    ) as SymUnit;
+    const results = yield* (LIBRARY["number/power"] as LibraryFn)(
+      [base.value, expSym],
+      name,
+      context,
+      depth
+    );
+    return results.map(({ sym, when }) => ({
+      sym: wrapQuantity(sym, unit),
+      when,
+    }));
+  });
+
+const quantityIn = (a: Sym, unitSym: Sym, name: string): Result =>
+  Effect.gen(function* () {
+    if (!isConcrete(unitSym)) {
+      return yield* refused(name);
+    }
+    const raw = plainOf(unitSym);
+    const target = isPlainObject(raw) ? normalUnit(raw) : undefined;
+    if (target === undefined) {
+      return yield* refused(name);
+    }
+    const q = yield* quantityOfSym(a, name);
+    if (!sameSymUnit(q.unit, target)) {
+      return yield* Effect.fail(
+        wrongUnitError(JSON.stringify(q.unit), JSON.stringify(target))
+      );
+    }
+    return one(q.value);
+  });
 
 /** What the solver says of a list it goes over whose length it does not know. */
 const unknownLength = (name: string) =>
@@ -683,6 +1422,11 @@ const callableOf = (sym: Sym): unknown => {
 };
 
 /** Calls a known function, or runs a lambda the solver holds by its body. */
+const withGuard = (context: Context, guard: Formula): Context =>
+  guard === TRUE
+    ? context
+    : { ...context, guard: and(context.guard ?? TRUE, guard) };
+
 const applyCallable = (
   fn: unknown,
   args: readonly Sym[],
@@ -690,22 +1434,23 @@ const applyCallable = (
   depth: number,
   guard: Formula = TRUE
 ): Result => {
+  const ctx = withGuard(context, guard);
   if (!isClosure(fn)) {
-    return applyFunction(fn, args, context, depth, guard);
+    return applyFunction(fn, args, ctx, depth, ctx.guard ?? TRUE);
   }
   if (depth > MOST_DEPTH) {
     return refused("a function that calls itself");
   }
-  if (context.inductive !== undefined && fn.info !== undefined) {
+  if (ctx.inductive !== undefined && fn.info !== undefined) {
     return Effect.flatMap(
-      context.inductive.call(fn, fn.info, args, context, guard),
+      ctx.inductive.call(fn, fn.info, args, ctx, ctx.guard ?? TRUE),
       (intercepted) =>
         intercepted === undefined
-          ? (fn.apply(args, depth + 1) as Result)
+          ? (fn.apply(args, depth + 1, ctx.guard) as Result)
           : Effect.succeed(intercepted)
     );
   }
-  return fn.apply(args, depth + 1) as Result;
+  return fn.apply(args, depth + 1, ctx.guard) as Result;
 };
 
 const listSym = (items: readonly Sym[]): Sym => ({ items, kind: "list" });
@@ -945,16 +1690,9 @@ const sortSymbolic = (
         Effect.flatMap(applyCallable(f, [a, b], context, depth), formulaOf)
       );
     }
-    if (a.kind === "number" && b.kind === "number") {
-      const diff = polySub(
-        applySubstitutions(b, context),
-        applySubstitutions(a, context)
-      );
-      return diff.nonlinear === undefined
-        ? Effect.succeed(atom({ linear: diff.linear, relation: ">" }))
-        : twoUnknowns(name);
-    }
-    return refused(name);
+    return a.kind === "number" && b.kind === "number"
+      ? comparePoly(a, b, "<", name, context)
+      : refused(name);
   };
   return Effect.map(sortSlice(items, TRUE, compareSym, context), (ways) =>
     ways.map(({ items: sorted, when }) => ({ sym: listSym(sorted), when }))
@@ -1027,6 +1765,152 @@ const ARRAYS: Readonly<
         : Effect.succeed(one(listSym(items.slice(1))))
     );
   },
+  "array/at": ([list, index, fallback], name, context) =>
+    Effect.flatMap(listOf(list, name), (items) => {
+      if (index === undefined) {
+        return refused(name);
+      }
+      if (isConcrete(index)) {
+        const raw = plainOf(index);
+        if (typeof raw !== "number" || !Number.isInteger(raw)) {
+          return refused(name);
+        }
+        const resolved = raw < 0 ? items.length + raw : raw;
+        if (resolved >= 0 && resolved < items.length) {
+          return Effect.succeed(one(items[resolved] as Sym));
+        }
+        return fallback === undefined
+          ? refused(name)
+          : Effect.succeed(one(fallback));
+      }
+      return Effect.gen(function* () {
+        const idx = yield* linearOf(index, name, context);
+        if (!integral(idx, context.sorts)) {
+          return yield* refused(name);
+        }
+        const len = BigInt(items.length);
+        const out: { sym: Sym; when: Formula }[] = [];
+        for (let at = 0; at < items.length; at += 1) {
+          const pos = atom({
+            linear: minus(idx, constant(ratio(BigInt(at)))),
+            relation: "=",
+          });
+          const neg = atom({
+            linear: minus(idx, constant(ratio(BigInt(at) - len))),
+            relation: "=",
+          });
+          const when = pruneFormula(or(pos, neg), context);
+          if (when.length > 0) {
+            out.push({ sym: items[at] as Sym, when });
+          }
+        }
+        const oob = or(
+          atom({
+            linear: minus(constant(ratio(-len)), idx),
+            relation: ">",
+          }),
+          atom({
+            linear: minus(idx, constant(ratio(len))),
+            relation: ">=",
+          })
+        );
+        const reachableOob = pruneFormula(
+          and(context.guard ?? TRUE, oob),
+          context
+        );
+        if (reachableOob.length > 0) {
+          if (fallback === undefined) {
+            return yield* refused(name);
+          }
+          out.push({ sym: fallback, when: oob });
+        }
+        return out;
+      });
+    }),
+  "array/indexOf": ([list, target], name, context) =>
+    Effect.flatMap(listOf(list, name), (items) =>
+      Effect.gen(function* () {
+        const out: { sym: Sym; when: Formula }[] = [];
+        let notYet: Formula = TRUE;
+        for (let at = 0; at < items.length; at += 1) {
+          const eq = yield* equalSym(items[at] as Sym, target as Sym, context);
+          const hit = pruneFormula(and(notYet, eq), context);
+          if (hit.length > 0) {
+            out.push({ sym: fromValue(at), when: hit });
+          }
+          notYet = pruneFormula(and(notYet, not(eq)), context);
+          if (notYet.length === 0) {
+            return out;
+          }
+        }
+        out.push({ sym: fromValue(-1), when: notYet });
+        return out;
+      })
+    ),
+  "array/find": ([list, fn, fallback], name, context, depth) =>
+    Effect.flatMap(
+      Effect.all([listOf(list, name), functionOf(fn, name)]),
+      ([items, f]) =>
+        Effect.gen(function* () {
+          const out: { sym: Sym; when: Formula }[] = [];
+          let notYet: Formula = TRUE;
+          for (const item of items) {
+            const holds = yield* Effect.flatMap(
+              applyCallable(
+                f,
+                [item],
+                { ...context, guard: and(context.guard ?? TRUE, notYet) },
+                depth
+              ),
+              formulaOf
+            );
+            const hit = pruneFormula(and(notYet, holds), context);
+            if (hit.length > 0) {
+              out.push({ sym: item, when: hit });
+            }
+            notYet = pruneFormula(and(notYet, not(holds)), context);
+            if (notYet.length === 0) {
+              return out;
+            }
+          }
+          const reachable = pruneFormula(
+            and(context.guard ?? TRUE, notYet),
+            context
+          );
+          if (reachable.length > 0) {
+            if (fallback === undefined) {
+              return yield* refused(name);
+            }
+            out.push({ sym: fallback, when: notYet });
+          }
+          return out;
+        })
+    ),
+  "array/range": ([start, end], name) => {
+    if (!(start && end && isConcrete(start) && isConcrete(end))) {
+      return refused(name);
+    }
+    const from = plainOf(start);
+    const to = plainOf(end);
+    if (
+      typeof from !== "number" ||
+      !Number.isInteger(from) ||
+      typeof to !== "number" ||
+      !Number.isInteger(to) ||
+      to - from > 256
+    ) {
+      return refused(name);
+    }
+    return Effect.succeed(
+      one(
+        listSym(
+          Array.from({ length: Math.max(0, to - from) }, (_, at) =>
+            fromValue(from + at)
+          )
+        )
+      )
+    );
+  },
   "array/slice": ([list, start, end], name) =>
     Effect.flatMap(listOf(list, name), (items) => {
       if (start === undefined || !isConcrete(start)) {
@@ -1070,13 +1954,14 @@ const ARRAYS: Readonly<
       ((last.kind === "inductive" && last.length !== undefined) ||
         (last.kind === "list" && last.tail !== undefined))
     ) {
+      const tail = last.kind === "list" ? last.tail : last;
       return Effect.map(
         Effect.forEach(prefix, (list) => listOf(list, name)),
         (all) =>
           one({
             items: [...all.flat(), ...(last.kind === "list" ? last.items : [])],
             kind: "list",
-            tail: last.kind === "list" ? last.tail : last,
+            ...(tail === undefined ? {} : { tail }),
           })
       );
     }
@@ -1186,46 +2071,49 @@ const integral = (linear: Linear, sorts: ReadonlyMap<string, Sort>) =>
     ([name, c]) => c.d === 1n && sorts.get(name) === "integer"
   );
 
-const comparison = (
+const extremumGuard = (
+  polys: readonly NumberSym[],
+  at: number,
+  greatest: boolean,
+  context: Context
+): Effect.Effect<Formula, Error> =>
+  Effect.gen(function* () {
+    const chosen = polys[at] as NumberSym;
+    let when: Formula = TRUE;
+    for (let index = 0; index < polys.length; index += 1) {
+      if (index === at) {
+        continue;
+      }
+      const other = polys[index] as NumberSym;
+      const ahead = greatest ? polySub(chosen, other) : polySub(other, chosen);
+      const f = polyFormula(ahead, index < at ? ">" : ">=", context.sorts);
+      if (f === undefined) {
+        return yield* twoUnknowns();
+      }
+      when = and(when, f);
+    }
+    return when;
+  });
+
+const extremum = (
   args: readonly Sym[],
   name: string,
-  relation: ">=" | ">",
-  flip: boolean,
+  greatest: boolean,
   context: Context
-) =>
-  Effect.flatMap(
-    Effect.all([
-      polyOf(args[0] as Sym, name, context),
-      polyOf(args[1] as Sym, name, context),
-    ]),
-    ([a, b]) => {
-      const diff = flip ? polySub(b, a) : polySub(a, b);
-      return diff.nonlinear === undefined
-        ? Effect.succeed(one(truthSym(atom({ linear: diff.linear, relation }))))
-        : twoUnknowns(name);
+): Result =>
+  Effect.gen(function* () {
+    const polys = yield* Effect.forEach(args, (arg) =>
+      polyOf(arg, name, context)
+    );
+    const cases: { sym: Sym; when: Formula }[] = [];
+    for (let at = 0; at < polys.length; at += 1) {
+      const when = yield* extremumGuard(polys, at, greatest, context);
+      if (when.length > 0) {
+        cases.push({ sym: polys[at] as NumberSym, when });
+      }
     }
-  );
-
-const extremum = (args: readonly Sym[], name: string, greatest: boolean) =>
-  Effect.map(
-    Effect.forEach(args, (arg) => linearOf(arg, name)),
-    (sums): Cases =>
-      sums.map((chosen, at) => ({
-        sym: numberSym(chosen),
-        when: [
-          sums.flatMap((other, index): Constraint[] => {
-            if (index === at) {
-              return [];
-            }
-            // The chosen one wins every other, ties to the first.
-            const ahead = greatest
-              ? minus(chosen, other)
-              : minus(other, chosen);
-            return [{ linear: ahead, relation: index < at ? ">" : ">=" }];
-          }),
-        ],
-      }))
-  );
+    return cases;
+  });
 
 /**
  * Applies a function to symbolic values: a library function by what it
@@ -1239,6 +2127,7 @@ const applyFunction = (
   depth: number,
   guard: Formula = TRUE
 ): Result => {
+  const ctx = withGuard(context, guard);
   if (args.every(isConcrete)) {
     return Effect.map(
       call(fn, ...args.map(plainOf)) as Effect.Effect<unknown, Error>,
@@ -1247,16 +2136,27 @@ const applyFunction = (
   }
   const info = lambdaInfo(fn);
   if (info !== undefined) {
-    if (context.inductive !== undefined) {
+    if (ctx.inductive !== undefined) {
       return Effect.flatMap(
-        context.inductive.call(fn, info, args, context, guard),
+        ctx.inductive.call(fn, info, args, ctx, ctx.guard ?? TRUE),
         (intercepted) =>
           intercepted === undefined
-            ? inline(info, args, context, depth, guard)
+            ? inline(fn, info, args, ctx, depth, ctx.guard ?? TRUE)
             : Effect.succeed(intercepted)
       );
     }
-    return inline(info, args, context, depth, guard);
+    return inline(fn, info, args, ctx, depth, ctx.guard ?? TRUE);
+  }
+  const built = buildOf(fn);
+  if (built !== undefined && nameOf(built.by) === "func/partial") {
+    const [target, ...fixed] = built.args;
+    return applyCallable(
+      target,
+      [...fixed.map(fromValue), ...args],
+      ctx,
+      depth,
+      ctx.guard ?? TRUE
+    );
   }
   const keys = recordKeys(fn);
   if (keys !== undefined) {
@@ -1277,7 +2177,7 @@ const applyFunction = (
     // As plain code does, which then says so when the goal runs on values.
     return refused(`${name} with ${args.length} arguments`);
   }
-  return rule === undefined ? refused(name) : rule(args, name, context, depth);
+  return rule === undefined ? refused(name) : rule(args, name, ctx, depth);
 };
 
 /** Each case of each argument, applied. */
@@ -1291,7 +2191,7 @@ const applyCases = (
   Effect.map(
     Effect.forEach(product(args), ({ syms, when }) =>
       Effect.map(
-        applyCallable(fn, syms, context, depth, and(guard, when)),
+        applyCallable(fn, syms, withGuard(context, and(guard, when)), depth),
         (cases) =>
           cases.flatMap((each) => {
             const both = and(when, each.when);
@@ -1301,11 +2201,6 @@ const applyCases = (
     ),
     (all) => all.flat()
   );
-
-/** Whether a lambda form's parameters hold a contract. */
-const contracted = (parameters: unknown) =>
-  Array.isArray(parameters) &&
-  parameters.some((parameter) => typeof parameter !== "string");
 
 /**
  * What a lambda's parameters stand for, given the arguments of a call: each
@@ -1328,9 +2223,33 @@ export const inlineLambda = (
   depth: number,
   guard: Formula = TRUE,
   extraScope?: ReadonlyMap<string, Cases>
-): Result => inline(info, args, context, depth, guard, extraScope);
+): Result => inline(undefined, info, args, context, depth, guard, extraScope);
 
+/** Checks every parameter contract against `args` under `context.guard`. */
+const checkContracts = (
+  checks: readonly unknown[],
+  args: readonly Sym[],
+  context: Context,
+  depth: number
+): Effect.Effect<void, Error> =>
+  Effect.gen(function* () {
+    for (let at = 0; at < checks.length; at += 1) {
+      const schema = checks[at];
+      if (schema !== undefined) {
+        yield* provenFits(
+          args[at] ?? fromValue(null),
+          schema,
+          context,
+          depth,
+          "a lambda with a contract"
+        );
+      }
+    }
+  });
+
+/** Runs a lambda's body on symbolic values. */
 const inline = (
+  fn: unknown,
   info: LambdaInfo,
   args: readonly Sym[],
   context: Context,
@@ -1341,21 +2260,34 @@ const inline = (
   if (depth > MOST_DEPTH) {
     return refused("a function that calls itself");
   }
-  if (Array.isArray(info.written)) {
+  const ctx = withGuard(context, guard);
+  const contract = fn === undefined ? undefined : lambdaOf(fn)?.contract;
+  if (Array.isArray(info.written) && contract === undefined) {
     return refused("a lambda with a contract");
   }
-  const scope = new Map<string, Cases>([
-    ...(extraScope ?? []),
-    ...bound(info.written ?? info.parameters, args),
-  ]);
-  return expression(
-    info.body,
-    scope,
-    info.environment,
-    context,
-    depth + 1,
-    guard
-  );
+  const runBody = () => {
+    const scope = new Map<string, Cases>([
+      ...(extraScope ?? []),
+      ...bound(
+        typeof info.written === "string" ? info.written : info.parameters,
+        args
+      ),
+    ]);
+    return expression(
+      info.body,
+      scope,
+      info.environment,
+      ctx,
+      depth + 1,
+      ctx.guard ?? TRUE
+    );
+  };
+  return contract === undefined
+    ? runBody()
+    : Effect.flatMap(
+        checkContracts(contract.checks, args, ctx, depth),
+        runBody
+      );
 };
 
 const isName = (
@@ -1454,24 +2386,18 @@ const recordOf = (code: Record<string, unknown>, where: Where): Result =>
 
 /** A lambda called where it is written: its body, its parameters bound. */
 const lambdaCall = (
-  [, parameters, body]: [string, string[] | string, unknown],
+  [, parameters, body]: [string, readonly unknown[] | string, unknown],
   rest: readonly unknown[],
   where: Where
 ): Result =>
-  Effect.flatMap(each(rest, where), (args) =>
-    Effect.map(
-      Effect.forEach(product(args), ({ syms, when }) =>
-        Effect.map(
-          expressionAt(body, {
-            ...where,
-            depth: where.depth + 1,
-            guard: and(where.guard, when),
-            scope: new Map([...where.scope, ...bound(parameters, syms)]),
-          }),
-          (cases) => under(when, cases)
-        )
-      ),
-      (all) => all.flat()
+  Effect.flatMap(makeClosure([parameters, body], where), (fns) =>
+    Effect.flatMap(each(rest, where), (args) =>
+      applyCases(
+        callableOf((fns[0] as { readonly sym: Sym }).sym),
+        args,
+        { ...where.context, guard: where.guard },
+        where.depth
+      )
     )
   );
 
@@ -1492,9 +2418,8 @@ const callOf = (
                 applyCases(
                   fn,
                   args,
-                  where.context,
-                  where.depth,
-                  and(where.guard, when)
+                  { ...where.context, guard: and(where.guard, when) },
+                  where.depth
                 ),
                 (cases) => under(when, cases)
               );
@@ -1507,25 +2432,76 @@ const callOf = (
 /** A lambda written where the solver runs: its body runs, when it is called, in the scope it was written in. */
 const closureOf = (
   [parameters, body]: readonly unknown[],
-  where: Where
-): Sym => ({
-  apply: (args, depth) =>
-    expressionAt(body, {
-      ...where,
-      depth,
-      scope: new Map([...where.scope, ...bound(parameters, args)]),
-    }),
-  info: {
-    body,
-    environment: where.environment,
-    parameters: Array.isArray(parameters)
-      ? (parameters as readonly string[])
-      : [String(parameters)],
-    ...(typeof parameters === "string" ? { written: parameters } : {}),
-  },
-  kind: "closure",
-  scope: where.scope,
-});
+  where: Where,
+  checks?: readonly unknown[]
+): Sym => {
+  const params =
+    typeof parameters === "string"
+      ? parameters
+      : parameterNames(parameters as readonly unknown[]);
+  return {
+    apply: (args, depth, callGuard) => {
+      const mergedGuard =
+        callGuard === undefined ? where.guard : and(where.guard, callGuard);
+      const runBody = () =>
+        expressionAt(body, {
+          ...where,
+          depth,
+          guard: mergedGuard,
+          scope: new Map([...where.scope, ...bound(params, args)]),
+        });
+      return checks === undefined
+        ? runBody()
+        : Effect.flatMap(
+            checkContracts(
+              checks,
+              args,
+              { ...where.context, guard: mergedGuard },
+              depth
+            ),
+            runBody
+          );
+    },
+    info: {
+      body,
+      environment: where.environment,
+      parameters: Array.isArray(params) ? params : [params],
+      ...(typeof parameters === "string" ? { written: parameters } : {}),
+    },
+    kind: "closure",
+    scope: where.scope,
+  };
+};
+
+const makeClosure = (parts: readonly unknown[], where: Where): Result => {
+  const [parameters, body] = parts;
+  const schemas = parameterSchemas(parameters as readonly unknown[] | string);
+  if (schemas.every((s) => s === undefined)) {
+    return Effect.succeed(one(closureOf([parameters, body], where)));
+  }
+  return Effect.gen(function* () {
+    const evaluated: unknown[] = [];
+    for (const schemaExpr of schemas) {
+      if (schemaExpr === undefined) {
+        evaluated.push(undefined);
+        continue;
+      }
+      const cases = yield* expressionAt(schemaExpr, where);
+      const first = cases[0];
+      if (
+        cases.length !== 1 ||
+        first === undefined ||
+        !(isConcrete(first.sym) || first.sym.kind === "closure")
+      ) {
+        return yield* refused("a lambda with a contract");
+      }
+      evaluated.push(
+        first.sym.kind === "closure" ? first.sym : plainOf(first.sym)
+      );
+    }
+    return one(closureOf([parameters, body], where, evaluated));
+  });
+};
 
 /** Equality inside a lambda body, as `=` works in a goal. */
 const equalityExpr = (
@@ -1682,7 +2658,7 @@ const applyMatchHandler = (
       const applied = yield* applyCallable(
         fn,
         [sym],
-        where.context,
+        { ...where.context, guard: and(guard, fnWhen) },
         where.depth
       );
       out.push(...under(and(when, fnWhen), applied));
@@ -1781,9 +2757,11 @@ const expressionAt = (code: unknown, where: Where): Result => {
   }
   const [head, ...rest] = code as unknown[];
   if (Array.isArray(head) && head[0] === "lambda") {
-    return contracted(head[1])
-      ? refused("a lambda with a contract")
-      : lambdaCall(head as [string, string[] | string, unknown], rest, where);
+    return lambdaCall(
+      head as [string, readonly unknown[] | string, unknown],
+      rest,
+      where
+    );
   }
   const special =
     typeof head === "string" && !isName(head, where.scope, where.environment);
@@ -1812,9 +2790,7 @@ const expressionAt = (code: unknown, where: Where): Result => {
     case "in":
       return membershipExpr(rest, where);
     case "lambda":
-      return contracted(rest[0])
-        ? refused("a lambda with a contract")
-        : Effect.succeed(one(closureOf(rest, where)));
+      return makeClosure(rest, where);
     default:
       return head.includes("/")
         ? callOf(head, rest, where)
@@ -1829,7 +2805,7 @@ const expression = (
   environment: Environment | undefined,
   context: Context,
   depth: number,
-  guard: Formula = TRUE
+  guard: Formula = context.guard ?? TRUE
 ): Result => expressionAt(code, { context, depth, environment, guard, scope });
 
 /** Where a `cond` test holds: the cases in which it is true. */
@@ -1851,10 +2827,16 @@ const conditional = (clauses: readonly unknown[], where: Where): Result =>
       const [test, result] = clause as [unknown, unknown];
       const otherwise =
         test === "else" && !isName("else", where.scope, where.environment);
-      const holds = otherwise ? TRUE : yield* holdsWhere(test, where);
+      const holds = otherwise
+        ? TRUE
+        : yield* holdsWhere(test, {
+            ...where,
+            guard: and(where.guard, before),
+          });
       const here = and(before, holds);
+      const hasGuard = where.guard.some((conj) => conj.length > 0);
       const reachable =
-        where.depth > 1
+        where.depth > 1 || hasGuard
           ? pruneFormula(and(where.guard, here), where.context)
           : and(where.guard, here);
       if (reachable.length > 0) {
@@ -2068,14 +3050,9 @@ const fitsInteger = (sym: Sym, context: Context): Fit => {
   }
   const resolved = applySubstitutions(sym, context);
   if (resolved.nonlinear !== undefined) {
-    const allIntegral =
-      integral(resolved.linear, context.sorts) &&
-      [...resolved.nonlinear].every(
-        ([key, k]) =>
-          k.d === 1n &&
-          key.split("*").every((v) => context.sorts.get(v) === "integer")
-      );
-    return allIntegral ? Effect.succeed(TRUE) : twoUnknowns("value/integer?");
+    return polyIntegral(resolved, context.sorts)
+      ? Effect.succeed(TRUE)
+      : twoUnknowns("value/integer?");
   }
   if (integral(resolved.linear, context.sorts)) {
     return Effect.succeed(TRUE);

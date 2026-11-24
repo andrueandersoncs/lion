@@ -102,6 +102,10 @@
     <tr data-entry="string/slice"><td><code>["string/slice", text, start]</code><br><code>["string/slice", text, start, end]</code></td><td>The part of <code>text</code> from <code>start</code> up to, but not including, <code>end</code>, or to the end without it. A negative position counts from the end, and one past either end stops there, as JavaScript's <code>slice</code> cuts</td></tr>
     <tr data-entry="string/padStart"><td><code>["string/padStart", text, length, fill]</code></td><td><code>text</code> made <code>length</code> long with copies of <code>fill</code> before it; unchanged when it is already that long</td></tr>
     <tr data-entry="string/padEnd"><td><code>["string/padEnd", text, length, fill]</code></td><td>The same, with the copies after it</td></tr>
+    <tr data-entry="string/trim"><td><code>["string/trim", text]</code></td><td><code>text</code> with leading and trailing whitespace removed</td></tr>
+    <tr data-entry="string/toLowerCase"><td><code>["string/toLowerCase", text]</code></td><td><code>text</code> converted to lowercase</td></tr>
+    <tr data-entry="string/toUpperCase"><td><code>["string/toUpperCase", text]</code></td><td><code>text</code> converted to uppercase</td></tr>
+    <tr data-entry="string/replaceAll"><td><code>["string/replaceAll", text, search, replacement]</code></td><td><code>text</code> with every occurrence of <code>search</code> replaced literally by <code>replacement</code></td></tr>
     <tr data-entry="string/numbers"><td><code>["string/numbers", text]</code><br><code>["string/numbers", text, separator]</code></td><td>Every number written in <code>text</code>, in order, each read as <code>number/fromString</code> reads it with the same separator. A minus sign counts only where no letter, digit, or point is right before it, so <code>"2023-24"</code> holds 2023 and 24. Words for amounts are not read: <code>"$1.2 billion"</code> holds 1.2</td></tr>
     <tr data-entry="string/equals?"><td><code>["string/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
   </tbody>
@@ -122,6 +126,10 @@
  "last": ["string/slice", "lionlang", -4],
  "padStart": ["string/padStart", "7", 2, "0"],
  "padEnd": ["string/padEnd", "7", 3, "."],
+ "trim": ["string/trim", "  lion  "],
+ "toLowerCase": ["string/toLowerCase", "Lion"],
+ "toUpperCase": ["string/toUpperCase", "Lion"],
+ "replaceAll": ["string/replaceAll", "a-b-c", "-", "_"],
  "numbers": ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","],
  "equals?": ["string/equals?", "lion", "lion"]}
 </lion-example>
@@ -136,10 +144,13 @@
     <tr data-entry="array/length"><td><code>["array/length", list]</code></td><td>The number of items</td></tr>
     <tr data-entry="array/head"><td><code>["array/head", list]</code></td><td>The first item. An empty list has none, and fails, as Scheme's <code>car</code> does</td></tr>
     <tr data-entry="array/tail"><td><code>["array/tail", list]</code></td><td>Every item after the first. An empty list fails, as Scheme's <code>cdr</code> does</td></tr>
+    <tr data-entry="array/at"><td><code>["array/at", list, index]</code><br><code>["array/at", list, index, missing]</code></td><td>The item at whole-number <code>index</code> (negative indices count from the end). Out of range, returns <code>missing</code> when given, or fails with <code>IndexOutOfBoundsError</code></td></tr>
     <tr data-entry="array/slice"><td><code>["array/slice", list, start]</code><br><code>["array/slice", list, start, end]</code></td><td>The items from <code>start</code> up to, but not including, <code>end</code>, or to the end without it, counting a negative position from the end, as <code>string/slice</code> cuts text</td></tr>
     <tr data-entry="array/concat"><td><code>["array/concat", a, b, ...]</code></td><td>The items of <code>a</code> followed by those of <code>b</code>, and so on for any number of lists; <code>[]</code> for none</td></tr>
     <tr data-entry="array/zip"><td><code>["array/zip", a, b, ...]</code></td><td>The items of one or more lists paired up: a list of the first items, then of the second, up to the end of the shortest list, as Scheme's <code>map</code> goes over several lists</td></tr>
     <tr data-entry="array/includes?"><td><code>["array/includes?", list, item]</code></td><td>Whether the list holds a value equal to <code>item</code>, comparing lists and records by structure</td></tr>
+    <tr data-entry="array/indexOf"><td><code>["array/indexOf", list, item]</code></td><td>The first index of a value equal to <code>item</code> (comparing by structure), or <code>-1</code> when absent</td></tr>
+    <tr data-entry="array/find"><td><code>["array/find", list, function]</code><br><code>["array/find", list, function, missing]</code></td><td>The first item for which <code>function</code> gives <code>true</code>, stopping there. If none matches, returns <code>missing</code> when given, or fails with <code>LogicError</code></td></tr>
     <tr data-entry="array/map"><td><code>["array/map", list, function]</code></td><td>The list of <code>function</code>'s results for each item</td></tr>
     <tr data-entry="array/filter"><td><code>["array/filter", list, function]</code></td><td>The items of <code>list</code> in order for which <code>function</code> gives <code>true</code>. <code>function</code> gives <code>true</code> or <code>false</code>, as a condition does</td></tr>
     <tr data-entry="array/flat-map"><td><code>["array/flat-map", list, function]</code></td><td>The concatenation of the lists <code>function</code> returns for each item</td></tr>
@@ -157,12 +168,17 @@
  "length": ["array/length", ["array/make", 1, 2, 3]],
  "head": ["array/head", ["array/make", 1, 2, 3]],
  "tail": ["array/tail", ["array/make", 1, 2, 3]],
+ "at": ["array/at", ["array/make", 10, 20, 30], -1],
+ "at fallback": ["array/at", ["array/make", 10, 20, 30], 9, null],
  "slice": ["array/slice", ["array/make", 1, 2, 3, 4], 1, 3],
  "lastTwo": ["array/slice", ["array/make", 1, 2, 3, 4], -2],
  "concat": ["array/concat", ["array/make", 1], ["array/make", 2, 3]],
  "zip": ["array/zip", ["array/make", 1, 2, 3], ["array/make", "a", "b"]],
  "sums of pairs": ["array/map", ["array/zip", ["array/make", 1, 2, 3], ["array/make", 10, 20, 30]], ["lambda", ["pair"], ["aggregate/sum", "pair"]]],
  "includes?": ["array/includes?", ["quote", [1, {"a": 2}]], {"a": 2}],
+ "indexOf": ["array/indexOf", ["quote", [1, {"a": 2}, 3]], {"a": 2}],
+ "find": ["array/find", ["array/make", 1, 5, 2, 4], ["lambda", ["x"], ["number/greaterThan", "x", 3]]],
+ "find fallback": ["array/find", ["array/make", 1, 2], ["lambda", ["x"], ["number/greaterThan", "x", 3]], null],
  "map": ["array/map", ["array/make", 1, 2], ["lambda", ["x"], ["number/add", "x", 1]]],
  "filter": ["array/filter", ["array/make", 1, 5, 2, 4], ["lambda", ["x"], ["number/greaterThan", "x", 2]]],
  "flat-map": ["array/flat-map", ["array/make", 1, 2], ["lambda", ["x"], ["array/make", "x", "x"]]],
@@ -285,9 +301,13 @@
     <tr data-entry="object/get-path"><td><code>["object/get-path", object, path]</code></td><td>The value at <code>path</code>, such as <code>"users.1.name"</code>. Fails with <code>KeyNotFoundError</code>, <code>IndexOutOfBoundsError</code>, <code>NotAnArrayError</code>, or <code>PathTraversalError</code> when the path does not lead to a value.</td></tr>
     <tr data-entry="object/keys"><td><code>["object/keys", record]</code></td><td>The record's keys</td></tr>
     <tr data-entry="object/values"><td><code>["object/values", record]</code></td><td>The record's values</td></tr>
+    <tr data-entry="object/entries"><td><code>["object/entries", record]</code></td><td>The record's <code>[key, value]</code> pairs</td></tr>
+    <tr data-entry="object/fromEntries"><td><code>["object/fromEntries", pairs]</code></td><td>A record built from <code>[key, value]</code> pairs; refuses <code>"__proto__"</code></td></tr>
     <tr data-entry="object/set"><td><code>["object/set", record, key, value]</code></td><td>A new record with <code>key</code> holding <code>value</code>, as <code>hash-set</code> gives in Racket. The record it was given is unchanged.</td></tr>
     <tr data-entry="object/remove"><td><code>["object/remove", record, key]</code></td><td>A new record without <code>key</code>, as <code>hash-remove</code> gives in Racket. Removing a key the record does not hold gives the same record.</td></tr>
+    <tr data-entry="object/merge"><td><code>["object/merge", record, ...]</code></td><td>A new record combining zero or more records left to right (later keys override earlier ones)</td></tr>
     <tr data-entry="object/json-stringify"><td><code>["object/json-stringify", value, replacer, space]</code></td><td>Any JSON value as JSON text, like <code>JSON.stringify</code>. The replacer and the indent are optional.</td></tr>
+    <tr data-entry="object/json-parse"><td><code>["object/json-parse", text]</code></td><td>Parses JSON text into a Lion value, keeping decimals and large integers exact</td></tr>
     <tr data-entry="object/call-method"><td><code>["object/call-method", value, name, argument, ...]</code></td><td>The result of calling <code>value</code>'s method <code>name</code>. Fails with <code>NotAFunctionError</code> when there is no such method, and <code>NotAnObjectError</code> when <code>value</code> is <code>null</code>.</td></tr>
     <tr data-entry="object/get-method"><td><code>["object/get-method", value, name]</code></td><td>The method <code>name</code> of <code>value</code>, bound to it. Fails like <code>object/call-method</code>.</td></tr>
     <tr data-entry="object/call-method-path"><td><code>["object/call-method-path", object, path, argument, ...]</code></td><td>The result of calling the method at the end of <code>path</code>, with <code>this</code> set to the value before it. Every value the path passes through must be an object; the last can be any value except <code>null</code>.</td></tr>
@@ -302,10 +322,14 @@
    "get-path": ["object/get-path", "data", "users.1.name"],
    "keys": ["object/keys", "data"],
    "values": ["object/values", ["quote", {"a": 1, "b": 2}]],
+   "entries": ["object/entries", ["quote", {"a": 1, "b": 2}]],
+   "fromEntries": ["object/fromEntries", ["quote", [["a", 1], ["b", 2]]]],
    "set": ["object/set", ["quote", {"a": 1}], "b", 2],
    "remove": ["object/remove", ["quote", {"a": 1, "b": 2}], "a"],
+   "merge": ["object/merge", ["quote", {"a": 1, "b": 2}], ["quote", {"b": 3, "c": 4}]],
    "keys without port": ["object/keys", ["object/remove", "data", "port"]],
    "json-stringify": ["object/json-stringify", ["quote", {"a": [1, 2]}], null, 0],
+   "json-parse exact": ["number/add", ["object/get", ["object/json-parse", "{\"x\": 0.1}"], "x"], 0.2],
    "missing, with a value to use": ["object/get", "data", "host", "localhost"],
    "has?": ["object/has?", "data", "port"],
    "has? a key that holds null": ["object/has?", ["quote", {"host": null}], "host"],

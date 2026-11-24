@@ -34,14 +34,17 @@ import {
   isLogicVariableName,
   isNamespacedName,
   isPlainObject,
+  type LambdaInfo,
   LogicValue,
   LogicVariable,
   lambdaInfo,
   listMaker,
   nameFunctions,
+  nameOf,
   readsOnlyArguments,
   recordMaker,
   registerLambda,
+  sameValue,
 } from "@/logic/terms";
 import {
   isSpecialFormName,
@@ -312,7 +315,8 @@ export const makeLambda = (
   compiled?: Compiled,
   scope: Scope | undefined = environment,
   contract?: Contract,
-  rest = false
+  rest = false,
+  scoped = false
 ) => {
   const defined = bodyNames(parameters, body, scope).filter(
     (name) => !parameters.includes(name)
@@ -335,6 +339,7 @@ export const makeLambda = (
       parameters,
       body,
       environment,
+      ...(scoped ? { scoped: true as const } : {}),
       ...(rest ? { written: parameters[0] as string } : {}),
       ...(contract === undefined ? {} : { written: contract.written }),
     }
@@ -436,11 +441,454 @@ const closeHolder = (value: unknown, closed: Map<unknown, unknown>) => {
   );
 };
 
+const lambdaFormOf = (info: LambdaInfo): LionExpressionType =>
+  ["lambda", info.written ?? info.parameters, info.body] as LionExpressionType;
+
+/** Direct sub-values of a compound holder that may carry a lambda. */
+const holderParts = (value: unknown): readonly unknown[] | undefined => {
+  const built = buildOf(value);
+  if (built !== undefined) {
+    return built.args;
+  }
+  if (Array.isArray(value)) {
+    return value;
+  }
+  return isPlainObject(value) ? Object.values(value) : undefined;
+};
+
+/** Collects lambdas with live scopes reachable from `value` without entering them. */
+const directLambdas = (
+  value: unknown,
+  into: Set<unknown>,
+  seen: Set<unknown>
+) => {
+  const info = lambdaInfo(value);
+  if (info !== undefined) {
+    if (info.environment !== undefined) {
+      into.add(value);
+    }
+    return;
+  }
+  if (
+    (typeof value !== "function" &&
+      (typeof value !== "object" || value === null)) ||
+    seen.has(value)
+  ) {
+    return;
+  }
+  seen.add(value);
+  for (const part of holderParts(value) ?? []) {
+    directLambdas(part, into, seen);
+  }
+};
+
+/** Whether `value` contains any member of `targets` through lists, records, or built functions. */
+const containsAny = (
+  value: unknown,
+  targets: ReadonlySet<unknown>,
+  seen: Set<unknown>
+): boolean => {
+  if (targets.has(value)) {
+    return true;
+  }
+  if (
+    (typeof value !== "function" &&
+      (typeof value !== "object" || value === null)) ||
+    seen.has(value)
+  ) {
+    return false;
+  }
+  seen.add(value);
+  return (holderParts(value) ?? []).some((part) =>
+    containsAny(part, targets, seen)
+  );
+};
+
+interface FreeEntry {
+  readonly isQuoted: boolean;
+  readonly name: string;
+  readonly value: unknown;
+}
+
+const freeEntries = (fn: unknown): readonly FreeEntry[] => {
+  const info = lambdaInfo(fn) as LambdaInfo;
+  const env = info.environment as Environment;
+  const scope = lambdaOf(fn)?.scope ?? env;
+  return [...references(lambdaFormOf(info))].map(([name, isQuoted]) => ({
+    isQuoted,
+    name,
+    value: valueIn(env, scope, name),
+  }));
+};
+
+const buildLambdaGraph = (root: unknown) => {
+  const edges = new Map<unknown, Set<unknown>>();
+  const rev = new Map<unknown, Set<unknown>>();
+  const queue: unknown[] = [root];
+  for (const node of queue) {
+    if (edges.has(node)) {
+      continue;
+    }
+    const next = new Set<unknown>();
+    const seen = new Set<unknown>();
+    for (const { value } of freeEntries(node)) {
+      if (value !== UNBOUND) {
+        directLambdas(value, next, seen);
+      }
+    }
+    edges.set(node, next);
+    for (const target of next) {
+      const back = rev.get(target) ?? new Set<unknown>();
+      back.add(node);
+      rev.set(target, back);
+      if (!edges.has(target)) {
+        queue.push(target);
+      }
+    }
+  }
+  return { edges, rev };
+};
+
+const reverseReachable = (
+  root: unknown,
+  rev: ReadonlyMap<unknown, ReadonlySet<unknown>>
+) => {
+  const canReach = new Set<unknown>();
+  const backQueue = [...(rev.get(root) ?? [])];
+  for (const node of backQueue) {
+    if (canReach.has(node)) {
+      continue;
+    }
+    canReach.add(node);
+    for (const prev of rev.get(node) ?? []) {
+      if (!canReach.has(prev)) {
+        backQueue.push(prev);
+      }
+    }
+  }
+  return canReach;
+};
+
+/**
+ * The strongly connected cycle of lambdas containing `root` (starting with
+ * `root`), or undefined when `root` cannot reach itself.
+ */
+const cycleOf = (root: unknown): readonly unknown[] | undefined => {
+  const { edges, rev } = buildLambdaGraph(root);
+  const canReach = reverseReachable(root, rev);
+  return canReach.has(root)
+    ? [...edges.keys()].filter((node) => canReach.has(node))
+    : undefined;
+};
+
+const isReservedSyntax = (name: string) =>
+  isSpecialFormName(name) || name === "else";
+
+const freshName = (prefix: string, forbidden: ReadonlySet<string>): string => {
+  let index = 0;
+  while (forbidden.has(`${prefix}#${index}`)) {
+    index += 1;
+  }
+  return `${prefix}#${index}`;
+};
+
+const canReuseName = (
+  preferred: string | undefined,
+  used: ReadonlySet<string>
+): preferred is string =>
+  preferred !== undefined &&
+  preferred.length > 0 &&
+  preferred !== "__proto__" &&
+  !isReservedSyntax(preferred) &&
+  !isLogicVariableName(preferred) &&
+  !preferred.includes("/") &&
+  !used.has(preferred);
+
+const pickOwnerName = (
+  member: unknown,
+  used: ReadonlySet<string>,
+  ambiguous: ReadonlySet<string>,
+  owner: ReadonlyMap<string, unknown>
+): string | undefined => {
+  for (const [name, target] of owner) {
+    if (target === member && canReuseName(name, used) && !ambiguous.has(name)) {
+      return name;
+    }
+  }
+  return undefined;
+};
+
+/** Chooses unique lexical `define` names for every lambda in a cycle. */
+const pickBinders = (
+  cycle: readonly unknown[],
+  inCycle: ReadonlySet<unknown>,
+  byMember: ReadonlyMap<unknown, readonly FreeEntry[]>
+) => {
+  const allRefNames = new Set<string>();
+  const ambiguous = new Set<string>();
+  const owner = new Map<string, unknown>();
+  for (const entries of byMember.values()) {
+    for (const { name, value } of entries) {
+      allRefNames.add(name);
+      const isMember = value !== UNBOUND && inCycle.has(value);
+      if (!isMember || (owner.has(name) && owner.get(name) !== value)) {
+        ambiguous.add(name);
+      } else {
+        owner.set(name, value);
+      }
+    }
+  }
+  const usedBinders = new Set<string>();
+  const binder = new Map<unknown, string>();
+  for (const member of cycle) {
+    const chosen =
+      pickOwnerName(member, usedBinders, ambiguous, owner) ??
+      freshName("rec", new Set([...usedBinders, ...allRefNames]));
+    binder.set(member, chosen);
+    usedBinders.add(chosen);
+  }
+  return { allRefNames, binder, usedBinders };
+};
+
+interface CycleState {
+  readonly allocateOuter: (preferred: string, closedValue: unknown) => string;
+  readonly allRefNames: ReadonlySet<string>;
+  readonly binder: ReadonlyMap<unknown, string>;
+  readonly closed: Map<unknown, unknown>;
+  readonly compoundDefines: LionExpressionType[];
+  readonly compoundNames: Set<string>;
+  readonly inCycle: ReadonlySet<unknown>;
+  readonly outerNames: string[];
+  readonly usedBinders: ReadonlySet<string>;
+}
+
+/** Rebuilds a compound value that contains a cycle member as a Lion expression. */
+const reifyCyclic = (
+  value: unknown,
+  state: CycleState
+): Effect.Effect<LionExpressionType, UnboundNameError> =>
+  Effect.gen(function* () {
+    if (state.inCycle.has(value)) {
+      return state.binder.get(value) as string;
+    }
+    if (!containsAny(value, state.inCycle, new Set())) {
+      const closedVal = yield* close(value, state.closed);
+      const pref =
+        (typeof value === "function" ? nameOf(value) : undefined) ?? "val";
+      return state.allocateOuter(pref, closedVal);
+    }
+    const built = buildOf(value);
+    if (built !== undefined) {
+      const byParam = state.allocateOuter(nameOf(built.by) ?? "fn", built.by);
+      const args = yield* Effect.forEach(built.args, (arg) =>
+        reifyCyclic(arg, state)
+      );
+      return [byParam, ...args] as LionExpressionType;
+    }
+    if (Array.isArray(value)) {
+      const listParam = state.allocateOuter("array/make", makeList);
+      const items = yield* Effect.forEach(value, (item) =>
+        reifyCyclic(item, state)
+      );
+      return [listParam, ...items] as LionExpressionType;
+    }
+    if (isPlainObject(value)) {
+      const entries = yield* Effect.forEach(
+        Object.entries(value),
+        ([key, item]) =>
+          Effect.map(reifyCyclic(item, state), (expr) => [key, expr] as const)
+      );
+      return Object.fromEntries(entries) as LionExpressionType;
+    }
+    return state.allocateOuter("val", yield* close(value, state.closed));
+  });
+
+const wrapRenames = (
+  renames: readonly (readonly [string, string])[],
+  body: LionExpressionType
+): LionExpressionType =>
+  renames.length === 0
+    ? body
+    : ([
+        ["lambda", renames.map(([k]) => k), body],
+        ...renames.map(([, v]) => v),
+      ] as LionExpressionType);
+
+const recordRename = (
+  renames: [string, string][],
+  name: string,
+  target: string
+) => {
+  if (target !== name) {
+    renames.push([name, target]);
+  }
+};
+
+const bindCompoundEntry = (
+  name: string,
+  value: unknown,
+  state: CycleState,
+  innerRenames: [string, string][]
+): Effect.Effect<void, UnboundNameError> =>
+  Effect.map(reifyCyclic(value, state), (expr) => {
+    const taken = new Set([
+      ...state.usedBinders,
+      ...state.outerNames,
+      ...state.compoundNames,
+    ]);
+    const valName = canReuseName(name, taken)
+      ? name
+      : freshName("val", new Set([...taken, ...state.allRefNames]));
+    state.compoundNames.add(valName);
+    state.compoundDefines.push(["define", valName, expr]);
+    recordRename(innerRenames, name, valName);
+  });
+
+const bindFreeEntry = (
+  entry: FreeEntry,
+  info: LambdaInfo,
+  state: CycleState,
+  outerRenames: [string, string][],
+  innerRenames: [string, string][]
+): Effect.Effect<void, UnboundNameError> => {
+  const { name, isQuoted, value } = entry;
+  if (value === UNBOUND) {
+    if (!isQuoted && isLogicVariableName(name)) {
+      const param = state.allocateOuter(name, new LogicVariable(name.slice(1)));
+      recordRename(outerRenames, name, param);
+      return Effect.void;
+    }
+    return !isQuoted && isNamespacedName(name)
+      ? Effect.asVoid(nameOrString(info.environment as Environment, name))
+      : Effect.void;
+  }
+  if (state.inCycle.has(value)) {
+    recordRename(innerRenames, name, state.binder.get(value) as string);
+    return Effect.void;
+  }
+  if (containsAny(value, state.inCycle, new Set())) {
+    return bindCompoundEntry(name, value, state, innerRenames);
+  }
+  return Effect.map(close(value, state.closed), (closedVal) => {
+    recordRename(outerRenames, name, state.allocateOuter(name, closedVal));
+  });
+};
+
+/** Builds the `["define", name, lambda]` form for one lambda in a cycle. */
+const defineMember = (
+  member: unknown,
+  entries: readonly FreeEntry[],
+  state: CycleState
+): Effect.Effect<LionExpressionType, UnboundNameError> =>
+  Effect.gen(function* () {
+    const info = lambdaInfo(member) as LambdaInfo;
+    const outerRenames: [string, string][] = [];
+    const innerRenames: [string, string][] = [];
+    for (const entry of entries) {
+      yield* bindFreeEntry(entry, info, state, outerRenames, innerRenames);
+    }
+    const bodyExpr = wrapRenames(innerRenames, info.body as LionExpressionType);
+    const lambdaExpr = [
+      "lambda",
+      info.written ?? info.parameters,
+      bodyExpr,
+    ] as LionExpressionType;
+    return [
+      "define",
+      state.binder.get(member) as string,
+      wrapRenames(outerRenames, lambdaExpr),
+    ] as LionExpressionType;
+  });
+
+/**
+ * Closes a recursive or mutually recursive cycle of lambdas into one
+ * self-contained waiting block: `[["lambda", outerNames, ["begin", ["define",
+ * f, ...], ..., f]], ...outerValues]`. Each lambda's `define` is lexically
+ * scoped inside the block, so snapshots, rule keys, and retraction all work.
+ */
+const closeCycle = (
+  cycle: readonly unknown[],
+  closed: Map<unknown, unknown>
+): Effect.Effect<unknown, UnboundNameError> =>
+  Effect.gen(function* () {
+    const inCycle = new Set(cycle);
+    const byMember = new Map(
+      cycle.map((member) => [member, freeEntries(member)])
+    );
+    const { allRefNames, binder, usedBinders } = pickBinders(
+      cycle,
+      inCycle,
+      byMember
+    );
+    const outerNames: string[] = [];
+    const outerValues: unknown[] = [];
+    const allocateOuter = (preferred: string, closedValue: unknown): string => {
+      const at = outerNames.indexOf(preferred);
+      if (at >= 0 && sameValue(outerValues[at], closedValue)) {
+        return preferred;
+      }
+      if (
+        at < 0 &&
+        preferred.length > 0 &&
+        preferred !== "__proto__" &&
+        !usedBinders.has(preferred) &&
+        !isReservedSyntax(preferred)
+      ) {
+        outerNames.push(preferred);
+        outerValues.push(closedValue);
+        return preferred;
+      }
+      const chosen = freshName(
+        "env",
+        new Set([...usedBinders, ...allRefNames, ...outerNames])
+      );
+      outerNames.push(chosen);
+      outerValues.push(closedValue);
+      return chosen;
+    };
+    const state: CycleState = {
+      allRefNames,
+      allocateOuter,
+      binder,
+      closed,
+      compoundDefines: [],
+      compoundNames: new Set(),
+      inCycle,
+      outerNames,
+      usedBinders,
+    };
+    const memberDefines = yield* Effect.forEach(cycle, (member) =>
+      defineMember(member, byMember.get(member) ?? [], state)
+    );
+    const block = [
+      "begin",
+      ...memberDefines,
+      ...state.compoundDefines,
+      binder.get(cycle[0]) as string,
+    ] as LionExpressionType;
+    const result = new DeferredCall(
+      makeLambda(
+        outerNames,
+        block,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        false,
+        true
+      ),
+      "lambda",
+      outerValues
+    );
+    closed.set(cycle[0], result);
+    return result;
+  });
+
 /**
  * A lambda that closes over a scope becomes a waiting copy of itself, closed
  * over the values its names have now, and so does a lambda inside a value
- * that holds it. `closed` holds the copies made so far; a lambda that
- * reaches itself again is kept as it is.
+ * that holds it. Recursive and mutually recursive lambdas close together as a
+ * self-contained lexically scoped `begin` block.
  */
 const close = (
   value: unknown,
@@ -456,14 +904,14 @@ const close = (
   if (info.environment === undefined) {
     return Effect.succeed(value);
   }
+  const cycle = cycleOf(value);
+  if (cycle !== undefined) {
+    return closeCycle(cycle, closed);
+  }
   closed.set(value, value);
   const lambda = lambdaOf(value);
   return suspendIn(
-    [
-      "lambda",
-      info.written ?? info.parameters,
-      info.body,
-    ] as LionExpressionType,
+    lambdaFormOf(info),
     info.environment,
     closed,
     (environment) =>

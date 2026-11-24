@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "The symbolic solver represents exact multivariate polynomials (including `number/power` with non-negative integer literal exponents) to cancel higher-degree terms automatically and decides univariate quadratic equations and inequalities over reals and integers via exact rational discriminant roots and BigInt integer root bracketing, closing corpus gap `induction-sum-of-odd-numbers`.",
+      "says": {
+        "feature": "solver-polynomials-and-quadratics",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The symbolic solver cancels higher-degree polynomial terms and decides univariate quadratic equations and inequalities over integers and reals.",
+      "says": {
+        "behavior": "solver-univariate-quadratic",
+        "is": "decided",
+        "area": "logic"
+      }
+    }
+  ]
+}

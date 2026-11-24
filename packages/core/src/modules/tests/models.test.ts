@@ -1175,3 +1175,106 @@ describe("string/chars", () => {
       })
   );
 });
+
+describe("string/trim, string/toLowerCase, string/toUpperCase, and string/replaceAll", () => {
+  const token = oneOf(["a", "B", " ", "\t", "\n", "$&", "$$", "é", "-"]);
+  const built = Arbitrary.array(token, { maxLength: 8 });
+
+  it.effect.prop(
+    "agree with JavaScript and treat replacements literally without regex pattern substitution",
+    { a: built, b: built, c: built },
+    ({ a, b, c }) =>
+      Effect.gen(function* () {
+        const s = a.join("");
+        const search = b.slice(0, 3).join("");
+        const replacement = c.slice(0, 3).join("");
+        expect(yield* evaluate(["string/trim", quote(s)])).toBe(s.trim());
+        expect(yield* evaluate(["string/toLowerCase", quote(s)])).toBe(
+          s.toLowerCase()
+        );
+        expect(yield* evaluate(["string/toUpperCase", quote(s)])).toBe(
+          s.toUpperCase()
+        );
+        expect(
+          yield* evaluate([
+            "string/replaceAll",
+            quote(s),
+            quote(search),
+            quote(replacement),
+          ])
+        ).toBe(s.replaceAll(search, () => replacement));
+      })
+  );
+});
+
+const SAFE_KEY_PATTERN = /^[a-d]{1,3}$/;
+
+describe("object/json-parse, object/entries, object/fromEntries, and object/merge", () => {
+  const safeKey = Arbitrary.schema(
+    Schema.String.check(Schema.isPattern(SAFE_KEY_PATTERN))
+  );
+  const entryList = Arbitrary.array(Arbitrary.all([safeKey, small]), {
+    maxLength: 5,
+  });
+
+  it.effect.prop(
+    "object/json-parse round-trips with object/json-stringify and preserves exact big integers and decimals",
+    {
+      entries: entryList,
+      bigOffset: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 50 }))
+      ),
+    },
+    ({ bigOffset, entries }) =>
+      Effect.gen(function* () {
+        const record = Object.fromEntries(entries);
+        const text = (yield* evaluate([
+          "object/json-stringify",
+          quote(record),
+        ])) as string;
+        expect(yield* evaluate(["object/json-parse", quote(text)])).toEqual(
+          record
+        );
+        // Preserves integers beyond Number.MAX_SAFE_INTEGER exactly.
+        const exactBig = (
+          BigInt(Number.MAX_SAFE_INTEGER) + BigInt(bigOffset)
+        ).toString();
+        const parsed = yield* evaluate([
+          "number/subtract",
+          ["object/json-parse", quote(exactBig)],
+          Number.MAX_SAFE_INTEGER,
+        ]);
+        expect(parsed).toBe(bigOffset);
+        // Invalid JSON fails cleanly.
+        const bad = yield* outcome(["object/json-parse", quote("{bad")]);
+        expect("failed" in bad).toBe(true);
+      })
+  );
+
+  it.effect.prop(
+    "object/entries and object/fromEntries invert each other, refuse __proto__, and object/merge combines records left to right immutably",
+    { a: entryList, b: entryList, c: entryList },
+    ({ a, b, c }) =>
+      Effect.gen(function* () {
+        const ra = Object.fromEntries(a);
+        const rb = Object.fromEntries(b);
+        const rc = Object.fromEntries(c);
+        expect(
+          yield* evaluate(["object/fromEntries", ["object/entries", quote(ra)]])
+        ).toEqual(ra);
+        expect(yield* evaluate(["object/entries", quote(ra)])).toEqual(
+          Object.entries(ra)
+        );
+        expect(
+          yield* evaluate(["object/merge", quote(ra), quote(rb), quote(rc)])
+        ).toEqual({ ...ra, ...rb, ...rc });
+        expect(yield* evaluate(["object/merge"])).toEqual({});
+        // Refuses "__proto__" in object/fromEntries.
+        const proto = yield* outcome([
+          "object/fromEntries",
+          ["quote", [["__proto__", 1]]],
+        ]);
+        expect("failed" in proto).toBe(true);
+      })
+  );
+});

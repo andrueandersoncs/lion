@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "The symbolic solver reasons over idiomatic Lion expressions: `object/set`, `object/remove`, `object/merge`, `object/keys`, `object/values`, `object/entries`, `object/fromEntries`, `object/get-path`, `boolean/xor`, `boolean/nand`, `boolean/nor`, `boolean/equals?`, all `value/*` predicates plus `value/identity`, concrete and symbolic `func/partial`, guarded `schema/assert` and contracted lambdas, `array/at` (including symbolic indices), `array/indexOf`, `array/find`, `array/range`, `aggregate/*`, and `quantity/*`.",
+      "says": {
+        "feature": "solver-idiomatic-lion",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The symbolic solver decides proofs using `object/set`, `func/partial`, guarded contracted lambdas and `schema/assert`, `array/at`/`indexOf`/`find`/`range`, `aggregate/*`, and `quantity/*`.",
+      "says": {
+        "behavior": "solver-idiomatic-operations",
+        "is": "decided",
+        "area": "logic"
+      }
+    }
+  ]
+}

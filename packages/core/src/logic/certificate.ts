@@ -609,13 +609,17 @@ export const checks = (certificate: Certificate): boolean => {
   if (lines === undefined) {
     return false;
   }
-  for (const step of certificate.steps) {
-    const parsed = parseStepFrom(step, lines);
+  for (let at = 0; at < certificate.steps.length; at += 1) {
+    const parsed = parseStepFrom(certificate.steps[at], lines);
     if (parsed === undefined) {
       return false;
     }
     const combined = combine(lines, parsed.from);
-    lines.push(parsed.tightened ? tighten(combined) : combined);
+    const next = parsed.tightened ? tighten(combined) : combined;
+    if (next === undefined) {
+      return at === certificate.steps.length - 1;
+    }
+    lines.push(next);
   }
   return isFalse(lines.at(-1));
 };

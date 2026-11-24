@@ -46,6 +46,17 @@ export const module = {
   split: onTwo((text, separator): string[] => text.split(separator)),
   /** The text's Unicode characters in order, keeping astral characters whole. */
   chars: over([Schema.String], (text): string[] => Array.from(text)),
+  /** The text with leading and trailing whitespace removed. */
+  trim: over([Schema.String], (text) => text.trim()),
+  /** The text converted to lower case. */
+  toLowerCase: over([Schema.String], (text) => text.toLowerCase()),
+  /** The text converted to upper case. */
+  toUpperCase: over([Schema.String], (text) => text.toUpperCase()),
+  /** The text with every occurrence of `search` replaced literally by `replacement`. */
+  replaceAll: over(
+    [Schema.String, Schema.String, Schema.String],
+    (text, search, replacement) => text.replaceAll(search, () => replacement)
+  ),
   /** The text from `start` up to `end`, as `array/slice` cuts a list. */
   slice: slicing(Schema.String),
   padStart: padding((text, length, fill) => text.padStart(length, fill)),

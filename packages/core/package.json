@@ -16,6 +16,7 @@
   },
   "exports": {
     "./analysis/analyze": "./dist/analysis/analyze.mjs",
+    "./analysis/checks": "./dist/analysis/checks.mjs",
     "./analysis/lint": "./dist/analysis/lint.mjs",
     "./errors/evaluation": "./dist/errors/evaluation.mjs",
     "./evaluation/asking": "./dist/evaluation/asking.mjs",
@@ -51,6 +52,7 @@
     "./logic/magic": "./dist/logic/magic.mjs",
     "./logic/maintain": "./dist/logic/maintain.mjs",
     "./logic/model": "./dist/logic/model.mjs",
+    "./logic/polynomial": "./dist/logic/polynomial.mjs",
     "./logic/proof": "./dist/logic/proof.mjs",
     "./logic/query-options": "./dist/logic/query-options.mjs",
     "./logic/reasons": "./dist/logic/reasons.mjs",

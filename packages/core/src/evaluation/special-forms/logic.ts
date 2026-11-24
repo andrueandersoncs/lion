@@ -46,7 +46,7 @@ import {
   applyQueryOptions,
   parseInvariantOptions,
   parseQueryOptions,
-  readOptions,
+  parseRelationOptions,
 } from "@/logic/query-options";
 import { saveDatabase } from "@/logic/snapshot";
 import {
@@ -239,53 +239,6 @@ const atoms = (
     return result;
   });
 
-/**
- * Reads `{"key": [...], "schema": name, "merge": {column: aggregate}}`.
- * Relation options are read as written: the key names columns, the schema
- * names a declared schema, and the merge says which lattice aggregate joins
- * the values a key gets in each column it names.
- */
-const relationOptions = (name: string, options: unknown) =>
-  Effect.gen(function* () {
-    const {
-      key: given,
-      merge,
-      schema,
-    } = options === undefined ? {} : yield* readOptions("relation", options);
-    const key = typeof given === "string" ? [given] : given;
-    const isKey =
-      Array.isArray(key) && key.every((column) => typeof column === "string");
-    if (!(key === undefined || isKey)) {
-      return yield* logicError(
-        `The key of "${name}" must be a column name or a list of them, but found ${show(given)}.`
-      );
-    }
-    if (!(schema === undefined || typeof schema === "string")) {
-      return yield* logicError(
-        `The schema of "${name}" must be the name of a declared schema, but found ${show(schema)}.`
-      );
-    }
-    const merges =
-      typeof merge === "object" && merge !== null && !Array.isArray(merge)
-        ? Object.entries(merge as Record<string, unknown>)
-        : undefined;
-    if (
-      !(
-        merge === undefined ||
-        merges?.every(([, kind]) => typeof kind === "string")
-      )
-    ) {
-      return yield* logicError(
-        `The merge of "${name}" must be a record from a column to the aggregate that joins its values, as in {"price": "aggregate/min"}, but found ${show(merge)}.`
-      );
-    }
-    return {
-      key: key as readonly string[] | undefined,
-      merge: merges as readonly (readonly [string, string])[] | undefined,
-      schema,
-    };
-  });
-
 const VARIABLE_NAME = /^[A-Za-z][\w-]*$/;
 
 /**
@@ -342,7 +295,7 @@ export const evaluateRelation = ([
 ]: typeof RelationFormSchema.Type) =>
   Effect.gen(function* () {
     const store = yield* database;
-    const { key, merge, schema } = yield* relationOptions(name, options);
+    const { key, merge, schema } = yield* parseRelationOptions(name, options);
     const rowSchema =
       schema === undefined ? undefined : store.schemas.get(schema);
     if (schema !== undefined && rowSchema === undefined) {

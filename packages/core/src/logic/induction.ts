@@ -22,6 +22,13 @@ import {
 } from "@/logic/certificate";
 import type { Literal, Solved } from "@/logic/compile";
 import {
+  type NumberSym,
+  numberSym,
+  polyScale,
+  polySub,
+  polySubstitute,
+} from "@/logic/polynomial";
+import {
   type Constraint,
   constant,
   type Linear,
@@ -53,13 +60,8 @@ import {
   isInductiveSchema,
   isRecursiveNamedSchema,
   isStructurallyUninhabited,
-  type NumberSym,
   not,
-  numberSym,
   one,
-  polyScale,
-  polySub,
-  polySubstitute,
   product,
   type Sym,
   TRUE,
@@ -789,7 +791,7 @@ const evaluateGoals = (
         );
       }
       const cases = yield* symbolicTerm(value, context);
-      context.symbols.set(name, cases);
+      (context.symbols as Map<string, Cases>).set(name, cases);
     }
     for (const goal of goals) {
       const cases = yield* symbolicTerm(goal, context);
@@ -1630,7 +1632,12 @@ const checkNumericStepBranch = (
       return { reason: stepRes, status: "refused" as const };
     }
     if (stepRes.unsat) {
-      return { certificates: stepRes.certificates, ok: true as const };
+      return {
+        ...(stepRes.certificates === undefined
+          ? {}
+          : { certificates: stepRes.certificates }),
+        ok: true as const,
+      };
     }
     if (branch.unique) {
       const kVal = stepRes.assignment.get(state.kName);

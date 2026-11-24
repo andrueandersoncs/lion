@@ -31,11 +31,14 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "aggregate/sum": [1, 1],
   "aggregate/union": [1, 1],
   "aggregate/unique": [1, 1],
+  "array/at": [2, 3],
   "array/concat": [0, ANY],
   "array/filter": [2, 2],
+  "array/find": [2, 3],
   "array/flat-map": [2, 2],
   "array/head": [1, 1],
   "array/includes?": [2, 2],
+  "array/indexOf": [2, 2],
   "array/length": [1, 1],
   "array/make": [0, ANY],
   "array/map": [2, 2],
@@ -93,13 +96,17 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "number/toString": [1, 2],
   "object/call-method": [2, ANY],
   "object/call-method-path": [2, ANY],
+  "object/entries": [1, 1],
+  "object/fromEntries": [1, 1],
   "object/get": [2, 3],
   "object/has?": [2, 2],
   "object/get-method": [2, 2],
   "object/get-method-path": [2, 2],
   "object/get-path": [2, 2],
+  "object/json-parse": [1, 1],
   "object/json-stringify": [1, 3],
   "object/keys": [1, 1],
+  "object/merge": [0, ANY],
   "object/new": [1, ANY],
   "object/remove": [2, 2],
   "proof/rules": [1, 2],
@@ -132,9 +139,13 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "string/padEnd": [3, 3],
   "string/padStart": [3, 3],
   "string/numbers": [1, 2],
+  "string/replaceAll": [3, 3],
   "string/slice": [2, 3],
   "string/split": [2, 2],
   "string/startsWith": [2, 2],
+  "string/toLowerCase": [1, 1],
+  "string/toUpperCase": [1, 1],
+  "string/trim": [1, 1],
   "value/any?": [1, 1],
   "value/array?": [1, 1],
   "value/boolean?": [1, 1],
@@ -307,6 +318,7 @@ const NONE: Record<string, unknown> = {
   "array/concat": [],
   "number/add": 0,
   "number/multiply": 1,
+  "object/merge": {},
   "quantity/add": 0,
   "quantity/multiply": 1,
   "string/concat": "",
@@ -319,6 +331,9 @@ const argumentOf = (fn: string, at: number) => {
   }
   if (fn === "array/concat") {
     return ["quote", [at]];
+  }
+  if (fn === "object/merge") {
+    return { [`k${at}`]: at };
   }
   return at - 2;
 };
@@ -338,7 +353,8 @@ describe("functions that combine their arguments", () => {
           const args = Array.from({ length: count }, (_, at) =>
             argumentOf(fn, at)
           );
-          const quoted = Array.isArray(none) ? ["quote", none] : none;
+          const quoted =
+            typeof none === "object" && none !== null ? ["quote", none] : none;
           expect(yield* run([fn, quoted, ...args], stdlib), fn).toEqual(
             yield* run([fn, ...args], stdlib)
           );

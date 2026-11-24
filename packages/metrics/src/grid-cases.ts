@@ -137,6 +137,28 @@ export const EXPRESSIONS: readonly Expression[] = [
     form: ["string/chars", ["string/concat", "a𝄞", ["number/toString", X]]],
   },
   {
+    name: "trimmed and cased text",
+    form: [
+      "string/replaceAll",
+      [
+        "string/toLowerCase",
+        [
+          "string/trim",
+          ["string/concat", " A-", ["number/toString", X], "-A "],
+        ],
+      ],
+      "a",
+      "b",
+    ],
+  },
+  {
+    name: "uppercased text",
+    form: [
+      "string/toUpperCase",
+      ["string/concat", "x", ["number/toString", X]],
+    ],
+  },
+  {
     name: "fraction written as text",
     form: ["number/toString", ["number/divide", X, 3]],
   },
@@ -167,6 +189,17 @@ export const EXPRESSIONS: readonly Expression[] = [
   {
     name: "record with a key set and one removed",
     form: ["object/remove", ["object/set", { a: 1, b: 2 }, "x", X], "a"],
+  },
+  {
+    name: "records merged and rebuilt from entries",
+    form: [
+      "object/fromEntries",
+      ["object/entries", ["object/merge", { a: 1 }, { b: X }, { a: X }]],
+    ],
+  },
+  {
+    name: "JSON parsed from text",
+    form: ["object/json-parse", ["object/json-stringify", { x: X }]],
   },
   { name: "comparison", form: ["number/greaterThan", X, 1], boolean: true },
   {
@@ -252,6 +285,20 @@ export const EXPRESSIONS: readonly Expression[] = [
       "array/sort",
       ["array/make", X, ["number/add", X, 1]],
       "number/greaterThan",
+    ],
+  },
+  {
+    name: "item indexed and located in a list",
+    form: [
+      "array/make",
+      ["array/at", ["array/make", 10, X, 30], -2],
+      ["array/indexOf", ["array/make", 1, 2, 3], X],
+      [
+        "array/find",
+        ["array/make", 0, X, 9],
+        ["lambda", ["v"], ["number/greaterThan", "v", 1]],
+        -1,
+      ],
     ],
   },
   {
@@ -1070,10 +1117,5 @@ export const KNOWN: readonly Known[] = [
     expression: "aggregate of a list",
     position: "rule that invents",
     why: "As a whole argument of a rule head, an aggregate combines one value from each of the rule's matches, not a list, and a rule that invents values cannot aggregate.",
-  },
-  {
-    expression: "recursive function",
-    position: "snapshot",
-    why: "A lambda that calls itself has no written form, so a snapshot cannot save a rule that holds one.",
   },
 ];

@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 236 questions have been decided, 110 records explain them, and of what the records assert, 705 hold when Lion is run, 0 are broken, 397 are stated but not checked by running Lion, and 34 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 237 questions have been decided, 111 records explain them, and of what the records assert, 707 hold when Lion is run, 0 are broken, 399 are stated but not checked by running Lion, and 34 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -242,6 +242,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-22 | [`list-head-and-tail-names`](#list-head-and-tail-names) | `head-tail` | [A list's first item and the items after it are its head and its tail](#list-head-and-tail) |
 | 2026-11-22 | [`too-few-arguments`](#too-few-arguments) | `error` | [Lion curries only when a program asks: a call with too few arguments fails](#explicit-currying-only) |
 | 2026-11-22 | [`playground-api-key-storage`](#playground-api-key-storage) | `tab-memory` | [The editor's Jev playground holds the user's own API key in the tab, and its server only passes it on](#playground-key-in-the-tab) |
+| 2026-11-23 | [`recursive-lambda-closing`](#recursive-lambda-closing) | `scoped-scc-block` | [Close recursive and mutually recursive lambdas into self-contained blocks for rules and snapshots](#recursive-lambda-snapshots) |
 
 <a id="program-representation"></a>
 
@@ -5477,3 +5478,35 @@ Recorded 2026-11-22 in `history/notes/playground-key-in-the-tab.json`.
 - Stated, not checked by running Lion: decided `playground-api-key-storage`: `tab-memory`. "The playground keeps the key in the tab."
 - Holds when Lion is run: rule `api-credentials-server-side` holds. "The rule holds for an app's own credentials, and the playground's key that each person brings is its exception."
 - Holds when Lion is run: `editor-jev-api-key-storage` is `tab-memory`. "The playground keeps the key in the tab."
+
+<a id="recursive-lambda-closing"></a>
+
+## recursive-lambda-closing
+
+Now: `scoped-scc-block`.
+
+- 2026-11-23 `recursive-lambda-closing`: `scoped-scc-block` over `unclosed-dynamic-lookup`, `top-level-defines`: "Detect strongly connected cycles of lambdas (including cycles passing through `func/partial`, arrays, records, or aliases) when closing values for rules, invariants, and snapshots, and rewrite each cycle into a lexically hygienic self-contained block `[[lambda, outerNames, [begin, [define, ...], ..., root]], ...outerValues]`." (`recursive-lambda-snapshots.json`)
+
+<a id="recursive-lambda-snapshots"></a>
+
+### Close recursive and mutually recursive lambdas into self-contained blocks for rules and snapshots
+
+Recorded 2026-11-23 in `history/notes/recursive-lambda-snapshots.json`.
+
+**Context.** When a rule or invariant held a lambda, Lion replaced free names with their values so snapshots could write the rule and redefining a name later did not change it. Previously, a lambda that called itself (directly or through a mutual cycle) was left unclosed: it looked its own name up dynamically on every run, could not be saved in a snapshot, had no canonical rule key for deduplication or retraction, and was one of only three remaining exceptions on the interop grid.
+
+**Decision.** Detect strongly connected cycles of lambdas (including cycles passing through `func/partial`, arrays, records, or aliases) when closing values for rules, invariants, and snapshots, and rewrite each cycle into a lexically hygienic self-contained block `[[lambda, outerNames, [begin, [define, ...], ..., root]], ...outerValues]`. Mark that outer wrapper as `scoped` so `writeCall` preserves the wrapper even when `outerNames` is empty, keeping the inner `define` bindings lexically private. Reuse safe original binding names so repeated snapshot/reload cycles are idempotent.
+
+**Consequences.** Self-recursive and mutually recursive lambdas are closed into self-contained blocks when a rule is written, so redefining a name later does not change the rule, and a snapshot writes a rule holding a recursive or mutually recursive lambda as a self-contained block that reloads, deduplicates, and retracts cleanly. Interop grid exceptions drop from 3 to 2 (`recursive function × snapshot` is eliminated). Only unnamable host functions remain unwritable by `snapshot`.
+
+**Alternatives considered.**
+
+- Keep recursive lambdas unclosed and refuse to snapshot rules containing them. Leaves a surprising gap where any rule using a recursive helper function fails on `snapshot`, breaks `--database` persistence, and cannot be deduplicated or retracted by equality.
+- Emit top-level `define` forms in the snapshot for recursive lambdas. Top-level bindings would pollute the loaded environment and risk colliding with user names on reload; wrapping the cycle in a `scoped` `lambda`/`begin` keeps every internal name private.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: `recursive-lambda-snapshots` exists. "Self-recursive and mutually recursive lambdas are closed into self-contained blocks when a rule is written, so redefining a name later does not change the rule, and a snapshot writes a rule holding a recursive or mutually recursive lambda as a self-contained block that reloads, deduplicates, and retracts cleanly."
+- Stated, not checked by running Lion: decided `recursive-lambda-closing`: `scoped-scc-block`. "Detect strongly connected cycles of lambdas (including cycles passing through `func/partial`, arrays, records, or aliases) when closing values for rules, invariants, and snapshots, and rewrite each cycle into a lexically hygienic self-contained block `[[lambda, outerNames, [begin, [define, ...], ..., root]], ...outerValues]`."
+- Holds when Lion is run: `recursive-lambda-name-in-rule` is `closed`. "Self-recursive and mutually recursive lambdas are closed into self-contained blocks when a rule is written, so redefining a name later does not change the rule"
+- Holds when Lion is run: `snapshot-rule-holding-recursive-lambda` is `written`. "a snapshot writes a rule holding a recursive or mutually recursive lambda as a self-contained block that reloads, deduplicates, and retracts cleanly."

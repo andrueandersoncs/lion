@@ -1,8 +1,9 @@
 import { Array as Arr, Effect, Schema } from "effect";
 import { atLeast, logicError } from "@/errors/evaluation";
 import { call } from "@/evaluation/special-forms/function";
-import { compareValues, listMaker, show } from "@/logic/terms";
+import { compareValues, listMaker, sameValue, show } from "@/logic/terms";
 import { combining, over, overEffect, slicing } from "@/modules/lib/shared";
+import { IndexOutOfBoundsError } from "@/modules/object";
 
 const MAX_RANGE = 1_000_000;
 
@@ -104,6 +105,29 @@ export const module = {
   /** The items from `start` up to `end`, as `string/slice` cuts text. */
   slice: slicing(List),
 
+  /**
+   * The item at `index` (negative counts from the end, as `array/slice`
+   * counts). For an index outside the list, gives the optional third argument,
+   * or fails with `IndexOutOfBoundsError`, as `object/get` does for a missing
+   * key.
+   */
+  at: overEffect(
+    [List, Schema.Int, Schema.Any],
+    (...args) => {
+      const [list, index, fallback] = args;
+      const resolved = index < 0 ? list.length + index : index;
+      if (resolved >= 0 && resolved < list.length) {
+        return Effect.succeed(list[resolved]);
+      }
+      return (args as readonly unknown[]).length >= 3
+        ? Effect.succeed(fallback)
+        : Effect.fail(
+            new IndexOutOfBoundsError({ index, length: list.length })
+          );
+    },
+    2
+  ),
+
   length: over([List], Arr.length),
 
   /** Zero or more lists, joined in order: none is [], as `(append)` is in Scheme. */
@@ -130,6 +154,40 @@ export const module = {
 
   "includes?": over([List, Schema.Any], (list, item) =>
     Arr.contains(list, item)
+  ),
+
+  /** The first index of an equal item in the list, or -1 if none matches. */
+  indexOf: over([List, Schema.Any], (list, item) =>
+    list.findIndex((each) => sameValue(each, item))
+  ),
+
+  /**
+   * The first item for which the function gives true, stopping early. When no
+   * item matches, gives the optional third argument, or fails.
+   */
+  find: overEffect(
+    [List, Schema.Any, Schema.Any],
+    (...args) => {
+      const [list, fn, fallback] = args;
+      const hasFallback = (args as readonly unknown[]).length >= 3;
+      return Effect.gen(function* () {
+        for (const item of list) {
+          if (
+            yield* booleanResult(
+              "array/find",
+              show(item),
+              yield* call(fn, item)
+            )
+          ) {
+            return item;
+          }
+        }
+        return hasFallback
+          ? fallback
+          : yield* logicError("array/find found no matching item.");
+      });
+    },
+    2
   ),
 
   /** Calls the function on each item, in order. */
