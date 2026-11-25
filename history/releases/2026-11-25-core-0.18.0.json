@@ -1,0 +1,13 @@
+{
+  "ships": [
+    {
+      "name": "@lionlang/core",
+      "version": "0.18.0"
+    },
+    {
+      "name": "@lionlang/cli",
+      "version": "0.17.0"
+    }
+  ],
+  "summary": "Lion adds first-class formal proof-building and research-KB primitives across the logic layer and symbolic solver. `proof/prove` proves universal (`[\"not\", [\"exists\", ...]]`) or empirical database goals in one call, returning kernel-verifiable certificates, induction proofs, grounded `why` provenance (`facts` and `assumptions`), or concrete `counterexample` witnesses. `proof/bounds` computes exact tight `[min, max]` intervals with endpoint witnesses and kernel-checkable certificates across continuous linear (Fourier-Motzkin), integer and mixed-integer linear (Omega + branch-and-bound), linear-fractional ratios `num / den` (continuous Charnes-Cooper and integer Dinkelbach iteration), univariate quadratic and coupled bilinear `x * y` objectives (2D polygon projection, interior edge stationary points, and integer slicing), symbolic `time/` (`time/add`, `time/diff`, `time/fromParts`), and relational database constraints. `proof/valid?` rejects forged `{check: true}` objects, verifies `proof/bounds` results directly, tightens `why` derivation checks, and adds 2-argument claim-bound verification (`atLeast`, `above`, `atMost`, `below`, `min`, `max`, `unsat`, relation names, and ground atoms). `proof/rules` handles research-grade frames with single-column schema invariants, nested pattern destructuring, `in`/`schema/fits?` filters, sound aggregate output domains, and anonymous column pruning. The logic layer also adds pattern- and goal-driven atomic retraction (`retract ... {\"where\": goal}` at top level and inside `assuming`), `graph/influence` for exact cumulative weighted multi-hop path propagation, `proof/sensitivity` for all-derivations epistemic fragility and minimal cut sets, model-persisted top-level helper definitions (`define ... {\"persist\": true}` saved across snapshots, `--database` runs, and `lion check --database`), and expanded Lion-in-Lion lints in `lion check`."
+}
