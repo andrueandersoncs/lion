@@ -1,0 +1,44 @@
+{
+  "name": "@lionlang/ui",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Declarative, interactive, and streaming UI bindings and DOM renderer for Lion.",
+  "license": "MIT",
+  "author": "Andrue Anderson <andrueanderson.cs@gmail.com>",
+  "homepage": "https://lionlang.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrueandersoncs/lion.git",
+    "directory": "packages/ui"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./dom": "./dist/dom.mjs",
+    "./types": "./dist/types.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "tsdown"
+  },
+  "dependencies": {
+    "@lionlang/core": "workspace:*",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.1.2",
+    "@types/bun": "latest",
+    "tsdown": "^0.21.10",
+    "vitest": "^5.0.1"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:"
+  }
+}

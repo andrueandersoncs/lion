@@ -1,0 +1,28 @@
+{
+  "claims": [
+    {
+      "quote": "Adds the `@lionlang/ui` package with pure JSON-serializable UI bindings (`ui/stack`, `ui/row`, `ui/grid`, `ui/card`, `ui/metric`, `ui/alert`, `ui/table`, `ui/progress`, `ui/slider`, `ui/input`, `ui/select`, `ui/toggle`, `ui/button`, `ui/why`, `ui/proof`, and `ui/node?`), stateful and streaming `createUiSession()` backed by one `LogicDatabase`, and a zero-dependency XSS-safe DOM patcher (`@lionlang/ui/dom`).",
+      "says": {
+        "feature": "lionlang-ui-package",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`@lionlang/site-runtime` generates and checks `docs/llms.txt` and `docs/llms-full.txt` alongside `docs/docs.html` from the same Diátaxis documents and live-evaluated examples, giving coding agents a verified machine-readable reference at `https://lionlang.dev/llms.txt`.",
+      "says": {
+        "feature": "site-llms-txt",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Redesigns `lionlang.dev` into a calm, agent-friendly landing page with a one-click agent prompt bar and a unified gallery of four live interactive and streaming `@lionlang/ui` examples (streaming agent/research feed, dynamic form & pricing, verifiable auth & formal proofs, and live knowledge-graph topology), each leading with rendered UI and a `View / edit Lion JSON` toggle.",
+      "says": {
+        "feature": "agent-friendly-ui-landing-page",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

@@ -18221,7 +18221,7 @@
                 [
                   "string/includes",
                   ["repo/read", "docs/index.html"],
-                  ["quote", "<script type=\"module\" src=\"playground.js?v="]
+                  ["quote", "<script type=\"module\" src=\"ui-stage.js?v="]
                 ]
               ],
               [
@@ -18255,7 +18255,7 @@
           [
             "string/includes",
             ["repo/read", "docs/index.html"],
-            ["quote", "<script type=\"module\" src=\"playground.js?v="]
+            ["quote", "<script type=\"module\" src=\"ui-stage.js?v="]
           ]
         ],
         ["quote", "stale-version"]

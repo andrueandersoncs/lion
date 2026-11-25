@@ -32,6 +32,14 @@ import { stdlib } from "@lionlang/core/modules";
 import { SPECIAL_FORM_NAMES } from "@lionlang/core/schemas/evaluation";
 import { assetVersion, stampPage } from "./site.ts";
 import { evaluateSource } from "./src/evaluate.ts";
+import {
+  type LlmsDoc,
+  type LlmsExample,
+  type LlmsKindGroup,
+  type PackageVersions,
+  renderLlmsFullTxt,
+  renderLlmsTxt,
+} from "./src/llms-txt.ts";
 import { packageReadme } from "./src/package-readme.ts";
 
 const CONTENT = join(import.meta.dirname, "content");
@@ -281,16 +289,32 @@ const renderExample = ({
 const expandExamples = async (doc: Doc) => {
   const parts: string[] = [];
   const sources: string[] = [];
+  const examples: LlmsExample[] = [];
   let last = 0;
   for (const match of doc.body.matchAll(EXAMPLE)) {
     const example = await runExample(doc, match[1] ?? "", match[2] ?? "");
     sources.push(example.source);
+    examples.push(
+      example.response.ok
+        ? {
+            name: example.name,
+            ok: true,
+            source: example.source,
+            value: example.response.value,
+          }
+        : {
+            error: example.response.error,
+            name: example.name,
+            ok: false,
+            source: example.source,
+          }
+    );
     parts.push(doc.body.slice(last, match.index), renderExample(example));
     last = (match.index ?? 0) + match[0].length;
   }
   parts.push(doc.body.slice(last));
   doc.body = parts.join("");
-  return sources;
+  return { examples, sources };
 };
 
 /**
@@ -501,10 +525,8 @@ ${docs
 const GITHUB_ICON = `<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>`;
 
 const NAV_LINKS = [
-  ["index.html#features", "Features"],
   ["index.html#examples", "Examples"],
-  ["index.html#logic", "Logic"],
-  ["index.html#editor", "Editor"],
+  ["index.html#agents", "For agents"],
   ["index.html#packages", "Packages"],
 ] as const;
 
@@ -543,6 +565,7 @@ const renderPage = (docs: readonly Doc[], search: readonly SearchEntry[]) => {
       rel="stylesheet"
     >
     <link rel="stylesheet" href="styles.css">
+    <link rel="alternate" type="text/markdown" href="llms.txt" title="Lion for LLMs and agents">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -566,6 +589,7 @@ const renderPage = (docs: readonly Doc[], search: readonly SearchEntry[]) => {
         <div class="nav-links">
           ${links.join("\n          ")}
           <a href="docs.html" aria-current="page">Docs</a>
+          <a href="llms.txt">llms.txt</a>
           <a href="changelog.html">Changelog</a>
           <a href="https://github.com/andrueandersoncs/lion" target="_blank" rel="noopener" class="nav-github">${GITHUB_ICON}GitHub</a>
         </div>
@@ -578,6 +602,7 @@ const renderPage = (docs: readonly Doc[], search: readonly SearchEntry[]) => {
       <div class="mobile-menu" id="mobile-menu">
         ${links.join("\n        ")}
         <a href="docs.html" aria-current="page">Docs</a>
+        <a href="llms.txt">llms.txt</a>
         <a href="changelog.html">Changelog</a>
         <a href="https://github.com/andrueandersoncs/lion" target="_blank" rel="noopener">GitHub</a>
       </div>
@@ -625,6 +650,21 @@ const checkLinks = (html: string) => {
   }
 };
 
+const readPackageVersions = (): PackageVersions => {
+  const versionOf = (pkg: string) =>
+    (
+      JSON.parse(
+        readFileSync(join(REPOSITORY, "packages", pkg, "package.json"), "utf8")
+      ) as { version: string }
+    ).version;
+  return {
+    cli: versionOf("cli"),
+    core: versionOf("core"),
+    typesafeAi: versionOf("typesafe-ai"),
+    ui: versionOf("ui"),
+  };
+};
+
 const build = async () => {
   const docs: Doc[] = [
     readDoc(join(CONTENT, "overview.html"), undefined, "overview"),
@@ -637,7 +677,9 @@ const build = async () => {
   const used = new Set(docs.flatMap((doc) => [doc.id, `${doc.id}-title`]));
   const search: SearchEntry[] = [];
   const sources: string[] = [];
+  const llmsDocs: LlmsDoc[] = [];
   for (const doc of docs) {
+    const rawBody = doc.body;
     search.push({
       t: doc.title,
       d: doc.title,
@@ -645,7 +687,17 @@ const build = async () => {
       h: doc.id,
     });
     expandCodeBlocks(doc);
-    sources.push(...(await expandExamples(doc)));
+    const expanded = await expandExamples(doc);
+    sources.push(...expanded.sources);
+    llmsDocs.push({
+      examples: expanded.examples,
+      id: doc.id,
+      kindLabel: doc.kind?.label ?? "Overview",
+      kindTitle: doc.kind?.title ?? "Overview",
+      rawBody,
+      summary: doc.summary,
+      title: doc.title,
+    });
     wrapTables(doc);
     doc.body = doc.body.replace("<docs-map></docs-map>", renderMap(docs));
     identify(doc, used, search);
@@ -653,12 +705,24 @@ const build = async () => {
   checkCoverage(sources);
   const html = stampPage("docs.html", renderPage(docs, search), assetVersion());
   checkLinks(html);
-  return html;
+  const groups: LlmsKindGroup[] = KINDS.map((kind) => ({
+    docs: docs
+      .filter((doc) => doc.kind === kind)
+      .map((doc) => ({ id: doc.id, summary: doc.summary, title: doc.title })),
+    title: kind.title,
+  }));
+  const llmsTxt = renderLlmsTxt(groups, readPackageVersions());
+  const llmsFullTxt = renderLlmsFullTxt(llmsTxt, llmsDocs);
+  return { html, llmsFullTxt, llmsTxt };
 };
+
+const built = await build();
 
 /** What the build writes: each file by its path in the repository. */
 const written: readonly (readonly [path: string, text: string])[] = [
-  ["docs/docs.html", await build()],
+  ["docs/docs.html", built.html],
+  ["docs/llms.txt", built.llmsTxt],
+  ["docs/llms-full.txt", built.llmsFullTxt],
   [
     "packages/core/README.md",
     packageReadme(readFileSync(join(REPOSITORY, "README.md"), "utf8")),

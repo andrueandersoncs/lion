@@ -13,9 +13,10 @@ export const DOCS = join(import.meta.dirname, "../../docs");
 /** Every file whose change must reach returning visitors at once. */
 const HASHED = [
   "lion-worker.js",
+  "lion-ui.js",
+  "ui-stage.js",
   "playground.js",
   "script.js",
-  "constellation.js",
   "highlight.js",
   "pure.js",
   "docs.js",
@@ -28,12 +29,7 @@ const HASHED = [
  * evaluator, so a stylesheet cached for a few minutes cannot break it.
  */
 export const PAGES: Readonly<Record<string, readonly string[]>> = {
-  "index.html": [
-    "styles.css",
-    "constellation.js",
-    "script.js",
-    "playground.js",
-  ],
+  "index.html": ["styles.css", "script.js", "ui-stage.js"],
   "docs.html": ["styles.css", "script.js", "playground.js", "docs.js"],
 };
 

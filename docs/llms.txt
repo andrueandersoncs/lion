@@ -1,0 +1,132 @@
+# Lion
+
+> Lion is a JSON-based Lisp with a built-in Datalog logic database, an exact symbolic solver and proof kernel, and an Effect v4 runtime. Every Lion program is valid JSON — storable in a database, diffable in Git, verifiable statically with `lion check`, and evaluable in memory or in a browser Web Worker.
+
+Full reference in one file: https://lionlang.dev/llms-full.txt
+Interactive documentation: https://lionlang.dev/docs.html
+Changelog: https://lionlang.dev/changelog.html
+Repository: https://github.com/andrueandersoncs/lion
+
+## Core Syntax Rules (Read First)
+
+- Every program is valid JSON. No separate parser.
+- Arrays are calls: `["number/add", 1, 2]` -> `3`. Empty array `[]` evaluates to itself.
+- Literal lists must use `["quote", [1, 2]]` or `["array/make", 1, 2]`.
+- Strings resolve to bindings declared in an enclosing scope (stdlib, environment, `define`, `relation`, `schema`, lambda params); undeclared strings evaluate to themselves, EXCEPT:
+  - `"?name"` is a logic variable (`"?_"` is anonymous).
+  - A misspelled `"module/name"` (e.g. `"number/ad"`) is an error. Use `["quote", "name"]` when you mean a literal string that collides with a binding or variable.
+- Objects preserve their keys and evaluate each value.
+- Numbers use exact rational/decimal arithmetic (no floating-point rounding drift).
+- Always run `lion check` on generated programs before executing them to catch arity errors, typos, unreachable `match` branches, and unsafe rules with JSON-pointer locations.
+
+## Packages
+
+- `@lionlang/core` (v0.18.0): Evaluator, special forms, standard library, Datalog logic engine, schemas, symbolic solver (`proof/prove`, `proof/bounds`, `proof/rules`, `proof/sensitivity`, `proof/valid?`), and graph algorithms (`graph/`).
+- `@lionlang/ui` (v0.1.0): Declarative, interactive, and streaming UI bindings (`ui/stack`, `ui/card`, `ui/metric`, `ui/alert`, `ui/table`, `ui/slider`, `ui/input`, `ui/select`, `ui/toggle`, `ui/button`, `ui/why`, `ui/proof`) plus a zero-dependency DOM renderer (`@lionlang/ui/dom`) and stateful `createUiSession()`.
+- `@lionlang/cli` (v0.17.0): The `lion` CLI — evaluate files/stdin/`-e`, persist logic databases (`--database`), static check & lint (`lion check`), inspect/diff databases (`lion inspect`, `lion diff --derived`), serve the Fold Map visual graph editor (`lion repl`), and emit a browser Web Worker (`lion worker`).
+- `@lionlang/typesafe-ai` (v0.1.0): Bindings for TypeSafe AI's Jev judgment primitives (`typesafe/noul`, `typesafe/choice`, `typesafe/score`, `typesafe/system-one`).
+
+## Quick Start
+
+### TypeScript / Effect
+
+```bash
+npm install @lionlang/core effect
+# or: bun add @lionlang/core effect
+```
+
+```ts
+import { Effect } from "effect";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
+
+const result = await Effect.runPromise(
+  run(["number/add", 1, 2], { ...stdlib, taxRate: 0.08 })
+);
+```
+
+### CLI
+
+```bash
+npx @lionlang/cli -e '["number/add", 1, 2]'
+npx @lionlang/cli check program.json
+npx @lionlang/cli setup.json --database store.json
+npx @lionlang/cli inspect store.json --derived
+npx @lionlang/cli diff before.json after.json --derived
+npx @lionlang/cli repl
+npx @lionlang/cli worker > lion-worker.js
+```
+
+## Agent Skills
+
+Install Lion's official agent skills into Claude Code, Codex, Cursor, or any skills-compatible agent:
+
+```bash
+npx skills add andrueandersoncs/lion
+```
+
+- **lion-research** (https://github.com/andrueandersoncs/lion/tree/main/skills/lion-research): Turn deep research, due diligence, or incident timelines into a proof-building Lion logic model with verbatim source quotes, contradiction/restatement detection, exact solver bounds, and a self-contained interactive `explorer.html`.
+- **lion-reasoning** (https://github.com/andrueandersoncs/lion/tree/main/skills/lion-reasoning): Content-hashed working memory for coding agents — tracks observations against file hashes, detects stale evidence and contradicted hypotheses across long debugging, auditing, or optimization sessions.
+
+## High-Leverage Use Cases
+
+1. **Dynamic App Config & Validation**: Store schemas, pricing rules, and validation lambdas in Postgres JSONB or Git. Validate user-authored rules with `lion check`, evaluate in-memory on Effect, and edit visually in Fold Map.
+2. **Verifiable Authorization & Business Policies**: Express RBAC/ReBAC and compliance rules in Datalog + lambdas. Get exact `why` explanations for every allow/deny, test changes with `assuming`, enforce `invariant`s, and formally prove universal properties with `proof/prove` + `proof/valid?`.
+3. **Knowledge Bases, Ontologies & Deep Research Artifacts**: Model entities, relations, and quoted claims. Run `graph/pageRank`, `graph/shortestPath`, `graph/cycles`, `graph/dominators`, and `graph/influence`; measure epistemic fragility with `proof/sensitivity`; save via `snapshot`; ship live browser artifacts with `lion worker`.
+4. **Safe Logic for AI Agents**: Have LLMs emit JSON Lion programs instead of raw JS/Python; verify with `lion check`; use `proof/bounds` and `proof/prove` for exact math/constraints; combine with `@lionlang/typesafe-ai` for hybrid neural-symbolic workflows.
+
+## Documentation
+
+### Tutorials
+
+- [Your first Lion program](https://lionlang.dev/docs.html#first-program): Build a small checkout calculator, one working step at a time, and learn how Lion reads JSON as code along the way.
+- [Build a family tree](https://lionlang.dev/docs.html#family-tree): Store facts about a family, then ask Lion's logic database to work out grandparents, ancestors, and more, all in JSON.
+- [Run an order desk](https://lionlang.dev/docs.html#order-desk): Track orders whose status changes over time, keep the data consistent with an invariant, and save the whole desk as a Lion program.
+- [Sort an inbox](https://lionlang.dev/docs.html#sort-an-inbox): Describe the orders you expect with a schema, find what is wrong with the ones that do not fit, and let rules take the good ones apart.
+
+### How-to guides
+
+- [Run Lion from TypeScript](https://lionlang.dev/docs.html#run-from-typescript): Evaluate Lion programs inside your own application, give them your values and functions, and handle their results and errors.
+- [Run programs from the command line](https://lionlang.dev/docs.html#use-the-cli): Evaluate Lion files with the lion command, keep a logic database in a file between runs, and open the graph editor.
+- [Branch on a value's shape](https://lionlang.dev/docs.html#branch-on-shape): Choose what to do with a value based on its type or its structure, with match and cond.
+- [Transform lists](https://lionlang.dev/docs.html#transform-lists): Make lists, map over them, filter them, flatten them, and fold them into a single value.
+- [Build and run code as data](https://lionlang.dev/docs.html#code-as-data): Hold a program as data, assemble one from parts, and run it with eval.
+- [Query with conditions and computed values](https://lionlang.dev/docs.html#query-with-conditions): Narrow answers with comparisons, compute new values in rules and queries, choose between values, combine alternatives, and look inside lists.
+- [Use answers as values](https://lionlang.dev/docs.html#ask-questions): Ask the database from any expression: collect answers into a list with find, test a goal in cond, and use a relation as a predicate.
+- [Sort, page, and check query answers](https://lionlang.dev/docs.html#sort-and-page): Order answers by one or more variables, take a page of them, and make a query fail when it finds too few or too many.
+- [Follow relationships of any length](https://lionlang.dev/docs.html#recursive-relations): Derive paths, reachability, and hierarchies with recursive rules, and write them so queries stay fast.
+- [Find what is missing](https://lionlang.dev/docs.html#find-missing): Ask for things that have no matching fact, such as customers without orders or tasks without an owner.
+- [Say that something exists](https://lionlang.dev/docs.html#say-something-exists): Write rules that say a value exists without saying what it is, read the unknowns they invent, keep only known answers, and make unknowns one with a key or an equality rule.
+- [Summarize groups of facts](https://lionlang.dev/docs.html#summarize-groups): Count, total, average, and collect values per group, like GROUP BY in SQL.
+- [Answer graph questions](https://lionlang.dev/docs.html#graph-questions): Find shortest routes, rank nodes, group connected nodes, detect cycles, and order dependencies with the graph module.
+- [Enforce rules on your data](https://lionlang.dev/docs.html#enforce-rules): State conditions your data must always meet, and have the database refuse any change that would break them.
+- [Solve for values and prove rules](https://lionlang.dev/docs.html#solve-for-values): Let a schema type a variable no goal binds, and Lion solves for the values that meet your filters, says whether one exists, or proves that none does, for every number; what it cannot decide waits for the values it lists.
+- [Check every run of commands](https://lionlang.dev/docs.html#check-every-run): Ask about every run of commands up to a length, and the states each passes through: a rule that must always hold, something that must eventually happen, and the shortest run that breaks a rule, with amounts of any size the solver works out.
+- [Prove that every command keeps a rule](https://lionlang.dev/docs.html#prove-commands): Prove for every state and every command that a step keeps a rule, see a state that breaks the proof, find the rules a proof needs, check a proof's certificate yourself, and ask whether one schema includes another.
+- [Check the shape of data](https://lionlang.dev/docs.html#check-data): Say what a value must be with a schema, find where data does not fit, and have a relation refuse rows that do not.
+- [Take data apart](https://lionlang.dev/docs.html#take-data-apart): Bind logic variables to the parts of records and lists with patterns, in relation calls, queries, and rules.
+- [Explain a result](https://lionlang.dev/docs.html#explain-results): Find out why a fact holds: which rule derived it, from which facts, all the way down. Or why it does not: which rules could have given it, and what stopped each one.
+- [Save and load a logic database](https://lionlang.dev/docs.html#save-and-load): Write a database out as a Lion program, store it anywhere, and rebuild it later from the command line or TypeScript.
+- [Add your own functions and algorithms](https://lionlang.dev/docs.html#extend-with-host-code): Give Lion programs your own values and functions, use them inside logic rules, and add graph-style algorithms.
+- [Call JavaScript objects and methods](https://lionlang.dev/docs.html#call-host-objects): Read properties, call methods, construct classes, and pass Lion functions to JavaScript callbacks.
+- [Ask AI models with TypeSafe](https://lionlang.dev/docs.html#ask-ai-models): Turn natural language into typed judgments inside a Lion program with the TypeSafe AI and Jev bindings.
+
+### Reference
+
+- [Evaluation rules](https://lionlang.dev/docs.html#evaluation-rules): How Lion evaluates each kind of JSON value: numbers, booleans, null, strings, arrays, and records.
+- [Special forms](https://lionlang.dev/docs.html#special-forms): The forms that control evaluation: quote, eval, begin, define, set!, lambda, cond, and match.
+- [Logic forms](https://lionlang.dev/docs.html#logic-forms): The forms of Lion's Datalog-style logic layer: relations, facts, rules, queries, goals, questions, unknowns, snapshots, and invariants.
+- [Query options](https://lionlang.dev/docs.html#query-options): The options record of a query: order, offset, limit, and assert, and the order Lion sorts values in.
+- [Standard library](https://lionlang.dev/docs.html#standard-library): Every function in Lion's default environment, by module: number, boolean, string, array, value, schema, object, func, console, aggregate, and graph.
+- [Logic database guarantees](https://lionlang.dev/docs.html#logic-guarantees): The rules every logic program follows, what Lion checks and when, and what it promises about changes and answers.
+- [Errors](https://lionlang.dev/docs.html#errors): Every way a Lion program can fail, the error's tag, and what causes it.
+- [Command line](https://lionlang.dev/docs.html#cli): The lion command from @lionlang/cli: evaluating files, keeping a database file, serving the graph editor, and printing Lion as a Web Worker.
+- [TypeScript API](https://lionlang.dev/docs.html#typescript-api): The exports of @lionlang/core and @lionlang/typesafe-ai that host applications use.
+
+### Explanation
+
+- [Why programs are JSON](https://lionlang.dev/docs.html#why-json): What Lion gains by making every program a JSON value, what it costs, and how the evaluation rules make it work.
+- [Names, scope, and environments](https://lionlang.dev/docs.html#names-and-scope): How Lion decides which strings are names, why a body declares what it defines from its start, and what lasts from one run to the next.
+- [How Lion answers logic questions](https://lionlang.dev/docs.html#logic-programming): Why Lion's logic layer is Datalog rather than Prolog, how it computes answers bottom-up, and where its restrictions come from.
+- [Goal-directed evaluation](https://lionlang.dev/docs.html#goal-directed-evaluation): How Lion avoids deriving everything a program implies when a query only needs a little, and why the shape of a recursive rule matters.
+- [One set of rules for every feature](https://lionlang.dev/docs.html#consistent-semantics): Why Lion's features share the same few rules, how that follows from the principle of least astonishment, and how Lion settles the places where JavaScript and JSON disagree.
