@@ -26,13 +26,39 @@ export const module = {
 
   /**
    * Whether a proof value (linear refutation, integer split tree, case split,
-   * induction proof, lemma composition, `proof/prove` result, or `why`
-   * derivation) checks out under the trusted kernel without invoking the solver.
+   * induction proof, lemma composition, `proof/prove` result, `proof/bounds`
+   * result, or `why` derivation) checks out under the trusted kernel without
+   * invoking the solver. With a second `claim` argument, also verifies that
+   * the proof establishes that specific bound specification, relation target,
+   * or ground fact/absence.
    */
   "valid?": takes(
-    1,
-    (proof: unknown) => Effect.succeed(verifyProof(proof)),
-    "a proof"
+    [1, 2],
+    (proof: unknown, claim?: unknown) =>
+      Effect.succeed(verifyProof(proof, claim)),
+    "a proof and optional claim"
+  ),
+
+  /**
+   * All-derivations epistemic sensitivity analysis for a closed goal: identifies
+   * critical single-point-of-failure base facts, redundant facts backed by
+   * alternative derivations, resilience, and minimal retraction cut-sets.
+   */
+  sensitivity: logicFunction(
+    takes(
+      1,
+      (goal: unknown) =>
+        Effect.gen(function* () {
+          if (!isGoal(goal)) {
+            return yield* logicError(
+              `proof/sensitivity expects a goal or boolean, but found ${show(goal)}.`
+            );
+          }
+          const form = new LogicForm("proof/sensitivity", [goal]);
+          return (yield* isWriting) ? form : yield* answer(form);
+        }),
+      "a goal"
+    )
   ),
 
   /**

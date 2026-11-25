@@ -41,6 +41,7 @@ const writer = (
     (text) =>
       database.relations.has(text) ||
       database.schemas.has(text) ||
+      database.definitions.has(text) ||
       isBound(text)
   ),
   opaque: (item, callee) => {
@@ -110,6 +111,9 @@ export const saveDatabase = (
         forms.push(relationForm(relation));
       }
       forms.push(...schemaForms(database, goal));
+      for (const [name, entry] of database.definitions) {
+        forms.push(["define", name, goal(entry.definition), { persist: true }]);
+      }
       // Alternatives of one `or` share their source, so each rule form is
       // written once.
       const seen = new Set<unknown>();

@@ -1,0 +1,9 @@
+SEC EDGAR — Schedule 13D Beneficial Ownership Filing (Aegis Space Fund)
+Published: February 18, 2026 | Publisher: SEC EDGAR | Kind: primary
+URL: https://sec.example/edgar/aegis-13d-solstice
+
+Item 5 — Voting Ownership Chain (Solstice Orbital Systems):
+- Aegis Space Fund directly holds 15% of the voting shares of Solstice Orbital Systems.
+- Aegis Space Fund holds 60% of the voting equity of Vanguard HoldCo.
+- Vanguard HoldCo holds 50% of the voting equity of OrbitSPV.
+- OrbitSPV directly holds 80% of the voting shares of Solstice Orbital Systems.

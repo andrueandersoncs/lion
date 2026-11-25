@@ -3047,6 +3047,7 @@
       ]
     ],
     ["reads", ["quote", "a numeric expression and a goal"], "describes-taken"],
+    ["reads", ["quote", "a proof and optional claim"], "describes-taken"],
     [
       "reads",
       ["quote", "Unsafe proof/bounds …: its goal does not bind …."],
@@ -3055,6 +3056,11 @@
     [
       "reads",
       ["quote", "proof/prove expects a goal or boolean, but found …."],
+      "proof-prove-goal"
+    ],
+    [
+      "reads",
+      ["quote", "proof/sensitivity expects a goal or boolean, but found …."],
       "proof-prove-goal"
     ],
     [
@@ -3069,11 +3075,8 @@
     ],
     [
       "reads",
-      [
-        "quote",
-        "proof/bounds cannot compute exact mixed-integer bounds when the LP relaxation is not attained."
-      ],
-      "proof-bounds-solvable"
+      ["quote", "proof/bounds expects a numeric target, but found a …."],
+      "proof-bounds-input"
     ],
     [
       "reads",
@@ -3084,7 +3087,7 @@
       "reads",
       [
         "quote",
-        "proof/bounds supports linear and linear-fractional numeric targets, not higher-degree polynomials."
+        "proof/bounds cannot optimize a bilinear product coupled with an additional linear variable in the same target."
       ],
       "proof-bounds-solvable"
     ],
@@ -3092,9 +3095,154 @@
       "reads",
       [
         "quote",
-        "proof/bounds supports linear-fractional ratio bounds over continuous (value/number?) variables; use proof/prove to check integer ratio inequalities."
+        "proof/bounds does not support nonlinear fractions with both a nonlinear numerator and symbolic denominator."
       ],
       "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/bounds exceeded branch-and-bound limit on mixed-integer constraints."
+      ],
+      "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/bounds exceeded iteration limit on integer ratio constraints."
+      ],
+      "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/bounds requires bounded integer ranges (span <= 500) for integer bilinear products."
+      ],
+      "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/bounds requires bounded variables for continuous bilinear products."
+      ],
+      "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "proof/bounds supports linear, linear-fractional, univariate quadratic, and single bilinear products."
+      ],
+      "proof-bounds-solvable"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "A persisted definition's name must be a string that is not the name of a special form, but found …."
+      ],
+      "schema-name"
+    ],
+    [
+      "kept",
+      "schema-name",
+      ["quote", "one names a schema and one names a persisted definition"]
+    ],
+    [
+      "stated",
+      "retract-where-option",
+      "options",
+      ["quote", "Retract options must name where"]
+    ],
+    [
+      "stated",
+      "define-persist-option",
+      "options",
+      ["quote", "The define persist option must be a boolean"]
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Retract options need \"where\", such as {\"where\": [\"source\", \"?s\", \"?_\", \"?_\", \"?_\", \"tertiary\", \"?_\"]}."
+      ],
+      "retract-where-option"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "{\"where\": [\"source\", \"?s\", \"?_\", \"?_\", \"?_\", \"tertiary\", \"?_\"]}"
+      ],
+      "options-record"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "The define option \"persist\" must be true or false, but found …."
+      ],
+      "define-persist-option"
+    ],
+    [
+      "reads",
+      ["quote", "retract \"where\" expects goals or booleans, but found …."],
+      "goal-or-boolean"
+    ],
+    [
+      "kept",
+      "goal-or-boolean",
+      ["quote", "one is for retract where and one is for not, and, and or"]
+    ],
+    [
+      "reads",
+      ["quote", "graph/influence exceeded … simple paths in a cyclic graph."],
+      "graph-limit"
+    ],
+    [
+      "stated",
+      "graph-limit",
+      "limits",
+      ["quote", "Graph algorithms cap path enumeration on cyclic graphs"]
+    ],
+    [
+      "stated",
+      "lint-warning",
+      "forms",
+      [
+        "quote",
+        "Static lints warn of common malformed forms and unquoted variables"
+      ]
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Fact argument … is an unquoted logic variable; to mean the string itself, write [\"quote\", …]."
+      ],
+      "lint-warning"
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "… takes one goal, not multiple goals directly; wrap multiple goals in [\"and\", ...]."
+      ],
+      "lint-warning"
+    ],
+    [
+      "kept",
+      "lint-warning",
+      ["quote", "each lint rule warns of a distinct static mistake"]
+    ],
+    [
+      "kept",
+      "proof-prove-goal",
+      ["quote", "one names proof/prove and one names proof/sensitivity"]
     ],
     [
       "reads",

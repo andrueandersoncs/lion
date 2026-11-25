@@ -608,6 +608,8 @@ export class Model {
   prove?: (goal: unknown, vars: Vars) => LogicEffect<unknown>;
   /** Computes exact symbolic/relational interval bounds for a numeric target. */
   bounds?: (target: unknown, goal: unknown, vars: Vars) => LogicEffect<unknown>;
+  /** Computes all-derivations sensitivity & minimal retraction cut-sets for a goal. */
+  sensitivity?: (goal: unknown, vars: Vars) => LogicEffect<unknown>;
 
   constructor(
     facts: ReadonlyMap<string, TupleSet>,
@@ -783,6 +785,9 @@ export const term = (
   if (isForm(value, "proof/bounds")) {
     return boundedIn(model, value, vars);
   }
+  if (isForm(value, "proof/sensitivity")) {
+    return sensitivityIn(model, value, vars);
+  }
   return isForm(value, "find")
     ? findAll(model, value, vars)
     : holds(model, value as Goal, vars);
@@ -854,6 +859,18 @@ const boundedIn = (
   return home.bounds(question.parts[0], question.parts[1], vars);
 };
 
+const sensitivityIn = (
+  model: Model,
+  question: LogicForm,
+  vars: Vars
+): LogicEffect<unknown> => {
+  const home = model.base ?? model;
+  if (home.sensitivity === undefined) {
+    return needsDatabase(question, vars);
+  }
+  return home.sensitivity(question.parts[0], vars);
+};
+
 /**
  * What an `assuming` gives for an answer: its changes with the values of
  * the arguments of the facts they state, asked of the database as it would
@@ -882,7 +899,8 @@ const assumed = (
     const changes = yield* Effect.forEach(
       question.parts.slice(0, -1) as LogicForm[],
       (change) =>
-        change.form === "rule"
+        change.form === "rule" ||
+        (change.form === "retract" && isForm(change.parts.at(-1), "where"))
           ? Effect.succeed(substitute(change, vars) as LogicForm)
           : Effect.map(
               Effect.forEach(change.parts, valued),

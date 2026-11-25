@@ -1388,6 +1388,239 @@ export const KB_TASKS: readonly KbTask[] = [
       ],
     ],
   },
+
+  // 16. Live reactive bulk counterfactual retraction by source tier (retract ... where)
+  {
+    id: "kb-bulk-counterfactual-where",
+    category: "belief-revision",
+    description:
+      "Test whether a majority-control conclusion survives retracting ALL tertiary-source claims via a live reactive retract-where counterfactual rule",
+    nativeProgram: [
+      "begin",
+      ["relation", "source", ["id", "kind"], { key: "id" }],
+      [
+        "relation",
+        "stake",
+        ["id", "src", "owner", "target", "pct"],
+        { key: "id" },
+      ],
+      ["relation", "direct_sum", ["owner", "target", "pct"]],
+      [
+        "fact",
+        ["source", "filing", "primary"],
+        ["source", "blog1", "tertiary"],
+        ["source", "blog2", "tertiary"],
+        ["stake", "k1", "filing", "helios", "vespera", 34],
+        ["stake", "k2", "blog1", "helios", "vespera", 12],
+        ["stake", "k3", "blog2", "helios", "vespera", 9],
+      ],
+      [
+        "rule",
+        ["direct_sum", "?o", "?t", ["aggregate/sum", "?p"]],
+        ["stake", "?_", "?_", "?o", "?t", "?p"],
+      ],
+      {
+        withAll: ["find", "?p", ["direct_sum", "helios", "vespera", "?p"]],
+        withoutTertiary: [
+          "assuming",
+          [
+            "retract",
+            ["stake", "?id", "?s", "?_", "?_", "?_"],
+            { where: ["source", "?s", "tertiary"] },
+          ],
+          ["find", "?p", ["direct_sum", "helios", "vespera", "?p"]],
+        ],
+      },
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["object/get", "out", "withAll"], ["quote", [55]]],
+        ["=", ["object/get", "out", "withoutTertiary"], ["quote", [34]]],
+      ],
+    ],
+  },
+
+  // 17. Exact integer-ratio bounds & claim-bound kernel verification
+  {
+    id: "kb-integer-ratio-claim-bound",
+    category: "verification",
+    description:
+      "Compute exact integer-ratio bounds via Dinkelbach and certify threshold compliance directly with 2-arg claim-bound proof/valid?",
+    nativeProgram: [
+      "begin",
+      [
+        "define",
+        "b",
+        [
+          "proof/bounds",
+          ["number/divide", "?pass", ["number/add", "?pass", "?fail"]],
+          [
+            "and",
+            ["schema/fits?", "?pass", "value/integer?"],
+            ["schema/fits?", "?fail", "value/integer?"],
+            ["number/greaterThanOrEqualTo", "?pass", 17],
+            ["number/lessThanOrEqualTo", "?pass", 20],
+            ["number/greaterThanOrEqualTo", "?fail", 2],
+            ["number/lessThanOrEqualTo", "?fail", 5],
+            ["number/lessThanOrEqualTo", ["number/add", "?pass", "?fail"], 22],
+          ],
+        ],
+      ],
+      {
+        minPct: [
+          "number/round",
+          ["number/multiply", 100, ["object/get", "b", "min"]],
+          2,
+        ],
+        maxPct: [
+          "number/round",
+          ["number/multiply", 100, ["object/get", "b", "max"]],
+          2,
+        ],
+        clears77: ["proof/valid?", "b", { atLeast: 0.77 }],
+        clears80: ["proof/valid?", "b", { atLeast: 0.8 }],
+      },
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["object/get", "out", "minPct"], 77.27],
+        ["=", ["object/get", "out", "maxPct"], 90.91],
+        ["=", ["object/get", "out", "clears77"], true],
+        ["=", ["object/get", "out", "clears80"], false],
+      ],
+    ],
+  },
+
+  // 18. Exact coupled bilinear product bounds (uncertain units * price / chained stakes)
+  {
+    id: "kb-coupled-bilinear-bounds",
+    category: "verification",
+    description:
+      "Bound exact product of coupled uncertain quantities hitting an interior edge stationary point via 2D FM polygon projection",
+    nativeProgram: [
+      "begin",
+      [
+        "define",
+        "b",
+        [
+          "proof/bounds",
+          ["number/multiply", "?a", "?b"],
+          [
+            "and",
+            ["schema/fits?", "?a", "value/number?"],
+            ["schema/fits?", "?b", "value/number?"],
+            ["number/greaterThanOrEqualTo", "?a", 2],
+            ["number/lessThanOrEqualTo", "?a", 9],
+            ["number/greaterThanOrEqualTo", "?b", 2],
+            ["number/lessThanOrEqualTo", "?b", 9],
+            ["number/lessThanOrEqualTo", ["number/add", "?a", "?b"], 12],
+          ],
+        ],
+      ],
+      {
+        min: ["object/get", "b", "min"],
+        max: ["object/get", "b", "max"],
+      },
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["object/get", "out", "min"], 4],
+        ["=", ["object/get", "out", "max"], 36],
+      ],
+    ],
+  },
+
+  // 19. Multi-hop weighted ownership/influence propagation across arbitrary chain depth
+  {
+    id: "kb-multihop-weighted-influence",
+    category: "graph-investigation",
+    description:
+      "Compute exact multi-hop effective voting ownership across direct and 3-hop indirect chains with graph/influence",
+    nativeProgram: [
+      "begin",
+      ["relation", "owns", ["owner", "target", "share"]],
+      [
+        "fact",
+        ["owns", "helios", "vespera", 0.18],
+        ["owns", "helios", "apex", 0.6],
+        ["owns", "apex", "midco", 0.5],
+        ["owns", "midco", "vespera", 0.8],
+        ["owns", "apex", "vespera", 0.2],
+      ],
+      ["query", ["graph/influence", "owns", "helios", "vespera", "?stake"]],
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["array/length", "out"], 1],
+        ["=", ["object/get", ["array/at", "out", 0], "stake"], 0.54],
+      ],
+    ],
+  },
+
+  // 20. All-derivations epistemic sensitivity & minimal retraction cut-sets
+  {
+    id: "kb-all-derivations-sensitivity",
+    category: "epistemics",
+    description:
+      "Distinguish single-point-of-failure facts from redundant multi-derivation facts and compute minimal retraction cut-sets with proof/sensitivity",
+    nativeProgram: [
+      "begin",
+      ["relation", "backs", ["pub", "q", "v"]],
+      ["relation", "corroborated", ["q", "v"]],
+      [
+        "fact",
+        ["backs", "sec", "rev", 410],
+        ["backs", "auditor", "rev", 410],
+        ["backs", "registry", "rev", 410],
+      ],
+      [
+        "rule",
+        ["corroborated", "?q", "?v"],
+        ["backs", "?p1", "?q", "?v"],
+        ["backs", "?p2", "?q", "?v"],
+        ["not", ["=", "?p1", "?p2"]],
+      ],
+      ["define", "s3", ["proof/sensitivity", ["corroborated", "rev", 410]]],
+      [
+        "define",
+        "s2",
+        [
+          "assuming",
+          ["retract", ["backs", "registry", "rev", 410]],
+          ["proof/sensitivity", ["corroborated", "rev", 410]],
+        ],
+      ],
+      {
+        threeResilient: ["object/get", "s3", "resilient"],
+        threeCutSize: ["object/get", "s3", "minCutSize"],
+        twoResilient: ["object/get", "s2", "resilient"],
+        twoCriticalCount: ["array/length", ["object/get", "s2", "critical"]],
+      },
+    ],
+    check: [
+      "lambda",
+      ["out"],
+      [
+        "and",
+        ["=", ["object/get", "out", "threeResilient"], true],
+        ["=", ["object/get", "out", "threeCutSize"], 2],
+        ["=", ["object/get", "out", "twoResilient"], false],
+        ["=", ["object/get", "out", "twoCriticalCount"], 2],
+      ],
+    ],
+  },
 ];
 
 /** Runs one candidate program and checks it against `task.check`. */

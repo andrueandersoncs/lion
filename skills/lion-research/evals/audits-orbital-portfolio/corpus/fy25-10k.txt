@@ -1,0 +1,18 @@
+Solstice Orbital Systems — Form 10-K (FY25 Audited Annual Report)
+Published: March 5, 2026 | Publisher: Solstice Orbital Systems | Kind: primary
+URL: https://sec.example/solstice/fy25-10k
+
+Item 1 — Operations & Reliability Disclosures:
+- Following final audit adjustments, FY25 contracted launch backlog was restated to $812 million (revised down from preliminary figures due to deferred milestone recognition).
+- Solstice operated 4 active launch pads across its coastal and equatorial sites during FY25.
+- CryoTech serves as Solstice's sole primary liquid-methane propellant supplier under a five-year supply contract.
+
+Item 7 — Audited Mission Reliability Constraints (FY25):
+- Total audited FY25 orbital launch attempts (s + f) did not exceed 43 missions.
+- Successful orbital missions (s) did not exceed 37, and successful missions were at least 21 more than twice the number of anomaly or scrubbed missions (s >= 2f + 21).
+- Audited anomaly or scrubbed missions (f) were at least 6 and at most 10.
+
+Note 12 — Commercial Launch Pricing & Volume Rebate Covenant:
+- Capacity-adjusted commercial launch slots N ranged between 4.0 and 14.0 slots.
+- Contracted per-slot launch price P ranged between $12.0 million and $22.0 million.
+- Under the anchor-customer volume-discount rebate schedule, effective price and slot volume satisfy P + 2N <= 36.0 ($M).

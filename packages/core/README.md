@@ -177,6 +177,14 @@ Evaluates a value, binds the name to it in the body the form stands in, a lambda
 ["define", "answer", 42]
 ```
 
+At top level, an optional `{"persist": true}` fourth argument also saves the binding in the logic database so later programs run against the same database — and any [snapshot](#snapshots) rebuilt from it — inherit the helper automatically:
+
+```json
+["define", "pct", ["lambda", ["x"], ["number/round", ["number/multiply", 100, "x"], 2]], {"persist": true}]
+```
+
+A persisted `define` must evaluate to a snapshot-writable value (plain data, lambdas, or standard/derived functions). Plain 3-argument `define` remains ephemeral to the current program.
+
 ### `delay`
 
 Makes a promise of an expression, as Racket's `delay` does: nothing runs until `value/force` asks for its value, the first force runs the expression and keeps the value, and every force after gives it without running the expression again.
@@ -525,7 +533,7 @@ Evaluates to `[{ "id": 1, "status": "shipped" }, { "id": 2, "status": "open" }]`
 
 - A key can span several columns, as in `{"key": ["warehouse", "sku"]}`, and a single column can be written without the list, as in `{"key": "id"}`.
 - When one `fact` form repeats a key, the last row wins, and the form writes no other row for that key. So a form whose last row for each key holds already changes nothing, not even the order a snapshot writes the rows in.
-- `retract` removes a row only when every column matches.
+- `retract` removes a row only when every column matches, or atomically removes every row matching one or more patterns when given a trailing `{"where": goal}` option — both at top level and inside `assuming`: `["retract", ["claim", "?c", "?s", "?_", "?_"], {"where": ["source", "?s", "?_", "?_", "?_", "tertiary", "?_"]}]`. Plain `retract` without `where` still requires ground rows.
 - Rules can derive rows of a keyed relation, but two different rows with the same key, from facts or rules, are an error, unless they differ only in values that rules invented: then the key makes them one. See [Existential rules](#existential-rules). A question that reads the relation, or a relation derived from it, fails with the error, and so does a change an invariant that reads it checks. The error names the same two rows, and the same rule, whatever order the rules and facts came in, and whether the rows were derived from nothing or followed through changes: of the pairs of rows with one key, the one whose rows sort first; of its two rows, the one a rule gives, or the one that sorts later when rules give both; and of the rules that give it, the one whose written form sorts first. A row a key or an equality rule made from another row is given by the rules that give that row. The rows are kept, so asking again fails at once, and the next change is followed through them.
 - Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns, key, and merge.
 
@@ -808,6 +816,7 @@ Evaluates to `[{ "to": "a", "km": 0, "path": ["a"] }, { "to": "c", "km": 1, "pat
 | `["graph/components", edges, node, component]` | Connected components, ignoring edge direction. |
 | `["graph/stronglyConnected", edges, node, component]` | Strongly connected components. |
 | `["graph/cycles", edges, component, cycle]` | One canonical shortest directed cycle per cyclic strongly connected component (including self-loops), named after its smallest node; empty on a DAG. |
+| `["graph/influence", edges, start, to, weight]` | Exact cumulative path weight from `start` to each reachable node, summing the product of edge weights along every simple path (exact rational topological DP on DAGs, exact cycle-avoiding simple-path enumeration on cyclic graphs). |
 | `["graph/transitiveReduction", edges, from, to]` | The unique minimal edge set of a DAG with the same reachability (Hasse diagram), or an error naming a cycle. |
 | `["graph/topologicalOrder", edges, node, position]` | Positions from 0 in a topological order, or an error that names a cycle. |
 
@@ -847,7 +856,7 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
 
 ### Snapshots
 
-`["snapshot"]` returns a Lion program that rebuilds the current database: a `relation` form for every relation, a `schema` form for the schemas each `schema` form declared, every `rule`, one `fact` form with every fact, and every `invariant`. Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.
+`["snapshot"]` returns a Lion program that rebuilds the current database: a `relation` form for every relation, a `schema` form for the schemas each `schema` form declared, every persisted `define` (with `{"persist": true}`), every `rule`, one `fact` form with every fact, and every `invariant`. Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.
 
 ```json
 ["begin",
@@ -1171,7 +1180,8 @@ Evaluates to `{ "within limit": [{}], "not overdrawn": [] }`: every command keep
 - Where the solver's step stopped a rule, `why` shows a certificate (linear or integer split tree) or `induction` proof that [`proof/valid?`](#proof) checks without invoking the solver, along with the goals that contradict each other. A proof whose premises allow no state, such as one of a rule no account can meet, says `"vacuous": true`.
 - `["schema/includes?", a, b]` says whether every value `a` allows fits `b`, decided the same way — across all value kinds (such as `value/number?`, `value/integer?`, `value/string?`, `value/array?`, `value/object?`), open records and lists (`schema/open`), unbounded collections (`schema/arrayOf`, `schema/recordOf`), and recursive or mutually recursive named schemas (including structurally uninhabited schemas and least-fixed-point loops).
 - `["proof/prove", goal]` proves a universal or empirical goal in one call, returning `{ proved: true, proof, ... }` (a kernel-verifiable certificate, induction proof, or `why` derivation with `facts` and `assumptions`), `{ proved: false, counterexample }` when the solver finds a concrete violating assignment, or `{ proved: false, reason }` otherwise.
-- `["proof/bounds", expr, goal]` computes exact tight `[min, max]` bounds (continuous Fourier-Motzkin, integer Omega binary search, Charnes-Cooper linear-fractional ratios `num/den`, and relational/hybrid database goals), returning exact endpoint witnesses and kernel-checkable `minProof` / `maxProof` certificates.
+- `["proof/bounds", expr, goal]` computes exact tight `[min, max]` bounds across continuous linear (Fourier-Motzkin), integer and mixed-integer linear (Omega binary search & branch-and-bound), linear-fractional ratios `num/den` (continuous Charnes-Cooper & integer Dinkelbach iteration), univariate quadratic and coupled bilinear `x * y` objectives (2D polygon projection, stationary points, and integer slicing), and relational/hybrid database goals — returning exact endpoint witnesses and kernel-checkable `minProof` / `maxProof` certificates.
+- `["proof/sensitivity", atom]` analyzes epistemic fragility of a ground conclusion across *all* its derivations in the database, returning `{ holds, critical, redundant, resilient, minCutSize, minimalCuts }` where `critical` lists base facts whose single retraction breaks `atom` and `minimalCuts` lists smallest fact subsets whose joint retraction breaks it.
 - `["proof/rules", rel, schema]` (or `["proof/rules", {"relA": schemaA, "relB": schemaB}]` for mutually recursive relations) proves by rule induction that every row derived by those relations fits the target schema across all databases whose base relations satisfy their declared schemas (including single-column schema invariants, nested pattern destructuring, `in`/`schema/fits?` filters, and sound abstract domains for `count`/`countUnique`/`sum`/`mean`/`median`/`unique`/`collect`/`argMin`/`argMax`/`min`/`max`), returning a proof value checkable by `proof/valid?`.
 - See [Prove that every command keeps a rule](https://github.com/andrueandersoncs/lion#prove-commands) for each, with examples.
 
@@ -1466,6 +1476,7 @@ Algorithm goals over an edge relation; see [Graph algorithms](#graph-algorithms)
 ["graph/components", "edge", "?node", "?component"]
 ["graph/stronglyConnected", "edge", "?node", "?component"]
 ["graph/cycles", "edge", "?component", "?cycle"]
+["graph/influence", "stake", "holding", "?entity", "?weight"]
 ["graph/transitiveReduction", "edge", "?from", "?to"]
 ["graph/topologicalOrder", "edge", "?node", "?position"]
 ```
@@ -1554,15 +1565,17 @@ Checks proof values with a small trusted kernel (without invoking the solver), p
 
 ```json
 ["proof/valid?", proof]
+["proof/valid?", proof, {"atLeast": 0.83}]
 ["proof/prove", ["not", ["exists", ["?x"], ["and", ["schema/fits?", "?x", "value/integer?"], ["number/greaterThanOrEqualTo", "?x", 1], ["number/lessThan", "?x", 1]]]]]
 ["proof/bounds", ["number/divide", ["number/subtract", "?r", "?c"], "?r"], ["and", ["schema/fits?", "?r", "value/number?"], ["schema/fits?", "?c", "value/number?"], ["number/greaterThanOrEqualTo", "?r", 238], ["number/lessThanOrEqualTo", "?r", 242], ["number/greaterThanOrEqualTo", "?c", 161], ["number/lessThanOrEqualTo", "?c", 165]]]
+["proof/sensitivity", ["corroborated", "pads", 12]]
 ["proof/rules", "path", "PosPath"]
 ["proof/rules", {"even": "PosRow", "odd": "PosRow"}]
 ["proof/facts", ["why", ["reach", "a", "d"]]]
 ["proof/assumptions", ["why", ["reach", "a", "d"]]]
 ```
 
-`proof/valid?` verifies linear refutation certificates, Omega integer split trees (`kind: "split"`), case splits (`kind: "cases"`), induction proofs (`kind: "induction"`), lemma compositions (`kind: "lemma"`), `proof/prove` / `proof/bounds` proof records, and `why` derivation trees. `proof/prove` decides a goal directly — returning a kernel-valid proof (or `why` tree with `facts` and `assumptions`) when proved, or a concrete `counterexample` witness when a universal `["not", ["exists", ...]]` fails. `proof/bounds` computes exact tight `[min, max]` intervals with endpoint witnesses and kernel-checked `minProof` / `maxProof` certificates across continuous linear, integer, Charnes-Cooper linear-fractional ratio, and relational database constraints. `proof/rules` checks existing facts, base relation schemas, single-column schema invariants, and every rule (including nested pattern destructuring, `in`/`schema/fits?` filters, and abstract aggregate output domains), returning a kernel-checkable induction proof or a counterexample. `proof/facts` returns the sorted, deduplicated list of recorded (`given: true`) base facts that a `why` explanation rests on, and `proof/assumptions` returns the sorted, deduplicated list of leaf absent goals (closed-world negative premises or missing facts) it depends on.
+`proof/valid?` verifies linear refutation certificates, Omega integer split trees (`kind: "split"`), case splits (`kind: "cases"`), induction proofs (`kind: "induction"`), lemma compositions (`kind: "lemma"`), `proof/prove` / `proof/bounds` results (rejecting forged `{check: true}` objects), and `why` derivation trees; with a second `claim` argument it also verifies that the proof establishes the specific claim (a bound spec such as `{"atLeast": 0.83}`, `{"above": ...}`, `{"atMost": ...}`, `{"below": ...}`, `{"min": ...}`, `{"max": ...}`, `{"unsat": true}`, a relation name for `proof/rules`, or a ground fact/absent array). `proof/prove` decides a goal directly — returning a kernel-valid proof (or `why` tree with `facts` and `assumptions`) when proved, or a concrete `counterexample` witness when a universal `["not", ["exists", ...]]` fails. `proof/bounds` computes exact tight `[min, max]` intervals with endpoint witnesses and kernel-checked `minProof` / `maxProof` certificates across continuous linear, integer and mixed-integer linear, linear-fractional ratios (continuous Charnes-Cooper & integer Dinkelbach), univariate quadratic and coupled bilinear `x * y`, and relational database constraints. `proof/sensitivity` computes all-derivations fragility (`holds`, `critical`, `redundant`, `resilient`, `minCutSize`, `minimalCuts`) for any ground atom. `proof/rules` checks existing facts, base relation schemas, single-column schema invariants, and every rule (including nested pattern destructuring, `in`/`schema/fits?` filters, and abstract aggregate output domains), returning a kernel-checkable induction proof or a counterexample. `proof/facts` returns the sorted, deduplicated list of recorded (`given: true`) base facts that a `why` explanation rests on, and `proof/assumptions` returns the sorted, deduplicated list of leaf absent goals (closed-world negative premises or missing facts) it depends on.
 
 ### `time`
 

@@ -178,6 +178,65 @@ export const LINT_RULES: readonly unknown[] = [
     ["scope", "?s"],
     ["unbound_in", "?p", "?_"],
   ],
+
+  // `find` takes a template and one goal; `query` takes one goal and optional
+  // options record. Passing multiple goals directly fails with a confusing error.
+  ["relation", "multi_goal_question", ["at", "form"]],
+  [
+    "rule",
+    ["multi_goal_question", "?p", ["quote", "find"]],
+    ["head", "?p", ["quote", "find"]],
+    ["size", "?p", "?n"],
+    ["number/greaterThan", "?n", 3],
+  ],
+  [
+    "rule",
+    ["multi_goal_question", "?p", ["quote", "query"]],
+    ["head", "?p", ["quote", "query"]],
+    ["size", "?p", "?n"],
+    ["number/greaterThan", "?n", 3],
+  ],
+  [
+    "rule",
+    ["multi_goal_question", "?p", ["quote", "query"]],
+    ["head", "?p", ["quote", "query"]],
+    ["size", "?p", 3],
+    ["item", "?p", 2, "?opt"],
+    ["term", "?opt", "?p", ["quote", "array"]],
+  ],
+
+  // An unquoted logic variable as a direct argument of a top-level `fact`
+  // relation call (outside `assuming` and `quote`) always fails at runtime.
+  ["relation", "bare_var_in_fact", ["at", "variable"]],
+  [
+    "rule",
+    ["bare_var_in_fact", "?arg", "?v"],
+    ["head", "?f", ["quote", "fact"]],
+    [
+      "not",
+      [
+        "and",
+        ["inside", "?f", "?outer"],
+        ["head", "?outer", ["quote", "assuming"]],
+      ],
+    ],
+    [
+      "not",
+      [
+        "and",
+        ["inside", "?f", "?qouter"],
+        ["head", "?qouter", ["quote", "quote"]],
+      ],
+    ],
+    ["item", "?f", "?i", "?call"],
+    ["number/greaterThan", "?i", 0],
+    ["head", "?call", "?rel"],
+    ["not", ["=", "?rel", ["quote", "exists"]]],
+    ["item", "?call", "?j", "?arg"],
+    ["number/greaterThan", "?j", 0],
+    ["text", "?arg", "?v"],
+    ["string/startsWith", "?v", ["quote", "?"]],
+  ],
 ];
 
 /** The program that asks the lints of a program read as data. */
@@ -203,7 +262,23 @@ export const lintProgram = (
             ]),
           ],
         ]),
-    ["find", ["array/make", "?p", "?v"], ["list_written_as_call", "?p", "?v"]],
+    {
+      listAsCall: [
+        "find",
+        ["array/make", "?p", "?v"],
+        ["list_written_as_call", "?p", "?v"],
+      ],
+      multiGoal: [
+        "find",
+        ["array/make", "?p", "?f"],
+        ["multi_goal_question", "?p", "?f"],
+      ],
+      bareVarFact: [
+        "find",
+        ["array/make", "?p", "?v"],
+        ["bare_var_in_fact", "?p", "?v"],
+      ],
+    },
   ];
 };
 
@@ -227,26 +302,37 @@ export const lint = (
   declared: readonly string[] = []
 ): Effect.Effect<Linted[]> =>
   run(lintProgram(program, declared), stdlib).pipe(
-    Effect.map((found) =>
-      [
-        ...new Map(
-          (found as [string, string][]).map(
-            ([at, variable]) => [at, variable] as const
-          )
-        ),
-      ]
-        .sort(([a], [b]) => Number(a > b) - Number(a < b))
-        .map(([at, variable]) => {
-          const items = termAt(program, at) as unknown[];
-          return {
-            at,
-            warning: listWrittenAsCall(
-              JSON.stringify(items),
-              JSON.stringify(variable),
-              items.map((item) => JSON.stringify(item))
-            ),
-          };
-        })
-    ),
+    Effect.map((raw) => {
+      const found = raw as {
+        readonly bareVarFact: [string, string][];
+        readonly listAsCall: [string, string][];
+        readonly multiGoal: [string, string][];
+      };
+      const out: Linted[] = [];
+      for (const [at, variable] of new Map(found.listAsCall)) {
+        const items = termAt(program, at) as unknown[];
+        out.push({
+          at,
+          warning: listWrittenAsCall(
+            JSON.stringify(items),
+            JSON.stringify(variable),
+            items.map((item) => JSON.stringify(item))
+          ),
+        });
+      }
+      for (const [at, form] of new Map(found.multiGoal)) {
+        out.push({
+          at,
+          warning: `${form} takes one goal, not multiple goals directly; wrap multiple goals in ["and", ...].`,
+        });
+      }
+      for (const [at, variable] of new Map(found.bareVarFact)) {
+        out.push({
+          at,
+          warning: `Fact argument ${JSON.stringify(variable)} is an unquoted logic variable; to mean the string itself, write ["quote", ${JSON.stringify(variable)}].`,
+        });
+      }
+      return out.sort((a, b) => Number(a.at > b.at) - Number(a.at < b.at));
+    }),
     Effect.orDie
   );

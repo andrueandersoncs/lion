@@ -152,6 +152,7 @@ const IMPURE_FORMS = new Set([
   "invariant",
   "proof/bounds",
   "proof/prove",
+  "proof/sensitivity",
   "query",
   "relation",
   "retract",

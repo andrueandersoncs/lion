@@ -207,8 +207,10 @@ export type FormName =
   | "why"
   | "proof/prove"
   | "proof/bounds"
+  | "proof/sensitivity"
   | "fact"
   | "retract"
+  | "where"
   | "rule"
   | "invariant"
   | "exists"
@@ -412,7 +414,7 @@ export const isRelational = (value: unknown): boolean =>
  */
 export const isQuestion = (value: unknown): boolean =>
   isForm(value, "find", "exists", "assuming", "why") ||
-  isForm(value, "proof/prove", "proof/bounds") ||
+  isForm(value, "proof/prove", "proof/bounds", "proof/sensitivity") ||
   value instanceof Atom ||
   (isForm(value, "not", "and", "or") && value.parts.some(isQuestion));
 
@@ -833,9 +835,13 @@ export const write = (item: unknown, writer: Writer): unknown => {
   }
   if (item instanceof LogicForm) {
     const [goal, assert] = item.parts;
-    return item.form === "invariant"
-      ? ["invariant", inner(goal), { assert }]
-      : [item.form, ...item.parts.map(inner)];
+    if (item.form === "invariant") {
+      return ["invariant", inner(goal), { assert }];
+    }
+    if (item.form === "where") {
+      return { where: inner(goal) };
+    }
+    return [item.form, ...item.parts.map(inner)];
   }
   if (item instanceof Unknown) {
     // Its variables are its own, whatever values an answer gives others.

@@ -143,7 +143,10 @@ export const EvalFormSchema = form("eval", Expression);
 export const QuoteFormSchema = form("quote", Expression);
 export const DelayFormSchema = form("delay", Expression);
 export const BeginFormSchema = formWithMore("begin");
-export const DefineFormSchema = form("define", NameSchema, Expression);
+export const DefineFormSchema = Schema.Union([
+  form("define", NameSchema, Expression),
+  form("define", NameSchema, Expression, Expression),
+]);
 export const SetFormSchema = form("set!", NameSchema, Expression);
 /**
  * A lambda's parameter: a name, or a name and the schema its argument must

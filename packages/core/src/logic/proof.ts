@@ -48,10 +48,12 @@ import {
   type Constraint,
   constant,
   finishBounds,
+  type Linear,
   linearBoundsOf,
   makeBoundsAcc,
   mergeBoundsInto,
   minus,
+  quadraticBoundsOf,
   ratioBoundsOf,
   type Sort,
   solve,
@@ -93,12 +95,14 @@ import {
   isForm,
   isListTerm,
   isPlainObject,
-  type LogicForm,
+  LogicForm,
   LogicVariable,
   nameOf,
   type RelationInfo,
   recordKeys,
   relationOf,
+  replaceVariables,
+  sameValue,
   show,
   valueKey,
 } from "@/logic/terms";
@@ -155,10 +159,10 @@ const verifyAbsentWay = (way: unknown): boolean => {
 };
 
 const verifyAbsentNode = (node: Record<string, unknown>): boolean => {
-  if ("certificate" in node && !verifyProof(node.certificate)) {
+  if ("certificate" in node && !verifyProofValue(node.certificate)) {
     return false;
   }
-  if ("induction" in node && !verifyProof(node.induction)) {
+  if ("induction" in node && !verifyProofValue(node.induction)) {
     return false;
   }
   if ("because" in node) {
@@ -167,16 +171,39 @@ const verifyAbsentNode = (node: Record<string, unknown>): boolean => {
   return true;
 };
 
+const isPrimitive = (v: unknown): boolean =>
+  v === null ||
+  typeof v === "boolean" ||
+  typeof v === "number" ||
+  typeof v === "string" ||
+  isNumber(v);
+
 /** Checks a `why` premise node (fact, check, same, absent, or nested derivation). */
 const verifyWhyPremise = (node: unknown): boolean => {
   if (!isRecord(node)) {
     return false;
   }
   if ("check" in node) {
+    if (node.check === false) {
+      return false;
+    }
+    if (
+      Array.isArray(node.check) &&
+      node.check[0] === "=" &&
+      node.check.length === 3 &&
+      isPrimitive(node.check[1]) &&
+      isPrimitive(node.check[2])
+    ) {
+      return sameValue(node.check[1], node.check[2]);
+    }
     return true;
   }
   if ("same" in node) {
-    return Array.isArray(node.same) && node.same.length === 2;
+    return (
+      Array.isArray(node.same) &&
+      node.same.length === 2 &&
+      sameValue(node.same[0], node.same[1])
+    );
   }
   if ("absent" in node) {
     return verifyAbsentNode(node);
@@ -186,13 +213,26 @@ const verifyWhyPremise = (node: unknown): boolean => {
 
 /** Checks a `why` derivation tree (`{ fact, given | computed | rule + because/matches }`). */
 const verifyDerivation = (rec: Record<string, unknown>): boolean => {
-  if (!Array.isArray(rec.fact) || rec.fact.length === 0) {
+  if (
+    !Array.isArray(rec.fact) ||
+    rec.fact.length === 0 ||
+    typeof rec.fact[0] !== "string"
+  ) {
     return false;
   }
   if (rec.given === true || rec.computed === true) {
     return true;
   }
-  if (!Array.isArray(rec.rule)) {
+  if (
+    !Array.isArray(rec.rule) ||
+    rec.rule.length < 3 ||
+    rec.rule[0] !== "rule" ||
+    !Array.isArray(rec.rule[1])
+  ) {
+    return false;
+  }
+  const head = rec.rule[1];
+  if (head[0] !== "exists" && head[0] !== rec.fact[0]) {
     return false;
   }
   if (Array.isArray(rec.because)) {
@@ -225,13 +265,13 @@ const verifyInductionCase = (entry: unknown): boolean => {
     return false;
   }
   if ("proof" in entry) {
-    return verifyProof(entry.proof);
+    return verifyProofValue(entry.proof);
   }
   if ("certificates" in entry) {
     return (
       Array.isArray(entry.certificates) &&
       entry.certificates.length > 0 &&
-      entry.certificates.every(verifyProof)
+      entry.certificates.every((c) => verifyProofValue(c))
     );
   }
   return false;
@@ -258,14 +298,39 @@ const verifyInductionProof = (proof: Record<string, unknown>): boolean => {
   return proof.cases.every(verifyInductionCase);
 };
 
-export const verifyProof = (proof: unknown): boolean => {
-  if (Array.isArray(proof)) {
-    return proof.length > 0 && proof.every(verifyProof);
+const verifyBoundsResult = (rec: Record<string, unknown>): boolean => {
+  if (rec.satisfiable === false) {
+    return "proof" in rec && verifyProofValue(rec.proof);
   }
-  if (!isRecord(proof)) {
+  if (rec.satisfiable !== true || !("min" in rec) || !("max" in rec)) {
     return false;
   }
-  const kind = proof.kind;
+  const hasMin = rec.min !== null;
+  const hasMax = rec.max !== null;
+  if (hasMin && !(isNumber(rec.min) && verifyProofValue(rec.minProof))) {
+    return false;
+  }
+  if (hasMax && !(isNumber(rec.max) && verifyProofValue(rec.maxProof))) {
+    return false;
+  }
+  if (
+    hasMin &&
+    hasMax &&
+    isNumber(rec.min) &&
+    isNumber(rec.max) &&
+    compare(toRational(rec.min), toRational(rec.max)) > 0
+  ) {
+    return false;
+  }
+  return (
+    hasMin || hasMax || isRecord(rec.witnessMin) || isRecord(rec.witnessMax)
+  );
+};
+
+const verifyKindedProof = (
+  proof: Record<string, unknown>,
+  kind: unknown
+): boolean | undefined => {
   if (kind === "linear" || kind === "split") {
     return checksProof(proof);
   }
@@ -273,22 +338,45 @@ export const verifyProof = (proof: unknown): boolean => {
     return (
       Array.isArray(proof.cases) &&
       proof.cases.length > 0 &&
-      proof.cases.every(verifyProof)
+      proof.cases.every((item) => verifyProofValue(item))
     );
   }
   if (kind === "lemma") {
     return (
-      "claim" in proof && verifyProof(proof.proof) && verifyProof(proof.in)
+      "claim" in proof &&
+      verifyProofValue(proof.proof) &&
+      verifyProofValue(proof.in)
     );
   }
   if (kind === "induction") {
     return verifyInductionProof(proof);
   }
-  if (proof.proved === true && "proof" in proof) {
-    return verifyProof(proof.proof);
-  }
-  if (proof.check === true && Object.keys(proof).length === 1) {
+  if (
+    kind === "trivial" &&
+    proof.value === true &&
+    Object.keys(proof).length === 2
+  ) {
     return true;
+  }
+  return undefined;
+};
+
+const verifyProofValue = (proof: unknown): boolean => {
+  if (Array.isArray(proof)) {
+    return proof.length > 0 && proof.every((item) => verifyProofValue(item));
+  }
+  if (!isRecord(proof)) {
+    return false;
+  }
+  const kinded = verifyKindedProof(proof, proof.kind);
+  if (kinded !== undefined) {
+    return kinded;
+  }
+  if (typeof proof.satisfiable === "boolean") {
+    return verifyBoundsResult(proof);
+  }
+  if (proof.proved === true && "proof" in proof) {
+    return verifyProofValue(proof.proof);
   }
   if ("constraints" in proof && "steps" in proof) {
     return checksProof(proof);
@@ -303,6 +391,133 @@ export const verifyProof = (proof: unknown): boolean => {
     return verifyWhyPremise(proof);
   }
   return false;
+};
+
+const BOUND_CLAIM_KEYS = new Set([
+  "atLeast",
+  "above",
+  "atMost",
+  "below",
+  "min",
+  "max",
+  "unsat",
+]);
+
+const verifyLowerBoundClaim = (
+  proof: Record<string, unknown>,
+  key: "atLeast" | "above" | "min",
+  target: Rational
+): boolean => {
+  if (!(isNumber(proof.min) && verifyProofValue(proof.minProof))) {
+    return false;
+  }
+  const cmp = compare(toRational(proof.min), target);
+  if (key === "atLeast") {
+    return cmp >= 0;
+  }
+  if (key === "above") {
+    return cmp > 0 || (cmp === 0 && proof.minInclusive === false);
+  }
+  return cmp === 0;
+};
+
+const verifyUpperBoundClaim = (
+  proof: Record<string, unknown>,
+  key: "atMost" | "below" | "max",
+  target: Rational
+): boolean => {
+  if (!(isNumber(proof.max) && verifyProofValue(proof.maxProof))) {
+    return false;
+  }
+  const cmp = compare(toRational(proof.max), target);
+  if (key === "atMost") {
+    return cmp <= 0;
+  }
+  if (key === "below") {
+    return cmp < 0 || (cmp === 0 && proof.maxInclusive === false);
+  }
+  return cmp === 0;
+};
+
+const verifySingleBoundClaim = (
+  proof: Record<string, unknown>,
+  key: string,
+  target: unknown
+): boolean => {
+  if (!isNumber(target)) {
+    return false;
+  }
+  const tRat = toRational(target);
+  if (key === "atLeast" || key === "above" || key === "min") {
+    return verifyLowerBoundClaim(proof, key, tRat);
+  }
+  return verifyUpperBoundClaim(proof, key as "atMost" | "below" | "max", tRat);
+};
+
+const verifyBoundsClaim = (
+  proof: Record<string, unknown>,
+  claim: Record<string, unknown>
+): boolean => {
+  const keys = Object.keys(claim);
+  if (
+    keys.length === 0 ||
+    keys.some((k) => !BOUND_CLAIM_KEYS.has(k)) ||
+    typeof proof.satisfiable !== "boolean"
+  ) {
+    return false;
+  }
+  if ("unsat" in claim) {
+    if (typeof claim.unsat !== "boolean") {
+      return false;
+    }
+    if (proof.satisfiable === claim.unsat) {
+      return false;
+    }
+  }
+  const numericKeys = keys.filter((k) => k !== "unsat");
+  if (numericKeys.length === 0) {
+    return true;
+  }
+  if (proof.satisfiable !== true) {
+    return false;
+  }
+  return numericKeys.every((key) =>
+    verifySingleBoundClaim(proof, key, claim[key])
+  );
+};
+
+const verifyClaimBinding = (proof: unknown, claim: unknown): boolean => {
+  if (isRecord(claim)) {
+    return isRecord(proof) && verifyBoundsClaim(proof, claim);
+  }
+  if (typeof claim === "string") {
+    return (
+      isRecord(proof) &&
+      proof.kind === "induction" &&
+      proof.basis === "rules" &&
+      (proof.target === claim ||
+        (Array.isArray(proof.target) && proof.target.includes(claim)))
+    );
+  }
+  if (Array.isArray(claim)) {
+    const inner =
+      isRecord(proof) && proof.proved === true && "proof" in proof
+        ? proof.proof
+        : proof;
+    return (
+      isRecord(inner) &&
+      (("fact" in inner && sameValue(inner.fact, claim)) ||
+        ("absent" in inner && sameValue(inner.absent, claim)))
+    );
+  }
+  return false;
+};
+
+export const verifyProof = (proof: unknown, claim?: unknown): boolean => {
+  if (!verifyProofValue(proof)) {
+    return false;
+  }
+  return claim === undefined ? true : verifyClaimBinding(proof, claim);
 };
 
 const invariantRowSchema = (
@@ -1634,7 +1849,7 @@ const ensureKernelProof = (tree: unknown): unknown => {
   if (isRecord(tree) && "absent" in tree) {
     return { ...tree, because: [] };
   }
-  return { check: true };
+  return { kind: "trivial", value: true };
 };
 
 const heldProofRecord = (
@@ -1680,7 +1895,7 @@ export const proveGoal = (
   Effect.gen(function* () {
     if (typeof goal === "boolean") {
       return goal
-        ? { proof: { check: true }, proved: true }
+        ? { proof: { kind: "trivial", value: true }, proved: true }
         : { proved: false };
     }
     const { held, tree } = yield* whyGoal(model, goal, vars);
@@ -1998,6 +2213,85 @@ const solveTargetConjunction = (
   );
 };
 
+const sortsWithNonlinear = (
+  full: readonly Constraint[],
+  linear: Linear,
+  nonlinear: ReadonlyMap<string, Rational>,
+  baseSorts: ReadonlyMap<string, Sort>
+): Map<string, Sort> => {
+  const fullSorts = sortsWithTarget(full, linear, undefined, baseSorts);
+  for (const key of nonlinear.keys()) {
+    for (const name of key.split("*")) {
+      if (!fullSorts.has(name)) {
+        fullSorts.set(name, baseSorts.get(name) ?? "real");
+      }
+    }
+  }
+  return fullSorts;
+};
+
+const solveNonlinearConjunctions = (
+  formula: Formula,
+  when: Formula,
+  linear: Linear,
+  nonlinear: ReadonlyMap<string, Rational>,
+  evalCtx: Context,
+  symbols: ReadonlyMap<string, Cases>,
+  bVars: Vars,
+  state: BoundsRunState
+): void => {
+  state.allSymbolic = false;
+  for (const conj of formula) {
+    for (const tConj of when) {
+      const full = withDefinitions([...conj, ...tConj], evalCtx.definitions);
+      const fullSorts = sortsWithNonlinear(
+        full,
+        linear,
+        nonlinear,
+        evalCtx.sorts
+      );
+      const res = quadraticBoundsOf(full, fullSorts, linear, nonlinear);
+      if (res === undefined) {
+        if (!refuteAllPieces(full, fullSorts, state.unsatCerts)) {
+          state.unsatCertComplete = false;
+        }
+      } else {
+        mergeBoundAcc(
+          state.acc,
+          toBoundEntry(res.low, symbols, bVars),
+          toBoundEntry(res.high, symbols, bVars)
+        );
+      }
+    }
+  }
+};
+
+const solveLinearConjunctions = (
+  formula: Formula,
+  when: Formula,
+  linear: Linear,
+  denominator: Linear | undefined,
+  evalCtx: Context,
+  symbols: ReadonlyMap<string, Cases>,
+  bVars: Vars,
+  state: BoundsRunState
+): void => {
+  for (const conj of formula) {
+    for (const tConj of when) {
+      const full = withDefinitions([...conj, ...tConj], evalCtx.definitions);
+      solveTargetConjunction(
+        full,
+        linear,
+        denominator,
+        evalCtx,
+        symbols,
+        bVars,
+        state
+      );
+    }
+  }
+};
+
 const processSymbolicChoice = (
   model: Model,
   target: unknown,
@@ -2042,27 +2336,33 @@ const processSymbolicChoice = (
           `proof/bounds expects a numeric target, but found a ${tc.sym.kind}.`
         );
       }
-      if (tc.sym.nonlinear !== undefined) {
-        return yield* logicError(
-          "proof/bounds supports linear and linear-fractional numeric targets, not higher-degree polynomials."
+      if (tc.sym.nonlinear === undefined) {
+        solveLinearConjunctions(
+          choice.formula,
+          tc.when,
+          tc.sym.linear,
+          tc.sym.denominator,
+          evalCtx,
+          choice.symbols,
+          bVars,
+          state
         );
-      }
-      for (const conj of choice.formula) {
-        for (const tConj of tc.when) {
-          const full = withDefinitions(
-            [...conj, ...tConj],
-            evalCtx.definitions
-          );
-          solveTargetConjunction(
-            full,
-            tc.sym.linear,
-            tc.sym.denominator,
-            evalCtx,
-            choice.symbols,
-            bVars,
-            state
+      } else {
+        if (tc.sym.denominator !== undefined) {
+          return yield* logicError(
+            "proof/bounds does not support nonlinear fractions with both a nonlinear numerator and symbolic denominator."
           );
         }
+        solveNonlinearConjunctions(
+          choice.formula,
+          tc.when,
+          tc.sym.linear,
+          tc.sym.nonlinear,
+          evalCtx,
+          choice.symbols,
+          bVars,
+          state
+        );
       }
     }
   });
@@ -2208,4 +2508,205 @@ export const boundsGoal = (
       }
     }
     return formatBoundsResult(state);
+  });
+
+const MAX_SENSITIVITY_PAIRS = 64;
+
+const factToAtom = (
+  database: LogicDatabase,
+  fact: unknown
+): Atom | undefined => {
+  if (
+    !Array.isArray(fact) ||
+    fact.length === 0 ||
+    typeof fact[0] !== "string"
+  ) {
+    return undefined;
+  }
+  const rel = database.relations.get(fact[0]);
+  if (rel === undefined || rel.columns.length !== fact.length - 1) {
+    return undefined;
+  }
+  return new Atom(rel, fact.slice(1));
+};
+
+const substituteGoalVars = (goal: unknown, vars: Vars): unknown =>
+  vars.size === 0
+    ? goal
+    : replaceVariables(goal, (v) =>
+        vars.has(v.name) ? vars.get(v.name) : undefined
+      );
+
+const classifySingleFactSensitivity = (
+  database: LogicDatabase,
+  assume: NonNullable<Model["assume"]>,
+  instantiated: unknown,
+  facts: readonly unknown[]
+): LogicEffect<{
+  readonly altDerivations: Map<string, readonly unknown[]>;
+  readonly critical: unknown[];
+  readonly redundant: unknown[];
+}> =>
+  Effect.gen(function* () {
+    const critical: unknown[] = [];
+    const redundant: unknown[] = [];
+    const altDerivations = new Map<string, readonly unknown[]>();
+
+    for (const fact of facts) {
+      const atom = factToAtom(database, fact);
+      if (atom === undefined) {
+        continue;
+      }
+      const change = new LogicForm("retract", [atom]);
+      const probe = (yield* assume(
+        [change],
+        new LogicForm("proof/prove", [instantiated])
+      )) as { readonly facts?: readonly unknown[]; readonly proved?: boolean };
+      if (probe.proved === true) {
+        redundant.push(fact);
+        altDerivations.set(valueKey(fact), probe.facts ?? []);
+      } else {
+        critical.push(fact);
+      }
+    }
+    critical.sort(compareValues);
+    redundant.sort(compareValues);
+    return { altDerivations, critical, redundant };
+  });
+
+const collectCandidatePairs = (
+  redundant: readonly unknown[],
+  altDerivations: ReadonlyMap<string, readonly unknown[]>
+): (readonly [unknown, unknown])[] => {
+  const seen = new Set<string>();
+  const pairs: (readonly [unknown, unknown])[] = [];
+  for (const f1 of redundant) {
+    const k1 = valueKey(f1);
+    for (const f2 of altDerivations.get(k1) ?? []) {
+      if (pairs.length >= MAX_SENSITIVITY_PAIRS) {
+        return pairs;
+      }
+      if (valueKey(f2) === k1) {
+        continue;
+      }
+      const pair = ([f1, f2] as [unknown, unknown]).sort(compareValues) as [
+        unknown,
+        unknown,
+      ];
+      const key = valueKey(pair);
+      if (!seen.has(key)) {
+        seen.add(key);
+        pairs.push(pair);
+      }
+    }
+  }
+  return pairs;
+};
+
+const findSizeTwoCuts = (
+  database: LogicDatabase,
+  assume: NonNullable<Model["assume"]>,
+  instantiated: unknown,
+  redundant: readonly unknown[],
+  altDerivations: ReadonlyMap<string, readonly unknown[]>
+): LogicEffect<unknown[][]> =>
+  Effect.gen(function* () {
+    const minimalCuts: unknown[][] = [];
+    for (const [f1, f2] of collectCandidatePairs(redundant, altDerivations)) {
+      const atom1 = factToAtom(database, f1);
+      const atom2 = factToAtom(database, f2);
+      if (atom1 === undefined || atom2 === undefined) {
+        continue;
+      }
+      const stillHolds = yield* assume(
+        [new LogicForm("retract", [atom1, atom2])],
+        instantiated
+      );
+      if (stillHolds === false) {
+        minimalCuts.push([f1, f2]);
+      }
+    }
+    minimalCuts.sort(compareValues);
+    return minimalCuts;
+  });
+
+/**
+ * All-derivations epistemic sensitivity analysis (`proof/sensitivity`):
+ * tests which base facts in the derivation are single points of failure
+ * (`critical`), which have surviving alternative derivations (`redundant`),
+ * and discovers minimal size-1 and size-2 retraction cut-sets (`minimalCuts`).
+ */
+export const sensitivityGoal = (
+  database: LogicDatabase,
+  model: Model,
+  goal: unknown,
+  vars: Vars = NO_VARS
+): LogicEffect<Record<string, unknown>> =>
+  Effect.gen(function* () {
+    if (typeof goal === "boolean") {
+      return {
+        critical: [],
+        holds: goal,
+        minCutSize: goal ? null : 0,
+        minimalCuts: [],
+        redundant: [],
+        resilient: goal,
+      };
+    }
+    const { held, tree } = yield* whyGoal(model, goal, vars);
+    if (!held) {
+      return {
+        critical: [],
+        holds: false,
+        minCutSize: 0,
+        minimalCuts: [],
+        redundant: [],
+        resilient: false,
+      };
+    }
+    const assume = (model.base ?? model).assume;
+    const facts = isRecord(tree) ? extractExplanationFacts(tree) : [];
+    if (facts.length === 0 || assume === undefined) {
+      return {
+        critical: [],
+        holds: true,
+        minCutSize: null,
+        minimalCuts: [],
+        redundant: [],
+        resilient: true,
+      };
+    }
+    const instantiated = substituteGoalVars(goal, vars);
+    const { altDerivations, critical, redundant } =
+      yield* classifySingleFactSensitivity(
+        database,
+        assume,
+        instantiated,
+        facts
+      );
+    if (critical.length > 0) {
+      return {
+        critical,
+        holds: true,
+        minCutSize: 1,
+        minimalCuts: critical.map((f) => [f]),
+        redundant,
+        resilient: false,
+      };
+    }
+    const minimalCuts = yield* findSizeTwoCuts(
+      database,
+      assume,
+      instantiated,
+      redundant,
+      altDerivations
+    );
+    return {
+      critical,
+      holds: true,
+      minCutSize: minimalCuts.length > 0 ? 2 : null,
+      minimalCuts,
+      redundant,
+      resilient: true,
+    };
   });

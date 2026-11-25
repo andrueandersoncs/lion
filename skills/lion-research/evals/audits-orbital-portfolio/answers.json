@@ -1,0 +1,162 @@
+{
+  "about": "Known-correct substantive checks for Solstice Orbital Systems (audits-orbital-portfolio): integer-ratio Dinkelbach bounds (83.33%-86.05% clearing 83.0% vs continuous LP 82.95% trap), coupled bilinear revenue envelope with interior edge stationary point ($48M-$162M at N=9,P=18 vs corner $154M trap), 3-hop weighted ownership via graph/influence (53% -> 47% without tertiary via retract-where), all-derivations corroboration sensitivity (pads resilient minCutSize 2 vs CryoTech fragile minCutSize 1), and source integrity (restatement $840M->$812M, misquote, unread memo).",
+  "checks": [
+    {
+      "stage": "reading",
+      "check": "Every quote is in its source's saved text",
+      "quotes": true,
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every figure recorded is written in the words quoted",
+      "query": ["find", "?claim", ["unquoted", "?claim", "?_", "?_"]],
+      "expect": "none",
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every source in the corpus was read and recorded",
+      "query": [
+        "array/length",
+        [
+          "aggregate/unique",
+          ["find", "?source", ["claim", "?_", "?source", "?_", "?_"]]
+        ]
+      ],
+      "expect": 7,
+      "rests_on": [
+        "q4-prelim",
+        "fy25-10k",
+        "faa-registry",
+        "sec-13d",
+        "lux-registry",
+        "space-wire",
+        "orbit-rumor-blog"
+      ]
+    },
+    {
+      "stage": "framing",
+      "check": "Every statement recorded is read by an answer rule",
+      "query": [
+        "find",
+        "?claim",
+        [
+          "and",
+          ["claim", "?claim", "?_", "?_", "?_"],
+          ["not", ["answer", "?_", "?_", "?claim"]]
+        ]
+      ],
+      "expect": "none",
+      "rests_on": []
+    },
+    {
+      "stage": "conclusions",
+      "check": "FY25 backlog restatement from $840M to $812M is captured by restated",
+      "query": ["find", "?p", ["restated", "?_", "?p", 840, 812]],
+      "expect": "some",
+      "rests_on": ["q4-prelim", "fy25-10k"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "SpaceTalk Blog misquotes the 10-K backlog as $840M instead of $812M",
+      "query": ["find", "?c", ["misquoted", "?c", "?_", "?_", 840, 812]],
+      "expect": "some",
+      "rests_on": ["orbit-rumor-blog", "fy25-10k"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "4 active launch pads is backed independently by 3 publishers",
+      "query": [
+        "find",
+        "?q",
+        [
+          "and",
+          ["backing", "?q", 4, "?pubs"],
+          ["number/greaterThanOrEqualTo", ["array/length", "?pubs"], 3]
+        ]
+      ],
+      "expect": "some",
+      "rests_on": ["fy25-10k", "faa-registry", "space-wire"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "An unread credited source (internal board memo) is tracked in unread",
+      "query": ["find", "?s", ["unread", "?s"]],
+      "expect": "some",
+      "rests_on": ["orbit-rumor-blog"]
+    },
+    {
+      "stage": "page",
+      "check": "The page was built",
+      "file": "explorer.html",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "Every text and query of the page runs",
+      "page": "runs",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "The page reports the exact integer-ratio reliability bounds 83.33% and 86.05%",
+      "page": "83\\.33[\\s\\S]*86\\.05|86\\.05[\\s\\S]*83\\.33",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "page",
+      "check": "The page reports the exact bilinear commercial revenue maximum 162 (not corner 154)",
+      "page": "\\b162(\\.00)?\\b",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report concludes Solstice PROVABLY CLEARS the 83.0% launch reliability covenant (not the continuous 82.95% false refutation)",
+      "report": "(?i)(provably clears|clears the 83|meets the 83|satisfies the 83|passes the 83|above 83\\.0%|>=\\s*83\\.0%)",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives exact integer reliability bounds 83.33% and 86.05%",
+      "report": "83\\.33[\\s\\S]{0,120}86\\.05|86\\.05[\\s\\S]{0,120}83\\.33",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives exact integer witnesses (s=35, f=7) and (s=37, f=6)",
+      "report": "(35[\\s\\S]{0,60}7[\\s\\S]{0,160}37[\\s\\S]{0,60}6|37[\\s\\S]{0,60}6[\\s\\S]{0,160}35[\\s\\S]{0,60}7)",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives exact bilinear commercial revenue min $48M and interior stationary max $162M",
+      "report": "48(\\.00)?[\\s\\S]{0,160}162(\\.00)?|162(\\.00)?[\\s\\S]{0,160}48(\\.00)?",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report gives exact bilinear max witness (N=9, P=18)",
+      "report": "(9(\\.0)?[\\s\\S]{0,60}18(\\.0)?|18(\\.0)?[\\s\\S]{0,60}9(\\.0)?)",
+      "rests_on": ["fy25-10k"]
+    },
+    {
+      "stage": "report",
+      "check": "The report computes Aegis 3-hop stake as 53% total and 47% (below 50%) when tertiary claims are retracted",
+      "report": "53(\\.0)?%[\\s\\S]{0,240}47(\\.0)?%|47(\\.0)?%[\\s\\S]{0,240}53(\\.0)?%",
+      "rests_on": ["sec-13d", "lux-registry", "orbit-rumor-blog"]
+    },
+    {
+      "stage": "report",
+      "check": "The report contrasts pad-count resilience (resilient / min cut 2) with CryoTech fragility (not resilient / min cut 1)",
+      "report": "(?i)(pad[\\s\\S]{0,220}(resilien|cut[\\s\\S]{0,30}2)[\\s\\S]{0,300}cryotech[\\s\\S]{0,220}(fragil|not resilien|single point|cut[\\s\\S]{0,30}1)|cryotech[\\s\\S]{0,220}(fragil|not resilien|single point|cut[\\s\\S]{0,30}1)[\\s\\S]{0,300}pad[\\s\\S]{0,220}(resilien|cut[\\s\\S]{0,30}2))",
+      "rests_on": ["fy25-10k", "faa-registry", "space-wire"]
+    },
+    {
+      "stage": "report",
+      "check": "The report flags the $840M -> $812M backlog restatement and SpaceTalk Blog's misquote",
+      "report": "(840[\\s\\S]{0,160}812|812[\\s\\S]{0,160}840)",
+      "rests_on": ["q4-prelim", "fy25-10k", "orbit-rumor-blog"]
+    }
+  ]
+}

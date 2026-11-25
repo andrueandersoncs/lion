@@ -4,10 +4,15 @@ import { InvalidFunctionCallError } from "@/errors/evaluation";
 import { lookup, makeEnvironment } from "@/evaluation/environment";
 import { evaluate, run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
-import { DefineFormSchema, SPECIAL_FORM_NAMES } from "@/schemas/evaluation";
+import { NameSchema, SPECIAL_FORM_NAMES } from "@/schemas/evaluation";
+import { LionExpressionSchema } from "@/schemas/lion-expression";
 import { LionEnvironmentService } from "@/services/evaluation";
 
-const TestSchema = DefineFormSchema;
+const TestSchema = Schema.Tuple([
+  Schema.Literal("define"),
+  NameSchema,
+  LionExpressionSchema,
+]);
 
 const WORD = /^[a-z]{1,6}$/;
 

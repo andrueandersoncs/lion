@@ -53,7 +53,7 @@ import {
   undo,
   type Vars,
 } from "@/logic/model";
-import { boundsGoal, proveGoal } from "@/logic/proof";
+import { boundsGoal, proveGoal, sensitivityGoal } from "@/logic/proof";
 import {
   type Assertion,
   assertionProblem,
@@ -87,6 +87,7 @@ import {
   type RelationInfo,
   relationOf,
   render,
+  replaceVariables,
   schemaOf,
   show,
   termVariables,
@@ -138,10 +139,17 @@ export interface Invariant {
  * What the rules derive is worked out when something reads it, and kept
  * until a fact or rule changes.
  */
+export interface PersistedDefinition {
+  readonly definition: unknown;
+  readonly value: unknown;
+}
+
 export class LogicDatabase {
   readonly relations = new Map<string, RelationInfo>();
   /** The schemas declared with a name, each a predicate on one value. */
   readonly schemas = new Map<string, LionFunction>();
+  /** Named helpers persisted in the database with `{"persist": true}`. */
+  readonly definitions = new Map<string, PersistedDefinition>();
   readonly facts = new Map<string, TupleSet>();
   rules: readonly CompiledRule[] = [];
   invariants: readonly Invariant[] = [];
@@ -402,6 +410,36 @@ export const declareSchemas = (
 /** A binding for every schema declared in the database. */
 export const schemaBindings = (database: LogicDatabase) =>
   Object.fromEntries(database.schemas);
+
+/** Persists a named helper definition in the database so later runs and snapshots keep it. */
+export const definePersistent = (
+  database: LogicDatabase,
+  name: string,
+  value: unknown,
+  definition: unknown
+): Effect.Effect<void, LogicError> => {
+  if (database.relations.has(name)) {
+    return logicError(namedTwice(name, "relation", "definition"));
+  }
+  if (database.schemas.has(name)) {
+    return logicError(namedTwice(name, "schema", "definition"));
+  }
+  const previous = database.definitions.get(name);
+  const prevKey =
+    previous === undefined ? undefined : logicKey(previous.definition);
+  const nextKey = logicKey(definition);
+  if (previous === undefined || prevKey === undefined || prevKey !== nextKey) {
+    database.definitions.set(name, { definition, value });
+    database.revision += 1;
+  }
+  return Effect.void;
+};
+
+/** A binding for every persisted helper definition in the database. */
+export const definitionBindings = (database: LogicDatabase) =>
+  Object.fromEntries(
+    [...database.definitions].map(([name, entry]) => [name, entry.value])
+  );
 
 /** How the call that builds a computed relation reads, without its columns. */
 const computedCall = ({ args, relation }: Atom) =>
@@ -1508,6 +1546,108 @@ export const retract = (
     return [...removed, ...(back?.taken ?? [])];
   });
 
+const collectRetractMatches = (
+  database: LogicDatabase,
+  atom: Atom,
+  whereGoal: unknown,
+  scheduled: Map<string, readonly [Atom, Tuple]>
+): LogicEffect<void> =>
+  Effect.gen(function* () {
+    const relationFacts = database.facts.get(atom.relation.name);
+    if (relationFacts === undefined || relationFacts.size === 0) {
+      return;
+    }
+    let anonCount = 0;
+    const namedAtom = atom.map((arg) =>
+      replaceVariables(arg, (v) => {
+        if (!v.anonymous) {
+          return undefined;
+        }
+        anonCount += 1;
+        return new LogicVariable(`rw$${anonCount}`);
+      })
+    );
+    const goal =
+      whereGoal === true
+        ? namedAtom
+        : new LogicForm("and", [namedAtom, whereGoal]);
+    const query = yield* compileQuery(goal);
+    const tuples: Tuple[] = [];
+    yield* reading(database, (model) =>
+      Effect.forEach(query.bodies, (body) =>
+        each(model, body, (answers) =>
+          Effect.forEach(answers, (vars) =>
+            Effect.map(
+              Effect.forEach(namedAtom.args, (arg) => term(model, arg, vars)),
+              (tuple) => {
+                tuples.push(tuple);
+              }
+            )
+          )
+        )
+      )
+    );
+    for (const tuple of tuples) {
+      if (relationFacts.has(tuple)) {
+        scheduled.set(`${atom.relation.name}\u0000${valueKey(tuple)}`, [
+          new Atom(atom.relation, tuple),
+          tuple,
+        ] as const);
+      }
+    }
+  });
+
+/**
+ * Retracts every base fact matching any target pattern `atom` where `whereGoal`
+ * holds, in one atomic change.
+ */
+export const retractWhere = (
+  database: LogicDatabase,
+  atoms: readonly Atom[],
+  whereGoal: unknown
+): LogicEffect<readonly unknown[]> =>
+  Effect.gen(function* () {
+    for (const atom of atoms) {
+      if (atom.relation.computed !== undefined) {
+        return yield* logicError(
+          computedAddedTo(computedCall(atom), "a retract")
+        );
+      }
+      if (!database.relations.has(atom.relation.name)) {
+        return yield* logicError(
+          `Relation "${atom.relation.name}" is not declared here.`
+        );
+      }
+    }
+    if (whereGoal === false) {
+      return [];
+    }
+    const scheduled = new Map<string, readonly [Atom, Tuple]>();
+    for (const atom of atoms) {
+      yield* collectRetractMatches(database, atom, whereGoal, scheduled);
+    }
+    const entries = [...scheduled.values()].sort((a, b) =>
+      compareValues(render(a[0]), render(b[0]))
+    );
+    if (entries.length === 0) {
+      return [];
+    }
+    const removed: unknown[] = [];
+    yield* changeDatabase(
+      database,
+      `Retracting ${these(entries.map(([atom]) => atom))}`,
+      (facts, log) => {
+        for (const [atom, tuple] of entries) {
+          if (facts(atom.relation.name)?.delete(tuple, log)) {
+            removed.push(render(atom));
+          }
+        }
+        return removed.length > 0;
+      }
+    );
+    return removed;
+  });
+
 /**
  * A database that starts as this one is and goes its own way: it shares
  * the declarations and rules, and the facts of each relation until it
@@ -1524,6 +1664,9 @@ const copyOf = (database: LogicDatabase, changing: Iterable<string>) => {
   }
   for (const [name, schema] of database.schemas) {
     copy.schemas.set(name, schema);
+  }
+  for (const [name, def] of database.definitions) {
+    copy.definitions.set(name, def);
   }
   for (const [name, facts] of database.facts) {
     copy.facts.set(name, facts);
@@ -1552,9 +1695,18 @@ const makeChange = (database: LogicDatabase, change: LogicForm) => {
       addRules(database, rules)
     );
   }
-  return change.form === "fact"
-    ? assertFacts(database, change.parts as readonly Atom[])
-    : retract(database, change.parts);
+  if (change.form === "fact") {
+    return assertFacts(database, change.parts as readonly Atom[]);
+  }
+  const last = change.parts.at(-1);
+  if (isForm(last, "where")) {
+    return retractWhere(
+      database,
+      change.parts.slice(0, -1) as readonly Atom[],
+      last.parts[0]
+    );
+  }
+  return retract(database, change.parts);
 };
 
 /**
@@ -1592,6 +1744,8 @@ const modelOf = (database: LogicDatabase) => {
   model.explain = explainIn(database, model);
   model.prove = (goal, vars) => proveGoal(model, goal, vars);
   model.bounds = (target, goal, vars) => boundsGoal(model, target, goal, vars);
+  model.sensitivity = (goal, vars) =>
+    sensitivityGoal(database, model, goal, vars);
   return model;
 };
 
@@ -1728,7 +1882,10 @@ export const queryDatabase = (
 export const askDatabase = (database: LogicDatabase, question: LogicValue) =>
   reading(database, (model) =>
     Effect.gen(function* () {
-      if (isForm(question, "assuming", "why", "proof/prove", "proof/bounds")) {
+      if (
+        isForm(question, "assuming", "why", "proof/prove") ||
+        isForm(question, "proof/bounds", "proof/sensitivity")
+      ) {
         return yield* term(model, question, new Map());
       }
       const plans = yield* compiling(() =>

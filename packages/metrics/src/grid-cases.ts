@@ -999,6 +999,81 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
     boolean: true,
   },
+  {
+    name: "conditional retraction in assuming",
+    setup: [
+      ["relation", "src_kind", ["id", "kind"]],
+      ["relation", "tag_val", ["id", "src", "v"]],
+      [
+        "fact",
+        ["src_kind", "s1", "primary"],
+        ["src_kind", "s2", "tertiary"],
+        ["tag_val", "t1", "s1", 1],
+        ["tag_val", "t2", "s2", 2],
+        ["tag_val", "t3", "s2", 3],
+      ],
+    ],
+    form: [
+      "assuming",
+      [
+        "retract",
+        ["tag_val", "?tid", "?s", "?_"],
+        { where: ["src_kind", "?s", "tertiary"] },
+      ],
+      ["tag_val", "?_", "?_", X],
+    ],
+    boolean: true,
+  },
+  {
+    name: "weighted graph influence",
+    setup: [
+      ["relation", "stake_edge", ["from", "to", "w"]],
+      [
+        "fact",
+        ["stake_edge", "h", "m", 0.5],
+        ["stake_edge", "m", "t", 0.5],
+        ["stake_edge", "h", "t", 0.25],
+      ],
+    ],
+    form: [
+      "number/greaterThan",
+      [
+        "aggregate/sum",
+        ["find", "?wt", ["graph/influence", "stake_edge", "h", "t", "?wt"]],
+      ],
+      ["number/divide", X, 5],
+    ],
+    boolean: true,
+  },
+  {
+    name: "proof sensitivity check",
+    setup: [
+      ["relation", "base_ok", ["k"]],
+      ["relation", "derived_ok", ["k"]],
+      ["fact", ["base_ok", 1], ["base_ok", 2]],
+      ["rule", ["derived_ok", "?k"], ["base_ok", "?k"]],
+    ],
+    form: ["object/get", ["proof/sensitivity", ["derived_ok", X]], "holds"],
+    boolean: true,
+  },
+  {
+    name: "claim-bound proof validation",
+    form: [
+      "proof/valid?",
+      [
+        "proof/bounds",
+        ["number/divide", ["number/add", "?y", 2], ["number/add", "?y", 4]],
+        [
+          "and",
+          ["schema/fits?", "?y", "value/integer?"],
+          ["number/greaterThanOrEqualTo", "?y", X],
+          ["number/lessThanOrEqualTo", "?y", ["number/add", X, 2]],
+        ],
+      ],
+      { atLeast: 0.6 },
+    ],
+    boolean: true,
+  },
 ];
 
 /** What plain code gives an expression for each value of `?x`, in order. */

@@ -37,6 +37,14 @@ const FORMS = {
     names: ["key", "schema", "merge"],
     example: '{"key": ["id"]}',
   },
+  retract: {
+    names: ["where"],
+    example: '{"where": ["source", "?s", "?_", "?_", "?_", "tertiary", "?_"]}',
+  },
+  define: {
+    names: ["persist"],
+    example: '{"persist": true}',
+  },
 };
 
 const fail = (message: string) => Effect.fail(new LogicError({ message }));
@@ -271,6 +279,26 @@ export const parseRelationDeclaration = (
     );
     return problem === undefined ? Effect.succeed(parsed) : fail(problem);
   });
+
+/** Reads a conditional retraction's options record (`{"where": goal}`). */
+export const parseRetractOptions = (options: unknown) =>
+  Effect.flatMap(readOptions("retract", options), ({ where }) =>
+    where === undefined
+      ? fail(
+          `Retract options need "where", such as {"where": ["source", "?s", "?_", "?_", "?_", "tertiary", "?_"]}.`
+        )
+      : Effect.succeed(where)
+  );
+
+/** Reads a define form's optional options record (`{"persist": true}`). */
+export const parseDefineOptions = (options: unknown) =>
+  Effect.flatMap(readOptions("define", options), ({ persist }) =>
+    typeof persist === "boolean"
+      ? Effect.succeed({ persist })
+      : fail(
+          `The define option "persist" must be true or false, but found ${show(persist)}.`
+        )
+  );
 
 /**
  * Reads an invariant's options record. Its one option, "assert", is required,

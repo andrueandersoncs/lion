@@ -1,0 +1,8 @@
+FAA Commercial Space Office — FY25 Launch Site & Propellant Inspection Registry
+Published: March 1, 2026 | Publisher: FAA Commercial Space Office | Kind: primary
+URL: https://faa.example/commercial-space/solstice-2025
+
+Independent Federal Inspection Summary:
+- FAA site inspectors independently verified 4 active orbital launch pads operated by Solstice Orbital Systems in FY25.
+- Safety inspection logs confirm CryoTech as Solstice Orbital Systems's active liquid-methane propellant supplier.
+- Total FAA-logged orbital mission attempts for Solstice in FY25 did not exceed 43 missions.

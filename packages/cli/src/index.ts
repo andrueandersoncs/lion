@@ -6,6 +6,7 @@ import { run } from "@lionlang/core/evaluation/evaluate";
 import { readJson, writeJson } from "@lionlang/core/evaluation/reading";
 import { headsOf } from "@lionlang/core/logic/compile";
 import {
+  definitionBindings,
   LogicDatabase,
   mergeOption,
   relationBindings,
@@ -448,6 +449,7 @@ const checkCommand = Command.make(
           : {
               ...relationBindings(store),
               ...Object.fromEntries(store.schemas),
+              ...definitionBindings(store),
             }),
         ...bindings,
       };

@@ -9,10 +9,17 @@ import { defineAlgorithm } from "@/logic/algorithms";
 import { stronglyConnected as stronglyConnectedGroups } from "@/logic/strata";
 import { compareValues, valueKey } from "@/logic/terms";
 import {
+  add as addRat,
   compareNumbers,
+  fromRational,
   isNumber,
   type LionNumber,
+  multiply as mulRat,
+  ONE as ONE_RAT,
+  type Rational,
   sum,
+  toRational,
+  ZERO as ZERO_RAT,
 } from "@/numbers/exact";
 
 type Row = readonly unknown[];
@@ -860,6 +867,179 @@ const dominators = (tuples: readonly Row[], start: unknown) => {
   return rows.sort((a, b) => compareValues(a[0], b[0]));
 };
 
+const MAX_INFLUENCE_PATHS = 50_000;
+
+type InfluenceAdj = Map<
+  string,
+  { readonly to: string; readonly weight: Rational }[]
+>;
+
+const addTotal = (
+  totals: Map<string, Rational>,
+  node: string,
+  delta: Rational
+): void => {
+  totals.set(node, addRat(totals.get(node) ?? ZERO_RAT, delta));
+};
+
+const collectReachableSubgraph = (
+  out: ReadonlyMap<string, readonly Edge[]>,
+  startKey: string,
+  start: unknown
+): {
+  readonly byKey: Map<string, unknown>;
+  readonly inDegree: Map<string, number>;
+  readonly reachable: Set<string>;
+  readonly subOut: InfluenceAdj;
+} => {
+  const byKey = new Map<string, unknown>([[startKey, start]]);
+  const reachable = new Set<string>([startKey]);
+  const queue: string[] = [startKey];
+  const induced: {
+    readonly from: string;
+    readonly to: string;
+    readonly weight: Rational;
+  }[] = [];
+  for (const u of queue) {
+    for (const edge of out.get(u) ?? []) {
+      const v = valueKey(edge.to);
+      byKey.set(v, edge.to);
+      induced.push({ from: u, to: v, weight: toRational(edge.weight) });
+      if (!reachable.has(v)) {
+        reachable.add(v);
+        queue.push(v);
+      }
+    }
+  }
+  const inDegree = new Map<string, number>();
+  const subOut: InfluenceAdj = new Map();
+  for (const node of reachable) {
+    inDegree.set(node, 0);
+    subOut.set(node, []);
+  }
+  for (const e of induced) {
+    subOut.get(e.from)?.push({ to: e.to, weight: e.weight });
+    inDegree.set(e.to, (inDegree.get(e.to) ?? 0) + 1);
+  }
+  return { byKey, inDegree, reachable, subOut };
+};
+
+const kahnOrder = (
+  inDegree: Map<string, number>,
+  subOut: InfluenceAdj
+): string[] => {
+  const order: string[] = [];
+  const ready: string[] = [];
+  for (const [node, deg] of inDegree) {
+    if (deg === 0) {
+      ready.push(node);
+    }
+  }
+  for (const u of ready) {
+    order.push(u);
+    for (const { to } of subOut.get(u) ?? []) {
+      const next = (inDegree.get(to) ?? 1) - 1;
+      inDegree.set(to, next);
+      if (next === 0) {
+        ready.push(to);
+      }
+    }
+  }
+  return order;
+};
+
+const influenceAcyclic = (
+  order: readonly string[],
+  subOut: InfluenceAdj,
+  startKey: string
+): Map<string, Rational> => {
+  const totals = new Map<string, Rational>();
+  const flow = new Map<string, Rational>([[startKey, ONE_RAT]]);
+  for (const u of order) {
+    const fu = flow.get(u);
+    if (fu === undefined) {
+      continue;
+    }
+    for (const { to, weight } of subOut.get(u) ?? []) {
+      const contrib = mulRat(fu, weight);
+      addTotal(totals, to, contrib);
+      addTotal(flow, to, contrib);
+    }
+  }
+  return totals;
+};
+
+const influenceCyclic = (
+  subOut: InfluenceAdj,
+  startKey: string
+): Map<string, Rational> | string => {
+  const totals = new Map<string, Rational>();
+  let visitedPaths = 0;
+  const onPath = new Set<string>([startKey]);
+  const dfs = (u: string, product: Rational): string | undefined => {
+    for (const { to, weight } of subOut.get(u) ?? []) {
+      visitedPaths += 1;
+      if (visitedPaths > MAX_INFLUENCE_PATHS) {
+        return `graph/influence exceeded ${MAX_INFLUENCE_PATHS} simple paths in a cyclic graph.`;
+      }
+      const next = mulRat(product, weight);
+      if (to === startKey) {
+        addTotal(totals, to, next);
+        continue;
+      }
+      if (onPath.has(to)) {
+        continue;
+      }
+      addTotal(totals, to, next);
+      onPath.add(to);
+      const err = dfs(to, next);
+      onPath.delete(to);
+      if (err !== undefined) {
+        return err;
+      }
+    }
+    return undefined;
+  };
+  return dfs(startKey, ONE_RAT) ?? totals;
+};
+
+/**
+ * Exact weighted influence propagation from `start`: sums the product of edge
+ * weights over every directed simple path from `start` to each reachable node.
+ * Uses O(V + E) exact rational DP on acyclic reachable subgraphs and exact
+ * cycle-avoiding simple-path summation when cycles exist.
+ */
+const influence = (tuples: readonly Row[], start: unknown): Row[] | string => {
+  const edges = readEdges("graph/influence", tuples, true);
+  if (typeof edges === "string") {
+    return edges;
+  }
+  const out = adjacency(edges);
+  const startKey = valueKey(start);
+  const startOut = out.get(startKey);
+  if (startOut === undefined || startOut.length === 0) {
+    return [];
+  }
+  const { byKey, inDegree, reachable, subOut } = collectReachableSubgraph(
+    out,
+    startKey,
+    start
+  );
+  const order = kahnOrder(inDegree, subOut);
+  const totals =
+    order.length === reachable.size
+      ? influenceAcyclic(order, subOut, startKey)
+      : influenceCyclic(subOut, startKey);
+  if (typeof totals === "string") {
+    return totals;
+  }
+  const rows: Row[] = [];
+  for (const [k, weight] of totals) {
+    rows.push([byKey.get(k), fromRational(weight)]);
+  }
+  return rows.sort((a, b) => compareValues(a[0], b[0]));
+};
+
 const EDGES = { kind: "relation", name: "edges" } as const;
 
 export const module = {
@@ -897,6 +1077,13 @@ export const module = {
     inputs: [EDGES, { kind: "value", name: "start" }],
     columns: ["node", "dominator"],
     run: ([tuples, start]) => dominators(tuples as readonly Row[], start),
+  }),
+
+  influence: defineAlgorithm({
+    name: "graph/influence",
+    inputs: [EDGES, { kind: "value", name: "start" }],
+    columns: ["to", "weight"],
+    run: ([tuples, start]) => influence(tuples as readonly Row[], start),
   }),
 
   pageRank: defineAlgorithm({

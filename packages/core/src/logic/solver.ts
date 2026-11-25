@@ -1288,6 +1288,151 @@ export const finishBounds = (
   };
 };
 
+const MAX_BNB_NODES = 256;
+const MAX_DINKELBACH_STEPS = 64;
+const MAX_BILINEAR_INT_SLICE = 500n;
+
+const isIntegralRational = (r: Rational): boolean => r.d === 1n;
+
+const lpOptimum = (
+  branch: readonly Constraint[],
+  realSorts: ReadonlyMap<string, Sort>,
+  targetName: string,
+  isLow: boolean
+): BoundEnd | undefined => {
+  made = 0;
+  if (!decide(branch, realSorts)) {
+    return undefined;
+  }
+  const range = rangeOf(targetName, branch, realSorts);
+  const end = isLow ? range.low : range.high;
+  if (end === undefined) {
+    return undefined;
+  }
+  return realEndWithWitness(branch, realSorts, targetName, end);
+};
+
+const betterBound = (
+  candidate: BoundEnd,
+  incumbent: BoundEnd | undefined,
+  isLow: boolean
+): boolean => {
+  if (incumbent === undefined) {
+    return true;
+  }
+  const cmp = compare(candidate.value, incumbent.value);
+  return isLow ? cmp < 0 : cmp > 0;
+};
+
+const makeBoundEnd = (
+  value: Rational,
+  strict: boolean,
+  witness: Values | undefined
+): BoundEnd =>
+  witness === undefined || strict
+    ? { strict, value }
+    : { strict, value, witness };
+
+/**
+ * Exact branch-and-bound for mixed-integer linear optimization when the LP
+ * relaxation optimum is not attained by integer values.
+ */
+const fallbackMixedCandidate = (
+  cur: readonly Constraint[],
+  extSorts: ReadonlyMap<string, Sort>,
+  targetName: string
+): BoundEnd | undefined => {
+  const feas = solve(cur, extSorts);
+  const fVal = feas?.get(targetName);
+  if (feas === undefined || fVal === undefined) {
+    return undefined;
+  }
+  return makeBoundEnd(fVal, false, stripVar(feas, targetName));
+};
+
+const pushIntegerBranch = (
+  stack: (readonly Constraint[])[],
+  cur: readonly Constraint[],
+  fracVar: string,
+  fracVal: Rational
+): void => {
+  const fl = floor(fracVal);
+  stack.push(
+    [
+      ...cur,
+      {
+        linear: minus(constant(ratio(fl)), variable(fracVar)),
+        relation: ">=",
+      },
+    ],
+    [
+      ...cur,
+      {
+        linear: minus(variable(fracVar), constant(ratio(fl + 1n))),
+        relation: ">=",
+      },
+    ]
+  );
+};
+
+const mixedBranchAndBound = (
+  branch: readonly Constraint[],
+  extSorts: ReadonlyMap<string, Sort>,
+  targetName: string,
+  isLow: boolean
+): BoundEnd | undefined => {
+  const realSorts = new Map<string, Sort>(
+    [...extSorts.keys()].map((k) => [k, "real"])
+  );
+  const intVars = [...extSorts.entries()]
+    .filter(([k, s]) => k !== targetName && s === "integer")
+    .map(([k]) => k);
+
+  let incumbent = fallbackMixedCandidate(branch, extSorts, targetName);
+  if (incumbent === undefined && solve(branch, extSorts) === undefined) {
+    return undefined;
+  }
+
+  const stack: (readonly Constraint[])[] = [branch];
+  let nodes = 0;
+  while (stack.length > 0) {
+    nodes += 1;
+    if (nodes > MAX_BNB_NODES) {
+      throw new LogicError({
+        message:
+          "proof/bounds exceeded branch-and-bound limit on mixed-integer constraints.",
+      });
+    }
+    const cur = stack.pop() as readonly Constraint[];
+    const lp = lpOptimum(cur, realSorts, targetName, isLow);
+    if (lp === undefined || !betterBound(lp, incumbent, isLow)) {
+      continue;
+    }
+    if (lp.witness === undefined) {
+      const cand = fallbackMixedCandidate(cur, extSorts, targetName);
+      if (cand !== undefined && betterBound(cand, incumbent, isLow)) {
+        incumbent = cand;
+      }
+      continue;
+    }
+    const fracVar = intVars.find((name) => {
+      const v = lp.witness?.get(name);
+      return v !== undefined && !isIntegralRational(v);
+    });
+    if (fracVar === undefined) {
+      incumbent = lp;
+    } else {
+      pushIntegerBranch(
+        stack,
+        cur,
+        fracVar,
+        lp.witness.get(fracVar) as Rational
+      );
+    }
+  }
+  return incumbent;
+};
+
 const mixedEndpoint = (
   branch: readonly Constraint[],
   extSorts: ReadonlyMap<string, Sort>,
@@ -1314,10 +1459,7 @@ const mixedEndpoint = (
   if (direct.witness !== undefined || direct.strict) {
     return direct;
   }
-  throw new LogicError({
-    message:
-      "proof/bounds cannot compute exact mixed-integer bounds when the LP relaxation is not attained.",
-  });
+  return mixedBranchAndBound(branch, extSorts, targetName, isLow);
 };
 
 const branchLinearBounds = (
@@ -1437,10 +1579,76 @@ export const linearBoundsOf = (
   }
 };
 
+const evalRatioAt = (
+  bNum: Linear,
+  bDen: Linear,
+  values: Values
+): Rational | undefined => {
+  const n = valueAt(bNum, values);
+  const d = valueAt(bDen, values);
+  if (n === undefined || d === undefined || isZero(d)) {
+    return undefined;
+  }
+  return divide(n, d);
+};
+
+/**
+ * Exact Dinkelbach parametric optimization for a linear-fractional ratio
+ * `bNum / bDen` with `bDen > 0` over integer or mixed-integer linear constraints.
+ */
+const dinkelbachEnd = (
+  branchConstraints: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  bNum: Linear,
+  bDen: Linear,
+  findMax: boolean
+): BoundEnd | undefined => {
+  const init = solve(branchConstraints, sorts);
+  if (init === undefined) {
+    return undefined;
+  }
+  let witness = init;
+  let lambda = evalRatioAt(bNum, bDen, witness);
+  if (lambda === undefined) {
+    return undefined;
+  }
+  for (let iter = 0; iter < MAX_DINKELBACH_STEPS; iter += 1) {
+    const obj = findMax
+      ? minus(bNum, times(bDen, lambda))
+      : minus(times(bDen, lambda), bNum);
+    const res = linearBoundsOf(branchConstraints, sorts, obj);
+    if (res?.high === undefined) {
+      return undefined;
+    }
+    if (compare(res.high.value, ZERO) <= 0) {
+      return { strict: false, value: lambda, witness };
+    }
+    const nextWitness = res.high.witness;
+    if (nextWitness === undefined) {
+      return { strict: true, value: lambda };
+    }
+    const nextLambda = evalRatioAt(bNum, bDen, nextWitness);
+    const improved =
+      nextLambda !== undefined &&
+      (findMax
+        ? compare(nextLambda, lambda) > 0
+        : compare(nextLambda, lambda) < 0);
+    if (!improved || nextLambda === undefined) {
+      return { strict: false, value: lambda, witness };
+    }
+    lambda = nextLambda;
+    witness = nextWitness;
+  }
+  throw new LogicError({
+    message:
+      "proof/bounds exceeded iteration limit on integer ratio constraints.",
+  });
+};
+
 /**
  * Exact tight lower and upper bounds of a linear-fractional ratio `num / den`
- * over real variables via the Charnes-Cooper transformation (`y = s*x`, `s > 0`,
- * `den(y, s) = 1`, optimize `num(y, s)`). Returns undefined when unsatisfiable.
+ * via Charnes-Cooper over continuous variables and exact Dinkelbach parametric
+ * optimization when any variable is integer-sorted.
  */
 export const ratioBoundsOf = (
   constraints: readonly Constraint[],
@@ -1449,10 +1657,24 @@ export const ratioBoundsOf = (
   den: Linear
 ): Bounds | undefined => {
   if ([...sorts.values()].some((s) => s !== "real")) {
-    throw new LogicError({
-      message:
-        "proof/bounds supports linear-fractional ratio bounds over continuous (value/number?) variables; use proof/prove to check integer ratio inequalities.",
-    });
+    const acc = makeBoundsAcc();
+    const signBranches: readonly [Linear, Linear][] = [
+      [num, den],
+      [times(num, negate(ONE)), times(den, negate(ONE))],
+    ];
+    for (const [bNum, bDen] of signBranches) {
+      const branchConstraints: Constraint[] = [
+        ...constraints,
+        { linear: bDen, relation: ">" },
+      ];
+      if (solve(branchConstraints, sorts) === undefined) {
+        continue;
+      }
+      const low = dinkelbachEnd(branchConstraints, sorts, bNum, bDen, false);
+      const high = dinkelbachEnd(branchConstraints, sorts, bNum, bDen, true);
+      mergeBoundsInto(acc, low, high);
+    }
+    return finishBounds(acc);
   }
   const sName = freshName(sorts, "__cc_s");
   const ccSorts = new Map(sorts);
@@ -1504,4 +1726,488 @@ export const ratioBoundsOf = (
     }
   }
   return finishBounds(acc);
+};
+
+/** Finds all variables transitively coupled with `seeds` through `constraints`. */
+const coupledVariables = (
+  constraints: readonly Constraint[],
+  seeds: readonly string[]
+): Set<string> => {
+  const adj = new Map<string, Set<string>>();
+  for (const c of constraints) {
+    const vars = [...c.linear.coefficients.keys()];
+    for (const u of vars) {
+      let set = adj.get(u);
+      if (set === undefined) {
+        set = new Set();
+        adj.set(u, set);
+      }
+      for (const v of vars) {
+        if (v !== u) {
+          set.add(v);
+        }
+      }
+    }
+  }
+  const visited = new Set<string>(seeds);
+  const queue = [...seeds];
+  for (const u of queue) {
+    for (const v of adj.get(u) ?? []) {
+      if (!visited.has(v)) {
+        visited.add(v);
+        queue.push(v);
+      }
+    }
+  }
+  return visited;
+};
+
+const evalQuad1 = (a: Rational, b: Rational, c: Rational, x: Rational) =>
+  add(add(multiply(a, multiply(x, x)), multiply(b, x)), c);
+
+const evalBilin = (
+  k: Rational,
+  a: Rational,
+  b: Rational,
+  c: Rational,
+  x: Rational,
+  y: Rational
+) =>
+  add(add(add(multiply(k, multiply(x, y)), multiply(a, x)), multiply(b, y)), c);
+
+const mergeWitnessMaps = (
+  a: Values | undefined,
+  b: Values | undefined
+): Values | undefined => {
+  if (a === undefined && b === undefined) {
+    return undefined;
+  }
+  const merged = new Map<string, Rational>(a ?? []);
+  if (b !== undefined) {
+    for (const [k, v] of b) {
+      if (!merged.has(k)) {
+        merged.set(k, v);
+      }
+    }
+  }
+  return merged;
+};
+
+const addBounds = (
+  first: Bounds | undefined,
+  second: Bounds | undefined
+): Bounds | undefined => {
+  if (first === undefined || second === undefined) {
+    return undefined;
+  }
+  const low =
+    first.low === undefined || second.low === undefined
+      ? undefined
+      : makeBoundEnd(
+          add(first.low.value, second.low.value),
+          first.low.strict || second.low.strict,
+          mergeWitnessMaps(first.low.witness, second.low.witness)
+        );
+  const high =
+    first.high === undefined || second.high === undefined
+      ? undefined
+      : makeBoundEnd(
+          add(first.high.value, second.high.value),
+          first.high.strict || second.high.strict,
+          mergeWitnessMaps(first.high.witness, second.high.witness)
+        );
+  return {
+    ...(low === undefined ? {} : { low }),
+    ...(high === undefined ? {} : { high }),
+  };
+};
+
+const withinBounds1d = (vBounds: Bounds, pt: Rational): boolean => {
+  const insideLow =
+    vBounds.low === undefined ||
+    (vBounds.low.strict
+      ? compare(pt, vBounds.low.value) > 0
+      : compare(pt, vBounds.low.value) >= 0);
+  const insideHigh =
+    vBounds.high === undefined ||
+    (vBounds.high.strict
+      ? compare(pt, vBounds.high.value) < 0
+      : compare(pt, vBounds.high.value) <= 0);
+  return insideLow && insideHigh;
+};
+
+const univariateQuadraticBounds = (
+  branch: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  v: string,
+  a: Rational,
+  b: Rational,
+  c: Rational
+): Bounds | undefined => {
+  const vBounds = linearBoundsOf(branch, sorts, variable(v));
+  if (vBounds === undefined) {
+    return undefined;
+  }
+  const candidates: { readonly strict: boolean; readonly x: Rational }[] = [];
+  if (vBounds.low !== undefined) {
+    candidates.push({ strict: vBounds.low.strict, x: vBounds.low.value });
+  }
+  if (vBounds.high !== undefined) {
+    candidates.push({ strict: vBounds.high.strict, x: vBounds.high.value });
+  }
+  const vertex = divide(negate(b), multiply(ratio(2n), a));
+  const vertexPts =
+    sorts.get(v) === "integer"
+      ? [ratio(floor(vertex)), ratio(ceiling(vertex))]
+      : [vertex];
+  for (const pt of vertexPts) {
+    if (
+      withinBounds1d(vBounds, pt) &&
+      solve(
+        [
+          ...branch,
+          { linear: minus(variable(v), constant(pt)), relation: "=" },
+        ],
+        sorts
+      ) !== undefined
+    ) {
+      candidates.push({ strict: false, x: pt });
+    }
+  }
+  const acc = makeBoundsAcc();
+  for (const { strict, x } of candidates) {
+    const val = evalQuad1(a, b, c, x);
+    const witness = strict
+      ? undefined
+      : solve(
+          [
+            ...branch,
+            { linear: minus(variable(v), constant(x)), relation: "=" },
+          ],
+          sorts
+        );
+    const end = makeBoundEnd(val, strict, witness);
+    mergeBoundsInto(acc, end, end);
+  }
+  if (vBounds.low === undefined || vBounds.high === undefined) {
+    if (compare(a, ZERO) > 0) {
+      acc.highUnbounded = true;
+      acc.high = undefined;
+    } else {
+      acc.lowUnbounded = true;
+      acc.low = undefined;
+    }
+  }
+  return finishBounds(acc);
+};
+
+const pointSatisfies2d = (
+  poly: readonly Constraint[],
+  xName: string,
+  yName: string,
+  x: Rational,
+  y: Rational
+): { readonly ok: boolean; readonly strictBoundary: boolean } => {
+  const vals = new Map<string, Rational>([
+    [xName, x],
+    [yName, y],
+  ]);
+  let strictBoundary = false;
+  for (const c of poly) {
+    const v = valueAt(c.linear, vals);
+    if (v === undefined) {
+      continue;
+    }
+    const s = compare(v, ZERO);
+    if (c.relation === "=" && s !== 0) {
+      return { ok: false, strictBoundary: false };
+    }
+    if (c.relation === ">=" && s < 0) {
+      return { ok: false, strictBoundary: false };
+    }
+    if (c.relation === ">") {
+      if (s < 0) {
+        return { ok: false, strictBoundary: false };
+      }
+      if (s === 0) {
+        strictBoundary = true;
+      }
+    }
+  }
+  return { ok: true, strictBoundary };
+};
+
+interface BilinearTerms {
+  readonly a: Rational;
+  readonly b: Rational;
+  readonly c: Rational;
+  readonly k: Rational;
+  readonly xName: string;
+  readonly yName: string;
+}
+
+const bilinearIntegerSlice = (
+  branch: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  terms: BilinearTerms,
+  xInt: boolean
+): Bounds | undefined => {
+  const sliceVar = xInt ? terms.xName : terms.yName;
+  const otherVar = xInt ? terms.yName : terms.xName;
+  const sBounds = linearBoundsOf(branch, sorts, variable(sliceVar));
+  if (sBounds === undefined) {
+    return undefined;
+  }
+  if (
+    sBounds.low === undefined ||
+    sBounds.high === undefined ||
+    sBounds.high.value.n - sBounds.low.value.n > MAX_BILINEAR_INT_SLICE
+  ) {
+    throw new LogicError({
+      message:
+        "proof/bounds requires bounded integer ranges (span <= 500) for integer bilinear products.",
+    });
+  }
+  const acc = makeBoundsAcc();
+  for (let m = sBounds.low.value.n; m <= sBounds.high.value.n; m += 1n) {
+    const mr = ratio(m);
+    const sliced = [
+      ...branch,
+      {
+        linear: minus(variable(sliceVar), constant(mr)),
+        relation: "=" as const,
+      },
+    ];
+    const otherCoeff = xInt
+      ? add(multiply(terms.k, mr), terms.b)
+      : add(multiply(terms.k, mr), terms.a);
+    const constTerm = xInt
+      ? add(multiply(terms.a, mr), terms.c)
+      : add(multiply(terms.b, mr), terms.c);
+    const linTarget: Linear = {
+      coefficients: isZero(otherCoeff)
+        ? new Map()
+        : new Map([[otherVar, otherCoeff]]),
+      constant: constTerm,
+    };
+    const sub = linearBoundsOf(sliced, sorts, linTarget);
+    if (sub !== undefined) {
+      mergeBoundsInto(acc, sub.low, sub.high);
+    }
+  }
+  return finishBounds(acc);
+};
+
+interface Candidate2d {
+  readonly strict: boolean;
+  readonly x: Rational;
+  readonly y: Rational;
+}
+
+const collectBilinearCandidates = (
+  poly: readonly Constraint[],
+  lines: readonly Constraint[],
+  terms: BilinearTerms
+): Candidate2d[] => {
+  const candidates: Candidate2d[] = [];
+  const { a, b, k, xName, yName } = terms;
+  const maybePush = (x: Rational, y: Rational): void => {
+    const chk = pointSatisfies2d(poly, xName, yName, x, y);
+    if (chk.ok) {
+      candidates.push({ strict: chk.strictBoundary, x, y });
+    }
+  };
+  for (let i = 0; i < lines.length; i += 1) {
+    const li = lines[i] as Constraint;
+    const a1 = li.linear.coefficients.get(xName) ?? ZERO;
+    const b1 = li.linear.coefficients.get(yName) ?? ZERO;
+    const c1 = li.linear.constant;
+    for (let j = i + 1; j < lines.length; j += 1) {
+      const lj = lines[j] as Constraint;
+      const a2 = lj.linear.coefficients.get(xName) ?? ZERO;
+      const b2 = lj.linear.coefficients.get(yName) ?? ZERO;
+      const c2 = lj.linear.constant;
+      const det = subtract(multiply(a1, b2), multiply(a2, b1));
+      if (!isZero(det)) {
+        maybePush(
+          divide(subtract(multiply(b1, c2), multiply(b2, c1)), det),
+          divide(subtract(multiply(a2, c1), multiply(a1, c2)), det)
+        );
+      }
+    }
+    if (!(isZero(a1) || isZero(b1))) {
+      const denom = multiply(ratio(2n), multiply(k, a1));
+      const xs = divide(
+        subtract(subtract(multiply(a, b1), multiply(k, c1)), multiply(b, a1)),
+        denom
+      );
+      maybePush(xs, divide(negate(add(multiply(a1, xs), c1)), b1));
+    }
+  }
+  return candidates;
+};
+
+const bilinearBounds2d = (
+  branch: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  terms: BilinearTerms
+): Bounds | undefined => {
+  const { a, b, c, k, xName, yName } = terms;
+  const xInt = sorts.get(xName) === "integer";
+  if (xInt || sorts.get(yName) === "integer") {
+    return bilinearIntegerSlice(branch, sorts, terms, xInt);
+  }
+  const xRange = linearBoundsOf(branch, sorts, variable(xName));
+  const yRange = linearBoundsOf(branch, sorts, variable(yName));
+  if (xRange === undefined || yRange === undefined) {
+    return undefined;
+  }
+  if (
+    xRange.low === undefined ||
+    xRange.high === undefined ||
+    yRange.low === undefined ||
+    yRange.high === undefined
+  ) {
+    throw new LogicError({
+      message:
+        "proof/bounds requires bounded variables for continuous bilinear products.",
+    });
+  }
+  const relaxed = new Map<string, Sort>(
+    [...sorts.keys()].map((n) => [
+      n,
+      n === xName || n === yName ? "integer" : "real",
+    ])
+  );
+  const poly = withoutReals(branch, relaxed);
+  if (poly === false) {
+    return undefined;
+  }
+  const lines = poly.filter(
+    (con) =>
+      con.linear.coefficients.has(xName) || con.linear.coefficients.has(yName)
+  );
+  const candidates = collectBilinearCandidates(poly, lines, terms);
+  if (candidates.length === 0) {
+    return undefined;
+  }
+  const acc = makeBoundsAcc();
+  for (const pt of candidates) {
+    const val = evalBilin(k, a, b, c, pt.x, pt.y);
+    const witness = pt.strict
+      ? undefined
+      : solve(
+          [
+            ...branch,
+            { linear: minus(variable(xName), constant(pt.x)), relation: "=" },
+            { linear: minus(variable(yName), constant(pt.y)), relation: "=" },
+          ],
+          sorts
+        );
+    const end = makeBoundEnd(val, pt.strict, witness);
+    mergeBoundsInto(acc, end, end);
+  }
+  return finishBounds(acc);
+};
+
+const parseQuadraticTarget = (
+  constraints: readonly Constraint[],
+  linear: Linear,
+  nonlinear: ReadonlyMap<string, Rational>
+): {
+  readonly hasRest: boolean;
+  readonly restLinear: Linear;
+  readonly terms: BilinearTerms;
+} => {
+  if (nonlinear.size !== 1) {
+    throw new LogicError({
+      message:
+        "proof/bounds supports linear, linear-fractional, univariate quadratic, and single bilinear products.",
+    });
+  }
+  const [[monomial, k]] = [...nonlinear.entries()] as [[string, Rational]];
+  const factors = monomial.split("*");
+  if (factors.length !== 2) {
+    throw new LogicError({
+      message:
+        "proof/bounds supports linear, linear-fractional, univariate quadratic, and single bilinear products.",
+    });
+  }
+  const [xName, yName] = factors as [string, string];
+  const coupled = coupledVariables(
+    constraints,
+    xName === yName ? [xName] : [xName, yName]
+  );
+  const restCoeffs = new Map<string, Rational>();
+  for (const [name, coeff] of linear.coefficients) {
+    if (name === xName || name === yName) {
+      continue;
+    }
+    if (coupled.has(name)) {
+      throw new LogicError({
+        message:
+          "proof/bounds cannot optimize a bilinear product coupled with an additional linear variable in the same target.",
+      });
+    }
+    restCoeffs.set(name, coeff);
+  }
+  const a = linear.coefficients.get(xName) ?? ZERO;
+  const b = xName === yName ? ZERO : (linear.coefficients.get(yName) ?? ZERO);
+  return {
+    hasRest: restCoeffs.size > 0,
+    restLinear: { coefficients: restCoeffs, constant: ZERO },
+    terms: { a, b, c: linear.constant, k, xName, yName },
+  };
+};
+
+/**
+ * Exact tight bounds for univariate quadratic (`a*x^2 + b*x + c`) and bilinear
+ * (`k*x*y + a*x + b*y + c`) targets, optionally plus an independent linear sum
+ * over disconnected variables (e.g. `direct + stakeA * stakeB`).
+ */
+export const quadraticBoundsOf = (
+  constraints: readonly Constraint[],
+  sorts: ReadonlyMap<string, Sort>,
+  linear: Linear,
+  nonlinear: ReadonlyMap<string, Rational>
+): Bounds | undefined => {
+  const { hasRest, restLinear, terms } = parseQuadraticTarget(
+    constraints,
+    linear,
+    nonlinear
+  );
+  try {
+    const acc = makeBoundsAcc();
+    for (const branch of cases(constraints)) {
+      const mainBounds =
+        terms.xName === terms.yName
+          ? univariateQuadraticBounds(
+              branch,
+              sorts,
+              terms.xName,
+              terms.k,
+              terms.a,
+              terms.c
+            )
+          : bilinearBounds2d(branch, sorts, terms);
+      if (mainBounds === undefined) {
+        continue;
+      }
+      if (hasRest) {
+        const restBounds = linearBoundsOf(branch, sorts, restLinear);
+        const combined = addBounds(mainBounds, restBounds);
+        if (combined !== undefined) {
+          mergeBoundsInto(acc, combined.low, combined.high);
+        }
+      } else {
+        mergeBoundsInto(acc, mainBounds.low, mainBounds.high);
+      }
+    }
+    return finishBounds(acc);
+  } catch (error) {
+    if (error instanceof TooHard) {
+      throw tooHard();
+    }
+    throw error;
+  }
 };

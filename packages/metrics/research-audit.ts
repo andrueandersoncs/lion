@@ -30,6 +30,7 @@ const CASES = [
   "audits-merger-bounds",
   "investigates-incident-sla",
   "reconciles-coupled-ledger",
+  "audits-orbital-portfolio",
 ] as const;
 
 const LION_CLI =
@@ -38,6 +39,7 @@ const LION_CLI =
 
 const SPACES = /\s+/;
 const NEW_MIN_MARGIN_RE = /28\.58|343\/1200|137\.2\/480/;
+const NEW_SOLSTICE_MAX_REV_RE = /\b128(\.00?)?\b/;
 
 interface AuditRow {
   readonly assuming: number;
@@ -49,12 +51,16 @@ interface AuditRow {
   readonly folder: string;
   readonly frameBytes: number;
   readonly graph: number;
+  readonly influence: number;
   readonly liveReactive: "pass" | "fail" | "n/a";
   readonly minutes: number | undefined;
   readonly oblig: number;
   readonly passed: number;
+  readonly persist: number;
   readonly prove: number;
+  readonly retractWhere: number;
   readonly rules: number;
+  readonly sensitivity: number;
   readonly time: number;
   readonly total: number;
   readonly turns: number | undefined;
@@ -98,16 +104,18 @@ const runLion = (program: unknown, modelPath: string): unknown => {
   }
 };
 
-const replaceValue290 = (
-  value: unknown
+const replaceValue = (
+  value: unknown,
+  from: number,
+  to: number
 ): { changed: boolean; next: unknown } => {
-  if (value === 290) {
-    return { changed: true, next: 260 };
+  if (value === from) {
+    return { changed: true, next: to };
   }
   if (Array.isArray(value)) {
     let changed = false;
     const next = value.map((item) => {
-      const r = replaceValue290(item);
+      const r = replaceValue(item, from, to);
       if (r.changed) {
         changed = true;
       }
@@ -119,7 +127,7 @@ const replaceValue290 = (
     let changed = false;
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value)) {
-      const r = replaceValue290(v);
+      const r = replaceValue(v, from, to);
       if (r.changed) {
         changed = true;
       }
@@ -131,17 +139,45 @@ const replaceValue290 = (
 };
 
 /**
- * Tests whether a reconciles-coupled-ledger model is genuinely live-reactive:
- * injects a newer restatement from the same publisher changing the GridScale
- * revenue cap from $290M to $260M, then re-runs page-check.json (and closed_obligation
- * + margin relations) to verify the model recomputes the exact new min gross margin
- * 28.58% (137.2 / 480) instead of sticking to a stale or hardcoded vertex.
+ * Tests whether a coupled-ledger or orbital-portfolio model is genuinely
+ * live-reactive by injecting a newer restatement from the same publisher:
+ * - reconciles-coupled-ledger: GridScale cap 290 -> 260, checks 28.58%
+ * - audits-orbital-portfolio: Rebate cap 36 -> 32, checks $128M max revenue
  */
+const REACTIVITY_SPECS: Readonly<
+  Record<
+    string,
+    {
+      readonly from: number;
+      readonly to: number;
+      readonly expectRe: RegExp;
+      readonly url: string;
+      readonly fallbackQuote: string;
+    }
+  >
+> = {
+  "audits-orbital-portfolio": {
+    expectRe: NEW_SOLSTICE_MAX_REV_RE,
+    fallbackQuote: "Amended rebate schedule satisfies P + 2N <= 32.0 ($M).",
+    from: 36,
+    to: 32,
+    url: "https://sec.example/solstice/8k-amend",
+  },
+  "reconciles-coupled-ledger": {
+    expectRe: NEW_MIN_MARGIN_RE,
+    fallbackQuote: "Amended GridScale cap is no more than $260.0 million.",
+    from: 290,
+    to: 260,
+    url: "https://sec.example/vespera/8k-amend",
+  },
+};
+
 const testLiveReactivity = (
   caseName: string,
   researchDir: string
 ): "pass" | "fail" | "n/a" => {
-  if (caseName !== "reconciles-coupled-ledger") {
+  const spec = REACTIVITY_SPECS[caseName];
+  if (spec === undefined) {
     return "n/a";
   }
   const modelPath = join(researchDir, "model.json");
@@ -172,14 +208,16 @@ const testLiveReactivity = (
   if (!Array.isArray(claims)) {
     return "fail";
   }
-  const target = claims.find((c) => replaceValue290(c.says).changed);
+  const target = claims.find(
+    (c) => replaceValue(c.says, spec.from, spec.to).changed
+  );
   if (target === undefined) {
     return "fail";
   }
-  const updatedSays = replaceValue290(target.says).next;
-  const updatedQuote = target.quote.includes("290")
-    ? target.quote.replaceAll("290", "260")
-    : "Amended GridScale cap is no more than $260.0 million.";
+  const updatedSays = replaceValue(target.says, spec.from, spec.to).next;
+  const updatedQuote = target.quote.includes(String(spec.from))
+    ? target.quote.replaceAll(String(spec.from), String(spec.to))
+    : spec.fallbackQuote;
 
   const scratch = mkdtempSync(join(tmpdir(), "lion-counterfactual-"));
   try {
@@ -191,8 +229,8 @@ const testLiveReactivity = (
       [
         "source",
         "audit-amend-8k",
-        ["quote", "https://sec.example/vespera/8k-amend"],
-        ["quote", "Form 8-K Amended Segment Cap"],
+        ["quote", spec.url],
+        ["quote", "Form 8-K Amended Cap"],
         ["quote", target.pub],
         target.kind,
         20_260_901,
@@ -217,7 +255,6 @@ const testLiveReactivity = (
     if (apply.status !== 0) {
       return "fail";
     }
-    // Check both page-check.json (if present) and closed_obligation / user relations
     const outputs: unknown[] = [];
     const pageCheckPath = join(researchDir, "page-check.json");
     if (existsSync(pageCheckPath)) {
@@ -228,7 +265,7 @@ const testLiveReactivity = (
       runLion(["query", ["closed_obligation", "?ob", "?status", "?detail"]], db)
     );
     const text = JSON.stringify(outputs);
-    return NEW_MIN_MARGIN_RE.test(text) ? "pass" : "fail";
+    return spec.expectRe.test(text) ? "pass" : "fail";
   } catch {
     return "fail";
   } finally {
@@ -287,12 +324,16 @@ const auditRun = (runPath: string): AuditRow | undefined => {
     folder: relative(REPOSITORY, runPath),
     frameBytes,
     graph: count(/"graph\/(cycles|dominators)"/g),
+    influence: count(/"graph\/influence"/g),
     liveReactive: testLiveReactivity(caseName, researchDir),
     minutes: spent.minutes,
     oblig: count(/"obligation"/g),
     passed: grades.passed,
+    persist: count(/"persist"\s*:\s*true/g),
     prove: count(/"proof\/prove"/g),
+    retractWhere: count(/"where"\s*:/g),
     rules: count(/"proof\/rules"/g),
+    sensitivity: count(/"proof\/sensitivity"/g),
     time: count(/"time\/(parse|diff|add|format)"/g),
     total: grades.total,
     turns: spent.turns,
@@ -323,6 +364,7 @@ const header = [
   "bounds",
   "prove",
   "valid?",
+  "sens/inf/rw",
   "oblig",
   "time/g",
   "cheat",
@@ -342,6 +384,7 @@ for (const r of rows) {
       r.bounds,
       r.prove,
       r.valid,
+      `${r.sensitivity}/${r.influence}/${r.retractWhere}`,
       `${r.closed}/${r.oblig}`,
       `${r.time}/${r.graph}`,
       r.vertexCheat,

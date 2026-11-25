@@ -1,0 +1,7 @@
+Luxembourg Corporate Registry — Cross-Border Aerospace Equity Extract
+Published: February 22, 2026 | Publisher: Luxembourg Registry | Kind: secondary
+URL: https://lbr.example/extracts/eurolaunch-2026
+
+Certified Equity Holdings Extract:
+- Aegis Space Fund owns 40% of the voting shares of EuroLaunch SA.
+- EuroLaunch SA owns 20% of the voting shares of Solstice Orbital Systems.

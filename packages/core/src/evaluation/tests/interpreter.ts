@@ -59,6 +59,7 @@ import {
 } from "@/evaluation/special-forms/logic";
 import { refusedSet } from "@/evaluation/special-forms/set";
 import {
+  definitionBindings,
   LogicDatabase,
   relationBindings,
   schemaBindings,
@@ -103,6 +104,7 @@ import {
   USAGE,
 } from "@/schemas/evaluation";
 import {
+  decodeExpression,
   LionExpressionSchema,
   type LionExpressionType,
 } from "@/schemas/lion-expression";
@@ -370,7 +372,7 @@ const evaluateEval = ([_, expression]: Form) =>
   Effect.gen(function* () {
     const environment = yield* LionEnvironmentService;
     const run = (code: unknown) =>
-      Schema.decodeUnknownEffect(LionExpressionSchema)(code).pipe(
+      decodeExpression(code).pipe(
         Effect.flatMap(evaluate),
         Effect.provideService(LionEnvironmentService, environment)
       );
@@ -458,7 +460,7 @@ const evaluateProgram = (program: LionExpressionType): EvaluateResult =>
 const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
   {
     begin: (expression: Form) => evaluateBegin(expression, false),
-    define: ([_, id, expression]: Form) =>
+    define: ([_, id, expression, options]: Form) =>
       Effect.gen(function* () {
         const environment = yield* LionEnvironmentService;
         const value = yield* evaluate(expression as LionExpressionType);
@@ -469,6 +471,22 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
           !NAMES.has(value)
         ) {
           NAMES.set(value, id as string);
+        }
+        if (options !== undefined) {
+          const { parseDefineOptions } = yield* Effect.promise(
+            () => import("@/logic/query-options")
+          );
+          const { definePersistent } = yield* Effect.promise(
+            () => import("@/logic/database")
+          );
+          const { database } = yield* Effect.promise(
+            () => import("@/evaluation/asking")
+          );
+          const { persist } = yield* parseDefineOptions(options);
+          if (persist) {
+            const store = yield* database;
+            yield* definePersistent(store, id as string, value, value);
+          }
         }
         return value;
       }),
@@ -613,6 +631,7 @@ export const run = (
           {
             ...relationBindings(database),
             ...schemaBindings(database),
+            ...definitionBindings(database),
             ...environment,
           },
           undefined,

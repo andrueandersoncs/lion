@@ -424,51 +424,102 @@ An observation that only one explanation predicts is the one worth a search. `ag
 
 ## What if
 
-To ask what would follow from a fact you do not have, or from retracting a shaky source, use `assuming` directly inside a query or rule (never mutating `model.json`):
+To ask what would follow from adding a fact or retracting an entire class of claims (such as every claim from a tertiary source — without hardcoding claim IDs or quotes!), use `assuming` with `retract ... {"where": goal}` directly inside a query or rule (never mutating `model.json`):
 
 ```json
 ["assuming",
-  ["retract", ["claim", "c-rumor", "blog", ["quote", "..."], ["quote", {"stake": "helios", "in": "apex", "pct": 50}]]],
-  ["proof/prove", ["controls_majority", "helios", "vespera"]]]
+  ["retract", ["claim", "?c", "?s", "?_", "?_"],
+    {"where": ["source", "?s", "?_", "?_", "?_", "tertiary", "?_"]}],
+  ["find", "?w", ["graph/influence", "stake_edge", "aegis", "solstice", "?w"]]]
 ```
 
 You can also test larger step changes on a copy (`cp model.json what-if.json`) or with `lion diff model.json --apply next-step.json --derived`.
 
 ## Proof-building patterns
 
-### Coupled constraints & exact ratio bounds (`proof/bounds` + `proof/prove`)
+### Persisted helpers + exact integer-ratio & bilinear bounds (`proof/bounds` + 2-arg `proof/valid?`)
 
-When sources give coupled inequalities or rounded bands (such as segment revenue shares, overhead ranges, and gross margin ratios), **never hard-code hand-enumerated vertices**. Read the constraint parameters from `backing`/`accepted` facts inside a rule and let `proof/bounds` compute the exact rational `[min, max]`, witnesses, and kernel-checkable `minProof`/`maxProof` certificates:
+Define shared rounding helpers once with `{"persist": true}`, read constraint parameters from `backing`/`accepted` facts, and let ONE `proof/bounds` rule + 2-argument `proof/valid?` compute `min`, `max`, witnesses, AND kernel-verify any threshold/covenant in one shot (never duplicate constraints into a separate `proof/prove` rule, never relax `value/integer?` counts to `value/number?`, and never hard-code corners for bilinear `N * P` products!):
 
 ```json
-["relation", "margin_envelope", ["min_pct", "max_pct", "witness_min", "witness_max", "certified"]],
-["rule", ["margin_envelope",
-    ["number/round", ["number/multiply", 100, ["object/get", "?b", "min"]], 2],
-    ["number/round", ["number/multiply", 100, ["object/get", "?b", "max"]], 2],
+["define", "pct", ["lambda", ["x"], ["number/round", ["number/multiply", 100, "x"], 2]], {"persist": true}],
+
+["relation", "reliability_envelope", ["min_pct", "max_pct", "witness_min", "witness_max", "clears_83", "valid"]],
+["rule", ["reliability_envelope",
+    ["pct", ["object/get", "?b", "min"]],
+    ["pct", ["object/get", "?b", "max"]],
     ["object/get", "?b", "witnessMin"],
     ["object/get", "?b", "witnessMax"],
-    ["boolean/and", ["proof/valid?", ["object/get", "?b", "minProof"]], ["proof/valid?", ["object/get", "?b", "maxProof"]]]],
-  ["accepted", "rev_min", "?rmin"], ["accepted", "rev_max", "?rmax"],
-  ["accepted", "cogs_min", "?cmin"], ["accepted", "cogs_max", "?cmax"],
+    ["proof/valid?", "?b", {"atLeast": 0.83}],
+    ["proof/valid?", "?b"]],
+  ["backing", {"bound": "attempts_max"}, "?amax", "?_"],
+  ["backing", {"bound": "success_max"}, "?smax", "?_"],
+  ["backing", {"bound": "offset"}, "?off", "?_"],
+  ["backing", {"bound": "f_min"}, "?fmin", "?_"],
+  ["backing", {"bound": "f_max"}, "?fmax", "?_"],
   ["=", "?b", ["proof/bounds",
-    ["number/divide", ["number/subtract", "?rev", "?cogs"], "?rev"],
+    ["number/divide", "?s", ["number/add", "?s", "?f"]],
     ["and",
-      ["schema/fits?", "?rev", "value/number?"], ["schema/fits?", "?cogs", "value/number?"],
-      ["number/greaterThanOrEqualTo", "?rev", "?rmin"], ["number/lessThanOrEqualTo", "?rev", "?rmax"],
-      ["number/greaterThanOrEqualTo", "?cogs", "?cmin"], ["number/lessThanOrEqualTo", "?cogs", "?cmax"]]]]]
+      ["schema/fits?", "?s", "value/integer?"], ["schema/fits?", "?f", "value/integer?"],
+      ["number/lessThanOrEqualTo", ["number/add", "?s", "?f"], "?amax"],
+      ["number/lessThanOrEqualTo", "?s", "?smax"],
+      ["number/greaterThanOrEqualTo", "?s", ["number/add", ["number/multiply", 2, "?f"], "?off"]],
+      ["number/greaterThanOrEqualTo", "?f", "?fmin"],
+      ["number/lessThanOrEqualTo", "?f", "?fmax"]]]]],
+
+["relation", "revenue_envelope", ["min_m", "max_m", "witness_min", "witness_max"]],
+["rule", ["revenue_envelope",
+    ["number/round", ["object/get", "?b", "min"], 2],
+    ["number/round", ["object/get", "?b", "max"], 2],
+    ["object/get", "?b", "witnessMin"],
+    ["object/get", "?b", "witnessMax"]],
+  ["backing", {"bound": "n_min"}, "?nmin", "?_"], ["backing", {"bound": "n_max"}, "?nmax", "?_"],
+  ["backing", {"bound": "p_min"}, "?pmin", "?_"], ["backing", {"bound": "p_max"}, "?pmax", "?_"],
+  ["backing", {"bound": "rebate_cap"}, "?cap", "?_"],
+  ["=", "?b", ["proof/bounds",
+    ["number/multiply", "?n", "?p"],
+    ["and",
+      ["schema/fits?", "?n", "value/number?"], ["schema/fits?", "?p", "value/number?"],
+      ["number/greaterThanOrEqualTo", "?n", "?nmin"], ["number/lessThanOrEqualTo", "?n", "?nmax"],
+      ["number/greaterThanOrEqualTo", "?p", "?pmin"], ["number/lessThanOrEqualTo", "?p", "?pmax"],
+      ["number/lessThanOrEqualTo", ["number/add", "?p", ["number/multiply", 2, "?n"]], "?cap"]]]],
+  ["=", ["object/get", "?b", "satisfiable"], true]]
 ```
 
-Because the bounds come from `accepted`, if a later filing revises `?rmin` or `?cmax`, `margin_envelope` recomputes automatically! Always round exact rationals with `["number/round", ..., 2]` before outputting JSON or showing them on `page.json`.
+Because every bound comes from `backing`, if a later filing revises `?cap` or `?amax`, both envelopes recompute automatically! `["proof/valid?", "?b"]` checks `minProof`, `maxProof`, and `min <= max` directly for linear, integer, and ratio (Charnes-Cooper / Dinkelbach) bounds, and `["proof/valid?", "?b", {"atLeast": 0.83}]` binds the kernel check directly to the 83% covenant! (Bilinear/quadratic `proof/bounds` returns exact `[min, max]` and `witnessMin`/`witnessMax`, with `minProof: null` since nonlinear products do not have linear Farkas certificates.)
 
-To test a covenant or threshold (e.g. gross margin strictly above 32.0%) and get a proof certificate OR concrete counterexample:
+### Multi-hop weighted propagation & reactive bulk counterfactual (`graph/influence` + `assuming` + `retract ... where`)
+
+Never hand-roll 1-hop / 2-hop / 3-hop path rules or duplicate `all` / `no_tertiary` relation tiers! Put fractional weights (`pct / 100`) on one `stake_edge` relation fed by `backing` (`backing` already includes unattributed tertiary claims while deduplicating relays, so you never need a second `stake_edge_all` relation!). Bind the start node `?h` before `graph/influence`, wrap the counterfactual `find` in `aggregate/sum` (returns `0` if empty, never throwing `array/head` on `[]`), and let `assuming` + `retract ... {"where": ...}` test dropping all tertiary claims reactively:
 
 ```json
-["proof/prove", ["not", ["exists", ["?rev", "?cogs"],
-  ["and",
-    ["schema/fits?", "?rev", "value/number?"], ["schema/fits?", "?cogs", "value/number?"],
-    ["number/greaterThanOrEqualTo", "?rev", 238], ["number/lessThanOrEqualTo", "?rev", 242],
-    ["number/greaterThanOrEqualTo", "?cogs", 161], ["number/lessThanOrEqualTo", "?cogs", 165],
-    ["number/lessThanOrEqualTo", ["number/multiply", 100, ["number/divide", ["number/subtract", "?rev", "?cogs"], "?rev"]], 32]]]]]
+["relation", "stake_edge", ["from", "to", "weight"]],
+["rule", ["stake_edge", "?from", "?to", ["number/divide", "?p", 100]],
+  ["backing", {"holder": "?from", "of": "?to"}, "?p", "?_"]],
+
+["relation", "control_audit", ["holder", "target", "pct_all", "pct_no_tertiary", "survives"]],
+["rule", ["control_audit", "?h", "?t", ["pct", "?w_all"], ["pct", "?w_clean"], ["number/greaterThan", "?w_clean", 0.5]],
+  ["stake_edge", "?h", "?_", "?_"],
+  ["graph/influence", "stake_edge", "?h", "?t", "?w_all"],
+  ["=", "?w_clean", ["aggregate/sum", ["assuming",
+    ["retract", ["claim", "?c", "?s", "?_", "?_"],
+      {"where": ["source", "?s", "?_", "?_", "?_", "tertiary", "?_"]}],
+    ["find", "?w", ["graph/influence", "stake_edge", "?h", "?t", "?w"]]]]]]
+```
+
+### All-derivations epistemic fragility & minimal cut sets (`proof/sensitivity`)
+
+Never hand-roll `breaks1`/`breaks2`/`cut_size` rules! One call to `proof/sensitivity` checks every derivation of a corroborated conclusion and returns `resilient` (`true` iff no single base fact retraction breaks it), `minCutSize`, `critical` (single-point-of-failure facts), and `minimalCuts`:
+
+```json
+["relation", "fragility_audit", ["question", "value", "resilient", "min_cut_size", "critical_count", "minimal_cuts"]],
+["rule", ["fragility_audit", "?q", "?v",
+    ["object/get", "?s", "resilient"],
+    ["object/get", "?s", "minCutSize"],
+    ["array/length", ["object/get", "?s", "critical"]],
+    ["object/get", "?s", "minimalCuts"]],
+  ["corroborated", "?q", "?v"],
+  ["=", "?s", ["proof/sensitivity", ["corroborated", "?q", "?v"]]]]
 ```
 
 ### Cross-source impossibility proofs (`proof/prove` + `contradicting`)

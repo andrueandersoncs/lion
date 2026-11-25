@@ -12,6 +12,7 @@ import {
 import { declaredIn, definedIn } from "@/evaluation/hoisting";
 import { compileBegin, isBegin } from "@/evaluation/special-forms/begin.ts";
 import {
+  definitionBindings,
   LogicDatabase,
   relationBindings,
   schemaBindings,
@@ -117,6 +118,7 @@ export const run = (
         const top = topScope(program, {
           ...relationBindings(database),
           ...schemaBindings(database),
+          ...definitionBindings(database),
           ...environment,
         });
         return Effect.suspend(() =>

@@ -5566,4 +5566,41 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "      return one(diff);",
     tests: ["src/logic/tests/proof-building.test.ts"],
   },
+  {
+    name: "retractWhere skips filtering matched tuples against base facts",
+    file: core("logic/database.ts"),
+    find: "    for (const tuple of tuples) {\n      if (relationFacts.has(tuple)) {",
+    replace: "    for (const tuple of tuples) {\n      if (false) {",
+    tests: ["src/logic/tests/proof-building-v2.test.ts"],
+  },
+  {
+    name: "dinkelbachEnd returns initial feasible ratio without optimizing",
+    file: core("logic/solver.ts"),
+    find: "    if (compare(res.high.value, ZERO) <= 0) {\n      return { strict: false, value: lambda, witness };\n    }",
+    replace:
+      "    if (true) {\n      return { strict: false, value: lambda, witness };\n    }",
+    tests: ["src/logic/tests/proof-building-v2.test.ts"],
+  },
+  {
+    name: "bilinearBounds2d skips edge stationary point check on slanted boundary",
+    file: core("logic/solver.ts"),
+    find: "    if (!(isZero(a1) || isZero(b1))) {\n      const denom = multiply(ratio(2n), multiply(k, a1));",
+    replace:
+      "    if (false && !(isZero(a1) || isZero(b1))) {\n      const denom = multiply(ratio(2n), multiply(k, a1));",
+    tests: ["src/logic/tests/proof-building-v2.test.ts"],
+  },
+  {
+    name: "graph/influence adds instead of multiplying path weights on DAG",
+    file: core("modules/graph.ts"),
+    find: "      const contrib = mulRat(fu, weight);",
+    replace: "      const contrib = addRat(fu, weight);",
+    tests: ["src/logic/tests/proof-building-v2.test.ts"],
+  },
+  {
+    name: "proof/valid? skips bound threshold comparison in verifyBoundsClaim",
+    file: core("logic/proof.ts"),
+    find: '  if (key === "atLeast") {\n    return cmp >= 0;\n  }',
+    replace: '  if (key === "atLeast") {\n    return true;\n  }',
+    tests: ["src/logic/tests/proof-building-v2.test.ts"],
+  },
 ];

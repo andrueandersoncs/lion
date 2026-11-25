@@ -513,6 +513,7 @@
     <tr data-entry="graph/simplePaths"><td><code>["graph/simplePaths", edges, start, end, maxHops, cost, path]</code></td><td>Every cycle-free directed path from <code>start</code> to <code>end</code> of at most <code>maxHops</code> edges, with optional non-negative third-column weights, ordered by cost then path</td></tr>
     <tr data-entry="graph/lca"><td><code>["graph/lca", edges, a, b, lca, distA, distB]</code></td><td>Lowest (most specific) common ancestors of <code>a</code> and <code>b</code> in a DAG following edges from child to parent, with shortest hop distances from <code>a</code> and <code>b</code></td></tr>
     <tr data-entry="graph/dominators"><td><code>["graph/dominators", edges, start, node, dominator]</code></td><td>Immediate dominator tree for every node reachable from <code>start</code> (excluding <code>start</code> itself, so the output edges form a rooted tree DAG)</td></tr>
+    <tr data-entry="graph/influence"><td><code>["graph/influence", edges, start, to, weight]</code></td><td>Exact weighted influence from <code>start</code> to each reachable node: sum over all directed simple paths of the product of edge weights (optional third column, defaulting to 1)</td></tr>
     <tr data-entry="graph/pageRank"><td><code>["graph/pageRank", edges, node, rank]</code></td><td>PageRank with damping 0.85, rounded to 6 decimal places. Ranks add up to 1.</td></tr>
     <tr data-entry="graph/betweenness"><td><code>["graph/betweenness", edges, node, score]</code></td><td>Directed betweenness centrality by Brandes's algorithm, rounded to 6 decimal places. A third edge column is a non-negative weight; without one, each edge costs 1.</td></tr>
     <tr data-entry="graph/components"><td><code>["graph/components", edges, node, component]</code></td><td>Connected components, ignoring direction, named after their smallest node</td></tr>
@@ -530,6 +531,7 @@
    "simplePaths": ["query", ["graph/simplePaths", "edge", "a", "d", 3, "?cost", "?path"], {"order": ["cost", "path"]}],
    "lca": ["query", ["graph/lca", "edge", "a", "b", "?lca", "?da", "?db"]],
    "dominators": ["query", ["graph/dominators", "edge", "a", "?node", "?dom"], {"order": "node"}],
+   "influence": ["query", ["graph/influence", "edge", "a", "?node", "?weight"], {"order": "node"}],
    "pageRank": ["query", ["graph/pageRank", "edge", "?node", "?rank"], {"order": "-rank", "limit": 1}],
    "betweenness": ["query", ["graph/betweenness", "edge", "?node", "?score"], {"order": "-score", "limit": 1}],
    "components": ["query", ["graph/components", "edge", "?node", "?c"], {"limit": 1}],
@@ -543,11 +545,13 @@
 <p>Checks proof values with a small trusted kernel (without invoking the solver), proves universal or empirical goals, computes exact tight symbolic and relational bounds, and proves universal properties of rule-defined relations by rule induction. See <a href="#prove-commands">Prove that every command keeps a rule</a>.</p>
 <dl class="ref">
   <dt><code>proof/valid?</code></dt>
-  <dd>Whether a proof value (linear refutation certificate, Omega integer split tree, case split, induction proof, lemma composition, <code>proof/prove</code> / <code>proof/bounds</code> proof record, or <code>why</code> derivation) checks out under the trusted kernel.</dd>
+  <dd>Whether a proof value (linear refutation certificate, Omega integer split tree, case split, induction proof, lemma composition, <code>proof/prove</code> or <code>proof/bounds</code> result, or <code>why</code> derivation) checks out under the trusted kernel. With a second <code>claim</code> argument (such as <code>{"atLeast": 0.28}</code>, a relation name, or a ground fact), also checks that the proof establishes that exact claim.</dd>
   <dt><code>proof/prove</code></dt>
   <dd>Proves a universal (<code>["not", ["exists", ...]]</code>) or empirical goal, returning a kernel-verifiable proof (with <code>facts</code> and <code>assumptions</code> for database derivations) or a concrete <code>counterexample</code> witness when a universal claim fails.</dd>
   <dt><code>proof/bounds</code></dt>
-  <dd>Computes exact tight <code>min</code> and <code>max</code> bounds of an expression subject to a goal across continuous linear, integer, Charnes-Cooper linear-fractional ratio, and relational database constraints, returning endpoint witnesses and kernel-checkable <code>minProof</code> / <code>maxProof</code> certificates.</dd>
+  <dd>Computes exact tight <code>min</code> and <code>max</code> bounds of an expression subject to a goal across continuous linear, mixed-integer linear, integer &amp; continuous linear-fractional ratios (Charnes-Cooper &amp; Dinkelbach), bilinear/quadratic products, and relational database constraints, returning endpoint witnesses and kernel-checkable <code>minProof</code> / <code>maxProof</code> certificates.</dd>
+  <dt><code>proof/sensitivity</code></dt>
+  <dd>All-derivations epistemic fragility analysis for a closed goal: identifies single-point-of-failure <code>critical</code> facts, <code>redundant</code> facts backed by alternative derivations, <code>resilient</code> status, and minimal size-1/size-2 retraction cut-sets (<code>minimalCuts</code>).</dd>
   <dt><code>proof/rules</code></dt>
   <dd>Takes a relation and a target schema, or a record mapping mutually recursive relation names to schemas, and proves by rule induction that every derived row fits its schema across all databases whose base relations fit their declared schemas (including single-column schema invariants, nested pattern destructuring, and aggregate output domains).</dd>
   <dt><code>proof/facts</code></dt>
@@ -582,7 +586,9 @@
    "rulesValid": ["proof/valid?", "p"],
    "minPct": ["number/round", ["number/multiply", 100, ["object/get", "b", "min"]], 2],
    "maxPct": ["number/round", ["number/multiply", 100, ["object/get", "b", "max"]], 2],
-   "boundsValid": ["boolean/and", ["proof/valid?", ["object/get", "b", "minProof"]], ["proof/valid?", ["object/get", "b", "maxProof"]]],
+   "boundsValid": ["proof/valid?", "b"],
+   "boundsClear30": ["proof/valid?", "b", {"atLeast": 0.30}],
+   "sensitivity": ["proof/sensitivity", ["reach", "a", 2]],
    "covenantProved": ["object/get", "cov", "proved"],
    "counterexample": ["object/get", "cov", "counterexample"],
    "facts": ["proof/facts", "w"],

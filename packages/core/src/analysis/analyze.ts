@@ -134,7 +134,7 @@ const ROLES: Record<SpecialFormName, Role> = {
   quote: roleByIndex(["operator", "quoted-value"], "quoted-value"),
   delay: roleByIndex(["operator", "expression"], "expression"),
   begin: roleByIndex(["operator"], "sequence-item"),
-  define: roleByIndex(["operator", "binding", "value"], "value"),
+  define: roleByIndex(["operator", "binding", "value", "options"], "options"),
   "set!": roleByIndex(["operator", "binding", "value"], "value"),
   lambda: roleByIndex(["operator", "parameters", "body"], "body"),
   cond: roleByIndex(["operator"], "branch"),

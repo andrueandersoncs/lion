@@ -11,6 +11,11 @@
 - `proof/rules` handles research-grade frames: single-column schema invariants, nested pattern destructuring in atom columns, `in` and `schema/fits?` rule filters, sound abstract output domains for `count`/`countUnique`/`sum`/`mean`/`median`/`unique`/`collect`/`argMin`/`argMax`, and pruning of unused anonymous schema columns. (`proof-rules-research-frames` added)
 - The symbolic solver supports exact linear-fractional ratios (`num / den` with symbolic linear denominators, splitting positive and negative denominator signs and optimizing ratios via Charnes-Cooper transformation). (`symbolic-linear-fractional-ratios` added)
 - The symbolic solver interprets `time/add`, `time/diff`, and `time/fromParts` (with concrete calendar dates and symbolic clock/offset parts) as exact linear expressions over UTC milliseconds. (`symbolic-time-reasoning` added)
+- `retract` (at top level and inside `assuming`) accepts an optional trailing `{"where": goal}` record to atomically retract every row matching one or more patterns whose variables satisfy `goal`, while preserving plain ground-only `retract`. (`conditional-retract-where` added)
+- Standard library adds `graph/influence` for exact cumulative weighted path propagation across arbitrary depth (topological DP on DAGs, cycle-avoiding simple-path enumeration on cyclic graphs) and `proof/sensitivity` for all-derivations epistemic fragility (`holds`, `critical`, `redundant`, `resilient`, `minCutSize`, `minimalCuts`). (`graph-influence-and-proof-sensitivity` added)
+- Top-level `define` accepts an optional `{"persist": true}` fourth argument to save snapshot-writable helper bindings in the logic database across `--database` runs and snapshots, and `lion check` adds Lion-in-Lion lints for multi-goal `find`/`query` calls and bare logic variables in top-level `fact` forms. (`persisted-define-and-expanded-lints` added)
+- `proof/bounds` extends exact interval optimization to mixed-integer linear programs (branch-and-bound), integer and mixed-integer linear-fractional ratios (Dinkelbach iteration), and univariate quadratic and coupled bilinear (`x * y`) objectives (2D Fourier-Motzkin polygon projection, interior edge stationary points, and integer slicing). (`proof-bounds-milp-dinkelbach-bilinear` added)
+- `proof/valid?` rejects forged `{check: true}` objects, verifies `proof/bounds` results directly, tightens `why` derivation checks, and accepts an optional second `claim` argument (`{"atLeast": ...}`, `{"above": ...}`, `{"atMost": ...}`, `{"below": ...}`, `{"min": ...}`, `{"max": ...}`, `{"unsat": true}`, relation name, or ground atom) for claim-bound verification. (`sound-claim-bound-proof-valid` added)
 
 ### Changed
 
@@ -19,6 +24,11 @@
 - `proof/rules` proves schema preservation over relations with single-column schema invariants, nested record patterns, `in`/`schema/fits?` filters, and aggregate heads. (`proof-rules-research-frames` is `works`)
 - Symbolic division by a linear expression handles both positive and negative denominators with exact sign flips and proves or refutes coupled ratio inequalities. (`symbolic-linear-fractional-ratios` is `works`)
 - `proof/prove` and `proof/bounds` reason symbolically over `time/add`, `time/diff`, and `time/fromParts` for exact UTC interval proofs and SLA checks. (`symbolic-time-reasoning` is `works`)
+- `retract` with `{"where": goal}` atomically retracts all matching rows at top level and inside `assuming` without affecting plain `retract`. (`conditional-retract-where` is `works`)
+- `graph/influence` computes exact cumulative weighted path propagation over multi-hop graphs and `proof/sensitivity` computes exact single-point-of-failure facts and minimal cut sets across all derivations. (`graph-influence-and-proof-sensitivity` is `works`)
+- `define` with `{"persist": true}` persists helper definitions across snapshots and database runs while leaving plain 3-argument `define` ephemeral. (`persisted-define-and-expanded-lints` is `works`)
+- `proof/bounds` computes exact tight `[min, max]` bounds and endpoint witnesses for integer linear-fractional ratios (via Dinkelbach) and coupled bilinear products (including interior edge stationary points). (`proof-bounds-milp-dinkelbach-bilinear` is `works`)
+- `proof/valid?` rejects forged `{check: true}` objects, validates `proof/bounds` records directly, and checks optional 2-argument claim bindings. (`sound-claim-bound-proof-valid` is `works`)
 
 ## 2026-11-24 — @lionlang/core 0.17.0, @lionlang/cli 0.16.0
 

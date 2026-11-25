@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: audits-orbital-portfolio
+expected_outcome: |
+  Working only from the saved corpus, the run audits Solstice Orbital Systems
+  across four proof-building obligations:
+  (1) Exact integer-ratio reliability bounds via Dinkelbach are 83.33% (min, at
+  s=35, f=7) to 86.05% (max, at s=37, f=6), so Solstice PROVABLY CLEARS the
+  83.0% covenant (unlike the continuous relaxation 82.95%, which falsely fails);
+  (2) Exact coupled bilinear commercial revenue N*P under 4<=N<=14, 12<=P<=22,
+  and P+2N<=36 is $48.00M (min, at N=4, P=12) to $162.00M (max, at the interior
+  edge stationary point N=9, P=18 — NOT corner $154M at N=7, P=22);
+  (3) Aegis Space Fund's 3-hop effective voting stake is 53% with all claims
+  (15% direct + 24% via Vanguard HoldCo -> OrbitSPV + 8% via EuroLaunch + 6%
+  tertiary Vanguard -> Solstice), dropping to 47% (below 50%) when all tertiary
+  claims are retracted; pad count (4) is resilient to any single retraction
+  (3 independent publishers, minCutSize 2) whereas CryoTech supplier corroboration
+  is fragile (2 publishers, minCutSize 1);
+  (4) FY25 backlog was restated from $840M to $812M, and SpaceTalk Blog misquotes
+  the 10-K as reporting $840M backlog.

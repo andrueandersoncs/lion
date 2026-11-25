@@ -37,6 +37,7 @@ import {
   queryDatabase,
   relationValue,
   retract,
+  retractWhere,
   type SchemaDeclaration,
 } from "@/logic/database";
 import { makeSchema } from "@/logic/fit";
@@ -46,6 +47,7 @@ import {
   parseInvariantOptions,
   parseQueryOptions,
   parseRelationOptions,
+  parseRetractOptions,
 } from "@/logic/query-options";
 import { saveDatabase } from "@/logic/snapshot";
 import {
@@ -57,6 +59,7 @@ import {
   isForm,
   isGoal,
   isLogicVariableName,
+  isPlainObject,
   isQuestion,
   isWaitingForm,
   type LionFunction,
@@ -452,9 +455,41 @@ const heldForm = (form: readonly LionExpressionType[], part: Part) =>
     return new LogicForm("rule", parts);
   });
 
+const retractWhereParts = (
+  items: readonly LionExpressionType[],
+  options: unknown,
+  part: Part,
+  scope: Scope | undefined
+) =>
+  Effect.gen(function* () {
+    const whereExpr = yield* parseRetractOptions(options);
+    const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));
+    const held = items.find(isTaken);
+    if (held !== undefined) {
+      return yield* notCalls("retract", held);
+    }
+    const targetAtoms: Atom[] = [];
+    for (const item of items) {
+      const value = yield* writing(part(item));
+      if (!(value instanceof Atom)) {
+        return yield* notCalls("retract", value);
+      }
+      targetAtoms.push(value);
+    }
+    const whereGoal = yield* writing(part(whereExpr as LionExpressionType));
+    if (!isGoal(whereGoal)) {
+      return yield* logicError(
+        `retract "where" expects goals or booleans, but found ${show(whereGoal)}.`
+      );
+    }
+    return { targetAtoms, whereGoal };
+  });
+
 /**
  * ["retract", goal, ...] takes facts back. A `rule` or `invariant` form
  * among them, written as it was added, takes that rule or invariant back.
+ * With `{"where": goal}` as the last item, retracts every base fact matching
+ * the target relation patterns where `goal` holds.
  */
 export const evaluateRetract = (
   [_, ...parts]: typeof RetractFormSchema.Type,
@@ -462,6 +497,18 @@ export const evaluateRetract = (
   scope?: Scope
 ) =>
   Effect.gen(function* () {
+    if (parts.length >= 2 && isPlainObject(parts.at(-1))) {
+      const { targetAtoms, whereGoal } = yield* retractWhereParts(
+        parts.slice(0, -1),
+        parts.at(-1),
+        part,
+        scope
+      );
+      const db = yield* database;
+      const made = yield* retractWhere(db, targetAtoms, whereGoal);
+      yield* tellWatchers(db);
+      return made;
+    }
     const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));
     const values = yield* atoms(
       "retract",
@@ -536,6 +583,22 @@ const changeOf = (change: unknown, part: Part, scope: Scope | undefined) =>
         form: kind,
         usage: USAGE[kind],
       });
+    }
+    if (
+      form === "retract" &&
+      items.length >= 2 &&
+      isPlainObject(items.at(-1))
+    ) {
+      const { targetAtoms, whereGoal } = yield* retractWhereParts(
+        items.slice(0, -1) as LionExpressionType[],
+        items.at(-1),
+        part,
+        scope
+      );
+      return new LogicForm("retract", [
+        ...targetAtoms,
+        new LogicForm("where", [whereGoal]),
+      ]);
     }
     // A rule or invariant form is held, never made: a `fact` cannot hold one.
     const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));

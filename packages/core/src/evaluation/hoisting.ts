@@ -78,7 +78,7 @@ export const definedIn = (
     }
     if (
       isFormHead(form, "define", scope) &&
-      form.length === 3 &&
+      (form.length === 3 || form.length === 4) &&
       typeof form[1] === "string"
     ) {
       names.push(form[1]);

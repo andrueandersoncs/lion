@@ -971,7 +971,7 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
   if (isForm(question, "why")) {
     return planWhy(question, outer);
   }
-  if (isForm(question, "proof/prove")) {
+  if (isForm(question, "proof/prove", "proof/sensitivity")) {
     const [goal] = question.parts;
     return typeof goal === "boolean"
       ? [{ body: [], bound: new Set(outer) }]
@@ -1032,6 +1032,9 @@ const unsafeKnown = (
 ) =>
   `Unsafe ${form} ${show(question)}: its inputs must be known, but ${names} is not bound by the rule or query around it.`;
 
+const isWhereRetract = (change: LogicForm) =>
+  change.form === "retract" && isForm(change.parts.at(-1), "where");
+
 const planAssuming = (
   question: LogicValue,
   outer: readonly string[]
@@ -1041,7 +1044,7 @@ const planAssuming = (
   checkValues(
     question,
     changes.flatMap((change) =>
-      change.form === "rule"
+      change.form === "rule" || isWhereRetract(change)
         ? []
         : change.parts.flatMap((part) =>
             part instanceof Atom ? part.args : []
@@ -1050,6 +1053,19 @@ const planAssuming = (
     bound,
     (names) => unsafeKnown("assuming", question, names)
   );
+  for (const change of changes) {
+    if (isWhereRetract(change)) {
+      const whereGoal = (change.parts.at(-1) as LogicForm).parts[0];
+      const atoms = change.parts.slice(0, -1) as readonly Atom[];
+      if (whereGoal !== false) {
+        for (const atom of atoms) {
+          const combined =
+            whereGoal === true ? atom : new LogicForm("and", [atom, whereGoal]);
+          plan(combined, outer, NOTHING);
+        }
+      }
+    }
+  }
   checkQuestions([(question as LogicForm).parts.at(-1)], bound);
   return [{ body: [], bound }];
 };

@@ -128,31 +128,42 @@
 </lion-example>
 
 <h2>Prove goals, synthesize counterexamples, and compute exact bounds</h2>
-<p><code>proof/prove</code> decides a universal or empirical goal in one call, returning a kernel-checked certificate or a concrete <code>counterexample</code> witness when a universal claim fails. <code>proof/bounds</code> computes exact tight <code>min</code> and <code>max</code> bounds across continuous linear, integer, Charnes-Cooper linear-fractional ratio, and symbolic <code>time/</code> constraints, with endpoint witnesses and kernel-valid <code>minProof</code> / <code>maxProof</code> certificates:</p>
-<lion-example name="Exact ratio bounds and counterexample synthesis">
+<p><code>proof/prove</code> decides a universal or empirical goal in one call, returning a kernel-checked certificate or a concrete <code>counterexample</code> witness when a universal claim fails. <code>proof/bounds</code> computes exact tight <code>min</code> and <code>max</code> bounds across continuous linear, integer and mixed-integer linear, linear-fractional ratio (continuous Charnes-Cooper and integer Dinkelbach), bilinear/quadratic, and symbolic <code>time/</code> constraints, with endpoint witnesses and kernel-valid <code>minProof</code> / <code>maxProof</code> certificates — checkable directly and bound to a threshold claim with 2-argument <code>proof/valid?</code>:</p>
+<lion-example name="Exact ratio bounds, bilinear extrema, and claim-bound verification">
 ["begin",
-  ["define", "start", ["time/parse", "2026-03-03T14:00:00Z"]],
-  ["define", "sla", ["proof/bounds",
-    ["time/diff", "?end", "?t0", "minutes"],
+  ["define", "rel", ["proof/bounds",
+    ["number/divide", "?s", ["number/add", "?s", "?f"]],
     ["and",
-      ["schema/fits?", "?t0", "value/integer?"], ["schema/fits?", "?end", "value/integer?"],
-      ["number/greaterThanOrEqualTo", "?t0", "start"],
-      ["number/lessThanOrEqualTo", "?t0", ["time/add", "start", 10, "minutes"]],
-      ["number/greaterThanOrEqualTo", "?end", ["time/add", "start", 195, "minutes"]],
-      ["number/lessThanOrEqualTo", "?end", ["time/add", "start", 210, "minutes"]]]]],
-  ["define", "breach", ["proof/prove", ["not", ["exists", ["?t0", "?end"],
+      ["schema/fits?", "?s", "value/integer?"], ["schema/fits?", "?f", "value/integer?"],
+      ["number/greaterThanOrEqualTo", "?s", ["number/add", ["number/multiply", 2, "?f"], 21]],
+      ["number/lessThanOrEqualTo", ["number/add", "?s", "?f"], 43],
+      ["number/greaterThanOrEqualTo", "?f", 6], ["number/lessThanOrEqualTo", "?f", 10],
+      ["number/lessThanOrEqualTo", "?s", 37]]]],
+  ["define", "rev", ["proof/bounds",
+    ["number/multiply", "?n", "?p"],
     ["and",
-      ["schema/fits?", "?t0", "value/integer?"], ["schema/fits?", "?end", "value/integer?"],
-      ["number/greaterThanOrEqualTo", "?t0", "start"],
-      ["number/lessThanOrEqualTo", "?t0", ["time/add", "start", 10, "minutes"]],
-      ["number/greaterThanOrEqualTo", "?end", ["time/add", "start", 195, "minutes"]],
-      ["number/lessThanOrEqualTo", "?end", ["time/add", "start", 210, "minutes"]],
-      ["number/lessThanOrEqualTo", ["time/diff", "?end", "?t0", "minutes"], 180]]]]]],
-  {"minMinutes": ["object/get", "sla", "min"],
-   "maxMinutes": ["object/get", "sla", "max"],
-   "slaBoundsValid": ["boolean/and", ["proof/valid?", ["object/get", "sla", "minProof"]], ["proof/valid?", ["object/get", "sla", "maxProof"]]],
-   "provablyBreached": ["object/get", "breach", "proved"],
-   "breachProofValid": ["proof/valid?", "breach"]}]
+      ["schema/fits?", "?n", "value/integer?"], ["schema/fits?", "?p", "value/number?"],
+      ["number/greaterThanOrEqualTo", "?n", 4], ["number/lessThanOrEqualTo", "?n", 14],
+      ["number/greaterThanOrEqualTo", "?p", 12], ["number/lessThanOrEqualTo", "?p", 22],
+      ["number/lessThanOrEqualTo", ["number/add", "?p", ["number/multiply", 2, "?n"]], 36]]]],
+  {"minReliabilityPct": ["number/round", ["number/multiply", 100, ["object/get", "rel", "min"]], 2],
+   "maxReliabilityPct": ["number/round", ["number/multiply", 100, ["object/get", "rel", "max"]], 2],
+   "clears83Pct": ["proof/valid?", "rel", {"atLeast": 0.83}],
+   "minRevenue": ["object/get", "rev", "min"],
+   "maxRevenue": ["object/get", "rev", "max"],
+   "maxRevWitness": ["object/get", "rev", "witnessMax"]}]
+</lion-example>
+
+<h2>Measure epistemic fragility with <code>proof/sensitivity</code></h2>
+<p><code>proof/sensitivity</code> checks every derivation of a ground conclusion in the database and reports whether it is <code>resilient</code> to any single-fact retraction, which base facts are <code>critical</code> (single points of failure), and the smallest joint retractions (<code>minimalCuts</code>) that break it:</p>
+<lion-example name="All-derivations fragility and minimal cut sets">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "reach", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "d"], ["edge", "a", "c"], ["edge", "c", "d"]],
+  ["rule", ["reach", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["reach", "?x", "?z"], ["reach", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["proof/sensitivity", ["reach", "a", "d"]]]
 </lion-example>
 
 <h2>Ask whether one schema includes another</h2>

@@ -1,0 +1,84 @@
+{
+  "claims": [
+    {
+      "quote": "`retract` (at top level and inside `assuming`) accepts an optional trailing `{\"where\": goal}` record to atomically retract every row matching one or more patterns whose variables satisfy `goal`, while preserving plain ground-only `retract`.",
+      "says": {
+        "feature": "conditional-retract-where",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`retract` with `{\"where\": goal}` atomically retracts all matching rows at top level and inside `assuming` without affecting plain `retract`.",
+      "says": {
+        "behavior": "conditional-retract-where",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`proof/bounds` extends exact interval optimization to mixed-integer linear programs (branch-and-bound), integer and mixed-integer linear-fractional ratios (Dinkelbach iteration), and univariate quadratic and coupled bilinear (`x * y`) objectives (2D Fourier-Motzkin polygon projection, interior edge stationary points, and integer slicing).",
+      "says": {
+        "feature": "proof-bounds-milp-dinkelbach-bilinear",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`proof/bounds` computes exact tight `[min, max]` bounds and endpoint witnesses for integer linear-fractional ratios (via Dinkelbach) and coupled bilinear products (including interior edge stationary points).",
+      "says": {
+        "behavior": "proof-bounds-milp-dinkelbach-bilinear",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Standard library adds `graph/influence` for exact cumulative weighted path propagation across arbitrary depth (topological DP on DAGs, cycle-avoiding simple-path enumeration on cyclic graphs) and `proof/sensitivity` for all-derivations epistemic fragility (`holds`, `critical`, `redundant`, `resilient`, `minCutSize`, `minimalCuts`).",
+      "says": {
+        "feature": "graph-influence-and-proof-sensitivity",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`graph/influence` computes exact cumulative weighted path propagation over multi-hop graphs and `proof/sensitivity` computes exact single-point-of-failure facts and minimal cut sets across all derivations.",
+      "says": {
+        "behavior": "graph-influence-and-proof-sensitivity",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`proof/valid?` rejects forged `{check: true}` objects, verifies `proof/bounds` results directly, tightens `why` derivation checks, and accepts an optional second `claim` argument (`{\"atLeast\": ...}`, `{\"above\": ...}`, `{\"atMost\": ...}`, `{\"below\": ...}`, `{\"min\": ...}`, `{\"max\": ...}`, `{\"unsat\": true}`, relation name, or ground atom) for claim-bound verification.",
+      "says": {
+        "feature": "sound-claim-bound-proof-valid",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`proof/valid?` rejects forged `{check: true}` objects, validates `proof/bounds` records directly, and checks optional 2-argument claim bindings.",
+      "says": {
+        "behavior": "sound-claim-bound-proof-valid",
+        "is": "works",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Top-level `define` accepts an optional `{\"persist\": true}` fourth argument to save snapshot-writable helper bindings in the logic database across `--database` runs and snapshots, and `lion check` adds Lion-in-Lion lints for multi-goal `find`/`query` calls and bare logic variables in top-level `fact` forms.",
+      "says": {
+        "feature": "persisted-define-and-expanded-lints",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`define` with `{\"persist\": true}` persists helper definitions across snapshots and database runs while leaving plain 3-argument `define` ephemeral.",
+      "says": {
+        "behavior": "persisted-define-and-expanded-lints",
+        "is": "works",
+        "area": "logic"
+      }
+    }
+  ]
+}

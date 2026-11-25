@@ -26884,5 +26884,254 @@
         ["else", ["quote", "broken"]]
       ]
     ]
+  },
+  {
+    "case": "conditional-retract-where",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "src", ["id", "kind"]],
+      ["relation", "claim", ["id", "src", "val"]],
+      [
+        "fact",
+        ["src", "s1", "primary"],
+        ["src", "s2", "tertiary"],
+        ["claim", "c1", "s1", 10],
+        ["claim", "c2", "s2", 99]
+      ],
+      [
+        "define",
+        "assumed",
+        [
+          "assuming",
+          [
+            "retract",
+            ["claim", "?c", "?s", "?_"],
+            { "where": ["src", "?s", "tertiary"] }
+          ],
+          ["find", "?v", ["claim", "?_", "?_", "?v"]]
+        ]
+      ],
+      [
+        "retract",
+        ["claim", "?c", "?s", "?_"],
+        { "where": ["src", "?s", "tertiary"] }
+      ],
+      ["define", "after", ["find", "?v", ["claim", "?_", "?_", "?v"]]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", "assumed", ["quote", [10]]],
+            ["=", "after", ["quote", [10]]]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "proof-bounds-milp-dinkelbach-bilinear",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "ratio",
+        [
+          "proof/bounds",
+          ["number/divide", "?s", ["number/add", "?s", "?f"]],
+          [
+            "and",
+            ["schema/fits?", "?s", "value/integer?"],
+            ["schema/fits?", "?f", "value/integer?"],
+            [
+              "number/greaterThanOrEqualTo",
+              "?s",
+              ["number/add", ["number/multiply", 2, "?f"], 21]
+            ],
+            ["number/lessThanOrEqualTo", ["number/add", "?s", "?f"], 43],
+            ["number/greaterThanOrEqualTo", "?f", 6],
+            ["number/lessThanOrEqualTo", "?f", 10],
+            ["number/lessThanOrEqualTo", "?s", 37]
+          ]
+        ]
+      ],
+      [
+        "define",
+        "bilin",
+        [
+          "proof/bounds",
+          ["number/multiply", "?n", "?p"],
+          [
+            "and",
+            ["schema/fits?", "?n", "value/number?"],
+            ["schema/fits?", "?p", "value/number?"],
+            ["number/greaterThanOrEqualTo", "?n", 4],
+            ["number/lessThanOrEqualTo", "?n", 14],
+            ["number/greaterThanOrEqualTo", "?p", 12],
+            ["number/lessThanOrEqualTo", "?p", 22],
+            [
+              "number/lessThanOrEqualTo",
+              ["number/add", "?p", ["number/multiply", 2, "?n"]],
+              36
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              [
+                "number/round",
+                ["number/multiply", 100, ["object/get", "ratio", "min"]],
+                2
+              ],
+              83.33
+            ],
+            [
+              "=",
+              [
+                "number/round",
+                ["number/multiply", 100, ["object/get", "ratio", "max"]],
+                2
+              ],
+              86.05
+            ],
+            ["=", ["object/get", "bilin", "min"], 48],
+            ["=", ["object/get", "bilin", "max"], 162]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "graph-influence-and-proof-sensitivity",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "w", ["from", "to", "weight"]],
+      ["relation", "edge", ["from", "to"]],
+      ["relation", "reach", ["from", "to"]],
+      [
+        "fact",
+        ["w", "a", "b", 0.6],
+        ["w", "b", "c", 0.5],
+        ["w", "c", "d", 0.8],
+        ["w", "a", "d", 0.15],
+        ["edge", "x", "y"],
+        ["edge", "y", "z"],
+        ["edge", "x", "v"],
+        ["edge", "v", "z"]
+      ],
+      ["rule", ["reach", "?a", "?b"], ["edge", "?a", "?b"]],
+      [
+        "rule",
+        ["reach", "?a", "?c"],
+        ["reach", "?a", "?b"],
+        ["edge", "?b", "?c"]
+      ],
+      [
+        "define",
+        "inf",
+        ["find", "?wt", ["graph/influence", "w", "a", "d", "?wt"]]
+      ],
+      ["define", "sens", ["proof/sensitivity", ["reach", "x", "z"]]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", "inf", ["quote", [0.39]]],
+            ["=", ["object/get", "sens", "resilient"], true],
+            ["=", ["object/get", "sens", "minCutSize"], 2]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "sound-claim-bound-proof-valid",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "b",
+        [
+          "proof/bounds",
+          "?x",
+          [
+            "and",
+            ["schema/fits?", "?x", "value/integer?"],
+            ["number/greaterThanOrEqualTo", "?x", 5],
+            ["number/lessThanOrEqualTo", "?x", 10]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", ["proof/valid?", ["quote", { "check": true }]], false],
+            ["=", ["proof/valid?", "b"], true],
+            ["=", ["proof/valid?", "b", { "atLeast": 5 }], true],
+            ["=", ["proof/valid?", "b", { "atLeast": 6 }], false]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
+  },
+  {
+    "case": "persisted-define-and-expanded-lints",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "define",
+        "double",
+        ["lambda", ["n"], ["number/multiply", 2, "n"]],
+        { "persist": true }
+      ],
+      ["define", "snap", ["snapshot"]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", ["double", 7], 14],
+            [
+              "array/some?",
+              "snap",
+              [
+                "lambda",
+                ["form"],
+                [
+                  "and",
+                  ["value/array?", "form"],
+                  ["=", ["array/length", "form"], 4],
+                  ["=", ["array/head", "form"], "define"]
+                ]
+              ]
+            ]
+          ],
+          ["quote", "works"]
+        ],
+        ["else", ["quote", "broken"]]
+      ]
+    ]
   }
 ]
