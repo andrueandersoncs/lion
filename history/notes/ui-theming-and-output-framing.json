@@ -1,0 +1,20 @@
+{
+  "claims": [
+    {
+      "quote": "`@lionlang/ui` adds a themeable default stylesheet (`@lionlang/ui/styles.css`) driven by `--lion-ui-*` CSS variables with a built-in `light` preset, per-slot `classes` / `unstyled` and per-node `className` overrides in `renderUi()`, and replaces native `<select>` with a custom accessible dropdown menu.",
+      "says": {
+        "feature": "lionlang-ui-customizable-css",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Separates landing-page copy from live `@lionlang/ui` output on `lionlang.dev` by moving example intros onto the page background and framing evaluated output inside a labeled dot-grid `Lion output` viewport.",
+      "says": {
+        "feature": "site-framed-lion-output",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

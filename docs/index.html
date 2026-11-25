@@ -32,7 +32,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=5f7ac33034">
+    <link rel="stylesheet" href="styles.css?v=6b1c754a3e">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -41,8 +41,8 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="script.js?v=5f7ac33034"></script>
-    <script type="module" src="ui-stage.js?v=5f7ac33034"></script>
+    <script type="module" src="script.js?v=6b1c754a3e"></script>
+    <script type="module" src="ui-stage.js?v=6b1c754a3e"></script>
   </head>
   <body class="landing-page">
     <div class="ambient-glow" aria-hidden="true"></div>
@@ -183,269 +183,322 @@
         </div>
 
         <div class="demo-list">
-          <article class="ui-stage" data-ui-demo="stream">
-            <div class="ui-stage-bar">
-              <div class="demo-heading">
-                <span class="demo-kicker">Streaming &amp; generative UI</span>
-                <h3>Stream facts from an agent or server into a reactive UI</h3>
-              </div>
-              <div class="ui-stage-tools">
-                <span class="ui-stage-time" data-stage-time></span>
-                <button
-                  type="button"
-                  class="playground-btn"
-                  data-stage-stream
-                  hidden
-                >
-                  Replay stream
-                </button>
-                <button
-                  type="button"
-                  class="playground-btn"
-                  data-stage-reset
-                  hidden
-                >
-                  Reset
-                </button>
-                <button
-                  type="button"
-                  class="playground-btn is-primary"
-                  aria-expanded="false"
-                  data-stage-toggle-source
-                >
-                  View / edit Lion JSON
-                </button>
-              </div>
-            </div>
-            <p class="ui-stage-caption">
-              Watch four newline-delimited Lion JSON chunks stream into one
-              logic database: contradiction alerts, graph bottlenecks, and exact
-              <code>proof/bounds</code>
-              financial intervals appear automatically as evidence arrives.
-              Click the button inside the UI to retract the unverified source.
-            </p>
-            <div class="ui-stage-error" data-stage-error hidden></div>
-            <div class="ui-stage-workspace">
-              <div class="ui-stage-canvas" data-stage-canvas aria-live="polite">
-                <p class="lion-ui-text is-muted">Loading Lion runtime…</p>
-              </div>
-              <div class="ui-stage-source" data-stage-source hidden>
-                <div class="stream-log" data-stage-stream-log hidden></div>
-                <div class="code-block playground-code is-live ui-stage-editor">
-                  <div class="playground-scroll">
-                    <div class="playground-layers">
-                      <pre
-                        aria-hidden="true"
-                      ><code data-stage-code></code></pre>
-                      <textarea
-                        class="playground-input"
-                        data-stage-input
-                        spellcheck="false"
-                        wrap="off"
-                        autocapitalize="off"
-                        autocomplete="off"
-                        autocorrect="off"
-                        aria-label="Edit streaming research Lion JSON"
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </article>
+          <section class="demo-section">
+            <header class="demo-intro">
+              <span class="demo-kicker">Streaming &amp; generative UI</span>
+              <h3>Stream facts from an agent or server into a reactive UI</h3>
+              <p>
+                Watch four newline-delimited Lion JSON chunks stream into one
+                logic database: contradiction alerts, graph bottlenecks, and
+                exact <code>proof/bounds</code> financial intervals appear
+                automatically as evidence arrives. Click the button inside the
+                output to retract the unverified source.
+              </p>
+            </header>
 
-          <article class="ui-stage" data-ui-demo="form">
-            <div class="ui-stage-bar">
-              <div class="demo-heading">
-                <span class="demo-kicker">Dynamic app config &amp; forms</span>
-                <h3>Store validation lambdas and exact pricing in JSONB</h3>
+            <div class="ui-stage" data-ui-demo="stream">
+              <div class="ui-stage-bar">
+                <div class="ui-stage-identity">
+                  <span class="ui-stage-dot" aria-hidden="true"></span>
+                  <span class="ui-stage-badge">Lion output</span>
+                  <code class="ui-stage-file">research-stream.lion.json</code>
+                  <span class="ui-stage-time" data-stage-time></span>
+                </div>
+                <div class="ui-stage-tools">
+                  <button
+                    type="button"
+                    class="playground-btn"
+                    data-stage-stream
+                    hidden
+                  >
+                    Replay stream
+                  </button>
+                  <button
+                    type="button"
+                    class="playground-btn"
+                    data-stage-reset
+                    hidden
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    class="playground-btn is-primary"
+                    aria-expanded="false"
+                    data-stage-toggle-source
+                  >
+                    View / edit Lion JSON
+                  </button>
+                </div>
               </div>
-              <div class="ui-stage-tools">
-                <span class="ui-stage-time" data-stage-time></span>
-                <button
-                  type="button"
-                  class="playground-btn"
-                  data-stage-reset
-                  hidden
+              <div class="ui-stage-error" data-stage-error hidden></div>
+              <div class="ui-stage-workspace">
+                <div
+                  class="ui-stage-canvas"
+                  data-stage-canvas
+                  aria-live="polite"
                 >
-                  Reset
-                </button>
-                <button
-                  type="button"
-                  class="playground-btn is-primary"
-                  aria-expanded="false"
-                  data-stage-toggle-source
-                >
-                  View / edit Lion JSON
-                </button>
-              </div>
-            </div>
-            <p class="ui-stage-caption">
-              Replace rigid feature-flag tables and unsafe JavaScript
-              <code>eval()</code>
-              with serializable lambdas and exact decimal arithmetic. Drag
-              <strong>Nights</strong>
-              to <code>1</code> with promo
-              <code>WEEKEND</code>
-              to trigger a live cross-field rule.
-            </p>
-            <div class="ui-stage-error" data-stage-error hidden></div>
-            <div class="ui-stage-workspace">
-              <div class="ui-stage-canvas" data-stage-canvas aria-live="polite">
-                <p class="lion-ui-text is-muted">Loading Lion runtime…</p>
-              </div>
-              <div class="ui-stage-source" data-stage-source hidden>
-                <div class="code-block playground-code is-live ui-stage-editor">
-                  <div class="playground-scroll">
-                    <div class="playground-layers">
-                      <pre
-                        aria-hidden="true"
-                      ><code data-stage-code></code></pre>
-                      <textarea
-                        class="playground-input"
-                        data-stage-input
-                        spellcheck="false"
-                        wrap="off"
-                        autocapitalize="off"
-                        autocomplete="off"
-                        autocorrect="off"
-                        aria-label="Edit dynamic form Lion JSON"
-                      ></textarea>
+                  <p class="lion-ui-text is-muted">Loading Lion runtime…</p>
+                </div>
+                <div class="ui-stage-source" data-stage-source hidden>
+                  <div class="stream-log" data-stage-stream-log hidden></div>
+                  <div
+                    class="code-block playground-code is-live ui-stage-editor"
+                  >
+                    <div class="playground-scroll">
+                      <div class="playground-layers">
+                        <pre
+                          aria-hidden="true"
+                        ><code data-stage-code></code></pre>
+                        <textarea
+                          class="playground-input"
+                          data-stage-input
+                          spellcheck="false"
+                          wrap="off"
+                          autocapitalize="off"
+                          autocomplete="off"
+                          autocorrect="off"
+                          aria-label="Edit streaming research Lion JSON"
+                        ></textarea>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </article>
+          </section>
 
-          <article class="ui-stage" data-ui-demo="policy">
-            <div class="ui-stage-bar">
-              <div class="demo-heading">
-                <span class="demo-kicker"
-                  >Verifiable auth &amp; business rules</span
-                >
-                <h3>Audit every decision with why and prove invariants</h3>
-              </div>
-              <div class="ui-stage-tools">
-                <span class="ui-stage-time" data-stage-time></span>
-                <button
-                  type="button"
-                  class="playground-btn"
-                  data-stage-reset
-                  hidden
-                >
-                  Reset
-                </button>
-                <button
-                  type="button"
-                  class="playground-btn is-primary"
-                  aria-expanded="false"
-                  data-stage-toggle-source
-                >
-                  View / edit Lion JSON
-                </button>
-              </div>
-            </div>
-            <p class="ui-stage-caption">
-              Model RBAC/ReBAC and compliance limits in Datalog. Unsuspend Bo to
-              watch the <code>why</code> provenance trace flip to
-              <strong>Allowed</strong>, or drag the spend limit past
-              <code>$500</code>
-              to watch <code>proof/prove</code> produce a live counterexample.
-            </p>
-            <div class="ui-stage-error" data-stage-error hidden></div>
-            <div class="ui-stage-workspace">
-              <div class="ui-stage-canvas" data-stage-canvas aria-live="polite">
-                <p class="lion-ui-text is-muted">Loading Lion runtime…</p>
-              </div>
-              <div class="ui-stage-source" data-stage-source hidden>
-                <div class="code-block playground-code is-live ui-stage-editor">
-                  <div class="playground-scroll">
-                    <div class="playground-layers">
-                      <pre
-                        aria-hidden="true"
-                      ><code data-stage-code></code></pre>
-                      <textarea
-                        class="playground-input"
-                        data-stage-input
-                        spellcheck="false"
-                        wrap="off"
-                        autocapitalize="off"
-                        autocomplete="off"
-                        autocorrect="off"
-                        aria-label="Edit verifiable policy Lion JSON"
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </article>
+          <section class="demo-section">
+            <header class="demo-intro">
+              <span class="demo-kicker">Dynamic app config &amp; forms</span>
+              <h3>Store validation lambdas and exact pricing in JSONB</h3>
+              <p>
+                Replace rigid feature-flag tables and unsafe JavaScript
+                <code>eval()</code>
+                with serializable lambdas and exact decimal arithmetic. Drag
+                <strong>Nights</strong>
+                to <code>1</code> with promo
+                <code>WEEKEND</code>
+                to trigger a live cross-field rule.
+              </p>
+            </header>
 
-          <article class="ui-stage" data-ui-demo="graph">
-            <div class="ui-stage-bar">
-              <div class="demo-heading">
-                <span class="demo-kicker"
-                  >Knowledge graphs &amp; ontologies</span
-                >
-                <h3>Query dependencies, influence, and bottlenecks live</h3>
+            <div class="ui-stage" data-ui-demo="form">
+              <div class="ui-stage-bar">
+                <div class="ui-stage-identity">
+                  <span class="ui-stage-dot" aria-hidden="true"></span>
+                  <span class="ui-stage-badge">Lion output</span>
+                  <code class="ui-stage-file">booking-rules.lion.json</code>
+                  <span class="ui-stage-time" data-stage-time></span>
+                </div>
+                <div class="ui-stage-tools">
+                  <button
+                    type="button"
+                    class="playground-btn"
+                    data-stage-reset
+                    hidden
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    class="playground-btn is-primary"
+                    aria-expanded="false"
+                    data-stage-toggle-source
+                  >
+                    View / edit Lion JSON
+                  </button>
+                </div>
               </div>
-              <div class="ui-stage-tools">
-                <span class="ui-stage-time" data-stage-time></span>
-                <button
-                  type="button"
-                  class="playground-btn"
-                  data-stage-reset
-                  hidden
+              <div class="ui-stage-error" data-stage-error hidden></div>
+              <div class="ui-stage-workspace">
+                <div
+                  class="ui-stage-canvas"
+                  data-stage-canvas
+                  aria-live="polite"
                 >
-                  Reset
-                </button>
-                <button
-                  type="button"
-                  class="playground-btn is-primary"
-                  aria-expanded="false"
-                  data-stage-toggle-source
-                >
-                  View / edit Lion JSON
-                </button>
-              </div>
-            </div>
-            <p class="ui-stage-caption">
-              Built-in graph algorithms (<code>graph/influence</code>,
-              <code>graph/dominators</code>, <code>graph/pageRank</code>,
-              <code>graph/shortestPath</code>, <code>graph/cycles</code>) run as
-              ordinary Datalog goals. Toggle the failover route to eliminate
-              <code>auth</code>
-              as a single point of failure.
-            </p>
-            <div class="ui-stage-error" data-stage-error hidden></div>
-            <div class="ui-stage-workspace">
-              <div class="ui-stage-canvas" data-stage-canvas aria-live="polite">
-                <p class="lion-ui-text is-muted">Loading Lion runtime…</p>
-              </div>
-              <div class="ui-stage-source" data-stage-source hidden>
-                <div class="code-block playground-code is-live ui-stage-editor">
-                  <div class="playground-scroll">
-                    <div class="playground-layers">
-                      <pre
-                        aria-hidden="true"
-                      ><code data-stage-code></code></pre>
-                      <textarea
-                        class="playground-input"
-                        data-stage-input
-                        spellcheck="false"
-                        wrap="off"
-                        autocapitalize="off"
-                        autocomplete="off"
-                        autocorrect="off"
-                        aria-label="Edit knowledge graph Lion JSON"
-                      ></textarea>
+                  <p class="lion-ui-text is-muted">Loading Lion runtime…</p>
+                </div>
+                <div class="ui-stage-source" data-stage-source hidden>
+                  <div
+                    class="code-block playground-code is-live ui-stage-editor"
+                  >
+                    <div class="playground-scroll">
+                      <div class="playground-layers">
+                        <pre
+                          aria-hidden="true"
+                        ><code data-stage-code></code></pre>
+                        <textarea
+                          class="playground-input"
+                          data-stage-input
+                          spellcheck="false"
+                          wrap="off"
+                          autocapitalize="off"
+                          autocomplete="off"
+                          autocorrect="off"
+                          aria-label="Edit dynamic form Lion JSON"
+                        ></textarea>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </article>
+          </section>
+
+          <section class="demo-section">
+            <header class="demo-intro">
+              <span class="demo-kicker"
+                >Verifiable auth &amp; business rules</span
+              >
+              <h3>Audit every decision with why and prove invariants</h3>
+              <p>
+                Model RBAC/ReBAC and compliance limits in Datalog. Unsuspend Bo
+                to watch the <code>why</code> provenance trace flip to
+                <strong>Allowed</strong>, or drag the spend limit past
+                <code>$500</code>
+                to watch <code>proof/prove</code> produce a live counterexample.
+              </p>
+            </header>
+
+            <div class="ui-stage" data-ui-demo="policy">
+              <div class="ui-stage-bar">
+                <div class="ui-stage-identity">
+                  <span class="ui-stage-dot" aria-hidden="true"></span>
+                  <span class="ui-stage-badge">Lion output</span>
+                  <code class="ui-stage-file">deploy-policy.lion.json</code>
+                  <span class="ui-stage-time" data-stage-time></span>
+                </div>
+                <div class="ui-stage-tools">
+                  <button
+                    type="button"
+                    class="playground-btn"
+                    data-stage-reset
+                    hidden
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    class="playground-btn is-primary"
+                    aria-expanded="false"
+                    data-stage-toggle-source
+                  >
+                    View / edit Lion JSON
+                  </button>
+                </div>
+              </div>
+              <div class="ui-stage-error" data-stage-error hidden></div>
+              <div class="ui-stage-workspace">
+                <div
+                  class="ui-stage-canvas"
+                  data-stage-canvas
+                  aria-live="polite"
+                >
+                  <p class="lion-ui-text is-muted">Loading Lion runtime…</p>
+                </div>
+                <div class="ui-stage-source" data-stage-source hidden>
+                  <div
+                    class="code-block playground-code is-live ui-stage-editor"
+                  >
+                    <div class="playground-scroll">
+                      <div class="playground-layers">
+                        <pre
+                          aria-hidden="true"
+                        ><code data-stage-code></code></pre>
+                        <textarea
+                          class="playground-input"
+                          data-stage-input
+                          spellcheck="false"
+                          wrap="off"
+                          autocapitalize="off"
+                          autocomplete="off"
+                          autocorrect="off"
+                          aria-label="Edit verifiable policy Lion JSON"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="demo-section">
+            <header class="demo-intro">
+              <span class="demo-kicker">Knowledge graphs &amp; ontologies</span>
+              <h3>Query dependencies, influence, and bottlenecks live</h3>
+              <p>
+                Built-in graph algorithms (<code>graph/influence</code>,
+                <code>graph/dominators</code>, <code>graph/pageRank</code>,
+                <code>graph/shortestPath</code>, <code>graph/cycles</code>) run
+                as ordinary Datalog goals. Toggle the failover route to
+                eliminate <code>auth</code> as a single point of failure.
+              </p>
+            </header>
+
+            <div class="ui-stage" data-ui-demo="graph">
+              <div class="ui-stage-bar">
+                <div class="ui-stage-identity">
+                  <span class="ui-stage-dot" aria-hidden="true"></span>
+                  <span class="ui-stage-badge">Lion output</span>
+                  <code class="ui-stage-file">service-graph.lion.json</code>
+                  <span class="ui-stage-time" data-stage-time></span>
+                </div>
+                <div class="ui-stage-tools">
+                  <button
+                    type="button"
+                    class="playground-btn"
+                    data-stage-reset
+                    hidden
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    class="playground-btn is-primary"
+                    aria-expanded="false"
+                    data-stage-toggle-source
+                  >
+                    View / edit Lion JSON
+                  </button>
+                </div>
+              </div>
+              <div class="ui-stage-error" data-stage-error hidden></div>
+              <div class="ui-stage-workspace">
+                <div
+                  class="ui-stage-canvas"
+                  data-stage-canvas
+                  aria-live="polite"
+                >
+                  <p class="lion-ui-text is-muted">Loading Lion runtime…</p>
+                </div>
+                <div class="ui-stage-source" data-stage-source hidden>
+                  <div
+                    class="code-block playground-code is-live ui-stage-editor"
+                  >
+                    <div class="playground-scroll">
+                      <div class="playground-layers">
+                        <pre
+                          aria-hidden="true"
+                        ><code data-stage-code></code></pre>
+                        <textarea
+                          class="playground-input"
+                          data-stage-input
+                          spellcheck="false"
+                          wrap="off"
+                          autocapitalize="off"
+                          autocomplete="off"
+                          autocorrect="off"
+                          aria-label="Edit knowledge graph Lion JSON"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
         <div class="docs-callout">

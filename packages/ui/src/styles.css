@@ -1,0 +1,581 @@
+/*
+ * Default themeable stylesheet for `@lionlang/ui/dom`.
+ *
+ * Customize any visual token by overriding `--lion-ui-*` custom properties on
+ * `:root` or your mount container, switch to the built-in light preset with
+ * `data-lion-theme="light"`, or skip this stylesheet entirely and pass
+ * `classes` to `renderUi()`.
+ */
+:root {
+  --lion-ui-bg: #14151b;
+  --lion-ui-surface: rgba(255, 255, 255, 0.025);
+  --lion-ui-surface-inset: rgba(6, 6, 8, 0.78);
+  --lion-ui-surface-elevated: #181920;
+  --lion-ui-border: #27272a;
+  --lion-ui-border-strong: #3f3f46;
+  --lion-ui-fg: #fafafa;
+  --lion-ui-fg-subtle: #e4e4e7;
+  --lion-ui-muted: #a1a1aa;
+  --lion-ui-muted-strong: #71717a;
+  --lion-ui-accent: #f59e0b;
+  --lion-ui-accent-bright: #fbbf24;
+  --lion-ui-ok: #4ade80;
+  --lion-ui-ok-border: #22c55e;
+  --lion-ui-error: #fca5a5;
+  --lion-ui-error-border: #ef4444;
+  --lion-ui-radius: 10px;
+  --lion-ui-radius-sm: 6px;
+  --lion-ui-font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --lion-ui-font-mono: "JetBrains Mono", "Fira Code", monospace;
+}
+
+[data-lion-theme="light"] {
+  --lion-ui-bg: #ffffff;
+  --lion-ui-surface: #fafafa;
+  --lion-ui-surface-inset: #f4f4f5;
+  --lion-ui-surface-elevated: #ffffff;
+  --lion-ui-border: #e4e4e7;
+  --lion-ui-border-strong: #d4d4d8;
+  --lion-ui-fg: #09090b;
+  --lion-ui-fg-subtle: #27272a;
+  --lion-ui-muted: #52525b;
+  --lion-ui-muted-strong: #71717a;
+  --lion-ui-accent: #d97706;
+  --lion-ui-accent-bright: #b45309;
+  --lion-ui-ok: #15803d;
+  --lion-ui-ok-border: #16a34a;
+  --lion-ui-error: #b91c1c;
+  --lion-ui-error-border: #dc2626;
+}
+
+.lion-ui-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.lion-ui-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.lion-ui-row.align-center {
+  align-items: center;
+}
+
+.lion-ui-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--ui-cols, 2), minmax(0, 1fr));
+}
+
+.gap-sm {
+  gap: 0.55rem;
+}
+
+.gap-md {
+  gap: 0.9rem;
+}
+
+.gap-lg {
+  gap: 1.25rem;
+}
+
+.lion-ui-card {
+  padding: 1.25rem;
+  font-family: var(--lion-ui-font-sans);
+  color: var(--lion-ui-fg);
+  background: var(--lion-ui-surface);
+  border: 1px solid var(--lion-ui-border);
+  border-radius: var(--lion-ui-radius);
+}
+
+.lion-ui-card-head {
+  margin-bottom: 1rem;
+}
+
+.lion-ui-card-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: var(--lion-ui-fg);
+}
+
+.lion-ui-card-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--lion-ui-muted);
+}
+
+.lion-ui-text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--lion-ui-fg);
+}
+
+.lion-ui-text.is-muted {
+  color: var(--lion-ui-muted);
+}
+
+.lion-ui-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.6rem;
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--lion-ui-fg);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--lion-ui-border-strong);
+  border-radius: 100px;
+}
+
+.lion-ui-badge.is-ok {
+  color: var(--lion-ui-ok);
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.lion-ui-badge.is-warn {
+  color: var(--lion-ui-accent-bright);
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.lion-ui-badge.is-error {
+  color: var(--lion-ui-error);
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.lion-ui-metric {
+  display: flex;
+  flex: 1 1 130px;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.8rem 0.95rem;
+  background: var(--lion-ui-surface-inset);
+  border: 1px solid var(--lion-ui-border);
+  border-radius: 8px;
+}
+
+.lion-ui-metric-label {
+  font-size: 0.74rem;
+  color: var(--lion-ui-muted);
+}
+
+.lion-ui-metric-value {
+  font-family: var(--lion-ui-font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--lion-ui-fg);
+}
+
+.lion-ui-metric.is-ok .lion-ui-metric-value {
+  color: var(--lion-ui-ok);
+}
+
+.lion-ui-metric.is-warn .lion-ui-metric-value {
+  color: var(--lion-ui-accent-bright);
+}
+
+.lion-ui-metric.is-error .lion-ui-metric-value {
+  color: var(--lion-ui-error);
+}
+
+.lion-ui-metric-delta {
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.72rem;
+  color: var(--lion-ui-muted-strong);
+}
+
+.lion-ui-alert {
+  padding: 0.8rem 1rem;
+  font-size: 0.86rem;
+  background: var(--lion-ui-surface);
+  border: 1px solid var(--lion-ui-border);
+  border-left: 3px solid var(--lion-ui-border-strong);
+  border-radius: 8px;
+}
+
+.lion-ui-alert.is-ok {
+  background: rgba(34, 197, 94, 0.08);
+  border-left-color: var(--lion-ui-ok-border);
+}
+
+.lion-ui-alert.is-warn {
+  background: rgba(245, 158, 11, 0.09);
+  border-left-color: var(--lion-ui-accent);
+}
+
+.lion-ui-alert.is-error {
+  background: rgba(239, 68, 68, 0.09);
+  border-left-color: var(--lion-ui-error-border);
+}
+
+.lion-ui-alert-title {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.86rem;
+  color: var(--lion-ui-fg);
+}
+
+.lion-ui-alert-body {
+  color: var(--lion-ui-muted);
+}
+
+.lion-ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lion-ui-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.84rem;
+}
+
+.lion-ui-field-label {
+  font-weight: 500;
+  color: var(--lion-ui-fg);
+}
+
+.lion-ui-field-value {
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.82rem;
+  color: var(--lion-ui-accent-bright);
+}
+
+.lion-ui-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.84rem;
+  color: var(--lion-ui-fg);
+  background: var(--lion-ui-surface-inset);
+  border: 1px solid var(--lion-ui-border-strong);
+  border-radius: var(--lion-ui-radius-sm);
+}
+
+/* Custom accessible dropdown (no native OS white popup) */
+.lion-ui-select-root {
+  position: relative;
+}
+
+.lion-ui-select-trigger {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.84rem;
+  color: var(--lion-ui-fg);
+  text-align: left;
+  cursor: pointer;
+  background: var(--lion-ui-surface-inset);
+  border: 1px solid var(--lion-ui-border-strong);
+  border-radius: var(--lion-ui-radius-sm);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.lion-ui-select-trigger:hover {
+  border-color: var(--lion-ui-muted);
+}
+
+.lion-ui-select-root.is-open .lion-ui-select-trigger {
+  border-color: var(--lion-ui-accent);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.14);
+}
+
+.lion-ui-select-chevron {
+  flex-shrink: 0;
+  color: var(--lion-ui-muted);
+  transition: transform 0.15s;
+}
+
+.lion-ui-select-root.is-open .lion-ui-select-chevron {
+  transform: rotate(180deg);
+}
+
+.lion-ui-select-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  left: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.3rem;
+  background: var(--lion-ui-surface-elevated);
+  border: 1px solid var(--lion-ui-border-strong);
+  border-radius: 8px;
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.75);
+}
+
+.lion-ui-select-menu[hidden] {
+  display: none;
+}
+
+.lion-ui-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.82rem;
+  color: var(--lion-ui-fg-subtle);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  transition:
+    background-color 0.12s,
+    color 0.12s;
+}
+
+.lion-ui-select-option:hover {
+  color: var(--lion-ui-fg);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.lion-ui-select-option.is-selected {
+  color: var(--lion-ui-accent-bright);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.lion-ui-select-check {
+  font-size: 0.78rem;
+  color: var(--lion-ui-accent-bright);
+}
+
+.lion-ui-slider {
+  width: 100%;
+  accent-color: var(--lion-ui-accent);
+  cursor: pointer;
+}
+
+.lion-ui-toggle {
+  display: inline-flex;
+  gap: 0.65rem;
+  align-items: center;
+  cursor: pointer;
+}
+
+.lion-ui-toggle-input {
+  position: absolute;
+  opacity: 0;
+}
+
+.lion-ui-toggle-track {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  background: var(--lion-ui-border-strong);
+  border-radius: 100px;
+  transition: background-color 0.15s;
+}
+
+.lion-ui-toggle-track::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  content: "";
+  background: var(--lion-ui-fg);
+  border-radius: 50%;
+  transition: transform 0.15s;
+}
+
+.lion-ui-toggle-input:checked + .lion-ui-toggle-track {
+  background: var(--lion-ui-accent);
+}
+
+.lion-ui-toggle-input:checked + .lion-ui-toggle-track::after {
+  transform: translateX(16px);
+}
+
+.lion-ui-toggle-label {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--lion-ui-fg);
+}
+
+.lion-ui-button {
+  align-self: flex-start;
+  padding: 0.5rem 0.9rem;
+  font-family: var(--lion-ui-font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--lion-ui-fg);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--lion-ui-border-strong);
+  border-radius: var(--lion-ui-radius-sm);
+  transition: background-color 0.15s;
+}
+
+.lion-ui-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.lion-ui-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--lion-ui-border);
+  border-radius: 8px;
+}
+
+.lion-ui-table {
+  width: 100%;
+  font-size: 0.82rem;
+  border-collapse: collapse;
+}
+
+.lion-ui-table th {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--lion-ui-muted);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--lion-ui-border);
+}
+
+.lion-ui-table td {
+  padding: 0.5rem 0.75rem;
+  color: var(--lion-ui-fg-subtle);
+  border-top: 1px solid var(--lion-ui-border);
+}
+
+.lion-ui-why {
+  padding: 0.75rem 0.9rem;
+  background: var(--lion-ui-surface-inset);
+  border: 1px solid var(--lion-ui-border);
+  border-radius: 8px;
+}
+
+.lion-ui-why-title {
+  margin-bottom: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--lion-ui-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.lion-ui-why-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.lion-ui-why-tag {
+  padding: 0.08rem 0.45rem;
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.lion-ui-why-tag.is-ok {
+  color: var(--lion-ui-ok);
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.lion-ui-why-tag.is-accent {
+  color: var(--lion-ui-accent-bright);
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.lion-ui-why-tag.is-error {
+  color: var(--lion-ui-error);
+  background: rgba(239, 68, 68, 0.14);
+}
+
+.lion-ui-why-tag.is-muted {
+  color: var(--lion-ui-muted);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.lion-ui-why-atom {
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.76rem;
+  color: var(--lion-ui-fg-subtle);
+  word-break: break-word;
+}
+
+.lion-ui-why-children,
+.lion-ui-why-but {
+  padding-left: 0.9rem;
+  margin-top: 0.45rem;
+  border-left: 1px solid var(--lion-ui-border);
+}
+
+.lion-ui-why-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.68rem;
+  color: var(--lion-ui-error);
+  text-transform: uppercase;
+}
+
+.lion-ui-proof {
+  padding: 1rem 1.15rem;
+  background: var(--lion-ui-surface-inset);
+  border: 1px solid var(--lion-ui-border);
+  border-radius: var(--lion-ui-radius);
+}
+
+.lion-ui-proof-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lion-ui-proof-title {
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--lion-ui-fg);
+}
+
+.lion-ui-proof-bounds {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+}
+
+.lion-ui-proof-stat {
+  padding: 0.25rem 0.6rem;
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.82rem;
+  color: var(--lion-ui-accent-bright);
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: var(--lion-ui-radius-sm);
+}
+
+.lion-ui-proof-note {
+  margin-top: 0.55rem;
+  font-family: var(--lion-ui-font-mono);
+  font-size: 0.78rem;
+  color: var(--lion-ui-muted);
+}
+
+.lion-ui-proof-note.is-error {
+  color: var(--lion-ui-error);
+}

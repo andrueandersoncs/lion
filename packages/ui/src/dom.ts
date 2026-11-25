@@ -6,17 +6,31 @@
  * controls (`input`, `number`, `slider`, `select`, `toggle`, `button`) keep
  * their DOM elements and focus across re-renders by matching on `data-ui-kind`
  * and `data-ui-key`.
+ *
+ * Styling is fully configurable:
+ * - Import `@lionlang/ui/styles.css` and override `--lion-ui-*` CSS variables
+ *   (or set `theme: "light" | "dark"`), OR
+ * - Omit the default stylesheet and pass `classes: { card: "...", ... }` for
+ *   Tailwind / CSS Modules / custom design systems.
  */
 import { isUiNode, type UiChild, type UiKind, type UiNode } from "./types.ts";
 
 export interface RenderUiOptions {
+  /** Extra or replacement class names keyed by slot (e.g. `"card"`, `"selectTrigger"`, `"selectMenu"`). */
+  readonly classes?: Readonly<Partial<Record<string, string>>>;
   /** Called when the user interacts with a control that carries an action. */
   readonly onAction?: (action: unknown, value?: unknown) => void;
+  /** Optional theme preset applied as `data-lion-theme` on the container. */
+  readonly theme?: "dark" | "light";
+  /** Omit default `lion-ui-*` class names when using custom `classes` only. */
+  readonly unstyled?: boolean;
 }
 
 interface RenderContext {
+  readonly classes: Readonly<Partial<Record<string, string>>> | undefined;
   readonly doc: Document;
   readonly onAction: ((action: unknown, value?: unknown) => void) | undefined;
+  readonly unstyled: boolean;
 }
 
 type ElementRenderer = (
@@ -27,6 +41,8 @@ type ElementRenderer = (
 
 const ACTION_MAP = new WeakMap<HTMLElement, unknown>();
 const WIRED = new WeakSet<HTMLElement>();
+const OPEN_SELECTS = new Set<HTMLElement>();
+const OUTSIDE_WIRED = new WeakSet<Document>();
 
 const str = (value: unknown, fallback = ""): string => {
   if (typeof value === "string") {
@@ -54,6 +70,38 @@ const TONES = new Set(["ok", "warn", "error", "muted", "accent"]);
 const toneClass = (tone: unknown): string => {
   const value = str(tone);
   return TONES.has(value) ? `is-${value}` : "";
+};
+
+const cx = (
+  ctx: RenderContext,
+  slot: string,
+  base: string,
+  extra?: string
+): string => {
+  const parts: string[] = [];
+  if (!ctx.unstyled && base) {
+    parts.push(base);
+  }
+  const custom = ctx.classes?.[slot];
+  if (custom) {
+    parts.push(custom);
+  }
+  if (extra) {
+    parts.push(extra);
+  }
+  return parts.join(" ").trim();
+};
+
+const nodeClass = (
+  ctx: RenderContext,
+  slot: string,
+  base: string,
+  node: UiNode,
+  extra?: string
+): string => {
+  const propClass = str(node.props.className);
+  const combinedExtra = [extra, propClass].filter(Boolean).join(" ");
+  return cx(ctx, slot, base, combinedExtra);
 };
 
 const matchesExisting = (
@@ -95,6 +143,41 @@ const formatAtom = (value: unknown): string => {
     return `[${value.map((item) => JSON.stringify(item)).join(", ")}]`;
   }
   return typeof value === "string" ? value : JSON.stringify(value);
+};
+
+const closeSelect = (root: HTMLElement) => {
+  root.classList.remove("is-open");
+  const trigger = root.querySelector<HTMLButtonElement>(
+    "[data-select-trigger]"
+  );
+  const menu = root.querySelector<HTMLElement>("[data-select-menu]");
+  trigger?.setAttribute("aria-expanded", "false");
+  if (menu) {
+    menu.hidden = true;
+  }
+  OPEN_SELECTS.delete(root);
+};
+
+const ensureOutsideDismiss = (doc: Document) => {
+  if (OUTSIDE_WIRED.has(doc)) {
+    return;
+  }
+  OUTSIDE_WIRED.add(doc);
+  doc.addEventListener("pointerdown", (event) => {
+    const target = event.target as Node | null;
+    for (const root of [...OPEN_SELECTS]) {
+      if (!(target && root.contains(target))) {
+        closeSelect(root);
+      }
+    }
+  });
+  doc.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      for (const root of [...OPEN_SELECTS]) {
+        closeSelect(root);
+      }
+    }
+  });
 };
 
 const renderWhyHeader = (
@@ -221,8 +304,13 @@ const renderProofBody = (
   }
 };
 
-const renderProof: ElementRenderer = (node, { doc }) => {
-  const card = makeEl(doc, "div", "lion-ui-proof");
+const renderProof: ElementRenderer = (node, ctx) => {
+  const { doc } = ctx;
+  const card = makeEl(
+    doc,
+    "div",
+    nodeClass(ctx, "proof", "lion-ui-proof", node)
+  );
   card.dataset.uiKind = node.$ui;
   card.dataset.uiKey = keyOf(node);
   const data =
@@ -239,23 +327,34 @@ const renderProof: ElementRenderer = (node, { doc }) => {
     "lion-ui-proof-title"
   );
   const [badgeText, badgeTone] = proofBadge(node.props, data);
-  appendText(doc, head, "span", badgeText, `lion-ui-badge ${badgeTone}`);
+  appendText(
+    doc,
+    head,
+    "span",
+    badgeText,
+    cx(ctx, "badge", "lion-ui-badge", badgeTone)
+  );
   card.append(head);
   renderProofBody(doc, card, node.props, data);
   return card;
 };
 
-const renderButton: ElementRenderer = (node, { doc, onAction }, existing) => {
+const renderButton: ElementRenderer = (node, ctx, existing) => {
+  const { doc, onAction } = ctx;
   const key = keyOf(node);
   const button = (
-    matchesExisting(existing, "button", key)
-      ? existing
-      : makeEl(doc, "button", "lion-ui-button")
+    matchesExisting(existing, "button", key) ? existing : makeEl(doc, "button")
   ) as HTMLButtonElement;
   button.type = "button";
   button.dataset.uiKind = "button";
   button.dataset.uiKey = key;
-  button.className = `lion-ui-button ${toneClass(node.props.tone)}`.trim();
+  button.className = nodeClass(
+    ctx,
+    "button",
+    "lion-ui-button",
+    node,
+    toneClass(node.props.tone)
+  );
   button.disabled = bool(node.props.disabled, false);
   button.textContent =
     str(node.props.label) ||
@@ -274,13 +373,15 @@ const renderButton: ElementRenderer = (node, { doc, onAction }, existing) => {
   return button;
 };
 
-const renderToggle: ElementRenderer = (node, { doc, onAction }, existing) => {
+const renderToggle: ElementRenderer = (node, ctx, existing) => {
+  const { doc, onAction } = ctx;
   const key = keyOf(node);
   const wrapper = matchesExisting(existing, "toggle", key)
     ? existing
-    : makeEl(doc, "label", "lion-ui-toggle");
+    : makeEl(doc, "label");
   wrapper.dataset.uiKind = "toggle";
   wrapper.dataset.uiKey = key;
+  wrapper.className = nodeClass(ctx, "toggle", "lion-ui-toggle", node);
   let input = wrapper.querySelector("input") as HTMLInputElement | null;
   let text = wrapper.querySelector(
     ".lion-ui-toggle-label"
@@ -311,17 +412,21 @@ const renderToggle: ElementRenderer = (node, { doc, onAction }, existing) => {
 };
 
 const ensureFieldShell = (
-  doc: Document,
+  ctx: RenderContext,
   kind: UiKind,
   key: string,
   label: string,
+  node: UiNode,
+  tag: "label" | "div",
   existing?: HTMLElement
 ) => {
+  const { doc } = ctx;
   const field = matchesExisting(existing, kind, key)
     ? existing
-    : makeEl(doc, "label", `lion-ui-field is-${kind}`);
+    : makeEl(doc, tag);
   field.dataset.uiKind = kind;
   field.dataset.uiKey = key;
+  field.className = nodeClass(ctx, "field", `lion-ui-field is-${kind}`, node);
   let head = field.querySelector(".lion-ui-field-head") as HTMLElement | null;
   let labelEl = field.querySelector(
     ".lion-ui-field-label"
@@ -358,47 +463,136 @@ const normalizeOptions = (raw: unknown) => {
   );
 };
 
-const renderSelect: ElementRenderer = (node, { doc, onAction }, existing) => {
+const makeChevronSvg = (doc: Document): SVGSVGElement => {
+  const svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("width", "14");
+  svg.setAttribute("height", "14");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("class", "lion-ui-select-chevron");
+  const path = doc.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  path.setAttribute("points", "6 9 12 15 18 9");
+  svg.append(path);
+  return svg;
+};
+
+const populateSelectMenu = (
+  menu: HTMLElement,
+  root: HTMLElement,
+  options: readonly { readonly label: string; readonly value: string }[],
+  currentValue: string,
+  ctx: RenderContext
+) => {
+  const { doc, onAction } = ctx;
+  menu.textContent = "";
+  for (const opt of options) {
+    const selected = opt.value === currentValue;
+    const item = makeEl(
+      doc,
+      "button",
+      cx(
+        ctx,
+        "selectOption",
+        "lion-ui-select-option",
+        selected ? "is-selected" : ""
+      )
+    ) as HTMLButtonElement;
+    item.type = "button";
+    item.setAttribute("role", "option");
+    item.setAttribute("aria-selected", String(selected));
+    const check = makeEl(doc, "span", "lion-ui-select-check");
+    check.textContent = selected ? "✓" : "";
+    const text = makeEl(doc, "span", "lion-ui-select-option-label");
+    text.textContent = opt.label;
+    item.append(text, check);
+    item.addEventListener("click", () => {
+      closeSelect(root);
+      const action = ACTION_MAP.get(root);
+      if (action !== undefined) {
+        onAction?.(action, opt.value);
+      }
+    });
+    menu.append(item);
+  }
+};
+
+const renderSelect: ElementRenderer = (node, ctx, existing) => {
+  const { doc } = ctx;
+  ensureOutsideDismiss(doc);
   const { field } = ensureFieldShell(
-    doc,
+    ctx,
     "select",
     keyOf(node),
     str(node.props.label),
+    node,
+    "div",
     existing
   );
-  let select = field.querySelector("select") as HTMLSelectElement | null;
-  if (!select) {
-    select = doc.createElement("select");
-    select.className = "lion-ui-select";
-    field.append(select);
+
+  let root = field.querySelector<HTMLElement>("[data-select-root]");
+  let trigger = field.querySelector<HTMLButtonElement>("[data-select-trigger]");
+  let triggerLabel = field.querySelector<HTMLElement>("[data-select-value]");
+  let menu = field.querySelector<HTMLElement>("[data-select-menu]");
+
+  if (!(root && trigger && triggerLabel && menu)) {
+    root = makeEl(doc, "div", cx(ctx, "select", "lion-ui-select-root"));
+    root.dataset.selectRoot = "";
+    trigger = makeEl(
+      doc,
+      "button",
+      cx(ctx, "selectTrigger", "lion-ui-select-trigger")
+    ) as HTMLButtonElement;
+    trigger.type = "button";
+    trigger.dataset.selectTrigger = "";
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
+    triggerLabel = makeEl(doc, "span", "lion-ui-select-value");
+    triggerLabel.dataset.selectValue = "";
+    trigger.append(triggerLabel, makeChevronSvg(doc));
+    menu = makeEl(doc, "div", cx(ctx, "selectMenu", "lion-ui-select-menu"));
+    menu.dataset.selectMenu = "";
+    menu.setAttribute("role", "listbox");
+    menu.hidden = true;
+    root.append(trigger, menu);
+    field.append(root);
   }
+
   const options = normalizeOptions(node.props.options);
-  const signature = JSON.stringify(options);
-  if (select.dataset.optionsSig !== signature) {
-    select.dataset.optionsSig = signature;
-    select.textContent = "";
-    for (const opt of options) {
-      const optionEl = doc.createElement("option");
-      optionEl.value = opt.value;
-      optionEl.textContent = opt.label;
-      select.append(optionEl);
-    }
-  }
-  const nextVal = str(node.props.value);
-  if (select.value !== nextVal) {
-    select.value = nextVal;
-  }
-  ACTION_MAP.set(select, node.props.onChange ?? node.props.action);
-  if (!WIRED.has(select)) {
-    WIRED.add(select);
-    select.addEventListener("change", () => {
-      const target = select as HTMLSelectElement;
-      const action = ACTION_MAP.get(target);
-      if (action !== undefined) {
-        onAction?.(action, target.value);
+  const currentValue = str(node.props.value);
+  const currentOption = options.find((opt) => opt.value === currentValue);
+  triggerLabel.textContent = currentOption?.label ?? currentValue;
+
+  ACTION_MAP.set(root, node.props.onChange ?? node.props.action);
+  populateSelectMenu(menu, root, options, currentValue, ctx);
+
+  if (!WIRED.has(trigger)) {
+    WIRED.add(trigger);
+    const selectRoot = root;
+    const selectTrigger = trigger;
+    const selectMenu = menu;
+    selectTrigger.addEventListener("click", () => {
+      const opening = selectMenu.hidden;
+      for (const other of [...OPEN_SELECTS]) {
+        if (other !== selectRoot) {
+          closeSelect(other);
+        }
+      }
+      selectMenu.hidden = !opening;
+      selectRoot.classList.toggle("is-open", opening);
+      selectTrigger.setAttribute("aria-expanded", String(opening));
+      if (opening) {
+        OPEN_SELECTS.add(selectRoot);
+      } else {
+        OPEN_SELECTS.delete(selectRoot);
       }
     });
   }
+
   return field;
 };
 
@@ -445,18 +639,25 @@ const syncInputAttributes = (
 
 const renderInputControl =
   (kind: "input" | "number" | "slider"): ElementRenderer =>
-  (node, { doc, onAction }, existing) => {
+  (node, ctx, existing) => {
+    const { doc, onAction } = ctx;
     const { field, valueBadge } = ensureFieldShell(
-      doc,
+      ctx,
       kind,
       keyOf(node),
       str(node.props.label),
+      node,
+      "label",
       existing
     );
     let input = field.querySelector("input") as HTMLInputElement | null;
     if (!input) {
       input = doc.createElement("input");
-      input.className = kind === "slider" ? "lion-ui-slider" : "lion-ui-input";
+      input.className = cx(
+        ctx,
+        kind,
+        kind === "slider" ? "lion-ui-slider" : "lion-ui-input"
+      );
       field.append(input);
     }
     syncInputAttributes(input, kind, node.props, doc, valueBadge);
@@ -538,8 +739,13 @@ const renderLayout =
     el.dataset.uiKey = key;
     const gap = str(node.props.gap, "md");
     const align = str(node.props.align);
-    el.className =
-      `lion-ui-${kind} gap-${gap} ${align ? `align-${align}` : ""}`.trim();
+    el.className = nodeClass(
+      ctx,
+      kind,
+      `lion-ui-${kind}`,
+      node,
+      [`gap-${gap}`, align ? `align-${align}` : ""].filter(Boolean).join(" ")
+    );
     if (kind === "grid") {
       el.style.setProperty("--ui-cols", String(num(node.props.columns, 2)));
     }
@@ -555,7 +761,13 @@ const renderCard: ElementRenderer = (node, ctx, existing) => {
     : makeEl(doc, "section");
   el.dataset.uiKind = "card";
   el.dataset.uiKey = key;
-  el.className = `lion-ui-card ${toneClass(node.props.tone)}`.trim();
+  el.className = nodeClass(
+    ctx,
+    "card",
+    "lion-ui-card",
+    node,
+    toneClass(node.props.tone)
+  );
 
   const title = str(node.props.title);
   const subtitle = str(node.props.subtitle);
@@ -594,11 +806,12 @@ const renderCard: ElementRenderer = (node, ctx, existing) => {
   return el;
 };
 
-const renderMetric: ElementRenderer = (node, { doc }) => {
+const renderMetric: ElementRenderer = (node, ctx) => {
+  const { doc } = ctx;
   const el = makeEl(
     doc,
     "div",
-    `lion-ui-metric ${toneClass(node.props.tone)}`.trim()
+    nodeClass(ctx, "metric", "lion-ui-metric", node, toneClass(node.props.tone))
   );
   el.dataset.uiKind = "metric";
   el.dataset.uiKey = keyOf(node);
@@ -618,7 +831,7 @@ const renderAlert: ElementRenderer = (node, ctx) => {
   const el = makeEl(
     ctx.doc,
     "div",
-    `lion-ui-alert ${toneClass(node.props.tone)}`.trim()
+    nodeClass(ctx, "alert", "lion-ui-alert", node, toneClass(node.props.tone))
   );
   el.dataset.uiKind = "alert";
   el.dataset.uiKey = keyOf(node);
@@ -639,11 +852,18 @@ const renderAlert: ElementRenderer = (node, ctx) => {
   return el;
 };
 
-const renderProgress: ElementRenderer = (node, { doc }) => {
+const renderProgress: ElementRenderer = (node, ctx) => {
+  const { doc } = ctx;
   const el = makeEl(
     doc,
     "div",
-    `lion-ui-progress ${toneClass(node.props.tone)}`.trim()
+    nodeClass(
+      ctx,
+      "progress",
+      "lion-ui-progress",
+      node,
+      toneClass(node.props.tone)
+    )
   );
   el.dataset.uiKind = "progress";
   el.dataset.uiKey = keyOf(node);
@@ -675,10 +895,14 @@ const renderProgress: ElementRenderer = (node, { doc }) => {
 
 const renderTable: ElementRenderer = (node, ctx) => {
   const { doc } = ctx;
-  const wrap = makeEl(doc, "div", "lion-ui-table-wrap");
+  const wrap = makeEl(
+    doc,
+    "div",
+    nodeClass(ctx, "tableWrap", "lion-ui-table-wrap", node)
+  );
   wrap.dataset.uiKind = "table";
   wrap.dataset.uiKey = keyOf(node);
-  const table = makeEl(doc, "table", "lion-ui-table");
+  const table = makeEl(doc, "table", cx(ctx, "table", "lion-ui-table"));
   const columns = Array.isArray(node.props.columns) ? node.props.columns : [];
   const rows = Array.isArray(node.props.rows) ? node.props.rows : [];
   if (columns.length > 0) {
@@ -710,8 +934,9 @@ const renderTable: ElementRenderer = (node, ctx) => {
   return wrap;
 };
 
-const renderWhy: ElementRenderer = (node, { doc }) => {
-  const el = makeEl(doc, "div", "lion-ui-why");
+const renderWhy: ElementRenderer = (node, ctx) => {
+  const { doc } = ctx;
+  const el = makeEl(doc, "div", nodeClass(ctx, "why", "lion-ui-why", node));
   el.dataset.uiKind = "why";
   el.dataset.uiKey = keyOf(node);
   if (node.props.title) {
@@ -722,12 +947,12 @@ const renderWhy: ElementRenderer = (node, { doc }) => {
 };
 
 const renderSimple =
-  (tag: string, baseClass: string): ElementRenderer =>
+  (tag: string, slot: string, baseClass: string): ElementRenderer =>
   (node, ctx) => {
     const el = makeEl(
       ctx.doc,
       tag,
-      `${baseClass} ${toneClass(node.props.tone)}`.trim()
+      nodeClass(ctx, slot, baseClass, node, toneClass(node.props.tone))
     );
     el.dataset.uiKind = node.$ui;
     el.dataset.uiKey = keyOf(node);
@@ -737,15 +962,20 @@ const renderSimple =
 
 const renderHeading: ElementRenderer = (node, ctx) => {
   const level = Math.min(4, Math.max(1, num(node.props.level, 3)));
-  const el = makeEl(ctx.doc, `h${level}`, `lion-ui-heading level-${level}`);
+  const el = makeEl(
+    ctx.doc,
+    `h${level}`,
+    nodeClass(ctx, "heading", "lion-ui-heading", node, `level-${level}`)
+  );
   el.dataset.uiKind = "heading";
   el.dataset.uiKey = keyOf(node);
   patchChildren(el, node.children, ctx);
   return el;
 };
 
-const renderCode: ElementRenderer = (node, { doc }) => {
-  const pre = makeEl(doc, "pre", "lion-ui-code");
+const renderCode: ElementRenderer = (node, ctx) => {
+  const { doc } = ctx;
+  const pre = makeEl(doc, "pre", nodeClass(ctx, "code", "lion-ui-code", node));
   pre.dataset.uiKind = "code";
   const code = doc.createElement("code");
   code.textContent = node.children.map((child) => str(child)).join("");
@@ -753,15 +983,19 @@ const renderCode: ElementRenderer = (node, { doc }) => {
   return pre;
 };
 
-const renderDivider: ElementRenderer = (_node, { doc }) => {
-  const hr = makeEl(doc, "hr", "lion-ui-divider");
+const renderDivider: ElementRenderer = (node, ctx) => {
+  const hr = makeEl(
+    ctx.doc,
+    "hr",
+    nodeClass(ctx, "divider", "lion-ui-divider", node)
+  );
   hr.dataset.uiKind = "divider";
   return hr;
 };
 
 const RENDERERS: Readonly<Record<UiKind, ElementRenderer>> = {
   alert: renderAlert,
-  badge: renderSimple("span", "lion-ui-badge"),
+  badge: renderSimple("span", "badge", "lion-ui-badge"),
   button: renderButton,
   card: renderCard,
   code: renderCode,
@@ -778,7 +1012,7 @@ const RENDERERS: Readonly<Record<UiKind, ElementRenderer>> = {
   slider: renderInputControl("slider"),
   stack: renderLayout("stack"),
   table: renderTable,
-  text: renderSimple("p", "lion-ui-text"),
+  text: renderSimple("p", "text", "lion-ui-text"),
   toggle: renderToggle,
   why: renderWhy,
 };
@@ -797,9 +1031,14 @@ export const renderUi = (
   container: HTMLElement,
   options: RenderUiOptions = {}
 ): void => {
+  if (options.theme) {
+    container.dataset.lionTheme = options.theme;
+  }
   const ctx: RenderContext = {
+    classes: options.classes,
     doc: container.ownerDocument,
     onAction: options.onAction,
+    unstyled: options.unstyled ?? false,
   };
   const existing = container.firstElementChild as HTMLElement | null;
   const next = renderElement(node, ctx, existing ?? undefined);
