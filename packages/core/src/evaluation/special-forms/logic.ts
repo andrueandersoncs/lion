@@ -296,6 +296,10 @@ export const evaluateRelation = ([
   options,
 ]: typeof RelationFormSchema.Type) =>
   Effect.gen(function* () {
+    const environment = yield* LionEnvironmentService;
+    if (environment.meter !== undefined) {
+      yield* environment.meter.requirePermission("declare-relation", name);
+    }
     const store = yield* database;
     const { key, merge, schema } = yield* parseRelationOptions(name, options);
     const rowSchema =
@@ -307,7 +311,7 @@ export const evaluateRelation = ([
     }
     const relation = yield* declareRelation(store, name, columns, key, merge);
     const value = relationValue(relation);
-    setGlobalBinding(yield* LionEnvironmentService, name, value);
+    setGlobalBinding(environment, name, value);
     if (schema !== undefined && rowSchema !== undefined) {
       yield* rowsMustFit(relation, value, schema, rowSchema);
     }
@@ -367,6 +371,11 @@ export const evaluateSchema = (
           : `A schema's name must be a string that is not the name of a special form, but found ${show(misnamed)}.`
       );
     }
+    if (environment.meter !== undefined) {
+      for (const name of names as string[]) {
+        yield* environment.meter.requirePermission("declare-schema", name);
+      }
+    }
     // A schema the database holds keeps standing for its name.
     const schemas = (names as string[]).map(
       (name) => store.schemas.get(name) ?? makeSchema(name)
@@ -403,6 +412,10 @@ export const evaluateRule = (
   part: Part = evaluate
 ) =>
   Effect.gen(function* () {
+    const environment = yield* LionEnvironmentService;
+    if (environment.meter !== undefined) {
+      yield* environment.meter.requirePermission("mutate-rule");
+    }
     const [headValue, ...bodyValues] = yield* writing(
       evaluateAll([head, ...body], part)
     );
@@ -419,8 +432,19 @@ export const evaluateFact = (
 ) =>
   Effect.gen(function* () {
     const values = yield* atoms("fact", facts, part, scope);
+    const environment = yield* LionEnvironmentService;
+    const meter = environment.meter;
+    if (meter !== undefined) {
+      for (const atom of values) {
+        yield* meter.requirePermission("write-fact", atom.relation.name);
+      }
+    }
     const db = yield* database;
-    const made = yield* assertFacts(db, values);
+    const made = yield* assertFacts(
+      db,
+      values,
+      meter === undefined ? undefined : () => meter.checkFactLimit(db)
+    );
     yield* tellWatchers(db);
     return made;
   });
@@ -485,6 +509,25 @@ const retractWhereParts = (
     return { targetAtoms, whereGoal };
   });
 
+const requireRetractPermissions = (
+  meter: Environment["meter"],
+  atomsToRetract: readonly Atom[],
+  forms: readonly LogicForm[] = []
+) =>
+  Effect.gen(function* () {
+    if (meter === undefined) {
+      return;
+    }
+    for (const atom of atomsToRetract) {
+      yield* meter.requirePermission("write-fact", atom.relation.name);
+    }
+    for (const form of forms) {
+      yield* meter.requirePermission(
+        form.form === "invariant" ? "mutate-invariant" : "mutate-rule"
+      );
+    }
+  });
+
 /**
  * ["retract", goal, ...] takes facts back. A `rule` or `invariant` form
  * among them, written as it was added, takes that rule or invariant back.
@@ -497,6 +540,8 @@ export const evaluateRetract = (
   scope?: Scope
 ) =>
   Effect.gen(function* () {
+    const environment = yield* LionEnvironmentService;
+    const meter = environment.meter;
     if (parts.length >= 2 && isPlainObject(parts.at(-1))) {
       const { targetAtoms, whereGoal } = yield* retractWhereParts(
         parts.slice(0, -1),
@@ -504,12 +549,13 @@ export const evaluateRetract = (
         part,
         scope
       );
+      yield* requireRetractPermissions(meter, targetAtoms);
       const db = yield* database;
       const made = yield* retractWhere(db, targetAtoms, whereGoal);
       yield* tellWatchers(db);
       return made;
     }
-    const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));
+    const isTaken = isHeld(scope ?? environment);
     const values = yield* atoms(
       "retract",
       parts.filter((item) => !isTaken(item)),
@@ -519,6 +565,7 @@ export const evaluateRetract = (
       parts.filter(isTaken) as LionExpressionType[][],
       (form) => heldForm(form, part)
     );
+    yield* requireRetractPermissions(meter, values, forms);
     const db = yield* database;
     const made = yield* retract(db, [...values, ...forms]);
     yield* tellWatchers(db);
@@ -742,6 +789,10 @@ export const evaluateInvariant = (
   part: Part = evaluate
 ) =>
   Effect.gen(function* () {
+    const environment = yield* LionEnvironmentService;
+    if (environment.meter !== undefined) {
+      yield* environment.meter.requirePermission("mutate-invariant");
+    }
     const { assert, goalValue, query } = yield* invariantOf(
       goal,
       options,

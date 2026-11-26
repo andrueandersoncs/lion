@@ -12,12 +12,16 @@
  * environment and the database bind and those the program defines, and a
  * lambda's scope its parameters and the names its body defines.
  */
+import type { ExecutionMeter } from "@/evaluation/sandbox";
+
 export interface Environment {
   readonly bindings: Map<string, unknown>;
   /** True for the scope `define` binds in: a run's top scope, or a call's. */
   readonly body?: boolean;
   /** When the scope was made, as `madeNow` counts: a later scope is larger. */
   readonly made?: number;
+  /** Optional resource meter and permission guard for sandboxed runs. */
+  readonly meter?: ExecutionMeter;
   readonly parent: Environment | undefined;
 }
 
@@ -46,16 +50,21 @@ export interface Scope {
 export const makeEnvironment = (
   bindings: Readonly<Record<string, unknown>> | Map<string, unknown>,
   parent?: Environment,
-  body = false
-): Environment => ({
-  bindings:
-    bindings instanceof Map
-      ? bindings
-      : new Map<string, unknown>(Object.entries(bindings)),
-  ...(body ? { body } : {}),
-  made: makingScope(),
-  parent,
-});
+  body = false,
+  meter?: ExecutionMeter
+): Environment => {
+  const activeMeter = meter ?? parent?.meter;
+  return {
+    bindings:
+      bindings instanceof Map
+        ? bindings
+        : new Map<string, unknown>(Object.entries(bindings)),
+    ...(body ? { body } : {}),
+    made: makingScope(),
+    ...(activeMeter === undefined ? {} : { meter: activeMeter }),
+    parent,
+  };
+};
 
 /** What `lookup` gives for a name that nothing is bound to. */
 export const UNBOUND: unique symbol = Symbol("unbound");

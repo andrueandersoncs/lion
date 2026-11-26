@@ -993,12 +993,164 @@ const renderDivider: ElementRenderer = (node, ctx) => {
   return hr;
 };
 
+const renderChart: ElementRenderer = (node, ctx) => {
+  const { doc } = ctx;
+  const wrap = makeEl(
+    doc,
+    "div",
+    nodeClass(ctx, "chart", "lion-ui-chart", node)
+  );
+  wrap.dataset.uiKind = "chart";
+  wrap.dataset.uiKey = keyOf(node);
+  if (node.props.title) {
+    appendText(doc, wrap, "div", str(node.props.title), "lion-ui-chart-title");
+  }
+  const rows = Array.isArray(node.props.data)
+    ? (node.props.data as readonly Record<string, unknown>[])
+    : [];
+  const maxVal = Math.max(
+    1,
+    ...rows.map((r) => Math.abs(num(r.max ?? r.value, 0)))
+  );
+  const list = makeEl(doc, "div", "lion-ui-chart-bars");
+  for (const row of rows) {
+    const item = makeEl(doc, "div", "lion-ui-chart-row");
+    appendText(doc, item, "span", str(row.label), "lion-ui-chart-label");
+    const track = makeEl(doc, "div", "lion-ui-chart-track");
+    const fill = makeEl(
+      doc,
+      "div",
+      `lion-ui-chart-fill ${toneClass(row.tone)}`.trim()
+    );
+    const val = num(row.value, 0);
+    fill.style.width = `${Math.min(100, Math.max(0, (Math.abs(val) / maxVal) * 100))}%`;
+    track.append(fill);
+    item.append(track);
+    appendText(
+      doc,
+      item,
+      "span",
+      str(row.display ?? val),
+      "lion-ui-chart-value"
+    );
+    list.append(item);
+  }
+  wrap.append(list);
+  return wrap;
+};
+
+const renderTimeline: ElementRenderer = (node, ctx) => {
+  const { doc } = ctx;
+  const wrap = makeEl(
+    doc,
+    "div",
+    nodeClass(ctx, "timeline", "lion-ui-timeline", node)
+  );
+  wrap.dataset.uiKind = "timeline";
+  wrap.dataset.uiKey = keyOf(node);
+  if (node.props.title) {
+    appendText(
+      doc,
+      wrap,
+      "div",
+      str(node.props.title),
+      "lion-ui-timeline-title"
+    );
+  }
+  const list = makeEl(doc, "ol", "lion-ui-timeline-list");
+  const items = Array.isArray(node.props.items)
+    ? (node.props.items as readonly Record<string, unknown>[])
+    : [];
+  for (const entry of items) {
+    const li = makeEl(
+      doc,
+      "li",
+      `lion-ui-timeline-item ${toneClass(entry.tone)}`.trim()
+    );
+    if (entry.time !== undefined) {
+      appendText(doc, li, "time", str(entry.time), "lion-ui-timeline-time");
+    }
+    appendText(doc, li, "div", str(entry.title), "lion-ui-timeline-heading");
+    if (entry.detail !== undefined) {
+      appendText(doc, li, "p", str(entry.detail), "lion-ui-timeline-detail");
+    }
+    list.append(li);
+  }
+  wrap.append(list);
+  return wrap;
+};
+
+const renderDiff: ElementRenderer = (node, ctx) => {
+  const { doc } = ctx;
+  const wrap = makeEl(doc, "div", nodeClass(ctx, "diff", "lion-ui-diff", node));
+  wrap.dataset.uiKind = "diff";
+  wrap.dataset.uiKey = keyOf(node);
+  if (node.props.title) {
+    appendText(doc, wrap, "div", str(node.props.title), "lion-ui-diff-title");
+  }
+  const removed = Array.isArray(node.props.removed) ? node.props.removed : [];
+  const added = Array.isArray(node.props.added) ? node.props.added : [];
+  for (const item of removed) {
+    appendText(
+      doc,
+      wrap,
+      "div",
+      `- ${typeof item === "string" ? item : JSON.stringify(item)}`,
+      "lion-ui-diff-line is-removed"
+    );
+  }
+  for (const item of added) {
+    appendText(
+      doc,
+      wrap,
+      "div",
+      `+ ${typeof item === "string" ? item : JSON.stringify(item)}`,
+      "lion-ui-diff-line is-added"
+    );
+  }
+  return wrap;
+};
+
+const renderSource: ElementRenderer = (node, ctx) => {
+  const { doc } = ctx;
+  const wrap = makeEl(
+    doc,
+    "blockquote",
+    nodeClass(ctx, "source", "lion-ui-source", node)
+  );
+  wrap.dataset.uiKind = "source";
+  wrap.dataset.uiKey = keyOf(node);
+  if (node.props.title || node.props.publisher) {
+    const header = [str(node.props.publisher), str(node.props.title)]
+      .filter(Boolean)
+      .join(" — ");
+    appendText(doc, wrap, "div", header, "lion-ui-source-header");
+  }
+  const text = str(node.props.text);
+  const quote = str(node.props.quote);
+  const body = makeEl(doc, "p", "lion-ui-source-body");
+  if (quote && text.includes(quote)) {
+    const at = text.indexOf(quote);
+    body.append(doc.createTextNode(text.slice(0, at)));
+    const mark = makeEl(doc, "mark", "lion-ui-source-quote");
+    mark.textContent = quote;
+    body.append(mark);
+    body.append(doc.createTextNode(text.slice(at + quote.length)));
+  } else {
+    body.textContent = text || quote;
+  }
+  wrap.append(body);
+  return wrap;
+};
+
 const RENDERERS: Readonly<Record<UiKind, ElementRenderer>> = {
   alert: renderAlert,
   badge: renderSimple("span", "badge", "lion-ui-badge"),
   button: renderButton,
   card: renderCard,
+  chart: renderChart,
   code: renderCode,
+  diff: renderDiff,
   divider: renderDivider,
   grid: renderLayout("grid"),
   heading: renderHeading,
@@ -1010,9 +1162,11 @@ const RENDERERS: Readonly<Record<UiKind, ElementRenderer>> = {
   row: renderLayout("row"),
   select: renderSelect,
   slider: renderInputControl("slider"),
+  source: renderSource,
   stack: renderLayout("stack"),
   table: renderTable,
   text: renderSimple("p", "text", "lion-ui-text"),
+  timeline: renderTimeline,
   toggle: renderToggle,
   why: renderWhy,
 };

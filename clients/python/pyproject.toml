@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lionlang-client"
+version = "0.1.0"
+description = "Zero-dependency Python client SDK for Lion HTTP, SSE watch, and MCP servers with exact Fraction wire support."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["lion_client*"]

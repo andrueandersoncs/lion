@@ -1,9 +1,12 @@
 import type { Effect, Schema } from "effect";
 import type {
   ArithmeticError,
+  ConflictError,
   InvalidFunctionCallError,
   LogicError,
   MalformedFormError,
+  PermissionError,
+  ResourceLimitError,
   UnboundNameError,
   UndefinedYetError,
   WaitingError,
@@ -13,9 +16,12 @@ import type { LionEnvironmentService } from "@/services/evaluation";
 export type EvaluationError =
   | Schema.SchemaError
   | ArithmeticError
+  | ConflictError
   | InvalidFunctionCallError
   | LogicError
   | MalformedFormError
+  | PermissionError
+  | ResourceLimitError
   | UnboundNameError
   | UndefinedYetError
   | WaitingError;

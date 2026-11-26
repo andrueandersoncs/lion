@@ -1,5 +1,10 @@
 import { Effect, Schema, String as Str } from "effect";
 import { atLeast, logicError } from "@/errors/evaluation";
+import {
+  base64DecodeUtf8,
+  base64EncodeUtf8,
+  sha256Sync,
+} from "@/modules/lib/encoding";
 import { numbersIn } from "@/modules/lib/numerals";
 import { combining, over, overEffect, slicing } from "@/modules/lib/shared";
 
@@ -178,4 +183,17 @@ export const module = {
     (text, between = "") => numbersIn(text, between),
     1
   ),
+  /** Deterministic lowercase hex SHA-256 digest of a UTF-8 string. */
+  sha256: over([Schema.String], sha256Sync),
+  /** Standard Base64 encoding of a UTF-8 string. */
+  "base64-encode": over([Schema.String], base64EncodeUtf8),
+  /** Decodes a Base64 string back to UTF-8, failing if malformed. */
+  "base64-decode": overEffect([Schema.String], (encoded) => {
+    const decoded = base64DecodeUtf8(encoded);
+    return decoded === undefined
+      ? logicError(
+          `string/base64-decode expects valid Base64 UTF-8 text, but found ${JSON.stringify(encoded)}.`
+        )
+      : Effect.succeed(decoded);
+  }),
 };

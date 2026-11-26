@@ -579,3 +579,110 @@
 .lion-ui-proof-note.is-error {
   color: var(--lion-ui-error);
 }
+
+/* Deliverable components: chart, timeline, diff, source */
+.lion-ui-chart,
+.lion-ui-timeline,
+.lion-ui-diff,
+.lion-ui-source {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lion-ui-chart-title,
+.lion-ui-timeline-title,
+.lion-ui-diff-title,
+.lion-ui-source-header {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--lion-ui-muted, #64748b);
+}
+
+.lion-ui-chart-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lion-ui-chart-row {
+  display: grid;
+  grid-template-columns: minmax(5rem, 1fr) 3fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.lion-ui-chart-track {
+  height: 0.55rem;
+  overflow: hidden;
+  background: var(--lion-ui-track, rgba(148, 163, 184, 0.25));
+  border-radius: 999px;
+}
+
+.lion-ui-chart-fill {
+  height: 100%;
+  background: var(--lion-ui-accent, #2563eb);
+  border-radius: 999px;
+}
+
+.lion-ui-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0 0 0 0.85rem;
+  margin: 0;
+  list-style: none;
+  border-left: 2px solid var(--lion-ui-border, rgba(148, 163, 184, 0.35));
+}
+
+.lion-ui-timeline-time {
+  font-size: 0.75rem;
+  color: var(--lion-ui-muted, #64748b);
+}
+
+.lion-ui-timeline-heading {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.lion-ui-timeline-detail {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+}
+
+.lion-ui-diff-line {
+  padding: 0.2rem 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+  border-radius: 0.25rem;
+}
+
+.lion-ui-diff-line.is-added {
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.lion-ui-diff-line.is-removed {
+  background: rgba(239, 68, 68, 0.14);
+}
+
+.lion-ui-source {
+  padding: 0.65rem 0.85rem;
+  margin: 0;
+  background: var(--lion-ui-surface-subtle, rgba(148, 163, 184, 0.08));
+  border-left: 3px solid var(--lion-ui-accent, #2563eb);
+  border-radius: 0.35rem;
+}
+
+.lion-ui-source-body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.lion-ui-source-quote {
+  padding: 0 0.15rem;
+  color: inherit;
+  background: rgba(250, 204, 21, 0.35);
+  border-radius: 0.2rem;
+}

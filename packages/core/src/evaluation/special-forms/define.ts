@@ -56,6 +56,9 @@ export const compileDefine = (
         setLocalBinding(environment, id, made);
         nameLambda(made, id);
         if (persist) {
+          if (environment.meter !== undefined) {
+            yield* environment.meter.requirePermission("persist-define", id);
+          }
           const store = yield* database;
           const definition =
             logicKey(made) === undefined

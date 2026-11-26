@@ -50,3 +50,29 @@ export const stdlib = {
 
 nameFunctions(stdlib);
 readsOnlyArguments(stdlib);
+
+/**
+ * Standard library names excluded from `safeStdlib` because they perform host
+ * I/O or arbitrary JavaScript object/method reflection.
+ */
+export const UNSAFE_STDLIB_NAMES: ReadonlySet<string> = new Set([
+  "console/log",
+  "console/log-json",
+  "func/bind",
+  "func/callback",
+  "object/call-method",
+  "object/call-method-path",
+  "object/get-method",
+  "object/get-method-path",
+  "object/new",
+]);
+
+/**
+ * Capability-safe standard library for untrusted and multi-tenant evaluation:
+ * pure JSON, logic, schema, graph, quantity, time, and proof operations only.
+ */
+export const safeStdlib: Readonly<Record<string, unknown>> = Object.freeze(
+  Object.fromEntries(
+    Object.entries(stdlib).filter(([name]) => !UNSAFE_STDLIB_NAMES.has(name))
+  )
+);

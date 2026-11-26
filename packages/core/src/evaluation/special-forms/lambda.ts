@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import { Effect, Option } from "effect";
 import {
   atLeast,
   counted,
@@ -27,6 +27,7 @@ import {
 } from "@/evaluation/environment";
 import { compile } from "@/evaluation/evaluate";
 import { bodyNames } from "@/evaluation/hoisting";
+import type { ExecutionMeter } from "@/evaluation/sandbox";
 import { applyIn } from "@/evaluation/special-forms/function";
 import {
   buildOf,
@@ -53,6 +54,7 @@ import {
   parameterSchemas,
 } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
+import { LionEnvironmentService } from "@/services/evaluation";
 
 /** The strings a form mentions; true for those only ever inside `quote`. */
 type References = Map<string, boolean>;
@@ -235,10 +237,14 @@ const refused = (lambda: Lambda, got: number) => {
 export const enter = (
   lambda: Lambda,
   args: readonly unknown[],
-  depth: number
+  depth: number,
+  meter?: ExecutionMeter
 ): unknown => {
+  const activeMeter = meter ?? lambda.environment?.meter;
   if (depth >= DEEPEST) {
-    return new Called(Effect.suspend(() => toEffect(enter(lambda, args, 0))));
+    return new Called(
+      Effect.suspend(() => toEffect(enter(lambda, args, 0, activeMeter)))
+    );
   }
   const { contract, parameters, rest } = lambda;
   if (!rest && args.length !== parameters.length) {
@@ -248,10 +254,11 @@ export const enter = (
     return andThen(
       checked(lambda, contract, args, depth),
       depth,
-      (values, now) => run(lambda, values as readonly unknown[], now)
+      (values, now) =>
+        run(lambda, values as readonly unknown[], now, activeMeter)
     );
   }
-  return run(lambda, args, depth);
+  return run(lambda, args, depth, activeMeter);
 };
 
 /**
@@ -261,19 +268,21 @@ export const enter = (
 const run = (
   lambda: Lambda,
   args: readonly unknown[],
-  depth: number
+  depth: number,
+  meter?: ExecutionMeter
 ): unknown =>
   lambda.rest
     ? andThen(argumentList(args), depth, (list, now) =>
-        runBody(lambda, [list], now)
+        runBody(lambda, [list], now, meter)
       )
-    : runBody(lambda, args, depth);
+    : runBody(lambda, args, depth, meter);
 
 /** Runs a Lion function's body with its parameters bound to the values given. */
 const runBody = (
   lambda: Lambda,
   args: readonly unknown[],
-  depth: number
+  depth: number,
+  meter?: ExecutionMeter
 ): unknown => {
   const { parameters } = lambda;
   const bindings = new Map<string, unknown>();
@@ -285,6 +294,7 @@ const runBody = (
     bindings,
     body: true,
     made: makingScope(),
+    ...(meter === undefined ? {} : { meter }),
     parent: lambda.environment,
   };
   lambda.compiled ??= compile(lambda.body, asWritten(scope));
@@ -334,7 +344,15 @@ export const makeLambda = (
   };
   const fn = registerLambda(
     (...args: unknown[]) =>
-      Effect.suspend(() => toEffect(enter(lambda, args, 0))),
+      Effect.flatMap(Effect.serviceOption(LionEnvironmentService), (caller) => {
+        const activeMeter =
+          Option.getOrUndefined(caller)?.meter ?? lambda.environment?.meter;
+        const exceeded = activeMeter?.tick();
+        if (exceeded !== undefined) {
+          return Effect.fail(exceeded);
+        }
+        return toEffect(enter(lambda, args, 0, activeMeter));
+      }),
     {
       parameters,
       body,

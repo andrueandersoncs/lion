@@ -24,6 +24,9 @@ import { stdlib } from "@lionlang/core/modules";
 import { Console, Effect, Option } from "effect";
 import { Argument, CliError, Command, Flag } from "effect/cli";
 
+import { serveMcpStdio } from "./mcp.ts";
+import { startLionServer } from "./server.ts";
+
 export const VERSION = "0.17.0";
 
 const file = Argument.String("file").pipe(
@@ -1026,6 +1029,94 @@ const diffCommand = Command.make(
   )
 );
 
+const maxStepsFlag = Flag.Int("max-steps").pipe(
+  Flag.withDescription("Maximum evaluation steps per request"),
+  Flag.optional
+);
+const maxFactsFlag = Flag.Int("max-facts").pipe(
+  Flag.withDescription("Maximum base facts allowed in the database"),
+  Flag.optional
+);
+const servePort = Flag.Int("port").pipe(
+  Flag.withDescription("Port for the Lion HTTP/SSE/MCP server"),
+  Flag.withDefault(4100)
+);
+const serveReadOnly = Flag.Boolean("read-only").pipe(
+  Flag.withDescription("Disallow all persistent database mutations"),
+  Flag.withDefault(false)
+);
+
+const serveCommand = Command.make(
+  "serve",
+  {
+    host,
+    maxFacts: maxFactsFlag,
+    maxSteps: maxStepsFlag,
+    port: servePort,
+    readOnly: serveReadOnly,
+  },
+  Effect.fn(function* ({ host, maxFacts, maxSteps, port, readOnly }) {
+    if (port < 1 || port > 65_535) {
+      return yield* new CliError.UserError({
+        cause: new Error("Port must be between 1 and 65535."),
+      });
+    }
+    const maxStepsVal = Option.getOrUndefined(maxSteps);
+    const maxFactsVal = Option.getOrUndefined(maxFacts);
+    const limits =
+      maxStepsVal !== undefined || maxFactsVal !== undefined
+        ? {
+            ...(maxStepsVal === undefined ? {} : { maxSteps: maxStepsVal }),
+            ...(maxFactsVal === undefined ? {} : { maxFacts: maxFactsVal }),
+          }
+        : undefined;
+    const running = yield* Effect.tryPromise({
+      try: () =>
+        startLionServer({
+          host,
+          ...(limits === undefined ? {} : { limits }),
+          ...(readOnly ? { permissions: { readOnly: true } } : {}),
+          port,
+        }),
+      catch: (cause) => new CliError.UserError({ cause }),
+    });
+    yield* Console.log(`Lion server listening at ${running.url}`);
+    return yield* Effect.never;
+  })
+).pipe(
+  Command.withDescription(
+    "Serve a sandboxed, journaled Lion HTTP + SSE + Streamable MCP API"
+  )
+);
+
+const mcpCommand = Command.make(
+  "mcp",
+  {
+    maxFacts: maxFactsFlag,
+    maxSteps: maxStepsFlag,
+    readOnly: serveReadOnly,
+  },
+  Effect.fn(function* ({ maxFacts, maxSteps, readOnly }) {
+    const maxStepsVal = Option.getOrUndefined(maxSteps);
+    const maxFactsVal = Option.getOrUndefined(maxFacts);
+    const limits =
+      maxStepsVal !== undefined || maxFactsVal !== undefined
+        ? {
+            ...(maxStepsVal === undefined ? {} : { maxSteps: maxStepsVal }),
+            ...(maxFactsVal === undefined ? {} : { maxFacts: maxFactsVal }),
+          }
+        : undefined;
+    yield* serveMcpStdio({
+      ...(limits === undefined ? {} : { limits }),
+      ...(readOnly ? { permissions: { readOnly: true } } : {}),
+    }).pipe(Effect.mapError((cause) => new CliError.UserError({ cause })));
+  })
+).pipe(
+  Command.withDescription(
+    "Run a Model Context Protocol (MCP) JSON-RPC 2.0 server over stdio"
+  )
+);
+
 export const command = evaluateCommand.pipe(
   Command.withSubcommands([
     replCommand,
@@ -1033,9 +1124,11 @@ export const command = evaluateCommand.pipe(
     checkCommand,
     inspectCommand,
     diffCommand,
+    serveCommand,
+    mcpCommand,
   ]),
   Command.withDescription(
-    "Evaluate Lion programs, inspect and diff databases, serve the graph editor, and print Lion for a browser"
+    "Evaluate Lion programs, inspect and diff databases, serve the graph editor or HTTP/MCP server, and print Lion for a browser"
   )
 );
 

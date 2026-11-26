@@ -88,7 +88,7 @@ const ran = (
   const lambda = depth === undefined ? undefined : lambdaOf(fn);
   return lambda === undefined
     ? returned((fn as LionFunction)(...args), environment)
-    : enter(lambda, args, depth as number);
+    : enter(lambda, args, depth as number, environment?.meter);
 };
 
 /**
@@ -233,6 +233,10 @@ export const compileFunctionCall = (
       ? applyIn(fn, args as readonly unknown[], callee, environment, depth)
       : new Pending(Effect.fail(new InvalidFunctionCallError({ expression })));
   return (environment, depth) => {
+    const exceeded = environment.meter?.tick();
+    if (exceeded !== undefined) {
+      return new Pending(Effect.fail(exceeded));
+    }
     const fn = head(environment, depth);
     if (fn instanceof Pending) {
       return andThen(fn, depth, (made, now) =>

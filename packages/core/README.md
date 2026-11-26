@@ -1421,6 +1421,9 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["string/matchAll", "See [1] and [2].", "\\[(\\d+)\\]"]
 ["string/normalize", " “Acme’s FY25”\n— up 12%… "]
 ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","]
+["string/sha256", "lion"]
+["string/base64-encode", "lion"]
+["string/base64-decode", "bGlvbg=="]
 ```
 
 `string/matches?`, `string/match`, and `string/matchAll` match Unicode regular expressions with optional stateless flags from `"i"`, `"m"`, `"s"`; `match` and `matchAll` return pure JSON records `{"match", "index", "groups", "named"}` (with `null` for unmatched optional groups) that rules can destructure directly. `string/normalize` applies canonical NFKC, typographic quote/dash/ellipsis, and whitespace normalization for quote verification and entity matching.

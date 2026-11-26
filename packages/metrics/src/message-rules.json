@@ -3280,6 +3280,174 @@
         "quote",
         "each names a distinct reason exact bounds could not be computed"
       ]
+    ],
+    [
+      "stated",
+      "sandbox-limit",
+      "limits",
+      [
+        "quote",
+        "Sandboxed runs enforce configured step, duration, and fact limits"
+      ]
+    ],
+    [
+      "reads",
+      ["quote", "Execution exceeded the limit of … steps."],
+      "sandbox-limit"
+    ],
+    [
+      "reads",
+      ["quote", "Execution exceeded the limit of … ms."],
+      "sandbox-limit"
+    ],
+    [
+      "reads",
+      ["quote", "Database exceeded the limit of … facts (has …)."],
+      "sandbox-limit"
+    ],
+    [
+      "kept",
+      "sandbox-limit",
+      [
+        "quote",
+        "each names the specific resource limit exceeded: steps, duration, or facts"
+      ]
+    ],
+    [
+      "stated",
+      "sandbox-permission",
+      "limits",
+      [
+        "quote",
+        "Sandboxed runs block persistent database mutations forbidden by permissions"
+      ]
+    ],
+    ["reads", ["quote", "Permission denied for …."], "sandbox-permission"],
+    [
+      "stated",
+      "wire-format",
+      "data",
+      [
+        "quote",
+        "Wire-encoded rationals and escaped records must be well-formed"
+      ]
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "Wire rational expects a two-string numerator and denominator pair."
+      ],
+      "wire-format"
+    ],
+    [
+      "reads",
+      ["quote", "Wire rational exceeds the limit of … digits."],
+      "wire-format"
+    ],
+    [
+      "reads",
+      ["quote", "Wire rational denominator cannot be zero."],
+      "wire-format"
+    ],
+    [
+      "reads",
+      ["quote", "Wire escaped value must be a JSON record."],
+      "wire-format"
+    ],
+    [
+      "kept",
+      "wire-format",
+      ["quote", "each names a distinct wire decoding violation"]
+    ],
+    [
+      "stated",
+      "journal-revision",
+      "data",
+      [
+        "quote",
+        "Journaled transactions enforce optimistic concurrency and valid checkout revisions"
+      ]
+    ],
+    [
+      "reads",
+      ["quote", "Expected revision …, but database is at revision …."],
+      "journal-revision"
+    ],
+    [
+      "reads",
+      ["quote", "Revision … is out of range (current revision is …)."],
+      "journal-revision"
+    ],
+    [
+      "kept",
+      "journal-revision",
+      [
+        "quote",
+        "one reports a commit conflict and the other an out-of-range checkout"
+      ]
+    ],
+    [
+      "stated",
+      "proof-envelope",
+      "proof",
+      [
+        "quote",
+        "Signed proof envelopes require valid hashes, signatures, Web Crypto keys, and kernel-valid proofs"
+      ]
+    ],
+    ["reads", ["quote", "SHA-256 hashing failed: …"], "proof-envelope"],
+    ["reads", ["quote", "Ed25519 key generation failed: …"], "proof-envelope"],
+    ["reads", ["quote", "Envelope signing failed: …"], "proof-envelope"],
+    [
+      "reads",
+      ["quote", "Payload hash mismatch (envelope was modified)."],
+      "proof-envelope"
+    ],
+    [
+      "reads",
+      ["quote", "Invalid or untrusted Ed25519 signature."],
+      "proof-envelope"
+    ],
+    [
+      "reads",
+      ["quote", "Attached proof failed trusted kernel verification."],
+      "proof-envelope"
+    ],
+    [
+      "kept",
+      "proof-envelope",
+      ["quote", "each names a distinct cryptographic or proof-kernel failure"]
+    ],
+    [
+      "stated",
+      "string-base64",
+      "library",
+      ["quote", "string/base64-decode expects valid Base64 UTF-8 text"]
+    ],
+    [
+      "reads",
+      [
+        "quote",
+        "string/base64-decode expects valid Base64 UTF-8 text, but found …."
+      ],
+      "string-base64"
+    ],
+    [
+      "stated",
+      "json-schema-export",
+      "schemas",
+      ["quote", "JSON Schema export describes relation fact tuples"]
+    ],
+    [
+      "reads",
+      ["quote", "Fact tuple for relation \"…\" (…)"],
+      "json-schema-export"
+    ],
+    [
+      "reads",
+      ["quote", "wrap multiple goals in [\"and\", ...]"],
+      "lint-warning"
     ]
   ]
 ]

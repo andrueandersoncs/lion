@@ -6,6 +6,7 @@ import {
   type LogicError,
   logicError,
   producedNonData,
+  type ResourceLimitError,
   takes,
 } from "@/errors/evaluation";
 import { madeNow } from "@/evaluation/environment";
@@ -942,12 +943,18 @@ const commit = (
   describe: string,
   change: () => Undo,
   upkeep: Upkeep,
-  facts?: FactChange
+  facts?: FactChange,
+  checkLimit?: () => ResourceLimitError | undefined
 ) =>
   Effect.suspend(() => {
     const undo = change();
     if (undo === undefined) {
       return Effect.void;
+    }
+    const limitError = checkLimit?.();
+    if (limitError !== undefined) {
+      undo();
+      return Effect.fail(limitError);
     }
     return upkeep.after.pipe(
       Effect.andThen(
@@ -1000,7 +1007,8 @@ const changeDatabase = (
     facts: (relation: string) => TupleSet | undefined,
     log: Change[] | undefined
   ) => boolean,
-  program?: Program
+  program?: Program,
+  checkLimit?: () => ResourceLimitError | undefined
 ) => {
   const touched = new Set<string>();
   const { invariants, model: before, rules } = database;
@@ -1009,7 +1017,8 @@ const changeDatabase = (
   const change = () => {
     log =
       (program?.invariants ?? invariants).length === 0 &&
-      database.model === undefined
+      database.model === undefined &&
+      checkLimit === undefined
         ? undefined
         : [];
     const changed = write((relation) => {
@@ -1068,7 +1077,8 @@ const changeDatabase = (
     describe,
     change,
     upkeep,
-    program === undefined ? facts : undefined
+    program === undefined ? facts : undefined,
+    checkLimit
   );
 };
 
@@ -1135,7 +1145,11 @@ const stated = (
   });
 };
 
-export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
+export const assertFacts = (
+  database: LogicDatabase,
+  atoms: readonly Atom[],
+  checkLimit?: () => ResourceLimitError | undefined
+) =>
   Effect.gen(function* () {
     const tuples: (readonly [Atom, Tuple])[] = [];
     for (const atom of atoms) {
@@ -1155,7 +1169,13 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
       }
       return changed;
     };
-    yield* changeDatabase(database, `Adding ${these(atoms)}`, write);
+    yield* changeDatabase(
+      database,
+      `Adding ${these(atoms)}`,
+      write,
+      undefined,
+      checkLimit
+    );
     return atoms.map(render);
   });
 

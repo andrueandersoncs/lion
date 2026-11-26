@@ -111,6 +111,9 @@
     <tr data-entry="string/matchAll"><td><code>["string/matchAll", text, pattern]</code><br><code>["string/matchAll", text, pattern, flags]</code></td><td>Every non-overlapping match in order as a list of match records</td></tr>
     <tr data-entry="string/normalize"><td><code>["string/normalize", text]</code></td><td>Canonical text for quote verification and entity matching: NFKC, typographic quotes/dashes/ellipsis normalized to ASCII, whitespace collapsed to single spaces and trimmed</td></tr>
     <tr data-entry="string/numbers"><td><code>["string/numbers", text]</code><br><code>["string/numbers", text, separator]</code></td><td>Every number written in <code>text</code>, in order, each read as <code>number/fromString</code> reads it with the same separator. A minus sign counts only where no letter, digit, or point is right before it, so <code>"2023-24"</code> holds 2023 and 24. Words for amounts are not read: <code>"$1.2 billion"</code> holds 1.2</td></tr>
+    <tr data-entry="string/sha256"><td><code>["string/sha256", text]</code></td><td>Deterministic lowercase 64-character hex SHA-256 digest of UTF-8 <code>text</code></td></tr>
+    <tr data-entry="string/base64-encode"><td><code>["string/base64-encode", text]</code></td><td>Standard Base64 encoding of UTF-8 <code>text</code></td></tr>
+    <tr data-entry="string/base64-decode"><td><code>["string/base64-decode", encoded]</code></td><td>Decodes standard Base64 text back to UTF-8, failing if malformed</td></tr>
     <tr data-entry="string/equals?"><td><code>["string/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
     <tr data-entry="string/lessThan"><td><code>["string/lessThan", a, b]</code></td><td>Whether <code>a</code> comes before <code>b</code> in code-unit order (the same order <code>query</code> <code>"order"</code>, <code>array/sort</code>, and <code>aggregate/min</code> use)</td></tr>
     <tr data-entry="string/greaterThan"><td><code>["string/greaterThan", a, b]</code></td><td>Whether <code>a</code> comes after <code>b</code> in code-unit order</td></tr>
@@ -143,6 +146,8 @@
  "matchAll": ["array/map", ["string/matchAll", "See [1] and [2].", "\\[(\\d+)\\]"], ["lambda", ["m"], ["object/get", "m", "match"]]],
  "normalize": ["string/normalize", " “Acme’s FY25”\n— up 12%… "],
  "numbers": ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","],
+ "sha256": ["string/sha256", "lion"],
+ "base64": ["string/base64-decode", ["string/base64-encode", "lion"]],
  "equals?": ["string/equals?", "lion", "lion"],
  "lessThan": ["string/lessThan", "2025-02-01", "2026-03-03"],
  "greaterThan": ["string/greaterThan", "b", "a"],

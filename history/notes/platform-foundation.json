@@ -1,0 +1,44 @@
+{
+  "claims": [
+    {
+      "quote": "Adds sandboxed evaluation in `@lionlang/core`: capability-scoped `safeStdlib` omitting host JS reflection and console I/O, cooperative execution limits (`maxSteps`, `maxDurationMs`, `maxFacts`) and `runWithMetrics`/`onMetrics` metering, fine-grained `DatabasePermissions` (`readOnly`, per-mutation flags, and `writableRelations` while still allowing `assuming`), and lossless JSON wire encoding (`encodeWire`/`decodeWire`/`stringifyWire`/`parseWire`) for exact rationals and large integers.",
+      "says": {
+        "feature": "sandbox-limits-permissions-wire",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Adds incremental WAL journaling (`@lionlang/core/logic/journal`) with `JournalStore`/`MemoryJournalStore`, `JournaledDatabase` whole-transaction atomicity, checkpoint compaction (`compact`), historical time-travel (`checkout`), optimistic concurrency control (`expectedRevision` with `ConflictError`), and persistent copy-on-write branching (`fork` and `merge`).",
+      "says": {
+        "feature": "incremental-journal-branching-occ",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Adds LLM authoring and agent transport primitives: Draft 2020-12 JSON Schema export (`@lionlang/core/logic/json-schema`), machine-applicable RFC 6902 JSON Patch quick-fixes (`@lionlang/core/analysis/autofix`), first-class MCP JSON-RPC 2.0 and HTTP+SSE servers (`lion mcp` and `lion serve` in `@lionlang/cli` with real-time `/v1/watch` delta streams), and a zero-dependency Python client SDK (`clients/python/`) with exact `Fraction` wire support.",
+      "says": {
+        "feature": "json-schema-autofix-mcp-http-python",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Adds portable signed proof and audit envelopes (`@lionlang/core/logic/envelope`) using Web Crypto SHA-256 + Ed25519 alongside Lion's trusted `verifyProof` kernel, plus database dependency plan inspection and execution profiling (`@lionlang/core/evaluation/profile`).",
+      "says": {
+        "feature": "signed-proof-envelopes-and-profiler",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Adds pure synchronous `string/sha256`, `string/base64-encode`, and `string/base64-decode` to the standard library, and extends `@lionlang/ui` with XSS-safe deliverable components `ui/chart`, `ui/timeline`, `ui/diff`, and inline quote-highlighting `ui/source`.",
+      "says": {
+        "feature": "string-sha256-base64-and-ui-deliverables",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

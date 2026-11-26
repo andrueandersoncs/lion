@@ -61,14 +61,19 @@ const inEffect =
   ) =>
   (form: F, scope: Scope | undefined): Compiled => {
     const part = partIn(scope);
-    return (environment) =>
-      new Pending(
+    return (environment) => {
+      const exceeded = environment.meter?.tick(1, true);
+      if (exceeded !== undefined) {
+        return new Pending(Effect.fail(exceeded));
+      }
+      return new Pending(
         Effect.provideService(
           evaluateForm(form, part, scope),
           LionEnvironmentService,
           environment
         )
       );
+    };
   };
 
 /**

@@ -10,6 +10,12 @@ import {
   type Scope,
 } from "@/evaluation/environment";
 import { declaredIn, definedIn } from "@/evaluation/hoisting";
+import {
+  type DatabasePermissions,
+  type ExecutionLimits,
+  ExecutionMeter,
+  type ExecutionMetrics,
+} from "@/evaluation/sandbox";
 import { compileBegin, isBegin } from "@/evaluation/special-forms/begin.ts";
 import {
   definitionBindings,
@@ -85,9 +91,10 @@ const compileProgram = (
  */
 const topScope = (
   program: LionExpressionType,
-  bindings: Record<string, unknown>
+  bindings: Record<string, unknown>,
+  meter?: ExecutionMeter
 ) => {
-  const top = makeEnvironment(bindings, undefined, true);
+  const top = makeEnvironment(bindings, undefined, true, meter);
   predeclare(top.bindings, [
     ...definedIn(program, top),
     ...declaredIn(program, top),
@@ -102,6 +109,12 @@ export interface RunOptions {
    * the environment binds the same name.
    */
   readonly database?: LogicDatabase;
+  /** Cooperative execution limits (`maxSteps`, `maxDurationMs`, `maxFacts`). */
+  readonly limits?: ExecutionLimits;
+  /** Called on exit (success or failure) with execution usage metrics. */
+  readonly onMetrics?: (metrics: ExecutionMetrics) => void;
+  /** Fine-grained write capabilities for persistent database mutations. */
+  readonly permissions?: DatabasePermissions;
 }
 
 export const run = (
@@ -111,21 +124,63 @@ export const run = (
 ) =>
   Effect.suspend(() => {
     const database = options.database ?? new LogicDatabase();
+    const meter =
+      options.limits !== undefined ||
+      options.permissions !== undefined ||
+      options.onMetrics !== undefined
+        ? new ExecutionMeter(options.limits, options.permissions)
+        : undefined;
     nameFunctions(environment);
-    return pipe(
+    const evaluated = pipe(
       decodeExpression(expression),
       Effect.flatMap((program) => {
-        const top = topScope(program, {
-          ...relationBindings(database),
-          ...schemaBindings(database),
-          ...definitionBindings(database),
-          ...environment,
-        });
+        const top = topScope(
+          program,
+          {
+            ...relationBindings(database),
+            ...schemaBindings(database),
+            ...definitionBindings(database),
+            ...environment,
+          },
+          meter
+        );
         return Effect.suspend(() =>
           toEffect(compileProgram(program, asWritten(top))(top, 0))
         ).pipe(Effect.provideService(LionEnvironmentService, top));
       }),
       Effect.provideService(LionDatabaseService, database)
+    );
+    const report = options.onMetrics;
+    if (report === undefined || meter === undefined) {
+      return evaluated;
+    }
+    return evaluated.pipe(
+      Effect.onExit(() => Effect.sync(() => report(meter.snapshot(database))))
+    );
+  });
+
+/**
+ * Evaluates `expression` like `run` and returns both its value and the
+ * recorded `ExecutionMetrics` (`steps`, `durationMs`, `totalFacts`).
+ */
+export const runWithMetrics = (
+  expression: unknown,
+  environment: Record<string, unknown>,
+  options: Omit<RunOptions, "onMetrics"> = {}
+) =>
+  Effect.suspend(() => {
+    let captured: ExecutionMetrics | undefined;
+    return Effect.map(
+      run(expression, environment, {
+        ...options,
+        onMetrics: (metrics) => {
+          captured = metrics;
+        },
+      }),
+      (value) => ({
+        metrics: captured as ExecutionMetrics,
+        value,
+      })
     );
   });
 

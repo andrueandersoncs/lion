@@ -382,3 +382,43 @@ export class WaitingError extends Schema.TaggedError<WaitingError>()(
     return `${show(this.value)} has no value yet: it waits for a logic variable, or for the rule it is part of to run.`;
   }
 }
+
+/**
+ * Raised when a sandboxed evaluation exceeds a configured resource limit
+ * (`maxSteps`, `maxDurationMs`, or `maxFacts`). Marked uncatchable via `steers`.
+ */
+export class ResourceLimitError extends Schema.TaggedError<ResourceLimitError>()(
+  "ResourceLimitError",
+  {
+    actual: Schema.Number,
+    limit: Schema.Literals(["steps", "duration", "facts"]),
+    limitValue: Schema.Number,
+    message: Schema.String,
+  }
+) {}
+
+/**
+ * Raised when a sandboxed evaluation attempts a database mutation forbidden by
+ * its `DatabasePermissions`. Marked uncatchable via `steers`.
+ */
+export class PermissionError extends Schema.TaggedError<PermissionError>()(
+  "PermissionError",
+  {
+    action: Schema.String,
+    message: Schema.String,
+    target: Schema.optional(Schema.String),
+  }
+) {}
+
+/**
+ * Raised when an optimistic-concurrency transaction targets a stale database
+ * revision.
+ */
+export class ConflictError extends Schema.TaggedError<ConflictError>()(
+  "ConflictError",
+  {
+    actual: Schema.Number,
+    expected: Schema.Number,
+    message: Schema.String,
+  }
+) {}

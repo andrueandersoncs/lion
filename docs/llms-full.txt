@@ -8250,6 +8250,9 @@ Every argument must be a string. Functions that search take the text first. Leng
 | `["string/matchAll", text, pattern]` `["string/matchAll", text, pattern, flags]` | Every non-overlapping match in order as a list of match records |
 | `["string/normalize", text]` | Canonical text for quote verification and entity matching: NFKC, typographic quotes/dashes/ellipsis normalized to ASCII, whitespace collapsed to single spaces and trimmed |
 | `["string/numbers", text]` `["string/numbers", text, separator]` | Every number written in `text`, in order, each read as `number/fromString` reads it with the same separator. A minus sign counts only where no letter, digit, or point is right before it, so `"2023-24"` holds 2023 and 24. Words for amounts are not read: `"$1.2 billion"` holds 1.2 |
+| `["string/sha256", text]` | Deterministic lowercase 64-character hex SHA-256 digest of UTF-8 `text` |
+| `["string/base64-encode", text]` | Standard Base64 encoding of UTF-8 `text` |
+| `["string/base64-decode", encoded]` | Decodes standard Base64 text back to UTF-8, failing if malformed |
 | `["string/equals?", a, b]` | Whether `a` equals `b` |
 | `["string/lessThan", a, b]` | Whether `a` comes before `b` in code-unit order (the same order `query` `"order"`, `array/sort`, and `aggregate/min` use) |
 | `["string/greaterThan", a, b]` | Whether `a` comes after `b` in code-unit order |
@@ -8283,6 +8286,8 @@ Every argument must be a string. Functions that search take the text first. Leng
  "matchAll": ["array/map", ["string/matchAll", "See [1] and [2].", "\\[(\\d+)\\]"], ["lambda", ["m"], ["object/get", "m", "match"]]],
  "normalize": ["string/normalize", " “Acme’s FY25”\n— up 12%… "],
  "numbers": ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","],
+ "sha256": ["string/sha256", "lion"],
+ "base64": ["string/base64-decode", ["string/base64-encode", "lion"]],
  "equals?": ["string/equals?", "lion", "lion"],
  "lessThan": ["string/lessThan", "2025-02-01", "2026-03-03"],
  "greaterThan": ["string/greaterThan", "b", "a"],
@@ -8323,6 +8328,8 @@ Result:
   "matchAll": ["[1]","[2]"],
   "normalize": "\"Acme's FY25\" - up 12%...",
   "numbers": [1250.5,2023,24,-3],
+  "sha256": "fc59487712bbe89b488847b77b5744fb6b815b8fc65ef2ab18149958edb61464",
+  "base64": "lion",
   "equals?": true,
   "lessThan": true,
   "greaterThan": true,
