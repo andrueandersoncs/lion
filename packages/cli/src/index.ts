@@ -27,7 +27,7 @@ import { Argument, CliError, Command, Flag } from "effect/cli";
 import { serveMcpStdio } from "./mcp.ts";
 import { startLionServer } from "./server.ts";
 
-export const VERSION = "0.17.0";
+export const VERSION = "0.18.0";
 
 const file = Argument.String("file").pipe(
   Argument.withDescription(

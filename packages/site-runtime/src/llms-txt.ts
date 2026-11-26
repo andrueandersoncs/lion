@@ -293,9 +293,9 @@ Repository: ${REPO_URL}
 
 ## Packages
 
-- \`@lionlang/core\` (v${versions.core}): Evaluator, special forms, standard library, Datalog logic engine, schemas, symbolic solver (\`proof/prove\`, \`proof/bounds\`, \`proof/rules\`, \`proof/sensitivity\`, \`proof/valid?\`), and graph algorithms (\`graph/\`).
-- \`@lionlang/ui\` (v${versions.ui}): Declarative, interactive, and streaming UI bindings (\`ui/stack\`, \`ui/card\`, \`ui/metric\`, \`ui/alert\`, \`ui/table\`, \`ui/slider\`, \`ui/input\`, \`ui/select\`, \`ui/toggle\`, \`ui/button\`, \`ui/why\`, \`ui/proof\`) plus a zero-dependency DOM renderer (\`@lionlang/ui/dom\`) and stateful \`createUiSession()\`.
-- \`@lionlang/cli\` (v${versions.cli}): The \`lion\` CLI — evaluate files/stdin/\`-e\`, persist logic databases (\`--database\`), static check & lint (\`lion check\`), inspect/diff databases (\`lion inspect\`, \`lion diff --derived\`), serve the Fold Map visual graph editor (\`lion repl\`), and emit a browser Web Worker (\`lion worker\`).
+- \`@lionlang/core\` (v${versions.core}): Evaluator, sandbox metering & permissions (\`safeStdlib\`, \`runWithMetrics\`), WAL journal with branching/OCC (\`JournaledDatabase\`), JSON Schema export, RFC 6902 autofix, Ed25519 \`ProofEnvelope\`, profiler, Datalog logic engine, symbolic solver (\`proof/prove\`, \`proof/bounds\`, \`proof/rules\`, \`proof/sensitivity\`, \`proof/valid?\`), and graph algorithms (\`graph/\`).
+- \`@lionlang/ui\` (v${versions.ui}): Declarative, interactive, and streaming UI bindings (\`ui/stack\`, \`ui/card\`, \`ui/metric\`, \`ui/alert\`, \`ui/table\`, \`ui/slider\`, \`ui/input\`, \`ui/select\`, \`ui/toggle\`, \`ui/button\`, \`ui/why\`, \`ui/proof\`, \`ui/chart\`, \`ui/timeline\`, \`ui/diff\`, \`ui/source\`) plus a zero-dependency DOM renderer (\`@lionlang/ui/dom\`) and stateful \`createUiSession()\`.
+- \`@lionlang/cli\` (v${versions.cli}): The \`lion\` CLI — evaluate files/stdin/\`-e\`, host \`lion mcp\` (JSON-RPC 2.0) and \`lion serve\` (HTTP+SSE with \`/v1/watch\`), persist logic databases (\`--database\`), static check & lint (\`lion check\`), inspect/diff databases (\`lion inspect\`, \`lion diff --derived\`), serve the Fold Map visual graph editor (\`lion repl\`), and emit a browser Web Worker (\`lion worker\`).
 - \`@lionlang/typesafe-ai\` (v${versions.typesafeAi}): Bindings for TypeSafe AI's Jev judgment primitives (\`typesafe/noul\`, \`typesafe/choice\`, \`typesafe/score\`, \`typesafe/system-one\`).
 
 ## Quick Start

@@ -113,8 +113,8 @@
         <div class="hero-content">
           <a class="hero-badge" href="changelog.html">
             <span class="pulse-dot" aria-hidden="true"></span>
-            @lionlang/core 0.18 · @lionlang/ui 0.1 — proofs, bounds &amp; live
-            UI
+            @lionlang/core 0.19 · @lionlang/cli 0.18 · @lionlang/ui 0.1 —
+            sandboxes, WAL, MCP, signed proofs &amp; live UI
             <span aria-hidden="true">→</span>
           </a>
           <h1 class="hero-title">
@@ -584,11 +584,12 @@
           <article class="calm-card package-card">
             <div class="package-head">
               <h3>@lionlang/core</h3>
-              <span class="package-version">v0.18.0</span>
+              <span class="package-version">v0.19.0</span>
             </div>
             <p>
-              Evaluator, special forms, standard library, Datalog logic engine,
-              schemas, graph algorithms, and exact proof solver.
+              Evaluator, sandbox metering &amp; permissions, WAL journal with
+              branching/OCC, JSON Schema export, RFC 6902 autofix, Ed25519 proof
+              envelopes, profiler, and exact proof solver.
             </p>
             <div class="code-block terminal">
               <pre><code>npm install @lionlang/core effect</code></pre>
@@ -610,8 +611,10 @@
             <p>
               Pure JSON UI bindings (<code>ui/card</code>,
               <code>ui/slider</code>, <code>ui/why</code>,
-              <code>ui/proof</code>), stateful/streaming sessions, and a
-              zero-dependency DOM patcher.
+              <code>ui/proof</code>, <code>ui/chart</code>,
+              <code>ui/timeline</code>, <code>ui/diff</code>,
+              <code>ui/source</code>), streaming sessions, and a zero-dependency
+              DOM patcher.
             </p>
             <div class="code-block terminal">
               <pre
@@ -619,21 +622,23 @@
             </div>
             <a
               class="package-link"
-              href="https://github.com/andrueandersoncs/lion/tree/main/packages/ui"
+              href="https://www.npmjs.com/package/@lionlang/ui"
               target="_blank"
               rel="noopener"
-              >View source on GitHub →</a
+              >View on npm →</a
             >
           </article>
 
           <article class="calm-card package-card">
             <div class="package-head">
               <h3>@lionlang/cli</h3>
-              <span class="package-version">v0.17.0</span>
+              <span class="package-version">v0.18.0</span>
             </div>
             <p>
               The <code>lion</code> command: evaluate files, run
-              <code>lion check</code>, persist databases with
+              <code>lion check</code>, host <code>lion mcp</code> &amp;
+              <code>lion serve</code>
+              (HTTP+SSE), persist databases with
               <code>--database</code>, inspect &amp; diff, and emit a browser
               <code>lion worker</code>.
             </p>
@@ -699,7 +704,7 @@
               >@lionlang/core</a
             >
             <a
-              href="https://github.com/andrueandersoncs/lion/tree/main/packages/ui"
+              href="https://www.npmjs.com/package/@lionlang/ui"
               target="_blank"
               rel="noopener"
               >@lionlang/ui</a

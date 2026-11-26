@@ -1,0 +1,17 @@
+{
+  "ships": [
+    {
+      "name": "@lionlang/core",
+      "version": "0.19.0"
+    },
+    {
+      "name": "@lionlang/cli",
+      "version": "0.18.0"
+    },
+    {
+      "name": "@lionlang/ui",
+      "version": "0.1.0"
+    }
+  ],
+  "summary": "Lion ships the production agent-platform runtime across `@lionlang/core` 0.19.0, `@lionlang/cli` 0.18.0, and the inaugural `@lionlang/ui` 0.1.0 release. Core adds sandboxed execution (`safeStdlib`, `ExecutionMeter`, `ExecutionLimits`, `DatabasePermissions`, `runWithMetrics`, uncatchable `ResourceLimitError`/`PermissionError`), lossless rational wire encoding (`encodeWire`/`decodeWire`), a WAL-backed `JournaledDatabase` with compaction, point-in-time `checkout()`, optimistic concurrency (`ConflictError`), and `fork()`/`merge()`, Draft 2020-12 JSON Schema export (`schemaToJsonSchema`), RFC 6902 lint autofixes (`autofixChecks`, `applyJsonPatch`), cryptographic Ed25519 + SHA-256 `ProofEnvelope` signing and trusted-kernel verification (`createProofEnvelope`/`verifyProofEnvelope`), query planner/profiler helpers (`explainPlan`, `profileRun`), and pure synchronous `string/sha256`, `string/base64-encode`, and `string/base64-decode`. `@lionlang/cli` adds native `lion mcp` (JSON-RPC 2.0 MCP server) and `lion serve` (HTTP+SSE server with reactive `/v1/watch`). `@lionlang/ui` ships declarative JSON UI bindings (`ui/card`, `ui/slider`, `ui/why`, `ui/proof`, plus deliverable primitives `ui/chart`, `ui/timeline`, `ui/diff`, and `ui/source`), stateful/streaming `createUiSession()`, and a zero-dependency DOM renderer."
+}
